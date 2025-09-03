@@ -3,6 +3,8 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 import me.friendly.api.minecraft.render.CustomFont;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.Module;
+import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
@@ -10,14 +12,16 @@ import me.friendly.exeter.properties.Property;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
+import java.util.Arrays;
 
-public class BooleanButton
-extends Button {
+public class BooleanButton extends Button {
     private Property property;
+    private Module module;
 
-    public BooleanButton(Property property) {
+    public BooleanButton(Property property, Module module) {
         super(property.getAliases()[0]);
         this.property = property;
+        this.module = module;
         this.width = 15;
     }
 
@@ -44,6 +48,10 @@ extends Button {
     @Override
     public void toggle() {
         this.property.setValue((Boolean)this.property.getValue() == false);
+
+        if (this.module instanceof ToggleableModule && Arrays.asList(this.property.getAliases()).contains("Drawn")) {
+            ((ToggleableModule)this.module).toggleDrawn();
+        }
     }
 
     @Override

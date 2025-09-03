@@ -7,8 +7,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
 
-public final class Fullbright
-extends ToggleableModule {
+public final class Fullbright extends ToggleableModule {
     private final EnumProperty<Mode> mode = new EnumProperty<Mode>(Mode.POTION, "Mode", "m");
 
     public Fullbright() {
@@ -37,7 +36,6 @@ extends ToggleableModule {
     public enum Mode {
         GAMMA,
         POTION;
-
     }
 }
 

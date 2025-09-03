@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.*;
 
 import me.friendly.api.interfaces.Labeled;
+import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.presets.Preset;
 import me.friendly.exeter.properties.NumberProperty;
@@ -64,6 +65,10 @@ implements Labeled {
     }
 
     protected void offerProperties(Property<?> ... properties) {
+        if (this instanceof Toggleable) {
+            Property<Boolean> drawn = new Property<Boolean>(false, "Drawn");
+            this.properties.add(drawn);
+        }
         this.properties.addAll(Arrays.asList(properties));
         // We dont want alphabet sort
         //this.properties.sort((p1, p2) -> p1.getAliases()[0].compareTo(p2.getAliases()[0]));

@@ -55,7 +55,7 @@ extends Module {
                 if (watermark.getValue()) {
                     GlStateManager.pushMatrix();
                     GlStateManager.enableBlend();
-                    FontUtil.drawString(String.format("%s \u00a77b%s", "Exeter", 23), 2.0f, 2.0f, (Boolean) transparent.getValue() != false ? -1711276033 : -1);
+                    FontUtil.drawString(String.format("%s \u00a77b%s", Exeter.TITLE, Exeter.BUILD), 2.0f, 2.0f, (Boolean) transparent.getValue() != false ? -1711276033 : -1);
                     GlStateManager.disableBlend();
                     GlStateManager.popMatrix();
                     

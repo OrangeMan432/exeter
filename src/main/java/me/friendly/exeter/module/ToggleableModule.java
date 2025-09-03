@@ -36,7 +36,6 @@ extends Module implements Toggleable {
         this.color = color;
         this.moduleType = moduleType;
         Exeter.getInstance().getKeybindManager().register(new Keybind(label, 0){
-
             @Override
             public void onPressed() {
                 ToggleableModule.this.toggle();
@@ -68,7 +67,7 @@ extends Module implements Toggleable {
      * @param moduleType the ModuleType this module belongs to.
      */
     protected ToggleableModule(String label, String[] aliases, ModuleType moduleType) {
-        this(label, aliases, false, 0, moduleType);
+        this(label, aliases, false, -2366720, moduleType);
     }
 
     @Override
@@ -97,6 +96,10 @@ extends Module implements Toggleable {
 
     public void setDrawn(boolean drawn) {
         this.drawn = drawn;
+    }
+
+    public void toggleDrawn() {
+        this.setDrawn(!this.drawn);
     }
 
     public int getColor() {

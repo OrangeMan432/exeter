@@ -29,7 +29,7 @@ extends Button {
         if (!module.getProperties().isEmpty()) {
             for (Property<?> property : module.getProperties()) {
                 if (property.getValue() instanceof Boolean) {
-                    this.items.add(new BooleanButton(property));
+                    this.items.add(new BooleanButton(property, module));
                 }
                 if (property instanceof EnumProperty) {
                     this.items.add(new EnumButton((EnumProperty)property));

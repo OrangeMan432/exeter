@@ -15,17 +15,18 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
+import me.friendly.exeter.module.impl.active.render.NoRender;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.Fullbright;
 import me.friendly.exeter.module.impl.toggle.render.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.Trails;
 import me.friendly.exeter.module.impl.toggle.render.Wallhack;
+import me.friendly.exeter.module.impl.toggle.render.Tracers;
 
 /**
  * Manages {@link Module}s for Exeter.
  */
-public final class ModuleManager
-    extends ListRegistry<Module> {
+public final class ModuleManager extends ListRegistry<Module> {
 
     public ModuleManager() {
         this.registry = new ArrayList();
@@ -37,6 +38,8 @@ public final class ModuleManager
         register(new Colors());
         register(new Wallhack());
         register(new Trails());
+        register(new Tracers());
+        register(new NoRender());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
         Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(54);

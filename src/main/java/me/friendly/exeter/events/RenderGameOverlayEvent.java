@@ -4,8 +4,7 @@ import me.friendly.api.event.Event;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.item.EntityItem;
 
-public class RenderGameOverlayEvent
-extends Event {
+public class RenderGameOverlayEvent extends Event {
     private ScaledResolution scaledResolution;
     private EntityItem entityItem;
     private final Type type;

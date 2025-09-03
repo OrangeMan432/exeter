@@ -2,7 +2,6 @@ package me.friendly.exeter.module;
 
 public enum ModuleType {
     COMBAT("Combat"),
-    EXPLOITS("Exploits"),
     MISCELLANEOUS("Miscellaneous"),
     MOVEMENT("Movement"),
     RENDER("Render"),

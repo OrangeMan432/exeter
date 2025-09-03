@@ -37,7 +37,7 @@ import org.lwjgl.opengl.Display;
 public final class Exeter {
     private static Exeter instance = null;
     public static final String TITLE = "Exeter";
-    public static final int BUILD = 23;
+    public static final int BUILD = 24;
     public final long startTime = System.nanoTime() / 1000000L;
     private BasicEventManager eventManager;
     private KeybindManager keybindManager;
@@ -96,7 +96,7 @@ public final class Exeter {
                 Logger.getLogger().print("Shutdown.");
             }
         });
-        Display.setTitle(String.format("%s b%s  ", TITLE, 23));
+        Display.setTitle(String.format("%s b%s  ", TITLE, BUILD));
         Logger.getLogger().print(String.format("Initialized, took %s milliseconds.", System.nanoTime() / 1000000L - this.startTime));
     }
 

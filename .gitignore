@@ -26,5 +26,6 @@ forge*changelog.txt
 
 *.DS_Store
 
-# Useless
-src/main/java/you/are/ratted/
+# Vim
+*.un~
+*.swp
