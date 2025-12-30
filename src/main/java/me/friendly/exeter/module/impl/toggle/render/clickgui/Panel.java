@@ -45,18 +45,18 @@ implements Labeled {
         float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
 //        RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, -7829368, -6710887);
         RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));//0x77FB4242, 0x77FB4242);
-        if (this.open) {
-            RenderMethods.drawRect(this.x, (float)this.y + 12.5f, this.x + this.width, this.open ? (float)(this.y + this.height) + totalItemHeight : (float)(this.y + this.height - 1), 0x77000000);//1996488704
-        }
+        // if (this.open) {
+            RenderMethods.drawRect(this.x, (float)this.y + 12f, this.x + this.width, this.open ? (float)(this.y + this.height) + totalItemHeight : (float)(this.y + this.height - 1), 0x77000000);//1996488704
+        // }
         FontUtil.drawString(this.getLabel(), (float)this.x + 3.0f, (float)this.y + 1.5f/* - 4.0f*/, -1); //15592941
         //var5.f$L.f$E(this.f$E(), (double)((float)this.f$C + 3.0F), (double)((float)this.f$e + 1.5F), 15592941);
 
         if (!open) {
             if (this.angle > 0) {
-                this.angle -= 6;
+                this.angle -= 3;
             }
         } else if (this.angle < 180) {
-            this.angle += 6;
+            this.angle += 3;
         }
 
         GlStateManager.pushMatrix();

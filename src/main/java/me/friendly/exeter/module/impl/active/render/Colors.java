@@ -33,6 +33,12 @@ public final class Colors extends Module {
         return color.getRGB();
     }
 
+    // used for clickgui
+    public static int getDarkerClientColorCustomAlpha(int alpha){
+        Color color = setAlpha(new Color(Color.HSBtoRGB(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 250f)), alpha);
+        return color.getRGB();
+    }
+
     public static final Color setAlpha(Color color, int alpha) {
         alpha = MathHelper.clamp(alpha, 0, 255);
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
