@@ -8,7 +8,9 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 
 public final class ClickGui
@@ -28,9 +30,21 @@ extends GuiScreen {
     }
 
     private void load() {
-        int x = -84;
+        this.panels.clear();
+
+        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
+        int screenWidth = sr.getScaledWidth();
+
+        int totalPanels = ModuleType.values().length + 1;
+        int panelWidth = 90;
+        int totalGuiWidth = totalPanels * panelWidth;
+
+        int startX = (screenWidth / 2) - (totalGuiWidth / 2);
+        
+        int x = startX - 90;
+
         for (final ModuleType moduleType : ModuleType.values()) {
-            this.panels.add(new Panel(moduleType.getLabel(), x += 90, 4, true){
+            this.panels.add(new Panel(moduleType.getLabel(), x += 90, 40, true){
 
                 @Override
                 public void setupItems() {
@@ -43,7 +57,7 @@ extends GuiScreen {
                 }
             });
         }
-        this.panels.add(new Panel("Always Active", x += 90, 4, true){
+        this.panels.add(new Panel("Always Active", x += 90, 40, true){
 
             @Override
             public void setupItems() {
@@ -65,6 +79,12 @@ extends GuiScreen {
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
         this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
+    }
+
+    // this will recenter the gui when the window size changes
+    @Override
+    public void initGui() {
+        this.load();
     }
 
 //    @Override
