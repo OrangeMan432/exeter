@@ -26,6 +26,7 @@ version project.modVersion
 group project.modGroup //http://maven.apache.org/guides/mini/guide-naming-conventions.html
 
 def execute(String cmd) {
+    // from shoreline
     try {
         final def stdout = new ByteArrayOutputStream()
 
@@ -63,8 +64,10 @@ String build = getBuild()
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
+    // from sn0w
     String contents = ""
     File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'
+    contents = update.getText( 'UTF-8' )
     contents = contents.replaceAll( 'HASH = "(.*?)"', 'HASH = "' + hash + '"' )
     contents = contents.replaceAll( 'BUILD = "(.*?)"', 'BUILD = "' + build + '"' )
     update.write( contents, 'UTF-8' )
