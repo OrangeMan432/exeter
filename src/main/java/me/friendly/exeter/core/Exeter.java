@@ -37,8 +37,8 @@ import org.lwjgl.opengl.Display;
 public final class Exeter {
     private static Exeter instance = null;
     public static final String TITLE = "Exeter";
-    public static final String HASH = "887e0440ed578bf5";
-    public static final String BUILD = "b24+50";
+    public static final String HASH = "45c318a7d1fa8ff3";
+    public static final String BUILD = "b24+3";
     public final long startTime = System.nanoTime() / 1000000L;
     private BasicEventManager eventManager;
     private KeybindManager keybindManager;

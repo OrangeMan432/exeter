@@ -56,7 +56,7 @@ String hash = getHash()
 
 def getBuild() {
     String tag = execute("git tag")
-    int commitSinceTag = execute("git rev-list ${tag}..HEAD --count")
+    String commitSinceTag = execute("git rev-list ${tag}..HEAD --count")
     return "${tag}+${commitSinceTag}"
 }
 String build = getBuild()
