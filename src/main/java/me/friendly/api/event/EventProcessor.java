@@ -14,3 +14,4 @@ import me.friendly.exeter.core.Exeter;
 public class EventProcessor {
 
     public static final EventProcessor INSTANCE = new EventProcessor();
+}
