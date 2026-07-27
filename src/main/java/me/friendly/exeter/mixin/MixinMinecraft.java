@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * This class is not present in the original
  * Exeter 1.8 client. It was added as part
- * of the 1.12.2 forge port
+ * of the Fabric 1.21.11 port
  *
  * @author Gopro336
  */
@@ -19,11 +19,7 @@ public abstract class MixinMinecraft
 {
     @Inject(
             method = "init",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/Minecraft;checkGLError(Ljava/lang/String;)V",
-                    ordinal = 2,
-                    shift = At.Shift.BEFORE))
+            at = @At("HEAD"))
     private void initHook2(CallbackInfo ci)
     {
         new Exeter();

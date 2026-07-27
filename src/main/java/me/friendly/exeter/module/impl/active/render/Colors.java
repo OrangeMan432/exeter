@@ -10,7 +10,7 @@ import java.awt.*;
 /**
  * This class is not present in the original
  * Exeter 1.8 client. It was added as part
- * of the 1.12.2 forge port
+ * of the Fabric 1.21.11 port
  *
  * @author Gopro336
  */

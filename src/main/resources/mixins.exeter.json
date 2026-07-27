@@ -2,11 +2,12 @@
   "required": true,
   "package": "me.friendly.exeter.mixin",
   "refmap": "mixins.exeter.refmap.json",
-  "minVersion": "0.7.11",
-  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
       "MixinNetworkManager",
       "MixinMinecraft",
-      "MixinGuiSubtitleOverlay"
+      "MixinGuiSubtitleOverlay",
+      "MixinGuiIngame"
   ]
 }

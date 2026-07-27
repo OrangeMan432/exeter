@@ -1,4 +1,4 @@
-# Exeter-1.12.2
+# Exeter-1.21.11
 
 Exeter client. A client created by Friendly,
 for Minecraft version 1.8. It has been released
@@ -6,7 +6,7 @@ or leaked on that version. I have obtained
 that version, and here, has reconstructed the
 original source code. In this process, I have
 also ported the client to my preferred version
-and platform, Minecraft 1.12.2 forge. Furthermore,
+and platform, Minecraft 1.21.11 Fabric. Furthermore,
 I have done work to clean up the decompiled code,
 and javadoc it.
 

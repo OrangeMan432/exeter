@@ -3,7 +3,6 @@ package me.friendly.exeter.core;
 import java.io.*;
 import java.io.File;
 
-import me.friendly.api.event.EventProcessor;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
@@ -13,12 +12,9 @@ import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.ModuleManager;
 import me.friendly.exeter.plugin.PluginManager;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import org.lwjgl.opengl.Display;
 
 /**
- * Exeter client for Forge 1.12.2
+ * Exeter client for Fabric 1.21.11
  *
  * Exeter client. A client created by Friendly,
  * for Minecraft version 1.8. It has been released
@@ -26,13 +22,13 @@ import org.lwjgl.opengl.Display;
  * that version, and here, has reconstructed the
  * original source code. In this process, Gopro has
  * also ported the client to his preferred version
- * and platform, Minecraft 1.12.2 forge. Furthermore,
+ * and platform, Minecraft 1.21.11 Fabric. Furthermore,
  * Gopro has done work to clean up the decompiled code,
  * and javadoc it.
  *
  * @author Friendly
  * @author Gopro336
- * @version b23
+ * @version b24
  */
 public final class Exeter {
     private static Exeter instance = null;
@@ -50,16 +46,7 @@ public final class Exeter {
     private PluginManager pluginManager;
     private File directory;
 
-    // client event bus
-    public static EventBus EVENT_BUS = MinecraftForge.EVENT_BUS;
-
     public Exeter() {
-
-        // Register the EventProcessor
-        EVENT_BUS.register(EventProcessor.INSTANCE);
-
-        // Register the event manager
-        MinecraftForge.EVENT_BUS.register(EventProcessor.INSTANCE);
 
         Logger.getLogger().print("Initializing...");
         instance = this;
@@ -97,7 +84,6 @@ public final class Exeter {
                 Logger.getLogger().print("Shutdown.");
             }
         });
-        Display.setTitle(String.format("%s %s %s ", TITLE, BUILD, HASH));
         Logger.getLogger().print(String.format("Initialized, took %s milliseconds.", System.nanoTime() / 1000000L - this.startTime));
     }
 

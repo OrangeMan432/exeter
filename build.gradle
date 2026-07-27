@@ -1,121 +1,64 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
-        }
-        maven {
-            name = 'SpongePowered'
-            url = 'https://repo.spongepowered.org/maven'
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-    }
+plugins {
+    id 'fabric-loom' version '1.4-SNAPSHOT'
+    id 'maven-publish'
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'com.github.johnrengelman.shadow'
-
+group project.modGroup
 version project.modVersion
-group project.modGroup //http://maven.apache.org/guides/mini/guide-naming-conventions.html
 
-def execute(String cmd) {
-    // from shoreline
-    try {
-        final def stdout = new ByteArrayOutputStream()
-
-        exec {
-            commandLine cmd.split(" ")
-            standardOutput = stdout
-        }
-
-        return stdout.toString().trim()
-    } catch (ignored) {
-        return null
-    }
+base {
+    archivesName = project.modBaseName
 }
 
-def getHash() {
-    def gitFolder = "$projectDir/.git/"
-    def takeFromHash = 16
-    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
-    def isCommit = head.length == 1
-
-    if(isCommit) return head[0].trim().take(takeFromHash)
-
-    def refHead = new File(gitFolder + head[1].trim())
-    refHead.text.trim().take takeFromHash
-}
-String hash = getHash()
-
-def getBuild() {
-    String tag = execute("git tag")
-    String commitSinceTag = execute("git rev-list ${tag}..HEAD --count")
-    return "${tag}+${commitSinceTag}"
-}
-String build = getBuild()
-
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-    // from sn0w
-    String contents = ""
-    File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'
-    contents = update.getText( 'UTF-8' )
-    contents = contents.replaceAll( 'HASH = "(.*?)"', 'HASH = "' + hash + '"' )
-    contents = contents.replaceAll( 'BUILD = "(.*?)"', 'BUILD = "' + build + '"' )
-    update.write( contents, 'UTF-8' )
-}
-
-minecraft {
-    version = project.forgeVersion
-    runDir = 'run'
-    mappings = project.mcpVersion
-    coreMod = 'me.friendly.exeter.mixin.loader.MixinLoader'
-    makeObfSourceJar = false
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
 repositories {
     mavenCentral()
     maven {
-        name = 'spongepowered-repo'
+        name = 'fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+    maven {
+        name = 'SpongePowered'
         url = 'https://repo.spongepowered.org/maven/'
     }
-    jcenter()
 }
 
 dependencies {
-    compile group: "com.googlecode.json-simple", name: "json-simple", version: "1.1.1"
-    compile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-        exclude module: 'gson'
-        exclude module: 'commons-io'
-    }
+    minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+    mappings "net.fabricmc:yarn:${project.yarnVersion}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loaderVersion}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricVersion}"
+
+    annotationProcessor "org.spongepowered:mixin:0.8.5"
+    modImplementation "org.spongepowered:mixin:0.8.5"
+
+    compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
 }
 
-task getDeps(type: Copy) {
-    from sourceSets.main.runtimeClasspath
-    into 'runtime/'
+mixin {
+    add sourceSets.main, "mixins.exeter.refmap.json"
+    config "mixins.exeter.json"
 }
 
 processResources {
     inputs.property 'version', project.version
-    inputs.property 'mcversion', project.minecraft.version
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+        include 'fabric.mod.json'
+        expand 'version': project.version
     }
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+}
+
+jar {
+    manifest {
+        attributes(
+                'MixinConfigs': 'mixins.exeter.json',
+                'TweakOrder': 0,
+        )
     }
-    rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
 shadowJar {
@@ -128,29 +71,6 @@ shadowJar {
     classifier = 'release'
 }
 
-mixin {
-    defaultObfuscationEnv searge
-    add sourceSets.main, 'mixins.exeter.refmap.json'
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
-
-reobf {
-    shadowJar {
-        mappingType = 'SEARGE'
-        classpath = sourceSets.main.compileClasspath
-    }
-}
-
-jar {
-    manifest {
-        attributes(
-                'MixinConfigs': 'mixins.exeter.json',
-                'tweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-                'TweakOrder': 0,
-                'FMLCorePluginContainsFMLMod': 'true',
-                'FMLCorePlugin': 'me.friendly.exeter.mixin.loader.MixinLoader',
-                'ForceLoadAsMod': 'true',
-//                'FMLAT': 'exeter_at.cfg'
-        )
-    }
-}
-

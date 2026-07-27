@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "exeter",
+  "version": "${version}",
+  "name": "Exeter",
+  "description": "A Minecraft client based on Exeter.",
+  "authors": [
+    "Friendly",
+    "Gopro336"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.friendly.exeter.mixin.loader.MixinLoader"
+    ],
+    "main": [
+      "me.friendly.exeter.mixin.loader.MixinLoader"
+    ]
+  },
+  "mixins": [
+    "mixins.exeter.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21.11",
+    "java": ">=21"
+  }
+}
