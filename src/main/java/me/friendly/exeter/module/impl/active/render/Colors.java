@@ -3,7 +3,7 @@ package me.friendly.exeter.module.impl.active.render;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 import java.awt.*;
 
@@ -40,7 +40,7 @@ public final class Colors extends Module {
     }
 
     public static final Color setAlpha(Color color, int alpha) {
-        alpha = MathHelper.clamp(alpha, 0, 255);
+        alpha = Mth.clamp(alpha, 0, 255);
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 

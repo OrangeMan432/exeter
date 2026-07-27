@@ -1,26 +1,26 @@
 package me.friendly.exeter.events.unused;
 
 import me.friendly.api.event.Event;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
 
 public class BlockBoundingBoxEvent
 extends Event {
-    private IBlockState state;
+    private BlockState state;
     private Block block;
-    private AxisAlignedBB boundingBox;
+    private AABB boundingBox;
     private BlockPos blockPos;
 
-    public BlockBoundingBoxEvent(Block block, AxisAlignedBB boundingBox, BlockPos blockPos, IBlockState state) {
+    public BlockBoundingBoxEvent(Block block, AABB boundingBox, BlockPos blockPos, BlockState state) {
         this.block = block;
         this.boundingBox = boundingBox;
         this.blockPos = blockPos;
         this.state = state;
     }
 
-    public BlockBoundingBoxEvent(AxisAlignedBB var7, Block block, int x, int y, int z) {
+    public BlockBoundingBoxEvent(AABB var7, Block block, int x, int y, int z) {
     }
 
     public BlockPos getBlockPos() {
@@ -39,15 +39,15 @@ extends Event {
         this.block = block;
     }
 
-    public AxisAlignedBB getBoundingBox() {
+    public AABB getBoundingBox() {
         return this.boundingBox;
     }
 
-    public void setBoundingBox(AxisAlignedBB boundingBox) {
+    public void setBoundingBox(AABB boundingBox) {
         this.boundingBox = boundingBox;
     }
 
-    public IBlockState getState() {
+    public BlockState getState() {
         return this.state;
     }
 }

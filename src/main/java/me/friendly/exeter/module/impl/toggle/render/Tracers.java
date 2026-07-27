@@ -17,19 +17,15 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityEnderPearl;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.IAnimals;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.Cylinder;
-import org.lwjgl.util.glu.Sphere;
 
 public final class Tracers extends ToggleableModule {
     private final Property<Boolean> box = new Property<Boolean>(true, "Box", "b");
@@ -52,7 +48,7 @@ public final class Tracers extends ToggleableModule {
 
             @Override
             public void call(RenderEvent event) {
-                // GlStateManager.pushMatrix();
+                // RenderSystem.pushMatrix();
                 // RenderMethods.enableGL3D();
                 // for (Entity entity : ((Tracers)Tracers.this).minecraft.world.loadedEntityList) {
                 //     float distance;
@@ -60,28 +56,28 @@ public final class Tracers extends ToggleableModule {
                 //     double x = Tracers.this.interpolate(entity.lastTickPosX, entity.posX, event.getPartialTicks(), ((Tracers)Tracers.this).minecraft.getRenderManager().renderPosX);
                 //     double y = Tracers.this.interpolate(entity.lastTickPosY, entity.posY, event.getPartialTicks(), ((Tracers)Tracers.this).minecraft.getRenderManager().renderPosY);
                 //     double z = Tracers.this.interpolate(entity.lastTickPosZ, entity.posZ, event.getPartialTicks(), ((Tracers)Tracers.this).minecraft.getRenderManager().renderPosZ);
-                //     AxisAlignedBB axisAlignedBB = new AxisAlignedBB(x - 0.4, y, z - 0.4, x + 0.4, y + 2.0, z + 0.4);
+                //     AABB axisAlignedBB = new AABB(x - 0.4, y, z - 0.4, x + 0.4, y + 2.0, z + 0.4);
                 //     if (!(entity instanceof EntityPlayer)) {
-                //         axisAlignedBB = new AxisAlignedBB(x - 0.4, y, z - 0.4, x + 0.4, y + (double)entity.getEyeHeight() + 0.35, z + 0.4);
+                //         axisAlignedBB = new AABB(x - 0.4, y, z - 0.4, x + 0.4, y + (double)entity.getEyeHeight() + 0.35, z + 0.4);
                 //     }
                 //     if (entity instanceof EntityItem) {
-                //         axisAlignedBB = new AxisAlignedBB(x - 0.16, y + 0.13, z - 0.16, x + 0.16, y + (double)entity.getEyeHeight() + 0.25, z + 0.16);
+                //         axisAlignedBB = new AABB(x - 0.16, y + 0.13, z - 0.16, x + 0.16, y + (double)entity.getEyeHeight() + 0.25, z + 0.16);
                 //     } else if (entity instanceof EntityEnderPearl) {
-                //         axisAlignedBB = new AxisAlignedBB(x - 0.16, y - 0.2, z - 0.16, x + 0.16, y + (double)entity.getEyeHeight() - 0.1, z + 0.16);
+                //         axisAlignedBB = new AABB(x - 0.16, y - 0.2, z - 0.16, x + 0.16, y + (double)entity.getEyeHeight() - 0.1, z + 0.16);
                 //     }
                 //     if (Exeter.getInstance().getFriendManager().isFriend(entity.getName())) {
-                //         GlStateManager.color(0.27f, 0.7f, 0.92f, 0.45f);
+                //         RenderSystem.color(0.27f, 0.7f, 0.92f, 0.45f);
                 //     } else {
                 //         float distance2 = ((Tracers)Tracers.this).minecraft.player.getDistanceToEntity(entity);
                 //         if (distance2 <= 32.0f) {
-                //             GlStateManager.color(1.0f, distance2 / 32.0f, 0.0f, 0.45f);
+                //             RenderSystem.color(1.0f, distance2 / 32.0f, 0.0f, 0.45f);
                 //         } else {
-                //             GlStateManager.color(0.0f, 0.9f, 0.0f, 0.45f);
+                //             RenderSystem.color(0.0f, 0.9f, 0.0f, 0.45f);
                 //         }
                 //     }
                 //     boolean bobbing = ((Tracers)Tracers.this).minecraft.gameSettings.viewBobbing;
                 //     if (((Boolean)Tracers.this.lines.getValue()).booleanValue()) {
-                //         GlStateManager.pushMatrix();
+                //         RenderSystem.pushMatrix();
                 //         GL11.glLineWidth((float)((Float)Tracers.this.width.getValue()).floatValue());
                 //         GL11.glLoadIdentity();
                 //         ((Tracers)Tracers.this).minecraft.gameSettings.viewBobbing = false;
@@ -106,86 +102,86 @@ public final class Tracers extends ToggleableModule {
                 //             }
                 //         }
                 //         GL11.glEnd();
-                //         GlStateManager.popMatrix();
+                //         RenderSystem.popMatrix();
                 //     }
                 //     if (((Boolean)Tracers.this.box.getValue()).booleanValue()) {
-                //         GlStateManager.pushMatrix();
-                //         GlStateManager.translate(x, y, z);
-                //         GlStateManager.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
-                //         GlStateManager.translate(-x, -y, -z);
+                //         RenderSystem.pushMatrix();
+                //         RenderSystem.translate(x, y, z);
+                //         RenderSystem.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
+                //         RenderSystem.translate(-x, -y, -z);
                 //         if (entity instanceof EntityItem || entity instanceof EntityEnderPearl) {
                 //             distance = ((Tracers)Tracers.this).minecraft.player.getDistanceToEntity(entity);
                 //             if (distance <= 32.0f) {
-                //                 GlStateManager.color(1.0f, distance / 32.0f, 0.0f, 0.25f);
+                //                 RenderSystem.color(1.0f, distance / 32.0f, 0.0f, 0.25f);
                 //             } else {
-                //                 GlStateManager.color(0.0f, 0.9f, 0.0f, 0.25f);
+                //                 RenderSystem.color(0.0f, 0.9f, 0.0f, 0.25f);
                 //             }
                 //             RenderMethods.drawBox(axisAlignedBB);
                 //         }
                 //         RenderMethods.drawOutlinedBox(axisAlignedBB);
-                //         GlStateManager.popMatrix();
+                //         RenderSystem.popMatrix();
                 //     }
                 //     if (esp.getValue().booleanValue()) {
                 //         if (Tracers.this.mode.getValue() == Mode.FILL) {
-                //             GlStateManager.pushMatrix();
-                //             GlStateManager.translate(x, y, z);
-                //             GlStateManager.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
-                //             GlStateManager.translate(-x, -y, -z);
+                //             RenderSystem.pushMatrix();
+                //             RenderSystem.translate(x, y, z);
+                //             RenderSystem.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
+                //             RenderSystem.translate(-x, -y, -z);
                 //             if (Exeter.getInstance().getFriendManager().isFriend(entity.getName())) {
-                //                 GlStateManager.color(0.27f, 0.7f, 0.92f, 0.15f);
+                //                 RenderSystem.color(0.27f, 0.7f, 0.92f, 0.15f);
                 //             } else {
                 //                 distance = ((Tracers)Tracers.this).minecraft.player.getDistanceToEntity(entity);
                 //                 if (distance <= 32.0f) {
-                //                     GlStateManager.color(1.0f, distance / 32.0f, 0.0f, 0.15f);
+                //                     RenderSystem.color(1.0f, distance / 32.0f, 0.0f, 0.15f);
                 //                 } else {
-                //                     GlStateManager.color(0.0f, 0.9f, 0.0f, 0.15f);
+                //                     RenderSystem.color(0.0f, 0.9f, 0.0f, 0.15f);
                 //                 }
                 //             }
                 //             RenderMethods.drawBox(axisAlignedBB);
                 //             RenderMethods.drawOutlinedBox(axisAlignedBB);
-                //             GlStateManager.popMatrix();
+                //             RenderSystem.popMatrix();
                 //         } else if (Tracers.this.mode.getValue() == Mode.CROSS) {
-                //             GlStateManager.pushMatrix();
-                //             GlStateManager.translate(x, y, z);
-                //             GlStateManager.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
-                //             GlStateManager.translate(-x, -y, -z);
+                //             RenderSystem.pushMatrix();
+                //             RenderSystem.translate(x, y, z);
+                //             RenderSystem.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
+                //             RenderSystem.translate(-x, -y, -z);
                 //             RenderMethods.drawOutlinedBox(axisAlignedBB);
                 //             RenderMethods.renderCrosses(axisAlignedBB);
-                //             GlStateManager.popMatrix();
+                //             RenderSystem.popMatrix();
                 //         } else if (Tracers.this.mode.getValue() == Mode.PENIS) {
-                //             GlStateManager.pushMatrix();
-                //             GlStateManager.translate(x, y, z);
-                //             GlStateManager.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
-                //             GlStateManager.translate(-x, -y, -z);
-                //             GlStateManager.translate(x, y + (double)(entity.height / 2.0f) - (double)0.225f, z);
-                //             GlStateManager.rotate(entity.rotationPitch, 1.0f, 0.0f, 0.0f);
-                //             GlStateManager.color(1.0f, 1.0f, 0.0f, 1.0f);
+                //             RenderSystem.pushMatrix();
+                //             RenderSystem.translate(x, y, z);
+                //             RenderSystem.rotate(-entity.rotationYaw, 0.0f, entity.height, 0.0f);
+                //             RenderSystem.translate(-x, -y, -z);
+                //             RenderSystem.translate(x, y + (double)(entity.height / 2.0f) - (double)0.225f, z);
+                //             RenderSystem.rotate(entity.rotationPitch, 1.0f, 0.0f, 0.0f);
+                //             RenderSystem.color(1.0f, 1.0f, 0.0f, 1.0f);
                 //             int lines = 20;
-                //             GlStateManager.translate(0.0, 0.0, 0.075);
+                //             RenderSystem.translate(0.0, 0.0, 0.075);
                 //             Cylinder shaft = new Cylinder();
                 //             shaft.setDrawStyle(100013);
                 //             shaft.draw(0.1f, 0.09f, 1.0f, 25, lines * 2);
-                //             GlStateManager.translate(0.0, 0.0, -0.075);
-                //             GlStateManager.translate(-0.05, 0.0, 0.0);
+                //             RenderSystem.translate(0.0, 0.0, -0.075);
+                //             RenderSystem.translate(-0.05, 0.0, 0.0);
                 //             Sphere right = new Sphere();
                 //             right.setDrawStyle(100013);
                 //             right.draw(0.1f, 25, lines);
-                //             GlStateManager.translate(0.1, 0.0, 0.0);
+                //             RenderSystem.translate(0.1, 0.0, 0.0);
                 //             Sphere left = new Sphere();
                 //             left.setDrawStyle(100013);
                 //             left.draw(0.1f, 25, lines);
-                //             GlStateManager.color(1.0f, 0.2f, 1.0f, 1.0f);
-                //             GlStateManager.translate(-0.05, 0.0, 1.1);
+                //             RenderSystem.color(1.0f, 0.2f, 1.0f, 1.0f);
+                //             RenderSystem.translate(-0.05, 0.0, 1.1);
                 //             Sphere tip = new Sphere();
                 //             tip.setDrawStyle(100013);
                 //             tip.draw(0.09f, 25, lines);
-                //             GlStateManager.popMatrix();
+                //             RenderSystem.popMatrix();
                 //         }
                 //     }
                 //     ((Tracers)Tracers.this).minecraft.gameSettings.viewBobbing = bobbing;
                 // }
                 // RenderMethods.disableGL3D();
-                // GlStateManager.popMatrix();
+                // RenderSystem.popMatrix();
             }
         });
     }
@@ -262,7 +258,7 @@ public final class Tracers extends ToggleableModule {
 //             float distance = this.minecraft.player.getDistanceToEntity(renderEntity);
 //             color = distance <= 32.0f ? new float[]{1.0f, distance / 32.0f, 0.0f} : new float[]{0.0f, 0.9f, 0.0f};
 //         }
-//         GlStateManager.color(color[0], color[1], color[2], 0.85f);
+//         RenderSystem.color(color[0], color[1], color[2], 0.85f);
 //         this.renderFour();
 //     }
 

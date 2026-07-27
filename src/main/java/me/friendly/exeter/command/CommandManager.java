@@ -29,7 +29,7 @@ import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.network.play.client.CPacketChatMessage;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
 
 public final class CommandManager
 extends ListRegistry<Command> {
@@ -56,9 +56,9 @@ extends ListRegistry<Command> {
 
             @Override
             public void call(PacketEvent event) {
-                CPacketChatMessage packet;
+                ServerboundChatPacket packet;
                 String message;
-                if (event.getPacket() instanceof CPacketChatMessage && (message = (packet = (CPacketChatMessage)event.getPacket()).getMessage().trim()).startsWith(getPrefix())) {
+                if (event.getPacket() instanceof ServerboundChatPacket && (message = (packet = (ServerboundChatPacket)event.getPacket()).message().trim()).startsWith(getPrefix())) {
                     event.setCanceled(true);
                     boolean exists = false;
                     String[] arguments = message.split(" ");

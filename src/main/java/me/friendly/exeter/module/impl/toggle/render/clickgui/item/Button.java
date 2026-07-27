@@ -8,8 +8,8 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.util.ResourceLocation;
+//import net.minecraft.client.resources.sounds.PositionedSoundRecord;
+//import net.minecraft.resources.ResourceLocation;
 
 import java.awt.*;
 
@@ -42,7 +42,7 @@ implements Labeled {
         if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
             this.state = !this.state;
             this.toggle();
-//            Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
+//            Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
         }
     }
 
@@ -55,7 +55,7 @@ implements Labeled {
 
     @Override
     public int getHeight() {
-        return 14;
+        return 15;
     }
 
     protected boolean isHovering(int mouseX, int mouseY) {

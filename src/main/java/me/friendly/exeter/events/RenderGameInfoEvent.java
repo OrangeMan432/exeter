@@ -1,18 +1,18 @@
 package me.friendly.exeter.events;
 
 import me.friendly.api.event.Event;
-import net.minecraft.client.gui.ScaledResolution;
+import com.mojang.blaze3d.platform.Window;
 
 public class RenderGameInfoEvent
 extends Event {
-    private ScaledResolution scaledResolution;
+    private Window window;
 
-    public RenderGameInfoEvent(ScaledResolution scaledResolution) {
-        this.scaledResolution = scaledResolution;
+    public RenderGameInfoEvent(Window window) {
+        this.window = window;
     }
 
-    public ScaledResolution getScaledResolution() {
-        return this.scaledResolution;
+    public Window getWindow() {
+        return this.window;
     }
 }
 

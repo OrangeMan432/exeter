@@ -1,7 +1,6 @@
 package me.friendly.exeter.events;
 
 import me.friendly.api.event.Event;
-import org.lwjgl.input.Keyboard;
 
 public class InputEvent
 extends Event {
@@ -10,7 +9,12 @@ extends Event {
 
     public InputEvent(Type type) {
         this.type = type;
-        this.key = Keyboard.getEventKey();
+        this.key = 0;
+    }
+
+    public InputEvent(Type type, int key) {
+        this.type = type;
+        this.key = key;
     }
 
     public Type getType() {

@@ -20,11 +20,11 @@
 //import me.friendly.exeter.gui.screens.accountmanager.GuiAccountSlot;
 //import me.friendly.exeter.gui.screens.accountmanager.GuiDirectLogin;
 //import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiButton;
-//import net.minecraft.client.gui.GuiMainMenu;
-//import net.minecraft.client.gui.GuiScreen;
-//import net.minecraft.client.gui.GuiYesNo;
-//import net.minecraft.client.gui.GuiYesNoCallback;
+//import net.minecraft.client.gui.GuiGraphicsButton;
+//import net.minecraft.client.gui.GuiGraphicsMainMenu;
+//import net.minecraft.client.gui.GuiGraphicsScreen;
+//import net.minecraft.client.gui.GuiGraphicsYesNo;
+//import net.minecraft.client.gui.GuiGraphicsYesNoCallback;
 //import net.minecraft.client.resources.ResourcePackRepository;
 //
 //public class GuiAccountScreen
@@ -34,7 +34,7 @@
 //    private boolean deleteMenuOpen = false;
 //    private GuiAccountSlot accountSlot;
 //    private int timer = 0;
-//    private Minecraft mc = Minecraft.getMinecraft();
+//    private Minecraft mc = Minecraft.getInstance();
 //
 //    @Override
 //    public void handleMouseInput() throws IOException {
@@ -78,7 +78,7 @@
 //        if (keyCode == 28) {
 //            Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.selected);
 //            try {
-//                Minecraft.getMinecraft().processLogin(account.getLabel(), account.getPassword());
+//                Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
 //            }
 //            catch (AccountException exception) {
 //                exception.printStackTrace();
@@ -109,7 +109,7 @@
 //                            map.put("user", account.getLabel());
 //                            map.put("password", account.getPassword());
 //                            map.put("version", 13);
-//                            Minecraft.getMinecraft().processLogin(account.getLabel(), account.getPassword());
+//                            Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
 //                        }
 //                        catch (Exception exception) {
 //                            Exeter.getInstance().getAccountManager().unregister(account);
@@ -153,7 +153,7 @@
 //                        map.put("user", a1.getLabel());
 //                        map.put("password", a1.getPassword());
 //                        map.put("version", 13);
-//                        Minecraft.getMinecraft().processLogin(a1.getLabel(), a1.getPassword());
+//                        Minecraft.getInstance().processLogin(a1.getLabel(), a1.getPassword());
 //                    }
 //                    catch (Exception exception) {
 //                        exception.printStackTrace();
@@ -223,7 +223,7 @@
 //    @Override
 //    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 //        this.accountSlot.drawScreen(mouseX, mouseY, partialTicks);
-//        this.mc.fontRenderer.drawStringWithShadow(Minecraft.getMinecraft().getSession().getUsername(), this.width - this.mc.fontRenderer.getStringWidth(Minecraft.getMinecraft().getSession().getUsername()) - 2, 2.0f, 0xA0A0A0);
+//        this.mc.fontRenderer.drawStringWithShadow(Minecraft.getInstance().getSession().getUsername(), this.width - this.mc.fontRenderer.getStringWidth(Minecraft.getInstance().getSession().getUsername()) - 2, 2.0f, 0xA0A0A0);
 //        this.mc.fontRenderer.drawStringWithShadow("Accounts: " + Exeter.getInstance().getAccountManager().getRegistry().size(), 2.0f, 2.0f, 0xA0A0A0);
 //        if (this.dispErrorString.length() > 1) {
 //            ++this.timer;

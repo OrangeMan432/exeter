@@ -8,13 +8,13 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public abstract class Panel
 implements Labeled {
-    private Minecraft minecraft = Minecraft.getMinecraft();
+    private Minecraft minecraft = Minecraft.getInstance();
     private final String label;
     private int angle;
     private int x;
@@ -45,9 +45,7 @@ implements Labeled {
         float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
 //        RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, -7829368, -6710887);
         RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));//0x77FB4242, 0x77FB4242);
-        // if (this.open) {
-            RenderMethods.drawRect(this.x, (float)this.y + 12f, this.x + this.width, this.open ? (float)(this.y + this.height) + totalItemHeight : (float)(this.y + this.height - 1), 0x77000000);//1996488704
-        // }
+            RenderMethods.drawRect(this.x, (float)this.y + 12f, this.x + this.width, this.y + this.height + (this.open ? totalItemHeight : -1), 0x77000000);
         FontUtil.drawString(this.getLabel(), (float)this.x + 3.0f, (float)this.y + 1.5f/* - 4.0f*/, -1); //15592941
         //var5.f$L.f$E(this.f$E(), (double)((float)this.f$C + 3.0F), (double)((float)this.f$e + 1.5F), 15592941);
 
@@ -59,23 +57,15 @@ implements Labeled {
             this.angle += 3;
         }
 
-        GlStateManager.pushMatrix();
-        GlStateManager.enableBlend();
-        RenderMethods.glColor(new Color(255, 255, 255, 255));
-        minecraft.getTextureManager().bindTexture(new ResourceLocation("textures/exeter/arrow.png"));
-        GlStateManager.translate(getX() + getWidth() - 7, (getY() + 6) - 0.3F, 0.0F);
-        GlStateManager.rotate(calculateRotation(angle), 0.0F, 0.0F, 1.0F);
-        RenderMethods.drawModalRect(-5, -5, 0.0F, 0.0F, 10, 10, 10, 10, 10.0F, 10.0F);
-        GlStateManager.disableBlend();
-        GlStateManager.popMatrix();
+        RenderMethods.guiGraphics.blit(new Identifier("minecraft", "textures/exeter/arrow"), getX() + getWidth() - 12, getY() + 1, 10, 10, 0.0f, 0.0f, 10, 10);
 
         if (this.open) {
-            float y = (float)(this.getY() + this.getHeight()) - 3.0f;
+            int y = this.getY() + this.getHeight() - 3;
             for (Item item : getItems()) {
-                item.setLocation((float)this.x + 2.0f, y);
+                item.setLocation((float)this.x + 2.0f, (float)y);
                 item.setWidth(this.getWidth() - 4);
                 item.drawScreen(mouseX, mouseY, partialTicks);
-                y += (float)item.getHeight() + 1.5f;
+                y += item.getHeight() + 1;
             }
         }
     }
@@ -102,7 +92,7 @@ implements Labeled {
         }
         if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
             this.open = !this.open;
-//            Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
+//            Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
             return;
         }
         if (!this.open) {
@@ -175,10 +165,10 @@ implements Labeled {
         return var0;
     }
 
-    private float getTotalItemHeight() {
-        float height = 0.0f;
+    private int getTotalItemHeight() {
+        int height = 0;
         for (Item item : getItems()) {
-            height += (float)item.getHeight() + 1.5f;
+            height += item.getHeight() + 1;
         }
         return height;
     }

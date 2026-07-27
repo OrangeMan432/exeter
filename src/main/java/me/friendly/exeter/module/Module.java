@@ -28,7 +28,7 @@ implements Labeled {
     /** Properties for the Module. */
     private final List<Property<?>> properties = new ArrayList<>();
     private final List<Preset> presets = new ArrayList<Preset>();
-    protected Minecraft minecraft = Minecraft.getMinecraft();
+    protected Minecraft minecraft = Minecraft.getInstance();
 
     /**
      * Creates a new Module. It's important that the given label

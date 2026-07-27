@@ -7,7 +7,8 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.properties.NumberProperty;
-import org.lwjgl.input.Mouse;
+import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.Minecraft;
 
 public class NumberSlider
 extends Item {
@@ -57,11 +58,11 @@ extends Item {
 
     @Override
     public int getHeight() {
-        return 14;
+        return 15;
     }
 
     private void dragSetting(int mouseX, int mouseY) {
-        if(isHovering(mouseX, mouseY) && Mouse.isButtonDown(0)) {
+        if(isHovering(mouseX, mouseY) && GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS) {
             setSettingFromX(mouseX);
         }
     }

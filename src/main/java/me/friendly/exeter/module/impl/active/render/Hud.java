@@ -15,16 +15,12 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.block.material.Material;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.text.translation.I18n;
-//import net.minecraft.util.StatCollector;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.client.resources.language.I18n;
 
 public final class Hud
 extends Module {
@@ -48,19 +44,16 @@ extends Module {
 
             @Override
             public void call(RenderGameOverlayEvent event) {
-                Collection<PotionEffect> effects;
-                if (minecraft.gameSettings.showDebugInfo || event.getType() != RenderGameOverlayEvent.Type.IN_GAME) {
+                Collection<MobEffectInstance> effects;
+                if (minecraft.gui.getDebugOverlay().showDebugScreen() || event.getType() != RenderGameOverlayEvent.Type.IN_GAME) {
                     return;
                 }
                 if (watermark.getValue()) {
-                    GlStateManager.pushMatrix();
-                    GlStateManager.enableBlend();
                     FontUtil.drawString(String.format("%s \u00a77%s %s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH), 2.0f, 2.0f, (Boolean) transparent.getValue() != false ? -1711276033 : -1);
-                    GlStateManager.disableBlend();
-                    GlStateManager.popMatrix();
                     
                 }
-                ScaledResolution scaledResolution = event.getScaledResolution();
+                int scaledWidth = minecraft.getWindow().getGuiScaledWidth();
+                int scaledHeight = minecraft.getWindow().getGuiScaledHeight();
                 int positionY = -7;
                 if (arraylist.getValue()) {
                     List<Module> modules = Exeter.getInstance().getModuleManager().getRegistry();
@@ -77,50 +70,43 @@ extends Module {
                         ToggleableModule toggleableModule;
                         if (!(module instanceof Toggleable) || !(toggleableModule = (ToggleableModule)module).isDrawn() || toggleableModule.getColor() == 0 || !toggleableModule.isRunning()) continue;
                         int labelWidth = FontUtil.getStringWidth(getTag(toggleableModule.getTag()));
-                        FontUtil.drawString(getTag(toggleableModule.getTag()), scaledResolution.getScaledWidth() - labelWidth - 2, positionY += 9, toggleableModule.getColor());
+                        FontUtil.drawString(getTag(toggleableModule.getTag()), scaledWidth - labelWidth - 2, positionY += 9, toggleableModule.getColor());
                     }
                 }
                 if (armor.getValue()) {
                     int x = 15;
-                    GlStateManager.pushMatrix();
-                    RenderHelper.enableGUIStandardItemLighting();
+                    net.minecraft.client.gui.render.state.GuiRenderState guiRenderState = new net.minecraft.client.gui.render.state.GuiRenderState();
+                    net.minecraft.client.gui.GuiGraphics localGui = new net.minecraft.client.gui.GuiGraphics(minecraft, guiRenderState, scaledWidth, scaledHeight);
                     for (int index = 3; index >= 0; --index) {
-                        ItemStack stack = minecraft.player.inventory.armorInventory.get(index);
-                        if (stack == null) continue;
-                        int y = minecraft.player.isInsideOfMaterial(Material.WATER) && !minecraft.player.capabilities.isCreativeMode ? 65 : (minecraft.player.capabilities.isCreativeMode ? 38 : 55);
-                        minecraft.getRenderItem().renderItemAndEffectIntoGUI(stack, scaledResolution.getScaledWidth() / 2 + x, scaledResolution.getScaledHeight() - y);
-                        minecraft.getRenderItem().renderItemOverlays(minecraft.fontRenderer, stack, scaledResolution.getScaledWidth() / 2 + x, scaledResolution.getScaledHeight() - y);
+                        net.minecraft.world.entity.EquipmentSlot slot = index == 3 ? net.minecraft.world.entity.EquipmentSlot.HEAD : (index == 2 ? net.minecraft.world.entity.EquipmentSlot.CHEST : (index == 1 ? net.minecraft.world.entity.EquipmentSlot.LEGS : net.minecraft.world.entity.EquipmentSlot.FEET));
+                        ItemStack stack = minecraft.player.getItemBySlot(slot);
+                        if (stack == null || stack.isEmpty()) continue;
+                        int y = (minecraft.player.isUnderWater() && !minecraft.player.getAbilities().instabuild) ? 65 : (minecraft.player.getAbilities().instabuild ? 38 : 55);
+                        localGui.renderItem(stack, scaledWidth / 2 + x, scaledHeight - y);
+                        localGui.renderItemDecorations(minecraft.font, stack, scaledWidth / 2 + x, scaledHeight - y);
                         x += 18;
                     }
-                    RenderHelper.disableStandardItemLighting();
-                    GlStateManager.popMatrix();
                 }
 
-                int y = scaledResolution.getScaledHeight() - (minecraft.currentScreen instanceof GuiChat ? 24 : 10);
+                int y = scaledHeight - (minecraft.screen instanceof net.minecraft.client.gui.screens.ChatScreen ? 24 : 10);
 
                 if (potions.getValue()
-                        && (effects = minecraft.player.getActivePotionEffects()) != null
+                        && (effects = minecraft.player.getActiveEffects()) != null
                         && !effects.isEmpty())
                 {
 
-                    for (PotionEffect effect : effects) {
-//                        Potion potion;
-//                        if (effect == null ||
-//                                (potion = Potion.POTION_TYPES[effect.getPotionID()]) == null) continue;
-
+                    for (MobEffectInstance effect : effects) {
                         if (effect == null) return;
 
-//                        final Potion potion = Potion.POTION_TYPES[effect.getPotionID()];
-                        final Potion potion = effect.getPotion();
-                        if (potion == null) {
+                        MobEffect mobEffect = effect.getEffect().value();
+                        if (mobEffect == null) {
                             continue;
                         }
 
-
-                        String name = I18n.translateToLocal(potion.getName());
-                        name = name + String.format(" \u00a77%s : %s", effect.getAmplifier() + 1, Potion.getPotionDurationString(effect, 1));
-                        int align = scaledResolution.getScaledWidth() - FontUtil.getStringWidth(name) - 2;
-                        FontUtil.drawString(name, align, y, potion.getLiquidColor());
+                        String name = I18n.get(mobEffect.getDescriptionId());
+                        name = name + String.format(" \u00a77%s : %s", effect.getAmplifier() + 1, MobEffectUtil.formatDuration(effect, 1.0f, 1.0f).getString());
+                        int align = scaledWidth - FontUtil.getStringWidth(name) - 2;
+                        FontUtil.drawString(name, align, y, mobEffect.getColor());
 
                         y -= 9;
                     }
@@ -129,16 +115,16 @@ extends Module {
                 y += 9;
 
                 if (coords.getValue()) {
-                    String coordinatesFormat = String.format("\u00a7f%s, %s, %s \u00a77XYZ", (int)minecraft.player.posX, (int)minecraft.player.posY, (int)minecraft.player.posZ);
-                    FontUtil.drawString(coordinatesFormat, scaledResolution.getScaledWidth() - FontUtil.getStringWidth(coordinatesFormat) - 2, y -= 9, -1);
+                    String coordinatesFormat = String.format("\u00a7f%s, %s, %s \u00a77XYZ", (int)minecraft.player.getX(), (int)minecraft.player.getY(), (int)minecraft.player.getZ());
+                    FontUtil.drawString(coordinatesFormat, scaledWidth - FontUtil.getStringWidth(coordinatesFormat) - 2, y -= 9, -1);
                 }
                 if (time.getValue()) {
                     String time = String.format("\u00a77%s", dateFormat.format(new Date()));
-                    FontUtil.drawString(time, scaledResolution.getScaledWidth() - FontUtil.getStringWidth(time) - 2, y -= 9, -1);
+                    FontUtil.drawString(time, scaledWidth - FontUtil.getStringWidth(time) - 2, y -= 9, -1);
                 }
                 if (direction.getValue()) {
                     String direction = String.format("\u00a77%s", PlayerHelper.getFacingWithProperCapitals().toUpperCase());
-                    FontUtil.drawString(direction, scaledResolution.getScaledWidth() - FontUtil.getStringWidth(direction) - 2, y -= 9, -1);
+                    FontUtil.drawString(direction, scaledWidth - FontUtil.getStringWidth(direction) - 2, y -= 9, -1);
                 }
             }
         });

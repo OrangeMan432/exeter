@@ -1,7 +1,5 @@
 package me.friendly.api.minecraft.render.font;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -64,18 +62,16 @@ public class CustomFontRenderer extends CustomFont
 		x *= 2.0D;
 		y *= 2.0D;
 		GL11.glPushMatrix();
-		GlStateManager.scale(0.5D, 0.5D, 0.5D);
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(770, 771);
-		GlStateManager.color((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, alpha);
+		GL11.glScaled(0.5D, 0.5D, 0.5D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glColor4f((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, alpha);
 		int size = text.length();
-		GlStateManager.enableTexture2D();
-		GlStateManager.bindTexture(tex.getGlTextureId());
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.getGlTextureId());
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.texId);
 		for (int i = 0; i < size; i++)
 		{
 			char character = text.charAt(i);
-			//if (character == '§')
 			if (character == '\u00A7')
 			{
 				int colorIndex = 21;
@@ -92,24 +88,24 @@ public class CustomFontRenderer extends CustomFont
 					italic = false;
 					underline = false;
 					strikethrough = false;
-					GlStateManager.bindTexture(tex.getGlTextureId());
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.texId);
 					currentData = this.charData;
 					if (colorIndex < 0) colorIndex = 15;
 					if (shadow) colorIndex += 16;
 					int cCode = this.colorCode[colorIndex];
-					GlStateManager.color((cCode >> 16 & 0xFF) / 255.0F, (cCode >> 8 & 0xFF) / 255.0F, (cCode & 0xFF) / 255.0F, alpha);
+					GL11.glColor4f((cCode >> 16 & 0xFF) / 255.0F, (cCode >> 8 & 0xFF) / 255.0F, (cCode & 0xFF) / 255.0F, alpha);
 				}
 				else if (colorIndex == 17)
 				{
 					bold = true;
 					if (italic)
 					{
-						GlStateManager.bindTexture(texItalicBold.getGlTextureId());
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, texItalicBoldId);
 						currentData = this.boldItalicChars;
 					}
 					else
 					{
-						GlStateManager.bindTexture(texBold.getGlTextureId());
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, texBoldId);
 						currentData = this.boldChars;
 					}
 				}
@@ -120,12 +116,12 @@ public class CustomFontRenderer extends CustomFont
 					italic = true;
 					if (bold)
 					{
-						GlStateManager.bindTexture(texItalicBold.getGlTextureId());
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, texItalicBoldId);
 						currentData = this.boldItalicChars;
 					}
 					else
 					{
-						GlStateManager.bindTexture(texItalic.getGlTextureId());
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, texItalicId);
 						currentData = this.italicChars;
 					}
 				}
@@ -135,15 +131,15 @@ public class CustomFontRenderer extends CustomFont
 					italic = false;
 					underline = false;
 					strikethrough = false;
-					GlStateManager.color((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, alpha);
-					GlStateManager.bindTexture(tex.getGlTextureId());
+					GL11.glColor4f((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, alpha);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.texId);
 					currentData = this.charData;
 				}
 				i++;
 			}
 			else if (character < currentData.length)
 			{
-				GL11.glBegin(4);
+				GL11.glBegin(GL11.GL_TRIANGLES);
 				drawChar(currentData, character, (float) x, (float) y);
 				GL11.glEnd();
 				if (strikethrough) drawLine(x, y + currentData[character].height / 2f, x + currentData[character].width - 8.0D, y + currentData[character].height / 2f);
@@ -151,7 +147,7 @@ public class CustomFontRenderer extends CustomFont
 				x += currentData[character].width - 8 + this.charOffset;
 			}
 		}
-		GL11.glHint(3155, 4352);
+		GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
 		GL11.glPopMatrix();
 	}
 
@@ -167,7 +163,6 @@ public class CustomFontRenderer extends CustomFont
 		for (int i = 0; i < size; i++)
 		{
 			char character = text.charAt(i);
-			//if (character == '§') i++;
 			if (character == '\u00A7') i++;
 			else if (character < currentData.length) width += currentData[character].width - 8 + this.charOffset;
 		}
@@ -193,15 +188,15 @@ public class CustomFontRenderer extends CustomFont
 		setupBoldItalicIDs();
 	}
 
-	protected DynamicTexture texBold;
-	protected DynamicTexture texItalic;
-	protected DynamicTexture texItalicBold;
+	protected int texBoldId = -1;
+	protected int texItalicId = -1;
+	protected int texItalicBoldId = -1;
 
 	private void setupBoldItalicIDs()
 	{
-		texBold = setupTexture(this.font.deriveFont(Font.BOLD), this.antiAlias, this.fractionalMetrics, this.boldChars);
-		texItalic = setupTexture(this.font.deriveFont(Font.ITALIC), this.antiAlias, this.fractionalMetrics, this.italicChars);
-		texItalicBold = setupTexture(this.font.deriveFont(Font.BOLD | Font.ITALIC), this.antiAlias, this.fractionalMetrics, this.boldItalicChars);
+		texBoldId = setupTexture(this.font.deriveFont(Font.BOLD), this.antiAlias, this.fractionalMetrics, this.boldChars);
+		texItalicId = setupTexture(this.font.deriveFont(Font.ITALIC), this.antiAlias, this.fractionalMetrics, this.italicChars);
+		texItalicBoldId = setupTexture(this.font.deriveFont(Font.BOLD | Font.ITALIC), this.antiAlias, this.fractionalMetrics, this.boldItalicChars);
 	}
 
 	private void drawLine(double x, double y, double x1, double y1)

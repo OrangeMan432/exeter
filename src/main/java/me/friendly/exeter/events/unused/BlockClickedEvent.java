@@ -1,15 +1,15 @@
 package me.friendly.exeter.events.unused;
 
 import me.friendly.api.event.Event;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 
 public class BlockClickedEvent
 extends Event {
     private BlockPos blockPos;
-    private EnumFacing enumFacing;
+    private Direction enumFacing;
 
-    public BlockClickedEvent(BlockPos blockPos, EnumFacing enumFacing) {
+    public BlockClickedEvent(BlockPos blockPos, Direction enumFacing) {
         this.blockPos = blockPos;
         this.enumFacing = enumFacing;
     }
@@ -22,11 +22,11 @@ extends Event {
         this.blockPos = blockPos;
     }
 
-    public EnumFacing getEnumFacing() {
+    public Direction getEnumFacing() {
         return this.enumFacing;
     }
 
-    public void setEnumFacing(EnumFacing enumFacing) {
+    public void setEnumFacing(Direction enumFacing) {
         this.enumFacing = enumFacing;
     }
 }

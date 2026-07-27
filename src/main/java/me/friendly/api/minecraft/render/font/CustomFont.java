@@ -1,11 +1,11 @@
 package me.friendly.api.minecraft.render.font;
 
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 
 
 public class CustomFont
@@ -17,28 +17,42 @@ public class CustomFont
 	protected boolean fractionalMetrics;
 	protected int fontHeight = -1;
 	protected int charOffset = 0;
-	protected DynamicTexture tex;
+	protected int texId = -1;
 
 	public CustomFont(Font font, boolean antiAlias, boolean fractionalMetrics)
 	{
 		this.font = font;
 		this.antiAlias = antiAlias;
 		this.fractionalMetrics = fractionalMetrics;
-		tex = setupTexture(font, antiAlias, fractionalMetrics, this.charData);
+		texId = setupTexture(font, antiAlias, fractionalMetrics, this.charData);
 	}
 
-	protected DynamicTexture setupTexture(Font font, boolean antiAlias, boolean fractionalMetrics, CharData[] chars)
+	protected int setupTexture(Font font, boolean antiAlias, boolean fractionalMetrics, CharData[] chars)
 	{
 		BufferedImage img = generateFontImage(font, antiAlias, fractionalMetrics, chars);
-		try
-		{
-			return new DynamicTexture(img);
+		return uploadTexture(img);
+	}
+
+	private int uploadTexture(BufferedImage image) {
+		int[] pixels = new int[image.getWidth() * image.getHeight()];
+		image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
+		ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
+		for (int y = 0; y < image.getHeight(); y++) {
+			for (int x = 0; x < image.getWidth(); x++) {
+				int pixel = pixels[y * image.getWidth() + x];
+				buffer.put((byte) ((pixel >> 16) & 0xFF));
+				buffer.put((byte) ((pixel >> 8) & 0xFF));
+				buffer.put((byte) (pixel & 0xFF));
+				buffer.put((byte) ((pixel >> 24) & 0xFF));
+			}
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		return null;
+		buffer.flip();
+		int texId = GL11.glGenTextures();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texId);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+		return texId;
 	}
 
 	protected BufferedImage generateFontImage(Font font, boolean antiAlias, boolean fractionalMetrics, CharData[] chars)
@@ -134,7 +148,7 @@ public class CustomFont
 		if (this.antiAlias != antiAlias)
 		{
 			this.antiAlias = antiAlias;
-			tex = setupTexture(this.font, antiAlias, this.fractionalMetrics, this.charData);
+			texId = setupTexture(this.font, antiAlias, this.fractionalMetrics, this.charData);
 		}
 	}
 
@@ -148,7 +162,7 @@ public class CustomFont
 		if (this.fractionalMetrics != fractionalMetrics)
 		{
 			this.fractionalMetrics = fractionalMetrics;
-			tex = setupTexture(this.font, this.antiAlias, fractionalMetrics, this.charData);
+			texId = setupTexture(this.font, this.antiAlias, fractionalMetrics, this.charData);
 		}
 	}
 
@@ -160,7 +174,7 @@ public class CustomFont
 	public void setFont(Font font)
 	{
 		this.font = font;
-		tex = setupTexture(font, this.antiAlias, this.fractionalMetrics, this.charData);
+		texId = setupTexture(font, this.antiAlias, this.fractionalMetrics, this.charData);
 	}
 
 	protected static class CharData

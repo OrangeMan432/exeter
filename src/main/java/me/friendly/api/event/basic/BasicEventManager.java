@@ -40,7 +40,7 @@ implements EventManager {
     @Override
     public void dispatch(Event event) {
         this.listeners.forEach(listener -> {
-            if (this.filter(listener, event) && listener.getEvent() == event.getClass() && Minecraft.getMinecraft().player != null && Minecraft.getMinecraft().world != null) {
+            if (this.filter(listener, event) && listener.getEvent() == event.getClass() && Minecraft.getInstance().player != null && Minecraft.getInstance().level != null) {
                 listener.call(event);
             }
         });

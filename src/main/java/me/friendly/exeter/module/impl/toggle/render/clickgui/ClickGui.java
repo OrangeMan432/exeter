@@ -9,17 +9,19 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.client.input.MouseButtonEvent;
 
 public final class ClickGui
-extends GuiScreen {
+extends Screen {
     private static ClickGui clickGui;
 //    public final CustomFont guiFont = new CustomFont("Segoe UI", 18.0f);
     private final ArrayList<Panel> panels = new ArrayList();
 
     public ClickGui() {
+        super(Component.literal("ClickGui"));
         if (this.getPanels().isEmpty()) {
             this.load();
         }
@@ -32,8 +34,7 @@ extends GuiScreen {
     private void load() {
         this.panels.clear();
 
-        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        int screenWidth = sr.getScaledWidth();
+        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
 
         int totalPanels = ModuleType.values().length + 1;
         int panelWidth = 90;
@@ -72,18 +73,15 @@ extends GuiScreen {
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        GlStateManager.pushMatrix();
-        GlStateManager.enableBlend();
-        RenderMethods.drawGradientRect(0.0F, 0.0F, mc.displayWidth, mc.displayHeight, 536870912, -1879048192);
-        GlStateManager.disableBlend();
-        GlStateManager.popMatrix();
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        RenderMethods.guiGraphics = guiGraphics;
+        RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
         this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
     }
 
     // this will recenter the gui when the window size changes
     @Override
-    public void initGui() {
+    public void init() {
         this.load();
     }
 
@@ -94,17 +92,25 @@ extends GuiScreen {
 //    }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int clickedButton) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
+        int mouseX = (int) event.x();
+        int mouseY = (int) event.y();
+        int clickedButton = event.button();
         this.panels.forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
+        return super.mouseClicked(event, bool);
     }
 
     @Override
-    public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
+    public boolean mouseReleased(MouseButtonEvent event) {
+        int mouseX = (int) event.x();
+        int mouseY = (int) event.y();
+        int releaseButton = event.button();
         this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
+    public boolean isPauseScreen() {
         return false;
     }
 

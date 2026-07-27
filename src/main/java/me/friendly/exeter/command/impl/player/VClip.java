@@ -12,7 +12,7 @@ extends Command {
     @Override
     public String dispatch() {
         double blocks = Double.parseDouble(this.getArgument("blocks").getValue());
-//        this.minecraft.player.setBoundingBox(this.minecraft.player.getEntityBoundingBox().offset(0.0, blocks, 0.0));
+//        this.minecraft.player.setBoundingBox(this.minecraft.player.getBoundingBox().offset(0.0, blocks, 0.0));
         return String.format("Teleported %s &e%s&7 block(s).", blocks < 0.0 ? "down" : "up", blocks);
     }
 }

@@ -3,13 +3,14 @@ package me.friendly.exeter.module.impl.active.render;
 import me.friendly.api.event.Listener;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.events.RenderGameInfoEvent;
 import me.friendly.exeter.events.RenderGameOverlayEvent;
 import me.friendly.exeter.events.ViewmodelEvent;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.gui.ScaledResolution;
+import com.mojang.blaze3d.platform.Window;
 
 public final class NoRender extends Module {
     private final Property<Boolean> customBars = new Property<Boolean>(true, "CustomBars", "c", "custom", "cb");
@@ -39,7 +40,7 @@ public final class NoRender extends Module {
                     case ITEM: {
                         event.setRenderItems(items.getValue());
                         if (!(items.getValue()).booleanValue()) break;
-                        ((NoRender)NoRender.this).minecraft.world.removeEntity(event.getEntityItem());
+                        event.getEntityItem().discard();
                         break;
                     }
                     case PUMPKIN: {
@@ -52,22 +53,24 @@ public final class NoRender extends Module {
 
             @Override
             public void call(RenderGameInfoEvent event) {
-                ScaledResolution scaledResolution = event.getScaledResolution();
+                Window window = event.getWindow();
+                int scaledWidth = window.getGuiScaledWidth();
+                int scaledHeight = window.getGuiScaledHeight();
                 if ((customBars.getValue()).booleanValue()) {
                     int minusHealth = (int)((NoRender)NoRender.this).minecraft.player.getHealth();
-                    int minusFood = ((NoRender)NoRender.this).minecraft.player.getFoodStats().getFoodLevel();
+                    int minusFood = ((NoRender)NoRender.this).minecraft.player.getFoodData().getFoodLevel();
                     if (minusFood > 20) {
                         minusFood = 20;
                     }
                     if (minusHealth > 20) {
                         minusHealth = 20;
                     }
-                    RenderMethods.drawGradientBorderedRect(scaledResolution.getScaledWidth() / 2 - 91, scaledResolution.getScaledHeight() - 39, scaledResolution.getScaledWidth() / 2 - 10, scaledResolution.getScaledHeight() - 30, 1.0f, -587202560, -12303292, -14540254);
-                    RenderMethods.drawGradientBorderedRect(scaledResolution.getScaledWidth() / 2 - 91, scaledResolution.getScaledHeight() - 39, scaledResolution.getScaledWidth() / 2 - 90 + minusHealth * 4, scaledResolution.getScaledHeight() - 30, 1.0f, -587202560, -577175552, -582746112);
-                    ((NoRender)NoRender.this).minecraft.fontRenderer.drawStringWithShadow(String.format("%s", (int)((NoRender)NoRender.this).minecraft.player.getHealth()), scaledResolution.getScaledWidth() / 2 - 56, scaledResolution.getScaledHeight() - 38, -1);
-                    RenderMethods.drawGradientBorderedRect(scaledResolution.getScaledWidth() / 2 + 10, scaledResolution.getScaledHeight() - 39, scaledResolution.getScaledWidth() / 2 + 91, scaledResolution.getScaledHeight() - 30, 1.0f, -587202560, -12303292, -14540254);
-                    RenderMethods.drawGradientBorderedRect(scaledResolution.getScaledWidth() / 2 + 90 - minusFood * 4, scaledResolution.getScaledHeight() - 39, scaledResolution.getScaledWidth() / 2 + 91, scaledResolution.getScaledHeight() - 30, 1.0f, -587202560, -586565120, -586849536);
-                    ((NoRender)NoRender.this).minecraft.fontRenderer.drawStringWithShadow(String.format("%s", ((NoRender)NoRender.this).minecraft.player.getFoodStats().getFoodLevel()), scaledResolution.getScaledWidth() / 2 + 45, scaledResolution.getScaledHeight() - 38, -1);
+                    RenderMethods.drawGradientBorderedRect(scaledWidth / 2 - 91, scaledHeight - 39, scaledWidth / 2 - 10, scaledHeight - 30, 1.0f, -587202560, -12303292, -14540254);
+                    RenderMethods.drawGradientBorderedRect(scaledWidth / 2 - 91, scaledHeight - 39, scaledWidth / 2 - 90 + minusHealth * 4, scaledHeight - 30, 1.0f, -587202560, -577175552, -582746112);
+                    FontUtil.drawString(String.format("%s", (int)((NoRender)NoRender.this).minecraft.player.getHealth()), scaledWidth / 2 - 56, scaledHeight - 38, -1);
+                    RenderMethods.drawGradientBorderedRect(scaledWidth / 2 + 10, scaledHeight - 39, scaledWidth / 2 + 91, scaledHeight - 30, 1.0f, -587202560, -12303292, -14540254);
+                    RenderMethods.drawGradientBorderedRect(scaledWidth / 2 + 90 - minusFood * 4, scaledHeight - 39, scaledWidth / 2 + 91, scaledHeight - 30, 1.0f, -587202560, -586565120, -586849536);
+                    FontUtil.drawString(String.format("%s", ((NoRender)NoRender.this).minecraft.player.getFoodData().getFoodLevel()), scaledWidth / 2 + 45, scaledHeight - 38, -1);
                 }
             }
         });

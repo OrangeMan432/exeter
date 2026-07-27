@@ -5,17 +5,15 @@ import java.awt.Rectangle;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.phys.AABB;
 import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("redundant")
 public final class RenderMethods {
-    public static java.nio.FloatBuffer matModelView = GLAllocation.createDirectFloatBuffer(16);
-    public static java.nio.FloatBuffer matProjection = GLAllocation.createDirectFloatBuffer(16);
+    public static GuiGraphics guiGraphics;
+    public static java.nio.FloatBuffer matModelView = java.nio.FloatBuffer.allocate(16);
+    public static java.nio.FloatBuffer matProjection = java.nio.FloatBuffer.allocate(16);
 
     public static Color rainbow(long offset, float fade) {
         float hue = (float)(System.nanoTime() + offset) / 1.0E10f % 1.0f;
@@ -39,47 +37,15 @@ public final class RenderMethods {
     }
 
     public static void enableGL2D() {
-        GL11.glDisable((int)2929);
-        GL11.glEnable((int)3042);
-        GL11.glDisable((int)3553);
-        GL11.glBlendFunc((int)770, (int)771);
-        GL11.glDepthMask((boolean)true);
-        GL11.glEnable((int)2848);
-        GL11.glHint((int)3154, (int)4354);
-        GL11.glHint((int)3155, (int)4354);
     }
 
     public static void enableGL3D() {
-        GL11.glDisable((int)3008);
-        GL11.glEnable((int)3042);
-        GL11.glBlendFunc((int)770, (int)771);
-        GL11.glDisable((int)3553);
-        GL11.glDisable((int)2929);
-        GL11.glDepthMask((boolean)false);
-        GL11.glEnable((int)2884);
-        GL11.glEnable((int)2848);
-        GL11.glHint((int)3154, (int)4353);
-        GL11.glDisable((int)2896);
     }
 
     public static void disableGL3D() {
-        GL11.glEnable((int)2896);
-        GL11.glDisable((int)2848);
-        GL11.glEnable((int)3553);
-        GL11.glEnable((int)2929);
-        GL11.glDisable((int)3042);
-        GL11.glEnable((int)3008);
-        GL11.glDepthMask((boolean)true);
-        GL11.glCullFace((int)1029);
     }
 
     public static void disableGL2D() {
-        GL11.glEnable((int)3553);
-        GL11.glDisable((int)3042);
-        GL11.glEnable((int)2929);
-        GL11.glDisable((int)2848);
-        GL11.glHint((int)3154, (int)4352);
-        GL11.glHint((int)3155, (int)4352);
     }
 
     public static void drawTriangle(int x, int y, int type, int size, int color) {
@@ -151,7 +117,6 @@ public final class RenderMethods {
         GL11.glDisable((int)2929);
         GL11.glDepthMask((boolean)false);
         GL11.glEnable((int)2884);
-        Minecraft.getMinecraft().entityRenderer.enableLightmap();
         GL11.glEnable((int)2848);
         GL11.glHint((int)3154, (int)4354);
         GL11.glHint((int)3155, (int)4354);
@@ -184,10 +149,9 @@ public final class RenderMethods {
     }
 
     public static void drawRect(float x, float y, float x1, float y1, int color) {
-        RenderMethods.enableGL2D();
-        RenderMethods.glColor(color);
-        RenderMethods.drawRect(x, y, x1, y1);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            guiGraphics.fill((int)x, (int)y, (int)x1, (int)y1, color);
+        }
     }
 
     public static void drawBorderedRect(float x, float y, float x1, float y1, float width, int internalColor, int borderColor) {
@@ -215,43 +179,33 @@ public final class RenderMethods {
     }
 
     public static void drawBorderedRectReliant(float x, float y, float x1, float y1, float lineWidth, int inside, int border) {
-        RenderMethods.enableGL2D();
-        RenderMethods.drawRect(x, y, x1, y1, inside);
-        RenderMethods.glColor(border);
-        GL11.glEnable((int)3042);
-        GL11.glDisable((int)3553);
-        GL11.glBlendFunc((int)770, (int)771);
-        GL11.glLineWidth((float)lineWidth);
-        GL11.glBegin((int)3);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glVertex2f((float)x, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glEnd();
-        GL11.glEnable((int)3553);
-        GL11.glDisable((int)3042);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            int lw = Math.max(1, (int)lineWidth);
+            int ix = (int)x;
+            int iy = (int)y;
+            int ix1 = (int)x1;
+            int iy1 = (int)y1;
+            guiGraphics.fill(ix + lw, iy + lw, ix1 - lw, iy1 - lw, inside);
+            guiGraphics.fill(ix, iy, ix1, iy + lw, border);
+            guiGraphics.fill(ix, iy1 - lw, ix1, iy1, border);
+            guiGraphics.fill(ix, iy + lw, ix + lw, iy1 - lw, border);
+            guiGraphics.fill(ix1 - lw, iy + lw, ix1, iy1 - lw, border);
+        }
     }
 
     public static void drawGradientBorderedRectReliant(float x, float y, float x1, float y1, float lineWidth, int border, int bottom, int top) {
-        RenderMethods.enableGL2D();
-        RenderMethods.drawGradientRect(x, y, x1, y1, top, bottom);
-        RenderMethods.glColor(border);
-        GL11.glEnable((int)3042);
-        GL11.glDisable((int)3553);
-        GL11.glBlendFunc((int)770, (int)771);
-        GL11.glLineWidth((float)lineWidth);
-        GL11.glBegin((int)3);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glVertex2f((float)x, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glEnd();
-        GL11.glEnable((int)3553);
-        GL11.glDisable((int)3042);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            int lw = Math.max(1, (int)lineWidth);
+            int ix = (int)x;
+            int iy = (int)y;
+            int ix1 = (int)x1;
+            int iy1 = (int)y1;
+            guiGraphics.fill(ix, iy, ix1, iy + lw, border);
+            guiGraphics.fill(ix, iy1 - lw, ix1, iy1, border);
+            guiGraphics.fill(ix, iy + lw, ix + lw, iy1 - lw, border);
+            guiGraphics.fill(ix1 - lw, iy + lw, ix1, iy1 - lw, border);
+            guiGraphics.fillGradient(ix + lw, iy + lw, ix1 - lw, iy1 - lw, top, bottom);
+        }
     }
 
     public static void drawRoundedRect(float x, float y, float x1, float y1, int borderC, int insideC) {
@@ -287,18 +241,9 @@ public final class RenderMethods {
     }
 
     public static void drawGradientRect(float x, float y, float x1, float y1, int topColor, int bottomColor) {
-        RenderMethods.enableGL2D();
-        GL11.glShadeModel((int)7425);
-        GL11.glBegin((int)7);
-        RenderMethods.glColor(topColor);
-        GL11.glVertex2f((float)x, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y1);
-        RenderMethods.glColor(bottomColor);
-        GL11.glVertex2f((float)x1, (float)y);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glEnd();
-        GL11.glShadeModel((int)7424);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            guiGraphics.fillGradient((int)x, (int)y, (int)x1, (int)y1, topColor, bottomColor);
+        }
     }
 
     public static void drawGradientHRect(float x, float y, float x1, float y1, int topColor, int bottomColor) {
@@ -317,45 +262,24 @@ public final class RenderMethods {
     }
 
     public static void drawGradientRect(double x, double y, double x2, double y2, int col1, int col2) {
-        GL11.glEnable((int)3042);
-        GL11.glDisable((int)3553);
-        GL11.glBlendFunc((int)770, (int)771);
-        GL11.glEnable((int)2848);
-        GL11.glShadeModel((int)7425);
-        GL11.glPushMatrix();
-        GL11.glBegin((int)7);
-        RenderMethods.glColor(col1);
-        GL11.glVertex2d((double)x2, (double)y);
-        GL11.glVertex2d((double)x, (double)y);
-        RenderMethods.glColor(col2);
-        GL11.glVertex2d((double)x, (double)y2);
-        GL11.glVertex2d((double)x2, (double)y2);
-        GL11.glEnd();
-        GL11.glPopMatrix();
-        GL11.glEnable((int)3553);
-        GL11.glDisable((int)3042);
-        GL11.glDisable((int)2848);
-        GL11.glShadeModel((int)7424);
+        if (guiGraphics != null) {
+            guiGraphics.fillGradient((int)x, (int)y, (int)x2, (int)y2, col1, col2);
+        }
     }
 
     public static void drawGradientBorderedRect(double x, double y, double x2, double y2, float l1, int col1, int col2, int col3) {
-        RenderMethods.enableGL2D();
-        GL11.glPushMatrix();
-        RenderMethods.glColor(col1);
-        GL11.glLineWidth((float)1.0f);
-        GL11.glBegin((int)1);
-        GL11.glVertex2d((double)x, (double)y);
-        GL11.glVertex2d((double)x, (double)y2);
-        GL11.glVertex2d((double)x2, (double)y2);
-        GL11.glVertex2d((double)x2, (double)y);
-        GL11.glVertex2d((double)x, (double)y);
-        GL11.glVertex2d((double)x2, (double)y);
-        GL11.glVertex2d((double)x, (double)y2);
-        GL11.glVertex2d((double)x2, (double)y2);
-        GL11.glEnd();
-        GL11.glPopMatrix();
-        RenderMethods.drawGradientRect(x, y, x2, y2, col2, col3);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            int lw = Math.max(1, (int)l1);
+            int ix = (int)x;
+            int iy = (int)y;
+            int ix1 = (int)x2;
+            int iy1 = (int)y2;
+            guiGraphics.fill(ix, iy, ix1, iy + lw, col1);
+            guiGraphics.fill(ix, iy1 - lw, ix1, iy1, col1);
+            guiGraphics.fill(ix, iy + lw, ix + lw, iy1 - lw, col1);
+            guiGraphics.fill(ix1 - lw, iy + lw, ix1, iy1 - lw, col1);
+            guiGraphics.fillGradient(ix + lw, iy + lw, ix1 - lw, iy1 - lw, col2, col3);
+        }
     }
 
     public static void drawStrip(int x, int y, float width, double angle, float points, float radius, int color) {
@@ -428,19 +352,13 @@ public final class RenderMethods {
     }
 
     public static void drawRect(float x, float y, float x1, float y1, float r, float g, float b, float a) {
-        RenderMethods.enableGL2D();
-        GL11.glColor4f((float)r, (float)g, (float)b, (float)a);
-        RenderMethods.drawRect(x, y, x1, y1);
-        RenderMethods.disableGL2D();
+        if (guiGraphics != null) {
+            int color = ((int)(a * 255) & 0xFF) << 24 | ((int)(r * 255) & 0xFF) << 16 | ((int)(g * 255) & 0xFF) << 8 | ((int)(b * 255) & 0xFF);
+            guiGraphics.fill((int)x, (int)y, (int)x1, (int)y1, color);
+        }
     }
 
     public static void drawRect(float x, float y, float x1, float y1) {
-        GL11.glBegin((int)7);
-        GL11.glVertex2f((float)x, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y1);
-        GL11.glVertex2f((float)x1, (float)y);
-        GL11.glVertex2f((float)x, (float)y);
-        GL11.glEnd();
     }
 
 //    public static void rectangle(double left, double top, double right, double bottom, int color) {
@@ -461,18 +379,18 @@ public final class RenderMethods {
 //        float blue = (float)(color & 0xFF) / 255.0f;
 //        Tessellator var9 = Tessellator.getInstance();
 //        WorldRenderer var10 = var9.getWorldRenderer();
-//        GlStateManager.enableBlend();
-//        GlStateManager.disableLighting();
-//        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-//        GlStateManager.color(red, green, blue, alpha);
+//        RenderSystem.enableBlend();
+//        RenderSystem.disableLighting();
+//        RenderSystem.tryBlendFuncSeparate(770, 771, 1, 0);
+//        RenderSystem.color(red, green, blue, alpha);
 //        var10.startDrawingQuads();
 //        var10.addVertex(left, bottom, 0.0);
 //        var10.addVertex(right, bottom, 0.0);
 //        var10.addVertex(right, top, 0.0);
 //        var10.addVertex(left, top, 0.0);
 //        var9.draw();
-//        GlStateManager.enableLighting();
-//        GlStateManager.disableBlend();
+//        RenderSystem.enableLighting();
+//        RenderSystem.disableBlend();
 //    }
 
     public static void drawCircle(float cx, float cy, float r, int num_segments, int c) {
@@ -525,25 +443,15 @@ public final class RenderMethods {
     }
 
     public static void glColor(Color color) {
-        GL11.glColor4f((float)((float)color.getRed() / 255.0f), (float)((float)color.getGreen() / 255.0f), (float)((float)color.getBlue() / 255.0f), (float)((float)color.getAlpha() / 255.0f));
     }
 
     public static void glColor(int hex) {
-        float alpha = (float)(hex >> 24 & 0xFF) / 255.0f;
-        float red = (float)(hex >> 16 & 0xFF) / 255.0f;
-        float green = (float)(hex >> 8 & 0xFF) / 255.0f;
-        float blue = (float)(hex & 0xFF) / 255.0f;
-        GL11.glColor4f((float)red, (float)green, (float)blue, (float)alpha);
     }
 
     public static void glColor(float alpha, int redRGB, int greenRGB, int blueRGB) {
-        float red = 0.003921569f * (float)redRGB;
-        float green = 0.003921569f * (float)greenRGB;
-        float blue = 0.003921569f * (float)blueRGB;
-        GL11.glColor4f((float)red, (float)green, (float)blue, (float)alpha);
     }
 
-    public static void drawOutlinedBox(AxisAlignedBB box) {
+    public static void drawOutlinedBox(AABB box) {
         if (box == null) {
             return;
         }
@@ -573,7 +481,7 @@ public final class RenderMethods {
         GL11.glEnd();
     }
 
-    public static void renderCrosses(AxisAlignedBB box) {
+    public static void renderCrosses(AABB box) {
         GL11.glBegin((int)1);
         GL11.glVertex3d((double)box.maxX, (double)box.maxY, (double)box.maxZ);
         GL11.glVertex3d((double)box.maxX, (double)box.minY, (double)box.minZ);
@@ -590,7 +498,7 @@ public final class RenderMethods {
         GL11.glEnd();
     }
 
-    public static void drawBox(AxisAlignedBB box) {
+    public static void drawBox(AABB box) {
         if (box == null) {
             return;
         }
@@ -668,10 +576,5 @@ public final class RenderMethods {
         GL11.glEnd();
     }
 
-    // Start paste from future here
-
-    public static void drawModalRect(int var0, int var1, float var2, float var3, int var4, int var5, int var6, int var7, float var8, float var9) {
-        Gui.drawScaledCustomSizeModalRect(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9);
-    }
 }
 

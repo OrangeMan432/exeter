@@ -8,8 +8,8 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.EnumProperty;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.util.ResourceLocation;
+//import net.minecraft.client.resources.sounds.PositionedSoundRecord;
+//import net.minecraft.resources.ResourceLocation;
 
 public class EnumButton
 extends Button {
@@ -32,7 +32,7 @@ extends Button {
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (this.isHovering(mouseX, mouseY)) {
-//            Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
+//            Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
             if (mouseButton == 0) {
                 this.property.increment();
             } else if (mouseButton == 1) {
@@ -43,7 +43,7 @@ extends Button {
 
     @Override
     public int getHeight() {
-        return 14;
+        return 15;
     }
 
     @Override

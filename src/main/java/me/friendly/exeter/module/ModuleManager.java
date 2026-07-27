@@ -12,6 +12,7 @@ import me.friendly.api.interfaces.Toggleable;
 import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
+import org.lwjgl.glfw.GLFW;
 import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
@@ -42,7 +43,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new NoRender());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
-        Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(54);
+        Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         new Config("module_configurations.json"){
 

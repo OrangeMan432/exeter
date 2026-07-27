@@ -3,8 +3,8 @@ package me.friendly.exeter.events;
 import me.friendly.api.event.Stage;
 import me.friendly.api.event.StageEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 
 /**
  * Fired at the start of EntityPlayerSP.onUpdateWalkingPlayer
@@ -122,7 +122,7 @@ public class MotionUpdateEvent extends StageEvent
     }
 
     /**
-     * Fired in {@link EntityPlayerSP#onUpdate()}, when the player
+     * Fired in {@link LocalPlayer#onUpdate()}, when the player
      * is riding. X, Y, and Z can be set but it won't have any effect.
      * You can however retrieve the ridden Entity with
      * {@link Riding#getEntity()} and set its x, y, and z.
@@ -170,7 +170,7 @@ public class MotionUpdateEvent extends StageEvent
 
         public Entity getEntity()
         {
-            return Minecraft.getMinecraft().player.getLowestRidingEntity();
+            return Minecraft.getInstance().player.getRootVehicle();
         }
 
         public float getMoveStrafing()

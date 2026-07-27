@@ -1,12 +1,12 @@
 package me.friendly.exeter.events;
 
 import me.friendly.api.event.Event;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.entity.item.EntityItem;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class RenderGameOverlayEvent extends Event {
-    private ScaledResolution scaledResolution;
-    private EntityItem entityItem;
+    private Window window;
+    private ItemEntity itemEntity;
     private final Type type;
     private boolean renderPumpkin = false;
     private boolean renderItems = false;
@@ -17,26 +17,26 @@ public class RenderGameOverlayEvent extends Event {
         this.type = type;
     }
 
-    public RenderGameOverlayEvent(EntityItem entityItem) {
+    public RenderGameOverlayEvent(ItemEntity itemEntity) {
         this.type = Type.ITEM;
-        this.entityItem = entityItem;
+        this.itemEntity = itemEntity;
     }
 
-    public RenderGameOverlayEvent(ScaledResolution scaledResolution) {
+    public RenderGameOverlayEvent(Window window) {
         this.type = Type.IN_GAME;
-        this.scaledResolution = scaledResolution;
+        this.window = window;
     }
 
     public Type getType() {
         return this.type;
     }
 
-    public EntityItem getEntityItem() {
-        return this.entityItem;
+    public ItemEntity getEntityItem() {
+        return this.itemEntity;
     }
 
-    public ScaledResolution getScaledResolution() {
-        return this.scaledResolution;
+    public Window getWindow() {
+        return this.window;
     }
 
     public boolean isRenderFire() {

@@ -14,8 +14,8 @@ extends Event {
         this.motionX = motionX;
         this.motionY = motionY;
         this.motionZ = motionZ;
-        if (Minecraft.getMinecraft().player != null) {
-            this.safe = Minecraft.getMinecraft().player.isSneaking();
+        if (Minecraft.getInstance().player != null) {
+            this.safe = Minecraft.getInstance().player.isCrouching();
         }
     }
 

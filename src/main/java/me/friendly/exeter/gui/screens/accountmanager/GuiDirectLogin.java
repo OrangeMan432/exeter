@@ -2,11 +2,11 @@
 //
 //import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
 //import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiButton;
-//import net.minecraft.client.gui.GuiScreen;
-//import net.minecraft.client.gui.GuiTextField;
+//import net.minecraft.client.gui.GuiGraphicsButton;
+//import net.minecraft.client.gui.GuiGraphicsScreen;
+//import net.minecraft.client.gui.GuiGraphicsTextField;
 //import net.minecraft.util.Session;
-//import org.lwjgl.input.Keyboard;
+//import org.lwjgl.glfw.GLFW;
 //
 //public class GuiDirectLogin
 //extends GuiScreen {
@@ -14,7 +14,7 @@
 //    private GuiTextField usernameTextField;
 //    private GuiPasswordField passwordTextField;
 //    private String error;
-//    private Minecraft minecraft = Minecraft.getMinecraft();
+//    private Minecraft minecraft = Minecraft.getInstance();
 //
 //    public GuiDirectLogin(GuiScreen guiScreen) {
 //        this.parentScreen = guiScreen;
@@ -43,7 +43,7 @@
 //                String usernameTextFieldText = this.usernameTextField.getText();
 //                String passwordTextFieldText = this.passwordTextField.getText();
 //                try {
-//                    String result = Minecraft.getMinecraft().processLogin(usernameTextFieldText, passwordTextFieldText).trim();
+//                    String result = Minecraft.getInstance().processLogin(usernameTextFieldText, passwordTextFieldText).trim();
 //                    if (result == null || !result.contains(":")) {
 //                        this.error = result;
 //                        return;

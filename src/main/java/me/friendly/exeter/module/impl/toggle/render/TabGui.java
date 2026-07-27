@@ -10,7 +10,7 @@ import me.friendly.exeter.module.impl.active.render.Hud;
 import me.friendly.exeter.module.impl.toggle.render.tabgui.GuiTabHandler;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.glfw.GLFW;
 
 public final class TabGui
 extends ToggleableModule {
@@ -20,23 +20,17 @@ extends ToggleableModule {
 
     public TabGui() {
         super("TabGui", new String[]{"tabgui", "tg"}, ModuleType.RENDER);
+        this.guiTabHandler = new GuiTabHandler();
         this.listeners.add(new Listener<RenderGameOverlayEvent>("tab_gui_render_game_overlay_listener"){
 
             @Override
             public void call(RenderGameOverlayEvent event) {
                 Hud hud = (Hud)Exeter.getInstance().getModuleManager().getModuleByAlias("textgui");
                 Property watermark = hud.getPropertyByAlias("Watermark");
-                if (TabGui.this.guiTabHandler == null) {
-                    TabGui.this.guiTabHandler = new GuiTabHandler();
-                }
-                if (((TabGui)TabGui.this).minecraft.gameSettings.showDebugInfo) {
+                if (((TabGui)TabGui.this).minecraft.gui.getDebugOverlay().showDebugScreen()) {
                     return;
                 }
-                GlStateManager.pushMatrix();
-                GlStateManager.enableBlend();
                 TabGui.this.guiTabHandler.drawGui(3, (Boolean)watermark.getValue() != false ? 13 : 3);
-                GlStateManager.disableBlend();
-                GlStateManager.popMatrix();
             }
         });
         this.listeners.add(new Listener<InputEvent>("tab_gui_input_listener"){
@@ -44,8 +38,9 @@ extends ToggleableModule {
             @Override
             public void call(InputEvent event) {
                 if (event.getType() == InputEvent.Type.KEYBOARD_KEY_PRESS) {
+                    TabGui.this.guiTabHandler.ensureTabsPopulated();
                     switch (event.getKey()) {
-                        case 200: {
+                        case GLFW.GLFW_KEY_UP: {
                             if (!((TabGui)TabGui.this).guiTabHandler.visible) break;
                             if (((TabGui)TabGui.this).guiTabHandler.mainMenu) {
                                 --((TabGui)TabGui.this).guiTabHandler.selectedTab;
@@ -63,7 +58,7 @@ extends ToggleableModule {
                             ((TabGui)TabGui.this).guiTabHandler.transition = 11;
                             break;
                         }
-                        case 208: {
+                        case GLFW.GLFW_KEY_DOWN: {
                             if (!((TabGui)TabGui.this).guiTabHandler.visible) break;
                             if (((TabGui)TabGui.this).guiTabHandler.mainMenu) {
                                 ++((TabGui)TabGui.this).guiTabHandler.selectedTab;
@@ -81,12 +76,12 @@ extends ToggleableModule {
                             ((TabGui)TabGui.this).guiTabHandler.transition = -11;
                             break;
                         }
-                        case 203: {
+                        case GLFW.GLFW_KEY_LEFT: {
                             if (((TabGui)TabGui.this).guiTabHandler.mainMenu) break;
                             ((TabGui)TabGui.this).guiTabHandler.mainMenu = true;
                             break;
                         }
-                        case 205: {
+                        case GLFW.GLFW_KEY_RIGHT: {
                             if (((TabGui)TabGui.this).guiTabHandler.mainMenu) {
                                 ((TabGui)TabGui.this).guiTabHandler.mainMenu = false;
                                 ((TabGui)TabGui.this).guiTabHandler.selectedItem = 0;
@@ -100,7 +95,7 @@ extends ToggleableModule {
                             ((TabGui)TabGui.this).guiTabHandler.tabs.get(((TabGui)TabGui.this).guiTabHandler.selectedTab).getMods().get(((TabGui)TabGui.this).guiTabHandler.selectedItem).getToggleableModule().toggle();
                             break;
                         }
-                        case 28: {
+                        case GLFW.GLFW_KEY_ENTER: {
                             if (((TabGui)TabGui.this).guiTabHandler.mainMenu || !((TabGui)TabGui.this).guiTabHandler.visible) break;
                             ((TabGui)TabGui.this).guiTabHandler.tabs.get(((TabGui)TabGui.this).guiTabHandler.selectedTab).getMods().get(((TabGui)TabGui.this).guiTabHandler.selectedItem).getToggleableModule().toggle();
                         }

@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 
 public abstract class ListManager<T>
 extends Manager<T> {
-    protected static final Minecraft mc = Minecraft.getMinecraft();
+    protected static final Minecraft mc = Minecraft.getInstance();
     private List<T> list;
 
     public ListManager(List<T> list) {

@@ -11,9 +11,7 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.Num
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ModuleButton
 extends Button {
@@ -62,15 +60,7 @@ extends Button {
 
             // add gear, and animation here
 
-            GlStateManager.pushMatrix();
-            GlStateManager.enableBlend();
-//            RenderMethods.glColor(new Color(0.0F, 0.0F, 100.0F, 1.0F));
-            Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation("textures/exeter/gear.png"));
-            GlStateManager.translate(getX() + getWidth() - 6.7F, getY() + 7.7F - 0.3F, 0.0F);
-            GlStateManager.rotate(calculateRotation((float)this.progress), 0.0F, 0.0F, 1.0F);
-            RenderMethods.drawModalRect(-5, -5, 0.0F, 0.0F, 10, 10, 10, 10, 10.0F, 10.0F);
-            GlStateManager.disableBlend();
-            GlStateManager.popMatrix();
+            RenderMethods.guiGraphics.blit(new Identifier("minecraft", "textures/exeter/gear"), (int)getX() + getWidth() - 12, (int)getY() + 3, 10, 10, 0.0f, 0.0f, 10, 10);
 
             if (this.subOpen) {
                 float height = 1.0f;
@@ -91,7 +81,7 @@ extends Button {
         if (!this.items.isEmpty()) {
             if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
                 this.subOpen = !this.subOpen;
-//                Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
+//                Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
             }
             if (this.subOpen) {
                 for (Item item : items) {
@@ -104,13 +94,13 @@ extends Button {
     @Override
     public int getHeight() {
         if (this.subOpen) {
-            int height = 14;
+            int height = 15;
             for (Item item : items) {
                 height += item.getHeight() + 1;
             }
             return height + 2;
         }
-        return 14;
+        return 15;
     }
 
     @Override

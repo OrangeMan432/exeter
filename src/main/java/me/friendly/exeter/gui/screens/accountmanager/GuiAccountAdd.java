@@ -7,10 +7,10 @@
 //import me.friendly.exeter.gui.screens.accountmanager.Account;
 //import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
 //import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
-//import net.minecraft.client.gui.GuiButton;
-//import net.minecraft.client.gui.GuiScreen;
-//import net.minecraft.client.gui.GuiTextField;
-//import org.lwjgl.input.Keyboard;
+//import net.minecraft.client.gui.GuiGraphicsButton;
+//import net.minecraft.client.gui.GuiGraphicsScreen;
+//import net.minecraft.client.gui.GuiGraphicsTextField;
+//import org.lwjgl.glfw.GLFW;
 //
 //public class GuiAccountAdd
 //extends GuiScreen {

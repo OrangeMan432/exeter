@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 public abstract class Command {
     private final String[] aliases;
     private final Argument[] arguments;
-    protected Minecraft minecraft = Minecraft.getMinecraft();
+    protected Minecraft minecraft = Minecraft.getInstance();
 
     public Command(String[] aliases, Argument ... arguments) {
         this.aliases = aliases;

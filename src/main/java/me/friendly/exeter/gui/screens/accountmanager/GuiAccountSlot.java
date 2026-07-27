@@ -5,7 +5,7 @@
 //import me.friendly.exeter.gui.screens.accountmanager.AccountException;
 //import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
 //import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiSlot;
+//import net.minecraft.client.gui.GuiGraphicsSlot;
 //
 //public class GuiAccountSlot
 //extends GuiSlot {
@@ -13,7 +13,7 @@
 //    int selected;
 //
 //    public GuiAccountSlot(GuiAccountScreen aList) {
-//        super(Minecraft.getMinecraft(), aList.width, aList.height, 32, aList.height - 60, 27);
+//        super(Minecraft.getInstance(), aList.width, aList.height, 32, aList.height - 60, 27);
 //        this.guiAccountScreen = aList;
 //        this.selected = 0;
 //    }
@@ -34,7 +34,7 @@
 //        if (isDoubleClick) {
 //            Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(slotIndex);
 //            try {
-//                Minecraft.getMinecraft().processLogin(account.getLabel(), account.getPassword());
+//                Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
 //            }
 //            catch (AccountException exception) {
 //                exception.printStackTrace();

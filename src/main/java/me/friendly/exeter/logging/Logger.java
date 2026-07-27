@@ -1,9 +1,9 @@
 package me.friendly.exeter.logging;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.ChatFormatting;
 
 public final class Logger {
     /** Logger instance */
@@ -26,7 +26,7 @@ public final class Logger {
      * @param message to be printed
      */
     public void printToChat(String message) {
-        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(String.format("§c[%s] §7%s", "Exeter", message.replace("&", "§"))).setStyle(new Style().setColor(TextFormatting.GRAY)));
+        Minecraft.getInstance().player.displayClientMessage(Component.literal(String.format("§c[%s] §7%s", "Exeter", message.replace("&", "§"))).setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)), false);
     }
 
     public static Logger getLogger() {

@@ -6,8 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
       "MixinNetworkManager",
-      "MixinMinecraft",
-      "MixinGuiSubtitleOverlay",
-      "MixinGuiIngame"
+      "MixinGuiIngame",
+      "MixinKeyboardHandler"
   ]
 }

@@ -17,7 +17,7 @@ extends Command {
         switch (type = this.getArgument("ip|coords").getValue()) {
             case "ip": 
             case "i": {
-                String address = minecraft.getCurrentServerData().serverIP;
+                String address = minecraft.getCurrentServer().ip;
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(address), null);
                 break;
             }
@@ -27,7 +27,7 @@ extends Command {
             case "coordinate": 
             case "c": {
 //                String coords = String.format("X: %s, Y: %s, Z: %s", (int)minecraft.player.posX, (int)this.minecraft.player.posY, (int)this.minecraft.player.posZ);
-                String coords = String.format("X: %s, Y: %s, Z: %s", minecraft.player.posX, minecraft.player.posY, minecraft.player.posZ);
+                String coords = String.format("X: %s, Y: %s, Z: %s", minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(coords), null);
                 break;
             }

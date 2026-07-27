@@ -12,7 +12,7 @@ extends ToggleableModule {
     @Override
     protected void onEnable() {
         super.onEnable();
-        this.minecraft.displayGuiScreen(me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
+        this.minecraft.setScreen(me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
         this.setRunning(false);
     }
 }

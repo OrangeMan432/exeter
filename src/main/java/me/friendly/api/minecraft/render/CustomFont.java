@@ -9,14 +9,11 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import com.mojang.blaze3d.platform.NativeImage;
 import org.lwjgl.opengl.GL11;
 
 public class CustomFont {
@@ -30,8 +27,7 @@ public class CustomFont {
     private float[] yPos;
     private BufferedImage bufferedImage;
     private float extraSpacing = 0.0f;
-    private DynamicTexture dynamicTexture;
-    private ResourceLocation resourceLocation;
+    private int glTextureId = -1;
     private final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OG]");
     private final Pattern patternUnsupported = Pattern.compile("(?i)\\u00A7[K-O]");
 
@@ -85,8 +81,7 @@ public class CustomFont {
             x = 5.0f;
             y += (float)(this.theMetrics.getMaxAscent() + this.theMetrics.getMaxDescent()) + this.fontSize / 2.0f;
         }
-        this.dynamicTexture = new DynamicTexture(this.bufferedImage);
-        this.resourceLocation = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("font" + font.toString() + size, this.dynamicTexture);
+        this.glTextureId = uploadTexture(this.bufferedImage);
     }
 
     public final void drawString(String text, float x, float y, FontType fontType, int color, int color2) {
@@ -146,13 +141,13 @@ public class CustomFont {
 
     public final void drawString(String text, float x, float y, FontType fontType, int color) {
         this.drawString(text, x, y, fontType, color, -1157627904);
-        //Minecraft.getMinecraft().fontRenderer.drawString(text, x, y, color, false);
+        //Minecraft.getInstance().fontRenderer.drawString(text, x, y, color, false);
     }
 
     private final void drawer(String text, float x, float y, int color) {
         y *= 2.0f;
         GL11.glEnable((int)3553);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(this.resourceLocation);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
         float alpha = (float)(color >> 24 & 0xFF) / 255.0f;
         float red = (float)(color >> 16 & 0xFF) / 255.0f;
         float green = (float)(color >> 8 & 0xFF) / 255.0f;
@@ -170,7 +165,7 @@ public class CustomFont {
                 if ((colorCode = "0123456789abcdefklmnorg".indexOf(oneMore)) < 16) {
                     try {
                         int newColor = 0xffffff;
-//                        int newColor = Minecraft.getMinecraft().fontRenderer.colorCode[colorCode];
+//                        int newColor = Minecraft.getInstance().fontRenderer.colorCode[colorCode];
                         GL11.glColor4f((float)((float)(newColor >> 16) / 255.0f), (float)((float)(newColor >> 8 & 0xFF) / 255.0f), (float)((float)(newColor & 0xFF) / 255.0f), (float)alpha);
                     }
                     catch (Exception exception) {
@@ -315,20 +310,38 @@ public class CustomFont {
 
     private final void drawTexturedModalRect(float x, float y, float u, float v, float width, float height) {
         float scale = 0.0039063f;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder renderer = tessellator.getBuffer();
-//        renderer.startDrawingQuads();
-//        renderer.pos(x + 0.0f, y + height, 0.0, (u + 0.0f) * scale, (v + height) * scale);
-//        renderer.addVertexWithUV(x + width, y + height, 0.0, (u + width) * scale, (v + height) * scale);
-//        renderer.addVertexWithUV(x + width, y + 0.0f, 0.0, (u + width) * scale, (v + 0.0f) * scale);
-//        renderer.addVertexWithUV(x + 0.0f, y + 0.0f, 0.0, (u + 0.0f) * scale, (v + 0.0f) * scale);
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f((u + 0.0f) * scale, (v + height) * scale);
+        GL11.glVertex2f(x + 0.0f, y + height);
+        GL11.glTexCoord2f((u + width) * scale, (v + height) * scale);
+        GL11.glVertex2f(x + width, y + height);
+        GL11.glTexCoord2f((u + width) * scale, (v + 0.0f) * scale);
+        GL11.glVertex2f(x + width, y + 0.0f);
+        GL11.glTexCoord2f((u + 0.0f) * scale, (v + 0.0f) * scale);
+        GL11.glVertex2f(x + 0.0f, y + 0.0f);
+        GL11.glEnd();
+    }
 
-        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-        renderer.pos(x + 0.0f, y + height, 0.0);//, (u + 0.0f) * scale, (v + height) * scale);
-        renderer.pos(x + width, y + height, 0.0);//, (u + width) * scale, (v + height) * scale);
-        renderer.pos(x + width, y + 0.0f, 0.0);//, (u + width) * scale, (v + 0.0f) * scale);
-        renderer.pos(x + 0.0f, y + 0.0f, 0.0);//, (u + 0.0f) * scale, (v + 0.0f) * scale);
-        tessellator.draw();
+    private int uploadTexture(java.awt.image.BufferedImage image) {
+        int[] pixels = new int[image.getWidth() * image.getHeight()];
+        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
+        ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int pixel = pixels[y * image.getWidth() + x];
+                buffer.put((byte) ((pixel >> 16) & 0xFF));
+                buffer.put((byte) ((pixel >> 8) & 0xFF));
+                buffer.put((byte) (pixel & 0xFF));
+                buffer.put((byte) ((pixel >> 24) & 0xFF));
+            }
+        }
+        buffer.flip();
+        int texId = GL11.glGenTextures();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texId);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+        return texId;
     }
 
     public final String stripControlCodes(String s) {

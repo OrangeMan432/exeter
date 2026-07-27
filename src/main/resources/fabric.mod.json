@@ -12,11 +12,8 @@
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "me.friendly.exeter.mixin.loader.MixinLoader"
-    ],
     "main": [
-      "me.friendly.exeter.mixin.loader.MixinLoader"
+      "me.friendly.exeter.ExeterInitializer"
     ]
   },
   "mixins": [

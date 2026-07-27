@@ -1,8 +1,8 @@
 package me.friendly.exeter.events.unused;
 
 import me.friendly.api.event.Event;
-import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
 
 public class BlockRendererEvent
 extends Event {

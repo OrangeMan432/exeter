@@ -1,10 +1,11 @@
 package me.friendly.exeter.mixin;
 
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * @author Gopro336
  */
-@Mixin(value = NetworkManager.class)
+@Mixin(value = Connection.class)
 public class MixinNetworkManager {
 
-    @Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
-    public void onPacketSend(Packet<?> packet, CallbackInfo info) {
+    @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
+    public void onPacketSend(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
         PacketEvent packetSendEvent = new PacketEvent(packet);
         Exeter.getInstance().getEventManager()
                 .dispatch(packetSendEvent);

@@ -1,38 +1,27 @@
 package me.friendly.exeter.mixin;
 
+import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.logging.Logger;
-import me.friendly.exeter.module.Module;
-import me.friendly.exeter.module.impl.active.render.NoRender;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
+import me.friendly.exeter.events.RenderGameOverlayEvent;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Gui;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-/**
- * This class is not present in the original
- * Exeter 1.8 client. It was added as part
- * of the Fabric 1.21.11 port
- *
- * @author OrangeMan432
- */
-@Mixin(InGameHud.class)
+@Mixin(Gui.class)
 public abstract class MixinGuiIngame {
-    private static final Module norender = new NoRender();
 
     @Inject(
-        method = "renderPumpkinOverlay",
-        at = @At("HEAD"),
-        cancellable = true)
-    protected void renderPumpkinOverlayHook(ScaledResolution scaledResolution, CallbackInfo info) {
-        if ((Boolean)norender.getPropertyByAlias("NoPumpkin").getValue()) {
-            info.cancel(); // this doesnt work
-        }
+        method = "render",
+        at = @At("HEAD"))
+    private void onRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        RenderMethods.guiGraphics = guiGraphics;
+        Exeter.getInstance().getEventManager().dispatch(
+            new RenderGameOverlayEvent(RenderGameOverlayEvent.Type.IN_GAME));
     }
 
 }

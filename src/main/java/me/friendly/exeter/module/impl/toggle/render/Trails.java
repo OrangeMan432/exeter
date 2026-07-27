@@ -7,11 +7,12 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 
 public final class Trails
 extends ToggleableModule {
-    private final EnumProperty<ParticleType> particleType = new EnumProperty<ParticleType>(ParticleType.BARRIER, "Particle");
+    private final EnumProperty<ParticleType> particleType = new EnumProperty<ParticleType>(ParticleType.CLOUD, "Particle");
     private final NumberProperty<Long> delay = new NumberProperty<Long>(Long.valueOf(250L), 1L, 10000L, "Delay", "d");
     private final NumberProperty<Double> xOffset = new NumberProperty<Double>(Double.valueOf(0.0), -10.0, 10.0, "X Offset", "xoffset", "xo");
     private final NumberProperty<Double> yOffset = new NumberProperty<Double>(Double.valueOf(2.7), -10.0, 10.0, "Y Offset", "yoffset", "yo");
@@ -26,7 +27,7 @@ extends ToggleableModule {
             @Override
             public void call(TickEvent event) {
                 if (Trails.this.stopwatch.hasCompleted((Long)Trails.this.delay.getValue())) {
-                    ((Trails)Trails.this).minecraft.world.spawnParticle(((ParticleType)((Trails)Trails.this).particleType.getValue()).particleType, ((Trails)Trails.this).minecraft.player.posX + (Double)Trails.this.xOffset.getValue(), ((Trails)Trails.this).minecraft.player.posY + (Double)Trails.this.yOffset.getValue(), ((Trails)Trails.this).minecraft.player.posZ + (Double)Trails.this.zOffset.getValue(), 0.0, 0.0, 0.0, new int[0]);
+                    ((Trails)Trails.this).minecraft.level.addParticle(((ParticleType)((Trails)Trails.this).particleType.getValue()).particleType, false, false, ((Trails)Trails.this).minecraft.player.getX() + (Double)Trails.this.xOffset.getValue(), ((Trails)Trails.this).minecraft.player.getY() + (Double)Trails.this.yOffset.getValue(), ((Trails)Trails.this).minecraft.player.getZ() + (Double)Trails.this.zOffset.getValue(), 0.0, 0.0, 0.0);
                     Trails.this.stopwatch.reset();
                 }
             }
@@ -34,18 +35,17 @@ extends ToggleableModule {
     }
 
     public static enum ParticleType {
-        BARRIER(EnumParticleTypes.BARRIER),
-        CLOUD(EnumParticleTypes.CLOUD),
-        CRIT(EnumParticleTypes.CRIT),
-        EXPLOSION_NORMAL(EnumParticleTypes.EXPLOSION_NORMAL),
-        EXPLOSION_LARGE(EnumParticleTypes.EXPLOSION_LARGE),
-        EXPLOSION_HUGE(EnumParticleTypes.EXPLOSION_HUGE),
-        DRIP_LAVA(EnumParticleTypes.DRIP_LAVA),
-        DRIP_WATER(EnumParticleTypes.DRIP_WATER);
+        CLOUD(ParticleTypes.CLOUD),
+        CRIT(ParticleTypes.CRIT),
+        POOF(ParticleTypes.POOF),
+        EXPLOSION(ParticleTypes.EXPLOSION),
+        EXPLOSION_EMITTER(ParticleTypes.EXPLOSION_EMITTER),
+        DRIPPING_LAVA(ParticleTypes.DRIPPING_LAVA),
+        DRIPPING_WATER(ParticleTypes.DRIPPING_WATER);
 
-        public EnumParticleTypes particleType;
+        public SimpleParticleType particleType;
 
-        private ParticleType(EnumParticleTypes particleType) {
+        private ParticleType(SimpleParticleType particleType) {
             this.particleType = particleType;
         }
     }
