@@ -44,7 +44,6 @@ public final class NoRender extends Module {
                     }
                     case PUMPKIN: {
                         event.setRenderPumpkin(pumpkin.getValue());
-                        System.out.println("Pumpkin render event");
                     }
                 }
             }
