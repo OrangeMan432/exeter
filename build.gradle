@@ -1,7 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.4-SNAPSHOT'
+    id 'fabric-loom' version '1.13.3'
     id 'maven-publish'
-    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
 
 group project.modGroup
@@ -28,20 +27,14 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraftVersion}"
-    mappings "net.fabricmc:yarn:${project.yarnVersion}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loaderVersion}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricVersion}"
-
-    annotationProcessor "org.spongepowered:mixin:0.8.5"
-    modImplementation "org.spongepowered:mixin:0.8.5"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+    }
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
-}
-
-mixin {
-    add sourceSets.main, "mixins.exeter.refmap.json"
-    config "mixins.exeter.json"
 }
 
 processResources {
@@ -59,16 +52,6 @@ jar {
                 'TweakOrder': 0,
         )
     }
-}
-
-shadowJar {
-    dependencies {
-        include(dependency('com.googlecode.json-simple:json-simple:1.1.1'))
-        include(dependency('org.spongepowered:mixin'))
-    }
-    exclude 'dummyThing'
-    exclude 'LICENSE.txt'
-    classifier = 'release'
 }
 
 tasks.withType(JavaCompile).configureEach {
