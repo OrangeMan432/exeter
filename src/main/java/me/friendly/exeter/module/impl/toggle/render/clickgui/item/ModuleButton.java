@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton;
+import net.minecraft.client.renderer.RenderPipelines;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.EnumButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.NumberSlider;
 import me.friendly.exeter.properties.EnumProperty;
@@ -16,12 +18,12 @@ import org.joml.Matrix3x2fStack;
 
 public class ModuleButton
 extends Button {
-    private static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
     private final Module module;
     private java.util.List<Item> items = new ArrayList<Item>();
     private boolean subOpen;
     private int progress;
     private float gearRotation;
+    private float gearBrightness = 0.5f;
 
     public ModuleButton(Module module) {
         super(module.getLabel());
@@ -64,14 +66,18 @@ extends Button {
             int gx = (int)getX() + getWidth() - 12;
             int gy = (int)getY() + 3;
 
-            if (this.subOpen) {
-                this.gearRotation += 1.0f;
-            }
+            float target = this.subOpen ? 1.0f : 0.5f;
+            this.gearBrightness += (target - this.gearBrightness) * 0.05f;
+
+            this.gearRotation += this.gearBrightness - 0.5f;
+
+            int c = (int)(this.gearBrightness * 255.0f);
+            int tintColor = 0xFF000000 | (c << 16) | (c << 8) | c;
 
             Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
             pose.pushMatrix();
             pose.rotateAbout(this.gearRotation * (float)Math.PI / 180.0f, gx + 5, gy + 5);
-            RenderMethods.guiGraphics.blit(GEAR_ID, gx, gy, gx + 10, gy + 10, 0.0f, 1.0f, 0.0f, 1.0f);
+            RenderMethods.guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Panel.GEAR_ID, gx, gy, 0.0f, 0.0f, 10, 10, 128, 128, 128, 128, tintColor);
             pose.popMatrix();
 
             if (this.subOpen) {

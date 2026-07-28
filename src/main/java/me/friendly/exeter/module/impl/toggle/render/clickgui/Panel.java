@@ -31,7 +31,7 @@ implements Labeled {
     private final ArrayList<Item> items = new ArrayList();
 
     private static final Identifier ARROW_ID = Identifier.parse("minecraft:textures/exeter/arrow.png");
-    private static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
+    public static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
     private static boolean texturesRegistered = false;
 
     private static void registerTextures(Minecraft mc) {
@@ -47,6 +47,8 @@ implements Labeled {
             NativeImage gearImg = NativeImage.read(gearStream);
             DynamicTexture gearTex = new DynamicTexture(() -> "exeter:gear", gearImg);
             mc.getTextureManager().register(GEAR_ID, gearTex);
+
+
         } catch (Exception e) {
             System.out.println("Failed to load arrow/gear textures: " + e.getMessage());
         }
