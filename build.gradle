@@ -50,9 +50,9 @@ def getBuild() {
 }
 String build = getBuild()
 
-sourceCompatibility = targetCompatibility = '1.8'
+sourceCompatibility = targetCompatibility = '21'
 compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
+    sourceCompatibility = targetCompatibility = '21'
     // from sn0w
     String contents = ""
     File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'

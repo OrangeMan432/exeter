@@ -12,13 +12,16 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.resources.Identifier;
+import org.joml.Matrix3x2fStack;
 
 public class ModuleButton
 extends Button {
+    private static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
     private final Module module;
     private java.util.List<Item> items = new ArrayList<Item>();
     private boolean subOpen;
     private int progress;
+    private float gearRotation;
 
     public ModuleButton(Module module) {
         super(module.getLabel());
@@ -58,9 +61,18 @@ extends Button {
         if (!this.items.isEmpty()) {
             //FontUtil.drawString("...", this.x - 1.0f + (float)this.width - 8.0f, this.y - 2.0f, -1);// remove this, its not in future
 
-            // add gear, and animation here
+            int gx = (int)getX() + getWidth() - 12;
+            int gy = (int)getY() + 3;
 
-            RenderMethods.guiGraphics.blit(new Identifier("minecraft", "textures/exeter/gear"), (int)getX() + getWidth() - 12, (int)getY() + 3, 10, 10, 0.0f, 0.0f, 10, 10);
+            if (this.subOpen) {
+                this.gearRotation += 1.0f;
+            }
+
+            Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
+            pose.pushMatrix();
+            pose.rotateAbout(this.gearRotation * (float)Math.PI / 180.0f, gx + 5, gy + 5);
+            RenderMethods.guiGraphics.blit(GEAR_ID, gx, gy, gx + 10, gy + 10, 0.0f, 1.0f, 0.0f, 1.0f);
+            pose.popMatrix();
 
             if (this.subOpen) {
                 float height = 1.0f;

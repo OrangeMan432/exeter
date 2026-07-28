@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
 import java.awt.*;
+import java.io.InputStream;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
@@ -11,10 +12,12 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import org.joml.Matrix3x2fStack;
 
 public abstract class Panel
 implements Labeled {
-    private Minecraft minecraft = Minecraft.getInstance();
     private final String label;
     private int angle;
     private int x;
@@ -26,6 +29,28 @@ implements Labeled {
     private boolean open;
     public boolean drag;
     private final ArrayList<Item> items = new ArrayList();
+
+    private static final Identifier ARROW_ID = Identifier.parse("minecraft:textures/exeter/arrow.png");
+    private static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
+    private static boolean texturesRegistered = false;
+
+    private static void registerTextures(Minecraft mc) {
+        if (texturesRegistered) return;
+        texturesRegistered = true;
+        try {
+            InputStream arrowStream = mc.getResourceManager().open(ARROW_ID);
+            NativeImage arrowImg = NativeImage.read(arrowStream);
+            DynamicTexture arrowTex = new DynamicTexture(() -> "exeter:arrow", arrowImg);
+            mc.getTextureManager().register(ARROW_ID, arrowTex);
+
+            InputStream gearStream = mc.getResourceManager().open(GEAR_ID);
+            NativeImage gearImg = NativeImage.read(gearStream);
+            DynamicTexture gearTex = new DynamicTexture(() -> "exeter:gear", gearImg);
+            mc.getTextureManager().register(GEAR_ID, gearTex);
+        } catch (Exception e) {
+            System.out.println("Failed to load arrow/gear textures: " + e.getMessage());
+        }
+    }
 
     public Panel(String label, int x, int y, boolean open) {
         this.label = label;
@@ -42,12 +67,11 @@ implements Labeled {
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drag(mouseX, mouseY);
+        registerTextures(Minecraft.getInstance());
         float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
-//        RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, -7829368, -6710887);
-        RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));//0x77FB4242, 0x77FB4242);
-            RenderMethods.drawRect(this.x, (float)this.y + 12f, this.x + this.width, this.y + this.height + (this.open ? totalItemHeight : -1), 0x77000000);
-        FontUtil.drawString(this.getLabel(), (float)this.x + 3.0f, (float)this.y + 1.5f/* - 4.0f*/, -1); //15592941
-        //var5.f$L.f$E(this.f$E(), (double)((float)this.f$C + 3.0F), (double)((float)this.f$e + 1.5F), 15592941);
+        RenderMethods.drawGradientRect(this.x, (float)this.y - 1.5f, this.x + this.width, this.y + this.height - 6, Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));
+        RenderMethods.drawRect(this.x, (float)this.y + 12f, this.x + this.width, this.y + this.height + (this.open ? totalItemHeight : -1), 0x77000000);
+        FontUtil.drawString(this.getLabel(), (float)this.x + 3.0f, (float)this.y + 1.5f, -1);
 
         if (!open) {
             if (this.angle > 0) {
@@ -57,7 +81,13 @@ implements Labeled {
             this.angle += 3;
         }
 
-        RenderMethods.guiGraphics.blit(new Identifier("minecraft", "textures/exeter/arrow"), getX() + getWidth() - 12, getY() + 1, 10, 10, 0.0f, 0.0f, 10, 10);
+        int arrowX = getX() + getWidth() - 14;
+        int arrowY = getY();
+        Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
+        pose.pushMatrix();
+        pose.rotateAbout(this.angle * (float)Math.PI / 180.0f, arrowX + 5, arrowY + 5);
+        RenderMethods.guiGraphics.blit(ARROW_ID, arrowX, arrowY, arrowX + 10, arrowY + 10, 0.0f, 1.0f, 0.0f, 1.0f);
+        pose.popMatrix();
 
         if (this.open) {
             int y = this.getY() + this.getHeight() - 3;
