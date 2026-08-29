@@ -25,6 +25,7 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
 import me.friendly.exeter.module.impl.toggle.misc.Refill;
 import me.friendly.exeter.module.impl.toggle.misc.KillAura;
+import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 
 /**
@@ -47,6 +48,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new Refill());
         register(new AutoTotem());
         register(new KillAura());
+        register(new AutoGear());
         register(new SelfBed());
         register(new BedAura());
         register(new SpeedPlus());

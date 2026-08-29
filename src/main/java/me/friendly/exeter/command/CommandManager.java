@@ -22,6 +22,7 @@ import me.friendly.exeter.command.impl.player.Grab;
 import me.friendly.exeter.command.impl.player.HClip;
 import me.friendly.exeter.command.impl.player.VClip;
 import me.friendly.exeter.command.impl.server.Connect;
+import me.friendly.exeter.command.impl.server.GearCommand;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
@@ -44,6 +45,7 @@ extends ListRegistry<Command> {
         this.register(new Modules());
         this.register(new Prefix());
         this.register(new Connect());
+        this.register(new GearCommand());
         this.register(new Presets());
         this.register(new HClip());
         this.register(new VClip());

@@ -34,8 +34,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
     private static Exeter instance = null;
     public static final String TITLE = "Exeter";
-    public static final String HASH = "eaa85fa620bf5398";
-    public static final String BUILD = "latest+36";
+    public static final String HASH = "c51bc65cd70f0438";
+    public static final String BUILD = "latest+37";
     public final long startTime = System.nanoTime() / 1000000L;
     private BasicEventManager eventManager;
     private KeybindManager keybindManager;
