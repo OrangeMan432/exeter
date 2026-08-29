@@ -30,6 +30,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `Anti Aim` | Scrambles the rotation sent to the server (local view untouched). **Yaw Mode:** Off / Spin / Random. **Pitch Mode:** Off / Up (90) / Down (-90) / Zero (0) / Custom. Plus Spin Speed and Pitch Value sliders. |
+| `KillAura` | Attacks the nearest living entity in range every few ticks (Range / Delay sliders). Server still validates reach. |
 
 ### Miscellaneous
 
@@ -39,6 +40,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoItemDupe` | Recipe-book item dupe (ported from **Lambda 5bDupes** by ToxicAven). **5b5t-specific**. Throws the held stack; the recipe-place trigger is not wired — see note below. |
 | `DonkeyDupe` | Chested-horse (donkey/llama) dupe helper. Auto-rides the nearest chested horse with a chest; the dupe itself is a server-side bug triggered on disconnect while mounted. |
 | `Refill` | Keeps the hotbar filled from the main inventory. One stack moved per tick via the stack-size-aware click path, so overstacked (127) items are moved correctly. Only runs while no container screen is open. |
+| `AutoTotem` | Keeps a Totem of Undying in your offhand, moved from the main inventory via the stack-size-aware click path. Skips a tick if you are holding an item in the cursor. |
 
 ### Render
 

@@ -17,6 +17,8 @@ import me.friendly.exeter.module.impl.toggle.misc.ShulkerDupe;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
 import me.friendly.exeter.module.impl.toggle.misc.Refill;
+import me.friendly.exeter.module.impl.toggle.misc.AutoTotem;
+import me.friendly.exeter.module.impl.toggle.misc.KillAura;
 
 /**
  * Manages {@link Module}s for Exeter.
@@ -36,6 +38,8 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new AutoItemDupe());
         register(new DonkeyDupe());
         register(new Refill());
+        register(new AutoTotem());
+        register(new KillAura());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
         Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
