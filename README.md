@@ -1,139 +1,113 @@
-# Meteor Addon Template
+# WeirdPvP
 
-A template to allow easy usage of the Meteor Addon API.
+A [Meteor Client](https://meteorclient.com/) addon for anarchy PvP (2b2t / 5b5t). It bundles a set of combat and inventory modules under a single `WeirdPvP` category, plus an `AutoGear` kit command and an `Eat Timer` HUD element.
 
-### How to use
+Targets Minecraft `26.2` (1.21.5-era) via Fabric + Meteor Client `26.2-SNAPSHOT`.
 
-#### Use GitHub Template (Recommended)
+## Modules
 
-- Click the green `Use this template` button in the top right corner of this page.  
-  This will create a new repository with this template and a clean history.
+All modules live in the `WeirdPvP` category.
 
-#### Clone Manually
+| Module | Command/key | What it does |
+|--------|-------------|--------------|
+| `anti-hole-camper` | AntiHoleCamper | Pushes enemies out of holes using pistons + redstone. |
+| `auto-cart` | AutoCart | Places rails and TNT minecarts at an opponent's feet; optional insta-light. |
+| `auto-gear` | AutoGear | Sorts your inventory to match a saved kit from a chest/shulker. |
+| `auto-pot` | AutoPot | Throws healing/swiftness splash potions and bad pots at enemies. |
+| `auto-shulker` | AutoShulker | Places shulker boxes near you and auto-opens them. |
+| `bed-aura` | BedAura | Places and uses/breaks beds near targets for crystal-style damage. |
+| `self-bed` | SelfBed | Places and uses a bed behind you for explosion knockback boost. |
+| `speed+` | SpeedPlus | Strafe speed with damage boost (ported from Lemon client). |
 
-- Alternatively, clone this repository using these commands for a clean history:
-  ```bash
-  git clone --depth 1 https://github.com/MeteorDevelopment/meteor-addon-template your-addon-name
-  cd your-addon-name
-  rm -rf .git
-  git init
-  git add .
-  git commit -m "Initial commit from template"
-  ```
+### Module settings
 
-#### Development
+**AntiHoleCamper**
+- `rotate` (true) – rotate to the placement target.
+- `range` (6) – detection range for targets and placement range.
+- `place-delay` (0) – ticks between placements.
+- `swing-hand` (true) – swing hand when placing.
+- `debug` (false) – print debug info.
 
-- Use this template to add custom modules, commands, HUDs, and other features to Meteor Client.
-- To test, run the `Minecraft Client` configuration in your IDE.
-  This will start a Minecraft client with the Meteor Client mod and your addon loaded.
-- To build, run the gradle `build` task. This will create a JAR file in the `build/libs` folder.
-    - Move the JAR file to the `mods` folder of your Minecraft installation, alongside the Meteor Client mod and run the
-      game.
+**AutoCart**
+- `tnt-carts` (5) – minecarts per cycle.
+- `carts-per-tick` (1) – minecarts placed per tick.
+- `range` (5) – max placement range.
+- `pull-from-inventory` (true) – pull carts from main inventory into hotbar.
+- `rotate-rail` (true) / `rotate-minecart` (false) – rotate when placing.
+- `send-complete-message` (true) – chat message when done.
+- `insta-light` (false) – break the rail and light the block underneath, then repeat.
+- `break-delay` (1, visible if `insta-light`) – ticks between break and light.
 
-### Updating to newer Minecraft versions
+**AutoGear**
+- `tick-delay` (0) – ticks between sort actions.
+- `switch-per-tick` (1) – items moved per tick.
+- `ender-chest` (false) – also sort from an open ender chest.
+- `confirm-sort` (true) – re-checks the inventory once after sorting.
+- `invasive` (false) – overwrite non-matching slots.
+- `close-after` (false) – close the container when done.
+- `info-msgs` (true) / `debug-mode` (false) – logging.
 
-To update this template to a newer Minecraft version, follow these steps:
+**AutoPot** (pages: `General`, `BadPot`)
+- General: `health-potion`, `health` (16), `equal`, `predict`, `time-seconds` (1), `predict-health-delay` (50), `health-slot` (1), `health-delay` (50), `swiftness`, `time-left` (5), `swiftness-slot` (1), `swiftness-delay` (50), `on-ground-only` (true), `packet-switch` (true).
+- BadPot: `delay` (10), `factor` (0.75), `range` (4), `badpot-slot` (1), `weakness`, `jump-boost`, `poison`, `slowness`, `debug`.
 
-1. Ensure a Meteor Client snapshot is available for the new Minecraft version.
-2. Update `gradle/libs.versions.toml` (the versions catalog):
-    - Set the version entries to the new versions. Common keys to update are:
-        - `versions.minecraft` - Minecraft version
-        - `versions.fabric-loader` - Fabric loader version
-        - `versions.meteor` - Meteor Client snapshot version
-    - If your addon depends on other libraries listed under the `[libraries]` section, update their versions there as
-      needed.
-    - After editing, refresh Gradle dependencies and rebuild your project in the IDE.
-3. Update Loom:
-    - Change the `loom` version in `gradle/libs.versions.toml` (the `versions.loom` entry) to the latest version
-      compatible with the new Minecraft version.
-4. Update the Gradle wrapper:
-    - Run the wrapper update command for your platform. Examples:
-      - Unix / macOS / Windows (Powershell): `./gradlew wrapper --gradle-version <version> && ./gradlew wrapper`
-      - Windows (cmd.exe): `gradlew.bat wrapper --gradle-version <version> && gradlew.bat wrapper`
-    - This updates and regenerates the Gradle Wrapper scripts (`gradlew`, `gradlew.bat`, etc.) for the specified version.
-5. Update your source code:
-    - Adjust for Minecraft source changes: method names, imports, mixins, etc.
-    - Check for Meteor Client API changes that may affect your addon by comparing against the
-      [master branch](https://github.com/MeteorDevelopment/meteor-client/tree/master).
-6. Build and test:
-    - Run the gradle `build` task.
-    - Confirm the build succeeds and your addon works with the new Minecraft version.
+**AutoShulker**
+- `once` (false) – place/open one shulker then disable.
+- `empty-slots` (6, hidden if `once`) – min empty slots before placing a new box.
+- `disable-after-death` (true, hidden if `once`).
+- `range` (5) / `y-range` (5) – placement box.
+- `target-range` (8) – positions farther than this from the target are deprioritized.
+- `tick-delay` (5) / `open-delay` (5).
+- `inventory` (true) – move shulkers into hotbar.
+- `slot` (1).
+- `packet-place` (true), `place-swing` (true), `packet-swing` (true), `packet-switch` (true).
 
-### Project structure
+**BedAura**
+- `rotate` (true), `auto-switch` (true), `switch-back` (true).
+- `place-range` (5), `target-range` (10).
+- `place-delay` (0), `break-delay` (1), `swing-hand` (true).
 
-```text
-.
-│── .github
-│   ╰── workflows
-│       │── dev_build.yml
-│       ╰── pull_request.yml
-│── gradle
-│   │── libs.versions.toml
-│   ╰── wrapper
-│       │── gradle-wrapper.jar
-│       ╰── gradle-wrapper.properties
-│── src
-│   ╰── main
-│       │── java
-│       │   ╰── com
-│       │       ╰── example
-│       │           ╰── addon
-│       │               │── commands
-│       │               │   ╰── CommandExample
-│       │               │── hud
-│       │               │   ╰── HudExample
-│       │               │── modules
-│       │               │   ╰── ModuleExample
-│       │               ╰── AddonTemplate
-│       ╰── resources
-│           │── assets
-│           │   ╰── template
-│           │       ╰── icon.png
-│           │── addon-template.mixins.json
-│           ╰── fabric.mod.json
-│── .editorconfig
-│── .gitignore
-│── build.gradle.kts
-│── gradle.properties
-│── gradlew
-│── gradlew.bat
-│── LICENSE
-│── README.md
-╰── settings.gradle.kts
+**SelfBed**
+- `rotate` (true), `place-range` (5), `place-delay` (1), `use-delay` (0).
+
+**SpeedPlus**
+- `damage-boost` (true) – speed up on received knockback.
+- `use-timer` (true) + `timer-speed` (1.2).
+- `jump` (true) – auto-jump while moving.
+- `strict` (false) – stricter speed calc.
+- `water-speed` (true) – apply speed in liquids.
+- `random-boost` (false) – occasional random boost.
+
+### HUD
+
+**Eat Timer** (`eat-timer`) – shows eating progress as a percentage. Setting: `shadow` (true).
+
+### Command
+
+`gear` (aliases `gr`, `kit`):
+- `gear save <name>` – save current inventory as a kit.
+- `gear set <name>` – select the active kit (reloads AutoGear).
+- `gear del <name>` – delete a kit.
+- `gear list` – list saved kits.
+
+Kits are stored in `WeirdPvP/AutoGear.json` inside the Minecraft instance folder.
+
+## Development
+
+- Use this addon with Meteor Client installed. To test, run the `Minecraft Client` run configuration in your IDE (it launches a client with Meteor + this addon loaded).
+- To build, run `./gradlew build`. The JAR lands in `build/libs`. Drop it into your instance's `mods` folder alongside Meteor Client.
+
+## Project layout
+
 ```
-
-This is the default project structure. Each folder/file has a specific purpose.  
-Here is a brief explanation of the ones you might need to modify:
-
-- `.github/workflows`: Contains the GitHub Actions configuration files.
-- `gradle`: Contains the Gradle wrapper files and the versions catalog.  
-  - `libs.versions.toml`: Defines version numbers for Minecraft, Loom, Meteor, and other dependencies.
-  - `wrapper`: Contains the Gradle wrapper executable files.  
-    To update the Gradle wrapper executable itself, run the wrapper update command (examples are shown above).
-- `src/main/java/com/example/addon`: Contains the main class of the addon.  
-  Here you can register your custom commands, modules, and HUDs.  
-  Edit the `getPackage` method to reflect the package of your addon.
-- `src/main/resources`: Contains the resources of the addon.
-    - `assets`: Contains the assets of the addon.  
-      You can add your own assets here, separated in subfolders.
-        - `template`: Contains the assets of the template.  
-          You can replace the `icon.png` file with your own addon icon.  
-          Also, rename this folder to reflect the name of your addon.
-    - `addon-template.mixins.json`: Contains the Mixin configuration for the addon.  
-      You can add your own mixins in the `client` array.
-    - `fabric.mod.json`: Contains the metadata of the addon.  
-      Edit the various fields to reflect the metadata of your addon.
-- `build.gradle.kts`: Contains the Gradle build script.  
-  You can manage the dependencies of the addon here.  
-  Remember to keep the `fabric-loom` version up-to-date.
-- `gradle.properties`: Contains additional build properties used by the build script
-  (for example `maven_group` and `archives_base_name`).  
-  Dependency and platform version numbers are stored in `gradle/libs.versions.toml`.
-- `LICENSE`: Contains the license of the addon.  
-  You can edit this file to change the license of your addon.
-- `README.md`: Contains the documentation of the addon.  
-  You can edit this file to reflect the documentation of your addon, and showcase its features.
+src/main/java/sh/orangeman/weirdpvp/
+├── WeirdPvP.java            # addon entrypoint, registers modules/commands/hud
+├── commands/AutoGearCommand.java
+├── hud/EatTimerHud.java
+└── modules/                 # AntiHoleCamper, AutoCart, AutoGear, AutoPot,
+                             # AutoShulker, BedAura, SelfBed, SpeedPlus
+```
 
 ## License
 
-This template is available under the CC0 license. Feel free to use it for your own projects.
+MIT (see LICENSE).
