@@ -16,6 +16,7 @@ import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.misc.ShulkerDupe;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
+import me.friendly.exeter.module.impl.toggle.misc.Refill;
 
 /**
  * Manages {@link Module}s for Exeter.
@@ -30,9 +31,11 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new TabGui());
         register(new Colors());
         register(new HUDEditor());
+        register(new AntiAim());
         register(new ShulkerDupe());
         register(new AutoItemDupe());
         register(new DonkeyDupe());
+        register(new Refill());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
         Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
