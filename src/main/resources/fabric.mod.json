@@ -1,25 +1,22 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
+  "id": "weirdpvp",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
+  "name": "WeirdPvP",
+  "description": "PvP addon for Meteor Client.",
   "authors": [
-    "seasnail"
+    "OrangeMan432"
   ],
   "contact": {
-    "sources": "https://github.com/MeteorDevelopment/meteor-addon-template"
+    "sources": "https://github.com/OrangeMan432/meteor-5b5t-addon"
   },
-  "icon": "assets/template/icon.png",
+  "icon": "assets/weirdpvp/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
-      "com.example.addon.AddonTemplate"
+      "sh.orangeman.weirdpvp.WeirdPvP"
     ]
   },
-  "mixins": [
-    "addon-template.mixins.json"
-  ],
   "custom": {
     "meteor-client:color": "225,25,25",
     "modmenu": {
