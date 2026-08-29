@@ -27,7 +27,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Category | Notes |
 | --- | --- | --- |
 | `ShulkerDupe` | Miscellaneous | Shulker / container dupe (ported from **Lemon Client**). Vanilla/Forge/Fabric **≤ 1.19** only. |
-| `AutoItemDupe` | Miscellaneous | Recipe-book item dupe (ported from **Lambda 5bDupes** by ToxicAven). **5b5t-specific** (intentional dupe). |
+| `AutoItemDupe` | Miscellaneous | Recipe-book item dupe (ported from **Lambda 5bDupes** by ToxicAven). **5b5t-specific** (intentional dupe). Throws the held stack; the recipe-place trigger is not wired — see note below. |
+| `DonkeyDupe` | Miscellaneous | Chested-horse (donkey/llama) dupe helper. Auto-rides the nearest chested horse with a chest; the dupe itself is a server-side bug triggered on disconnect while mounted. |
 | `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor` | Render | Client UI. |
 | `AntiAim` | Combat | Packet-level aim scrambler (event wired, logic to be filled in). |
 
@@ -39,8 +40,14 @@ right container / hold the right item, and it fires.
 These are **server-version / server-specific exploits**, not magic:
 
 - `ShulkerDupe` only duplicates on servers running the old container-desync dupe (vanilla/forge/fabric
-  **1.19 and below**). On 1.21+ it will click slots and do nothing.
-- `AutoItemDupe` is the 5b5t recipe-book dupe. It does nothing on servers without that intentional dupe.
+  1.19 and below). On 1.21+ it will click slots and do nothing.
+- `AutoItemDupe` is the 5b5t recipe-book dupe. It throws the held stack (the portable part); the
+  recipe-place trigger (`ServerboundPlaceRecipePacket`) is **not wired** because in Minecraft 26.2
+  that packet requires an `int` `RecipeDisplayId` that is only resolvable through internal
+  recipe-manager state — there is no public API to map a recipe name to its display id. It does
+  nothing on servers without that intentional dupe.
+- `DonkeyDupe` only helps on servers where the chested-horse dupe is live. It rides the horse; you
+  still trigger the dupe by disconnecting while mounted.
 
 If a dupe stops working, the server patched it — that is expected, not a bug in this client.
 
