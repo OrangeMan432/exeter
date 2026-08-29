@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.13.3'
+    id 'net.fabricmc.fabric-loom' version '1.17.20'
     id 'maven-publish'
 }
 
@@ -11,20 +11,18 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
-def execute(String cmd) {
-    // from shoreline
+def git(String... args) {
     try {
-        final def stdout = new ByteArrayOutputStream()
-
-        exec {
-            commandLine cmd.split(" ")
-            standardOutput = stdout
-        }
-
-        return stdout.toString().trim()
+        def pb = new ProcessBuilder(["git"] + (args as List))
+        pb.directory(projectDir)
+        pb.redirectErrorStream(true)
+        def proc = pb.start()
+        def output = new String(proc.inputStream.readAllBytes()).trim()
+        proc.waitFor()
+        return proc.exitValue() == 0 ? output : null
     } catch (ignored) {
         return null
     }
@@ -44,15 +42,16 @@ def getHash() {
 String hash = getHash()
 
 def getBuild() {
-    String tag = execute("git tag")
-    String commitSinceTag = execute("git rev-list ${tag}..HEAD --count")
-    return "${tag}+${commitSinceTag}"
+    String tag = git("tag")
+    if (tag != null && tag.contains("\n")) {
+        tag = tag.split("\n")[0]
+    }
+    String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
+    return "${tag ?: 'unknown'}+${commitSinceTag ?: '0'}"
 }
 String build = getBuild()
 
-sourceCompatibility = targetCompatibility = '21'
 compileJava {
-    sourceCompatibility = targetCompatibility = '21'
     // from sn0w
     String contents = ""
     File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'
@@ -76,12 +75,10 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-    }
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+    implementation "com.moandjiezana.toml:toml4j:0.7.2"
     compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
 }
 

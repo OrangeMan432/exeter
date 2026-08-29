@@ -27,7 +27,7 @@ extends ToggleableModule {
             public void call(RenderGameOverlayEvent event) {
                 Hud hud = (Hud)Exeter.getInstance().getModuleManager().getModuleByAlias("textgui");
                 Property watermark = hud.getPropertyByAlias("Watermark");
-                if (((TabGui)TabGui.this).minecraft.gui.getDebugOverlay().showDebugScreen()) {
+                if (((TabGui)TabGui.this).minecraft.gui.hud.getDebugOverlay().showDebugScreen()) {
                     return;
                 }
                 TabGui.this.guiTabHandler.drawGui(3, (Boolean)watermark.getValue() != false ? 13 : 3);

@@ -7,7 +7,7 @@ public class FontUtil {
 
     public static void drawString(String text, float x, float y, int color){
         if (RenderMethods.guiGraphics != null) {
-            RenderMethods.guiGraphics.drawString(Minecraft.getInstance().font, text, (int)x, (int)y, color, true);
+            RenderMethods.guiGraphics.text(Minecraft.getInstance().font, text, (int)x, (int)y, color, true);
         }
     }
 

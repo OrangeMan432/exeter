@@ -2,18 +2,18 @@ package me.friendly.exeter.module.impl.toggle.render;
 
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 
-public final class ClickGui
+public final class HUDEditor
 extends ToggleableModule {
-    public ClickGui() {
-        super("Click Gui", new String[]{"clickgui"}, ModuleType.RENDER);
+    public HUDEditor() {
+        super("HUDEditor", new String[]{"hudeditor", "hudedit"}, ModuleType.RENDER);
     }
 
     @Override
     protected void onEnable() {
         super.onEnable();
-        this.minecraft.gui.setScreen(me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
+        this.minecraft.gui.setScreen(HudEditorScreen.getInstance());
         this.setRunning(false);
     }
 }
-

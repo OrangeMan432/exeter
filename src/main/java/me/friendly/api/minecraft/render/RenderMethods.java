@@ -5,13 +5,13 @@ import java.awt.Rectangle;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.phys.AABB;
 import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("redundant")
 public final class RenderMethods {
-    public static GuiGraphics guiGraphics;
+    public static GuiGraphicsExtractor guiGraphics;
     public static java.nio.FloatBuffer matModelView = java.nio.FloatBuffer.allocate(16);
     public static java.nio.FloatBuffer matProjection = java.nio.FloatBuffer.allocate(16);
 

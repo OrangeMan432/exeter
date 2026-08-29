@@ -1,18 +1,10 @@
 package me.friendly.exeter.module;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import java.io.*;
-import java.io.File;
 import java.util.*;
 
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.interfaces.Toggleable;
-import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.presets.Preset;
-import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.client.Minecraft;
 
@@ -70,8 +62,6 @@ implements Labeled {
             this.properties.add(drawn);
         }
         this.properties.addAll(Arrays.asList(properties));
-        // We dont want alphabet sort
-        //this.properties.sort((p1, p2) -> p1.getAliases()[0].compareTo(p2.getAliases()[0]));
     }
 
     public Property<?> getPropertyByAlias(String alias) {
@@ -102,106 +92,4 @@ implements Labeled {
         }
         return null;
     }
-
-    /**
-     * Loads module property values from saved config.
-     * Parses files in json format using Google Gson.
-     * Called by {@link ModuleManager}
-     *
-     * @param node
-     */
-    public void loadConfig(JsonObject node) {
-        File modsFolder = new File(Exeter.getInstance().getDirectory(), "modules");
-        if (!modsFolder.exists()) {
-            modsFolder.mkdir();
-        }
-        node.entrySet().forEach(entry -> {
-            Optional<Property> property1 = null;
-            for (Property<?> prop : getProperties()) {
-                if (property1 != null || !prop.getAliases()[0].equalsIgnoreCase((entry.getKey()).toLowerCase())) continue;
-                property1 = Optional.ofNullable(prop);
-            }
-            if (property1 != null && property1.isPresent()) {
-                Object type = (entry.getValue()).getAsString();
-                if ((property1.get()).getValue() instanceof Number) {
-                    if ((property1.get()).getValue() instanceof Integer) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsInt();
-                    } else if (property1.get().getValue() instanceof Long) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsLong();
-                    } else if (property1.get().getValue() instanceof Boolean) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsBoolean();
-                    } else if (property1.get().getValue() instanceof Double) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsDouble();
-                    } else if (property1.get().getValue() instanceof Float) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsFloat();
-                    }
-                } else {
-                    if ((property1.get()).getValue() instanceof Enum) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsString();
-                        (property1.get()).setValue(type.toString());
-                        return;
-                    }
-                    if (property1.get().getValue() instanceof Boolean) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsBoolean();
-                    } else if (property1.get().getValue() instanceof String) {
-                        type = (entry.getValue()).getAsJsonPrimitive().getAsString();
-                    }
-                }
-                property1.get().setValue(type);
-            }
-        });
-    }
-
-    /**
-     * Saves module property values from saved config.
-     * saves to file in json format using Google Gson.
-     * Called by {@link ModuleManager}
-     */
-    public void saveConfig() {
-        File modsFolder = new File(Exeter.getInstance().getDirectory(), "modules");
-        if (!modsFolder.exists()) {
-            modsFolder.mkdir();
-        }
-        if (this.getProperties().size() < 1) {
-            return;
-        }
-        File jsonFile = new File(modsFolder, this.getLabel().toLowerCase().replace(" ", "") + ".json");
-        if (jsonFile.exists()) {
-            jsonFile.delete();
-        } else {
-            try {
-                jsonFile.createNewFile();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        File file = jsonFile;
-        JsonObject node = new JsonObject();
-        Collection<Property> settings1 = Collections.unmodifiableCollection(this.getProperties());
-        settings1.forEach(setting -> {
-            if (setting instanceof NumberProperty) {
-                return;
-            }
-            node.addProperty(setting.getAliases()[0], setting.getValue().toString());
-        });
-        if (node.entrySet().isEmpty()) {
-            return;
-        }
-        try {
-            file.createNewFile();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        try (FileWriter writer = new FileWriter(file);){
-            writer.write(new GsonBuilder().setPrettyPrinting().create().toJson((JsonElement)node));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            file.delete();
-        }
-    }
 }
-

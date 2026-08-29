@@ -6,6 +6,7 @@ import java.io.File;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
+import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.friend.FriendManager;
 import me.friendly.exeter.gui.screens.accountmanager.AccountManager;
 import me.friendly.exeter.keybind.KeybindManager;
@@ -14,7 +15,7 @@ import me.friendly.exeter.module.ModuleManager;
 import me.friendly.exeter.plugin.PluginManager;
 
 /**
- * Exeter client for Fabric 1.21.11
+ * Exeter client for Fabric 26.2
  *
  * Exeter client. A client created by Friendly,
  * for Minecraft version 1.8. It has been released
@@ -22,7 +23,7 @@ import me.friendly.exeter.plugin.PluginManager;
  * that version, and here, has reconstructed the
  * original source code. In this process, Gopro has
  * also ported the client to his preferred version
- * and platform, Minecraft 1.21.11 Fabric. Furthermore,
+ * and platform, Minecraft 26.2 Fabric. Furthermore,
  * Gopro has done work to clean up the decompiled code,
  * and javadoc it.
  *
@@ -33,8 +34,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
     private static Exeter instance = null;
     public static final String TITLE = "Exeter";
-    public static final String HASH = "4cb248f9be643a04";
-    public static final String BUILD = "b24+11";
+    public static final String HASH = "024946b8d07c74f7";
+    public static final String BUILD = "b24+12";
     public final long startTime = System.nanoTime() / 1000000L;
     private BasicEventManager eventManager;
     private KeybindManager keybindManager;
@@ -42,6 +43,7 @@ public final class Exeter {
     private CommandManager commandManager;
     private FriendManager friendManager;
     private ConfigManager configManager;
+    private ExeterConfig exeterConfig;
     private AccountManager accountManager;
     private PluginManager pluginManager;
     private File directory;
@@ -63,6 +65,7 @@ public final class Exeter {
         this.friendManager = new FriendManager();
         this.keybindManager = new KeybindManager();
         this.commandManager = new CommandManager();
+        this.exeterConfig = new ExeterConfig();
         this.moduleManager = new ModuleManager();
 //        this.accountManager = new AccountManager();
         this.pluginManager = new PluginManager();
@@ -113,6 +116,10 @@ public final class Exeter {
 
     public ConfigManager getConfigManager() {
         return this.configManager;
+    }
+
+    public ExeterConfig getExeterConfig() {
+        return this.exeterConfig;
     }
 
     // AccountManager is not working
