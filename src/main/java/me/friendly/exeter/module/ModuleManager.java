@@ -12,7 +12,7 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
 import me.friendly.exeter.module.impl.toggle.combat.AntiHoleCamper;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
-import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
+import me.friendly.exeter.module.impl.toggle.combat.QuickTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
 import me.friendly.exeter.module.impl.toggle.combat.Velocity;
@@ -47,6 +47,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new DonkeyDupe());
         register(new Refill());
         register(new AutoTotem());
+        register(new QuickTotem());
         register(new KillAura());
         register(new SelfBed());
         register(new BedAura());

@@ -7,19 +7,19 @@ import me.friendly.exeter.module.ToggleableModule;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
 
-public class AutoTotem extends ToggleableModule {
+public class QuickTotem extends ToggleableModule {
 
     private int tickDelay;
 
-    private final Listener<TickEvent> tickListener = new Listener<TickEvent>("autototem_tick") {
+    private final Listener<TickEvent> tickListener = new Listener<TickEvent>("quick_totem_tick") {
         @Override
         public void call(TickEvent event) {
             onTick();
         }
     };
 
-    public AutoTotem() {
-        super("Auto Totem", new String[]{"autototem", "auto-totem"}, 0xFF0000, ModuleType.COMBAT);
+    public QuickTotem() {
+        super("Quick Totem", new String[]{"quicktotem", "quick-totem"}, 0xFF0000, ModuleType.COMBAT);
         this.listeners.add(tickListener);
     }
 
