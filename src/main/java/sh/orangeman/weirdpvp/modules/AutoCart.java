@@ -99,6 +99,7 @@ public class AutoCart extends Module {
     private boolean isLighting;
     private int lightStage; // 0 = break rail, 1 = light block underneath
     private boolean doneMessageSent;
+    private boolean swapPending;
 
     public AutoCart() {
         super(WeirdPvP.CATEGORY, "auto-cart", "Places rails and TNT minecarts at the opponent's feet.");
@@ -113,6 +114,7 @@ public class AutoCart extends Module {
         isLighting = false;
         lightStage = 0;
         doneMessageSent = false;
+        swapPending = false;
     }
 
     @Override
@@ -122,6 +124,11 @@ public class AutoCart extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
+
         // Continue the current lighting sequence
         if (isLighting) {
             tickLighting();
@@ -252,7 +259,7 @@ public class AutoCart extends Module {
                 return;
             }
 
-            InvUtils.swapBack();
+            swapPending = true;
 
             breakTimer = breakDelay.get();
             lightStage = 1;
@@ -270,7 +277,7 @@ public class AutoCart extends Module {
                     InteractionHand.MAIN_HAND,
                     true
                 );
-                InvUtils.swapBack();
+                swapPending = true;
 
                 if (sendCompleteMessage.get()) {
                     info("Placed and lit %d TNT minecarts.", cartsPlaced);

@@ -57,6 +57,7 @@ public class SelfBed extends Module {
     private int lastUseTick;
     private int phase; // 0 = idle, 1 = placed, waiting to use, 2 = used, waiting to place again
     private boolean hasBed;
+    private boolean swapPending;
 
     public SelfBed() {
         super(WeirdPvP.CATEGORY, "self-bed", "Places and uses a bed behind you for explosion knockback boost.");
@@ -69,11 +70,18 @@ public class SelfBed extends Module {
         lastUseTick = -100;
         phase = 0;
         hasBed = false;
+        swapPending = false;
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.level == null || mc.player == null || mc.player.isDeadOrDying()) return;
+
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
+
         if (!mc.player.input.hasForwardImpulse()) return;
 
         tickCounter++;
@@ -160,7 +168,7 @@ public class SelfBed extends Module {
             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, placeHit);
         }
 
-        InvUtils.swapBack();
+        swapPending = true;
     }
 
     private void useBed(BlockPos usePos, int slot) {
@@ -181,7 +189,7 @@ public class SelfBed extends Module {
             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, useHit);
         }
 
-        InvUtils.swapBack();
+        swapPending = true;
     }
 
     private BlockPos findSupport(BlockPos pos) {

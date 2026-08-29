@@ -268,6 +268,7 @@ public class AutoPot extends Module {
     private int potSlot;
     private double lastHealth = 36.0;
     private boolean preHp;
+    private boolean swapPending;
 
     public AutoPot() {
         super(WeirdPvP.CATEGORY, "auto-pot", "Throws splash potions automatically.");
@@ -283,6 +284,7 @@ public class AutoPot extends Module {
         potSlot = -1;
         lastHealth = 36.0;
         preHp = false;
+        swapPending = false;
     }
 
     @Override
@@ -294,6 +296,11 @@ public class AutoPot extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.level == null || mc.player == null || mc.player.isDeadOrDying()) return;
+
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
 
         long time = System.currentTimeMillis();
         for (Player player : mc.level.players()) {
@@ -355,7 +362,7 @@ public class AutoPot extends Module {
         InvUtils.swap(slot, silentSwitch.get());
         mc.getConnection().send(new ServerboundUseItemPacket(InteractionHand.MAIN_HAND, 0, mc.player.getYRot(), 90f));
         if (silentSwitch.get()) {
-            InvUtils.swapBack();
+            swapPending = true;
         } else {
             mc.player.getInventory().setSelectedSlot(oldSlot);
         }

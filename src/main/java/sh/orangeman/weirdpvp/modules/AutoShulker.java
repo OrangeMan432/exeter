@@ -153,6 +153,7 @@ public class AutoShulker extends Module {
     private int slotIndex;
     private boolean swapped;
     private int tick;
+    private boolean swapPending;
 
     public AutoShulker() {
         super(WeirdPvP.CATEGORY, "auto-shulker", "Places shulker boxes near you and opens them automatically.");
@@ -165,6 +166,7 @@ public class AutoShulker extends Module {
         swapped = false;
         tick = 0;
         delayTimeTicks = 0;
+        swapPending = false;
         checkPos();
     }
 
@@ -177,6 +179,11 @@ public class AutoShulker extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null) return;
+
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
 
         if (!once.get() && disableAfterDeath.get() && mc.player.isDeadOrDying()) {
             toggle();
@@ -243,7 +250,7 @@ public class AutoShulker extends Module {
                 InvUtils.swap(slot, packetSwitch.get());
                 runnable.run();
                 if (packetSwitch.get()) {
-                    InvUtils.swapBack();
+                    swapPending = true;
                 } else {
                     mc.player.getInventory().setSelectedSlot(oldSlot);
                 }

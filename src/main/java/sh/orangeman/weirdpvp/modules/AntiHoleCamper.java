@@ -67,6 +67,7 @@ public class AntiHoleCamper extends Module {
     private int lastPlaceTick;
     private Player target;
     private PistonPos currentPiston;
+    private boolean swapPending;
 
     public AntiHoleCamper() {
         super(WeirdPvP.CATEGORY, "anti-hole-camper", "Pushes enemies out of holes using pistons and redstone.");
@@ -78,11 +79,17 @@ public class AntiHoleCamper extends Module {
         lastPlaceTick = -100;
         target = null;
         currentPiston = null;
+        swapPending = false;
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.level == null || mc.player == null || mc.player.isDeadOrDying()) return;
+
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
 
         tickCounter++;
 
@@ -115,12 +122,12 @@ public class AntiHoleCamper extends Module {
             Rotations.rotate(Rotations.getYaw(pos.pistonPos), Rotations.getPitch(pos.pistonPos), 100, () -> {
                 InvUtils.swap(pistonSlot, true);
                 sendPlacePacket(pos.pistonPos);
-                InvUtils.swapBack();
+                swapPending = true;
             });
         } else {
             InvUtils.swap(pistonSlot, true);
             sendPlacePacket(pos.pistonPos);
-            InvUtils.swapBack();
+            swapPending = true;
         }
 
         if (swingHand.get()) {
@@ -138,12 +145,12 @@ public class AntiHoleCamper extends Module {
                 Rotations.rotate(Rotations.getYaw(pos.redstonePos), Rotations.getPitch(pos.redstonePos), 100, () -> {
                     InvUtils.swap(redstoneSlot, true);
                     sendPlacePacket(pos.redstonePos);
-                    InvUtils.swapBack();
+                    swapPending = true;
                 });
             } else {
                 InvUtils.swap(redstoneSlot, true);
                 sendPlacePacket(pos.redstonePos);
-                InvUtils.swapBack();
+                swapPending = true;
             }
         }
     }

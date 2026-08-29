@@ -93,6 +93,7 @@ public class BedAura extends Module {
     private BlockPos lastBedPos;
     private boolean waitingToBreak;
     private boolean waitingToPlace;
+    private boolean swapPending;
 
     public BedAura() {
         super(WeirdPvP.CATEGORY, "bed-aura", "Automatically places and uses/breaks beds near targets.");
@@ -107,11 +108,17 @@ public class BedAura extends Module {
         lastBedPos = null;
         waitingToBreak = false;
         waitingToPlace = false;
+        swapPending = false;
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.level == null || mc.player == null || mc.player.isDeadOrDying()) return;
+
+        if (swapPending) {
+            InvUtils.swapBack();
+            swapPending = false;
+        }
 
         tickCounter++;
 
@@ -176,7 +183,7 @@ public class BedAura extends Module {
         }
 
         if (needSwitch && switchBack.get()) {
-            InvUtils.swapBack();
+            swapPending = true;
         }
     }
 
@@ -211,7 +218,7 @@ public class BedAura extends Module {
         }
 
         if (needSwitch && switchBack.get()) {
-            InvUtils.swapBack();
+            swapPending = true;
         }
     }
 
