@@ -350,6 +350,13 @@ public class AutoPot extends Module {
     }
 
     private void throwPotion(int slot) {
+        // Re-validate at throw time: this runs inside an async rotation callback, so the
+        // inventory may have changed since the slot was chosen. Never throw a non-potion.
+        if (slot < 0 || slot > 8 || mc.player.getInventory().getItem(slot).getItem() != Items.SPLASH_POTION) {
+            int fresh = getPotionSlotAny();
+            if (fresh == -1) return;
+            slot = fresh;
+        }
         if (slot < 0 || slot > 8) return;
         int oldSlot = mc.player.getInventory().getSelectedSlot();
         InvUtils.swap(slot, silentSwitch.get());
@@ -361,6 +368,13 @@ public class AutoPot extends Module {
         }
         potionSlot = -1;
         potSlot = -1;
+    }
+
+    private int getPotionSlotAny() {
+        for (int i = 0; i < 9; i++) {
+            if (mc.player.getInventory().getItem(i).getItem() == Items.SPLASH_POTION) return i;
+        }
+        return -1;
     }
 
     private int getPotion() {

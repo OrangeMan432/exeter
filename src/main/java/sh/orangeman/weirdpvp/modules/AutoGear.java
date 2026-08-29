@@ -203,6 +203,7 @@ public class AutoGear extends Module {
         } else if (finishSort) {
             for (int i = 0; i < switchForTick.get(); i++) {
                 if (sortItems.size() != 0) {
+                    if (!menu.getCarried().isEmpty()) flushCursor(menu);
                     int slotChange = sortItems.get(stepNow++);
                     mc.gameMode.handleContainerInput(menu.containerId, slotChange, 0, ContainerInput.PICKUP, mc.player);
                 }
@@ -234,11 +235,31 @@ public class AutoGear extends Module {
     }
 
     private void checkLastItem(AbstractContainerMenu menu) {
-        if (sortItems.size() != 0) {
-            int slotChange = sortItems.get(sortItems.size() - 1);
-            if (menu.slots.get(slotChange).getItem().isEmpty()) {
-                mc.gameMode.handleContainerInput(menu.containerId, slotChange, 0, ContainerInput.PICKUP, mc.player);
+        flushCursor(menu);
+    }
+
+    // Overstacked (e.g. 127-count) items can't always fit in one slot per click, so a PICKUP
+    // place leaves the remainder on the cursor. Flush it into any empty or partially-fillable
+    // slot so the next pick starts from a clean cursor and the sort isn't corrupted.
+    private void flushCursor(AbstractContainerMenu menu) {
+        int guard = 0;
+        while (!menu.getCarried().isEmpty() && guard++ < 128) {
+            ItemStack cursor = menu.getCarried();
+            boolean placed = false;
+            for (int i = 0; i < menu.slots.size(); i++) {
+                ItemStack slot = menu.slots.get(i).getItem();
+                if (slot.isEmpty()) {
+                    mc.gameMode.handleContainerInput(menu.containerId, i, 0, ContainerInput.PICKUP, mc.player);
+                    placed = true;
+                    break;
+                } else if (ItemStack.matches(slot, cursor)
+                        && slot.getCount() < slot.getMaxStackSize()) {
+                    mc.gameMode.handleContainerInput(menu.containerId, i, 0, ContainerInput.PICKUP, mc.player);
+                    placed = true;
+                    break;
+                }
             }
+            if (!placed) break;
         }
     }
 

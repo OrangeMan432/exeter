@@ -167,6 +167,9 @@ public class AutoGearCommand extends Command {
         if (item.isEmpty()) {
             return "minecraft:air0";
         }
-        return BuiltInRegistries.ITEM.getKey(item.getItem()).toString() + item.getDamageValue();
+        // Include the stack count so overstacked stacks (e.g. 127) are distinct from
+        // a normal stack of the same item. 1.21 changed how overstacked stacks behave,
+        // so the sort must not treat a 127-stack as identical to a 64-stack.
+        return BuiltInRegistries.ITEM.getKey(item.getItem()).toString() + item.getDamageValue() + ":" + item.getCount();
     }
 }

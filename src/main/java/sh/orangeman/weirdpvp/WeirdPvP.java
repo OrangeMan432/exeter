@@ -17,6 +17,7 @@ import sh.orangeman.weirdpvp.modules.AutoShulker;
 import sh.orangeman.weirdpvp.modules.BedAura;
 import sh.orangeman.weirdpvp.modules.SelfBed;
 import sh.orangeman.weirdpvp.modules.SpeedPlus;
+import sh.orangeman.weirdpvp.modules.Replenish;
 import org.slf4j.Logger;
 
 public class WeirdPvP extends MeteorAddon {
@@ -35,6 +36,7 @@ public class WeirdPvP extends MeteorAddon {
         Modules.get().add(new BedAura());
         Modules.get().add(new SelfBed());
         Modules.get().add(new SpeedPlus());
+        Modules.get().add(new Replenish());
         Commands.add(new AutoGearCommand());
 
         Hud.get().register(EatTimerHud.INFO);
