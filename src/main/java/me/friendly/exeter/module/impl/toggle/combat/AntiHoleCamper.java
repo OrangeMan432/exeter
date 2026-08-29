@@ -78,9 +78,12 @@ public class AntiHoleCamper extends ToggleableModule {
     }
 
     private void placePiston(PistonPos pos, int pistonSlot, int redstoneSlot) {
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
+
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(pos.pistonPos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(pos.pistonPos));
+            float pistonYaw = getYawForDirection(pos.facing);
+            PlayerUtil.setRotation(pistonYaw, 0f);
         }
 
         PlayerUtil.swapTo(pistonSlot);
@@ -89,14 +92,27 @@ public class AntiHoleCamper extends ToggleableModule {
         PlayerUtil.swapBack();
 
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(pos.redstonePos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(pos.redstonePos));
+            PlayerUtil.setRotation(PlayerUtil.getYaw(pos.redstonePos), PlayerUtil.getPitch(pos.redstonePos));
         }
 
         PlayerUtil.swapTo(redstoneSlot);
         PlayerUtil.useItemOn(pos.redstonePos, Direction.UP);
         if (swingHand.getValue()) PlayerUtil.swingHand();
         PlayerUtil.swapBack();
+
+        if (rotate.getValue()) {
+            PlayerUtil.restoreRotation(yaw, pitch);
+        }
+    }
+
+    private float getYawForDirection(Direction facing) {
+        return switch (facing) {
+            case NORTH -> 180f;
+            case SOUTH -> 0f;
+            case EAST -> -90f;
+            case WEST -> 90f;
+            default -> 0f;
+        };
     }
 
     private PistonPos findPistonPos(Player target) {
@@ -106,7 +122,7 @@ public class AntiHoleCamper extends ToggleableModule {
             BlockPos targetPos = target.blockPosition();
             BlockPos pistonPos = targetPos.relative(facing.getOpposite());
 
-            if (!canPlacePiston(pistonPos, facing)) continue;
+            if (!canPlacePiston(pistonPos)) continue;
 
             for (Direction redstoneDir : Direction.Plane.HORIZONTAL) {
                 BlockPos redstonePos = pistonPos.relative(redstoneDir);
@@ -133,12 +149,8 @@ public class AntiHoleCamper extends ToggleableModule {
             .orElse(null);
     }
 
-    private boolean canPlacePiston(BlockPos pos, Direction facing) {
-        if (!minecraft.level.getBlockState(pos).isAir()) return false;
-
-        BlockPos pushPos = pos.relative(facing.getOpposite());
-        if (!minecraft.level.getBlockState(pushPos).isAir()) return false;
-
+    private boolean canPlacePiston(BlockPos pos) {
+        if (!PlayerUtil.isAirOrReplaceable(pos)) return false;
         return PlayerUtil.inRange(pos, range.getValue());
     }
 

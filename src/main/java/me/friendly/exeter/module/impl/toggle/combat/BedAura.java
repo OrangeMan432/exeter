@@ -119,9 +119,10 @@ extends ToggleableModule {
             PlayerUtil.swapTo(slot);
         }
 
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(pos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(pos));
+            PlayerUtil.setRotation(PlayerUtil.getYaw(pos), PlayerUtil.getPitch(pos));
         }
 
         PlayerUtil.useItemOn(pos.below(), Direction.UP);
@@ -130,6 +131,9 @@ extends ToggleableModule {
             PlayerUtil.swingHand();
         }
 
+        if (rotate.getValue()) {
+            PlayerUtil.restoreRotation(yaw, pitch);
+        }
         if (needSwitch && switchBack.getValue()) {
             PlayerUtil.swapBack();
         }
@@ -142,9 +146,10 @@ extends ToggleableModule {
             PlayerUtil.swapTo(slot);
         }
 
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(pos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(pos));
+            PlayerUtil.setRotation(PlayerUtil.getYaw(pos), PlayerUtil.getPitch(pos));
         }
 
         PlayerUtil.useItemOn(pos, Direction.UP);
@@ -153,6 +158,9 @@ extends ToggleableModule {
             PlayerUtil.swingHand();
         }
 
+        if (rotate.getValue()) {
+            PlayerUtil.restoreRotation(yaw, pitch);
+        }
         if (needSwitch && switchBack.getValue()) {
             PlayerUtil.swapBack();
         }
@@ -179,14 +187,14 @@ extends ToggleableModule {
     }
 
     private boolean canPlaceBed(BlockPos pos) {
-        if (!minecraft.level.getBlockState(pos).isAir()) return false;
+        if (!PlayerUtil.isAirOrReplaceable(pos)) return false;
 
         BlockPos supporting = pos.below();
         if (minecraft.level.getBlockState(supporting).isAir()) return false;
 
         Direction facing = minecraft.player.getDirection().getOpposite();
         BlockPos headPos = pos.relative(facing);
-        if (!minecraft.level.getBlockState(headPos).isAir()) return false;
+        if (!PlayerUtil.isAirOrReplaceable(headPos)) return false;
 
         if (target != null) {
             double distToTarget = pos.distSqr(target.blockPosition());

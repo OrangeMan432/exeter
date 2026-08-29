@@ -188,10 +188,12 @@ public class AutoPot extends ToggleableModule {
         if (slot < 0 || slot > 8) return;
         PlayerUtil.swapTo(slot);
 
+        float origPitch = minecraft.player.getXRot();
         minecraft.player.setXRot(90f);
         minecraft.getConnection().send(new ServerboundUseItemPacket(
             InteractionHand.MAIN_HAND, 0, minecraft.player.getYRot(), 90f
         ));
+        minecraft.player.setXRot(origPitch);
 
         if (silentSwitch.getValue()) {
             PlayerUtil.swapBack();
