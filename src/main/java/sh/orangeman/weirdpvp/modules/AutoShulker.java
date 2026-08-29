@@ -81,7 +81,7 @@ public class AutoShulker extends Module {
 
     private final Setting<Double> targetRange = sgGeneral.add(new DoubleSetting.Builder()
         .name("target-range")
-        .description("Positions farther than this from the target get penalized.")
+        .description("Beyond this range from the target, shulkers are pushed to higher Y levels. The module always prefers the farthest valid spot from the target.")
         .defaultValue(8.0)
         .range(0, 16)
         .build()
@@ -298,7 +298,7 @@ public class AutoShulker extends Module {
         if (target == null) {
             blockAim = posList.stream().min(Comparator.comparing(p -> p.getRange(mc.player))).orElse(null);
         } else {
-            blockAim = posList.stream().min(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
+            blockAim = posList.stream().max(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
         }
 
         if (blockAim != null) {

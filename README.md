@@ -56,7 +56,7 @@ All modules live in the `WeirdPvP` category.
 - `empty-slots` (6, hidden if `once`) – min empty slots before placing a new box.
 - `disable-after-death` (true, hidden if `once`).
 - `range` (5) / `y-range` (5) – placement box.
-- `target-range` (8) – positions farther than this from the target are deprioritized.
+- `target-range` (8) – beyond this range from the target, positions are pushed to higher Y levels; the module always prefers the farthest valid spot from the target.
 - `tick-delay` (5) / `open-delay` (5).
 - `inventory` (true) – move shulkers into hotbar.
 - `slot` (1).
