@@ -12,7 +12,7 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
 import me.friendly.exeter.module.impl.toggle.combat.AntiHoleCamper;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
-import me.friendly.exeter.module.impl.toggle.combat.QuickTotem;
+import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
 import me.friendly.exeter.module.impl.toggle.combat.Velocity;
@@ -24,7 +24,6 @@ import me.friendly.exeter.module.impl.toggle.misc.ShulkerDupe;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
 import me.friendly.exeter.module.impl.toggle.misc.Refill;
-import me.friendly.exeter.module.impl.toggle.misc.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.misc.KillAura;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 
@@ -47,7 +46,6 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new DonkeyDupe());
         register(new Refill());
         register(new AutoTotem());
-        register(new QuickTotem());
         register(new KillAura());
         register(new SelfBed());
         register(new BedAura());
