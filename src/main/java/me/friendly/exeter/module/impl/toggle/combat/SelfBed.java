@@ -116,28 +116,36 @@ public class SelfBed extends ToggleableModule {
     private void placeBed(BlockPos supportPos, BlockPos footPos, int slot) {
         PlayerUtil.swapTo(slot);
 
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(footPos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(footPos));
+            PlayerUtil.setRotation(PlayerUtil.getYaw(footPos), PlayerUtil.getPitch(footPos));
         }
 
         PlayerUtil.useItemOn(supportPos, Direction.UP);
         PlayerUtil.swingHand();
 
+        if (rotate.getValue()) {
+            PlayerUtil.restoreRotation(yaw, pitch);
+        }
         PlayerUtil.swapBack();
     }
 
     private void useBed(BlockPos usePos, int slot) {
         PlayerUtil.swapTo(slot);
 
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
         if (rotate.getValue()) {
-            minecraft.player.setYRot((float) PlayerUtil.getYaw(usePos));
-            minecraft.player.setXRot((float) PlayerUtil.getPitch(usePos));
+            PlayerUtil.setRotation(PlayerUtil.getYaw(usePos), PlayerUtil.getPitch(usePos));
         }
 
         PlayerUtil.useItemOn(usePos, Direction.UP);
         PlayerUtil.swingHand();
 
+        if (rotate.getValue()) {
+            PlayerUtil.restoreRotation(yaw, pitch);
+        }
         PlayerUtil.swapBack();
     }
 

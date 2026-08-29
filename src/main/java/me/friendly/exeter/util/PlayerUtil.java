@@ -64,6 +64,29 @@ public class PlayerUtil {
         previousSlot = -1;
     }
 
+    public static void withRotation(double yaw, double pitch, Runnable action) {
+        if (mc.player == null) return;
+        float origYaw = mc.player.getYRot();
+        float origPitch = mc.player.getXRot();
+        mc.player.setYRot((float) yaw);
+        mc.player.setXRot((float) pitch);
+        action.run();
+        mc.player.setYRot(origYaw);
+        mc.player.setXRot(origPitch);
+    }
+
+    public static void setRotation(double yaw, double pitch) {
+        if (mc.player == null) return;
+        mc.player.setYRot((float) yaw);
+        mc.player.setXRot((float) pitch);
+    }
+
+    public static void restoreRotation(float yaw, float pitch) {
+        if (mc.player == null) return;
+        mc.player.setYRot(yaw);
+        mc.player.setXRot(pitch);
+    }
+
     public static void useItemOn(BlockPos pos, Direction face) {
         if (mc.player == null || mc.gameMode == null) return;
         BlockHitResult hit = new BlockHitResult(
