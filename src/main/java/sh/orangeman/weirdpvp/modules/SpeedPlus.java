@@ -141,11 +141,14 @@ public class SpeedPlus extends Module {
         boolean moving = PlayerUtils.isMoving();
         if (!moving) {
             event.movement = new Vec3(0, event.movement.y, 0);
+            level = 1;
+            moveSpeed = getBaseSpeed();
             if (useTimer.get()) Modules.get().get(Timer.class).setOverride(1.0);
             return;
         }
 
-        if (!waterSpeed.get() && isLiquid()) return;
+        if (!waterSpeed.get() && mc.player.isInWater()) return;
+        if (!lavaBoost.get() && mc.player.isInLava()) return;
 
         // Speed level stages
         if (mc.player.onGround()) {
@@ -223,9 +226,5 @@ public class SpeedPlus extends Module {
         }
 
         return Math.max(speed, 0.2873);
-    }
-
-    private boolean isLiquid() {
-        return mc.player.isInWater() || mc.player.isInLava();
     }
 }

@@ -298,7 +298,7 @@ public class AutoShulker extends Module {
         if (target == null) {
             blockAim = posList.stream().min(Comparator.comparing(p -> p.getRange(mc.player))).orElse(null);
         } else {
-            blockAim = posList.stream().max(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
+            blockAim = posList.stream().min(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
         }
 
         if (blockAim != null) {

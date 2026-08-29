@@ -266,7 +266,7 @@ public class AutoCart extends Module {
             if (flintAndSteel.found()) {
                 InvUtils.swap(flintAndSteel.slot(), true);
                 BlockUtils.interact(
-                    new BlockHitResult(Vec3.atCenterOf(targetPos), Direction.UP, targetPos.below(), false),
+                    new BlockHitResult(Vec3.atCenterOf(targetPos), Direction.UP, targetPos, false),
                     InteractionHand.MAIN_HAND,
                     true
                 );

@@ -52,6 +52,6 @@ public class WeirdPvP extends MeteorAddon {
 
     @Override
     public GithubRepo getRepo() {
-        return new GithubRepo("orangeman432", "meteor-weirdpvp");
+        return new GithubRepo("orangeman432", "meteor-5b5t-addon");
     }
 }
