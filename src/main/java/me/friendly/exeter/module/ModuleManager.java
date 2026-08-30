@@ -8,6 +8,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
+import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
@@ -42,6 +43,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Colors());
     register(new HUDEditor());
     register(new AntiAim());
+    register(new DiscordRPC());
     register(new ShulkerDupe());
     register(new AutoItemDupe());
     register(new DonkeyDupe());

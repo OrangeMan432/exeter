@@ -1,6 +1,7 @@
 package me.friendly.exeter.module;
 
 public enum ModuleType {
+  CLIENT("Client"),
   COMBAT("Combat"),
   MISCELLANEOUS("Miscellaneous"),
   MOVEMENT("Movement"),

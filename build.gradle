@@ -71,6 +71,10 @@ repositories {
         name = 'SpongePowered'
         url = 'https://repo.spongepowered.org/maven/'
     }
+    maven {
+        name = 'meteor-maven'
+        url = 'https://maven.meteordev.org/releases'
+    }
 }
 
 dependencies {
@@ -80,6 +84,9 @@ dependencies {
 
     implementation "com.moandjiezana.toml:toml4j:0.7.2"
     compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
+
+    implementation "meteordevelopment:discord-ipc:1.1"
+    implementation "com.google.code.gson:gson:2.11.0"
 }
 
 processResources {
