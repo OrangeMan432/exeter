@@ -114,7 +114,9 @@ public class SelfBed extends ToggleableModule {
     }
 
     private void placeBed(BlockPos supportPos, BlockPos footPos, int slot) {
-        PlayerUtil.swapTo(slot);
+        int selected = minecraft.player.getInventory().getSelectedSlot();
+        boolean needSwitch = slot != selected;
+        if (needSwitch) PlayerUtil.swapTo(slot);
 
         float yaw = minecraft.player.getYRot();
         float pitch = minecraft.player.getXRot();
@@ -128,11 +130,13 @@ public class SelfBed extends ToggleableModule {
         if (rotate.getValue()) {
             PlayerUtil.restoreRotation(yaw, pitch);
         }
-        PlayerUtil.swapBack();
+        if (needSwitch) PlayerUtil.swapBack();
     }
 
     private void useBed(BlockPos usePos, int slot) {
-        PlayerUtil.swapTo(slot);
+        int selected = minecraft.player.getInventory().getSelectedSlot();
+        boolean needSwitch = slot != selected;
+        if (needSwitch) PlayerUtil.swapTo(slot);
 
         float yaw = minecraft.player.getYRot();
         float pitch = minecraft.player.getXRot();
@@ -146,7 +150,7 @@ public class SelfBed extends ToggleableModule {
         if (rotate.getValue()) {
             PlayerUtil.restoreRotation(yaw, pitch);
         }
-        PlayerUtil.swapBack();
+        if (needSwitch) PlayerUtil.swapBack();
     }
 
     private BlockPos findSupport(BlockPos pos) {
