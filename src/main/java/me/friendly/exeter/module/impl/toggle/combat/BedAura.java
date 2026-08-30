@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BedAura extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
@@ -200,7 +201,9 @@ public class BedAura extends ToggleableModule {
     if (!PlayerUtil.isAirOrReplaceable(pos)) return false;
 
     BlockPos supporting = pos.below();
-    if (minecraft.level.getBlockState(supporting).isAir()) return false;
+    BlockState supportingState = minecraft.level.getBlockState(supporting);
+    if (supportingState.isAir()) return false;
+    if (supportingState.getMenuProvider(minecraft.level, supporting) != null) return false;
 
     Direction facing = minecraft.player.getDirection().getOpposite();
     BlockPos headPos = pos.relative(facing);

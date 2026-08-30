@@ -18,7 +18,9 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
 import me.friendly.exeter.module.impl.toggle.misc.ShulkerDupe;
+import me.friendly.exeter.module.impl.toggle.movement.NoBedStep;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
+import me.friendly.exeter.module.impl.toggle.movement.Step;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
@@ -53,6 +55,8 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoPot());
     register(new AutoShulker());
     register(new Velocity());
+    register(new NoBedStep());
+    register(new Step());
     this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
     Exeter.getInstance()
