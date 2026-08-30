@@ -20,9 +20,9 @@ specifically for 5b5t's anticheat stack (AnarchyExploitFixes + LPX).
 - **5b5t-tailored by evidence, not guesswork.** Movement/elytra/chat limits are tuned against the
   actual server-side protection config (AnarchyExploitFixes), not forum rumors.
 
-## Module roster (52 registered)
+## Module roster (54 registered)
 
-### Combat (10)
+### Combat (13)
 | Module | What it does | Key 5b5t tuning |
 |---|---|---|
 | AntiAim | Scrambles reported rotation (spin/random yaw, pitch modes) | view untouched; packet-only |
@@ -34,6 +34,8 @@ specifically for 5b5t's anticheat stack (AnarchyExploitFixes + LPX).
 | NoRotate | Blocks server camera rotation snaps | rotation rewrite, Only-In-Combat opt |
 | SelfBed | Places & uses a bed at your feet for self-damage | conditional slot swap |
 | Surround | Auto-obsidian shell around your feet | old-chunk safe, center pull, block pref |
+| HoleSnap | Finds the nearest safe 1x1/1x2 hole and snaps you into it | Motion/Teleport/Strict modes, center pin, occupancy check |
+| AutoCity | Breaks the block under an enemy's feet (the "city" move) | vanilla dig path, predict next step, min-dist-to-self gate |
 | Velocity | Knockback control | per-axis reduction % (default 0 = vanilla); full cancel opt-in |
 
 ### Movement (8)
