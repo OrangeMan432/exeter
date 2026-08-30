@@ -4,6 +4,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -19,16 +20,23 @@ import net.minecraft.world.phys.BlockHitResult;
  *
  * Switch mode: silent (server-side {@code ServerboundSetCarriedItemPacket} via PlayerUtil, view
  * untouched) or real (selected slot changes, matches what vanilla swap does).
+ *
+ * Customizability:
+ *  - Min Gain % : only swap when the best tool is this much faster (default 10%).
+ *  - Only While Mining : restrict swaps to when the attack key is held.
+ *  - Prefer Hotbar : search the whole inventory for a better tool (off = hotbar only).
  */
 public class AutoTool extends ToggleableModule {
     private final Property<Boolean> silent = new Property<>(true, "Silent", "silent", "s");
     private final Property<Boolean> onlyWhileMining = new Property<>(false, "Only While Mining", "mining", "om");
+    private final NumberProperty<Integer> minGainPct = new NumberProperty<>(10, 0, 100, "Min Gain %", "mingain", "g");
+    private final Property<Boolean> preferHotbar = new Property<>(true, "Prefer Hotbar", "hotbar", "hb");
 
     private int lastBest = -1;
 
     public AutoTool() {
         super("AutoTool", new String[]{"autotool", "at"}, ModuleType.MISCELLANEOUS);
-        offerProperties(silent, onlyWhileMining);
+        offerProperties(silent, onlyWhileMining, minGainPct, preferHotbar);
 
         this.listeners.add(new Listener<TickEvent>("auto_tool_tick") {
             @Override
@@ -51,9 +59,11 @@ public class AutoTool extends ToggleableModule {
                 int best = selected;
                 float bestSpeed = speedFor(player, selected, state);
 
-                for (int i = 0; i <= 8; i++) {
+                int searchMax = preferHotbar.getValue() ? 8 : 35;
+                float gainFactor = 1.0f + minGainPct.getValue() / 100.0f;
+                for (int i = 0; i <= searchMax; i++) {
                     float s = speedFor(player, i, state);
-                    if (s > bestSpeed * 1.1f) { // >10% gain only
+                    if (s > bestSpeed * gainFactor) {
                         bestSpeed = s;
                         best = i;
                     }
