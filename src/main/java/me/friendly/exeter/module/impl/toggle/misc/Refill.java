@@ -7,6 +7,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,12 +38,13 @@ public class Refill extends ToggleableModule {
 
     private final Property<Boolean> sameItemOnly = new Property<>(true, "Same Item Only", "sameitem", "strict");
     private final Property<Boolean> topOffStacks = new Property<>(false, "Top Off Stacks", "topoff", "topup");
+    private final NumberProperty<Integer> cooldownTicks = new NumberProperty<>(1, 1, 20, "Cooldown Ticks", "cooldown", "cd");
 
     private int cooldown = 0;
 
     public Refill() {
         super("Refill", new String[]{"refill", "invrefill"}, ModuleType.MISCELLANEOUS);
-        offerProperties(sameItemOnly, topOffStacks);
+        offerProperties(sameItemOnly, topOffStacks, cooldownTicks);
 
         this.listeners.add(new Listener<TickEvent>("refill_tick") {
             @Override
@@ -115,9 +117,22 @@ public class Refill extends ToggleableModule {
 
                 minecraft.player.containerMenu.clicked(source.index, 0, ContainerInput.PICKUP, minecraft.player);
                 minecraft.player.containerMenu.clicked(target.index, 0, ContainerInput.PICKUP, minecraft.player);
-                cooldown = 1;
+                cooldown = Math.max(1, cooldownTicks.getValue());
             }
         });
+    }
+
+    @Override
+    protected void onEnable() {
+        super.onEnable();
+        slotMemory.clear();
+        cooldown = 0;
+    }
+
+    @Override
+    protected void onDisable() {
+        super.onDisable();
+        slotMemory.clear();
     }
 
     /**
