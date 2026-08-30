@@ -16,11 +16,12 @@ import net.minecraft.client.player.LocalPlayer;
  * movement path: each client tick, the module advances the player's movement by
  * {@code Speed} ticks worth of velocity (re-applying the per-tick delta). Speed 1.0 = vanilla.
  *
- * Values &gt; 1.15 will rubber-band on most 5b5t movement checks; the practical range for
- * travel is 1.0-1.1. Kept configurable for testing private servers.
+ * Values &gt; 1.15 will rubber-band on 5b5t movement checks; practical range for travel
+ * is 1.0-1.1. Default 1.05 = conservative travel preset; hard-clamped at 1.15 — values
+ * above that get rubber-banded instantly on 5b5t. Kept configurable for private servers.
  */
 public class Timer extends ToggleableModule {
-    private final NumberProperty<Double> speed = new NumberProperty<>(1.0, 0.1, 2.0, "Speed", "speed", "s");
+    private final NumberProperty<Double> speed = new NumberProperty<>(1.05, 0.1, 1.15, "Speed", "speed", "s");
 
     public Timer() {
         super("Timer", new String[]{"timer", "gamespeed"}, ModuleType.MISCELLANEOUS);
