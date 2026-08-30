@@ -35,7 +35,7 @@ public final class ClickGui extends Screen {
 
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
 
-    int totalPanels = ModuleType.values().length + 1;
+    int totalPanels = ModuleType.values().length;
     int panelWidth = 90;
     int totalGuiWidth = totalPanels * panelWidth;
 
@@ -44,6 +44,7 @@ public final class ClickGui extends Screen {
     int x = startX - 90;
 
     for (final ModuleType moduleType : ModuleType.values()) {
+      if (moduleType == ModuleType.CLIENT) continue;
       this.panels.add(
           new Panel(moduleType.getLabel(), x += 90, 40, true) {
 
@@ -76,7 +77,10 @@ public final class ClickGui extends Screen {
                 .getRegistry()
                 .forEach(
                     module -> {
-                      if (!(module instanceof Toggleable
+                      if (module instanceof ToggleableModule toggleable
+                          && toggleable.getModuleType() == ModuleType.CLIENT) {
+                        this.addButton(new ModuleButton(toggleable));
+                      } else if (!(module instanceof Toggleable
                           || module.getLabel().equalsIgnoreCase("ClickGui"))) {
                         this.addButton(new ModuleButton((Module) module));
                       }
