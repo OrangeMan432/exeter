@@ -77,17 +77,9 @@ extends ToggleableModule {
         target = findTarget();
         if (target == null) return;
 
-        if (waitingToBreak) {
-            if (tickCounter - lastBreakTick >= 2) {
-                minecraft.gameMode.stopDestroyBlock();
-                waitingToBreak = false;
-                lastPlaceTick = tickCounter;
-            }
-            return;
-        }
-
         if (waitingToPlace) {
-            if (tickCounter - lastPlaceTick >= breakDelay.getValue()) {
+            // Wait for the PLACE delay (not breakDelay) before using the placed bed.
+            if (tickCounter - lastPlaceTick >= Math.max(placeDelay.getValue(), 1)) {
                 if (lastBedPos != null) {
                     boolean bedExists = minecraft.level.getBlockState(lastBedPos).getBlock() instanceof BedBlock;
                     if (bedExists) {
@@ -95,8 +87,16 @@ extends ToggleableModule {
                     }
                 }
                 waitingToPlace = false;
-                waitingToBreak = false;
                 lastBreakTick = tickCounter;
+                waitingToBreak = true;
+            }
+            return;
+        }
+
+        if (waitingToBreak) {
+            if (tickCounter - lastBreakTick >= Math.max(breakDelay.getValue(), 1)) {
+                waitingToBreak = false;
+                lastBedPos = null;
             }
             return;
         }
