@@ -58,6 +58,14 @@ public class ESP extends ToggleableModule {
         for (Entity e : collectTargets()) {
             AABB box = e.getBoundingBox().move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
+            // Apply the per-entity color (friend cyan / distance fade) before drawing.
+            int c = colorFor(e);
+            org.lwjgl.opengl.GL11.glColor4f(
+                    ((c >> 16) & 0xFF) / 255.0f,
+                    ((c >> 8) & 0xFF) / 255.0f,
+                    (c & 0xFF) / 255.0f,
+                    ((c >> 24) & 0xFF) / 255.0f);
+
             if (mode.getValue() == BoxMode.FILL) {
                 RenderMethods.drawBox(box);
             } else if (mode.getValue() == BoxMode.CROSS) {
