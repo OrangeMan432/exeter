@@ -91,13 +91,16 @@ public class SpeedPlus extends ToggleableModule {
 
         if (minecraft.player.onGround()) {
             level = 2;
-        }                if (level != 1) {
+        }
+
+        if (level != 1) {
             if (level == 2) {
                 level = 3;
-                if (!strict.getValue() && !minecraft.player.isShiftKeyDown()) {
-                    // 1.6x jumps flag on 5b5t; 1.35x stays under most max-delta thresholds
-                    moveSpeed *= strict.getValue() ? 1.35 : 1.433;
-                } else {
+                if (strict.getValue()) {
+                    // Strict: 1.35x stays under most 5b5t max-delta thresholds.
+                    moveSpeed *= 1.35;
+                } else if (!minecraft.player.isShiftKeyDown()) {
+                    // 1.6x jumps flag on 5b5t; 1.433x is the aggressive default.
                     moveSpeed *= 1.433;
                 }
             } else if (level == 3) {
