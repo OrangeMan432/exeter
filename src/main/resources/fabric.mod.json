@@ -16,7 +16,8 @@
       "me.friendly.exeter.ExeterInitializer"
     ],
     "client": [
-      "me.friendly.exeter.ExeterClientTickHook"
+      "me.friendly.exeter.ExeterClientTickHook",
+      "me.friendly.exeter.ExeterLevelRenderHook"
     ]
   },
   "mixins": [
