@@ -21,14 +21,38 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = Connection.class)
 public class MixinNetworkManager {
 
+    /**
+     * Re-entrancy guard: when a listener replaces a packet we re-send the replacement through
+     * the public {@code send} path, which funnels back into this same private method. The guard
+     * lets our own re-send pass through untouched (no second dispatch, no infinite loop).
+     */
+    private static final ThreadLocal<Boolean> exeter$replacing = ThreadLocal.withInitial(() -> false);
+
     @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
     public void onPacketSend(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
+        if (Exeter.getInstance() == null) return;
+        if (exeter$replacing.get()) return; // our own re-send of a replacement packet
+
         PacketEvent packetSendEvent = new PacketEvent(packet);
         Exeter.getInstance().getEventManager()
                 .dispatch(packetSendEvent);
 
         if (packetSendEvent.isCanceled()) {
             info.cancel();
+            return;
+        }
+
+        // Honor packet replacement (e.g. AntiAim swapping in a scrambled move packet):
+        // cancel the original and send the replacement through the public send path.
+        Packet<?> replacement = packetSendEvent.getPacket();
+        if (replacement != null && replacement != packet) {
+            info.cancel();
+            exeter$replacing.set(true);
+            try {
+                ((Connection) (Object) this).send(replacement, listener, flush);
+            } finally {
+                exeter$replacing.set(false);
+            }
         }
     }
 
