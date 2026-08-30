@@ -66,6 +66,7 @@ import me.friendly.exeter.module.impl.toggle.render.ItemHighlight;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 import me.friendly.exeter.module.impl.toggle.world.AutoMine;
 import me.friendly.exeter.module.impl.toggle.world.FastPlace;
+import me.friendly.exeter.module.impl.toggle.world.AutoFish;
 import me.friendly.exeter.module.impl.toggle.world.Scaffold;
 
 /**
@@ -117,6 +118,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new AntiCrystal());
         register(new NoRotate());
         register(new FastPlace());
+        register(new AutoFish());
         register(new AntiAFK());
         register(new ChatSpam());
         register(new AutoMine());
