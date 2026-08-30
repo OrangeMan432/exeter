@@ -20,11 +20,15 @@ import net.minecraft.client.player.LocalPlayer;
  *
  * The message list is a single string property split on {@code |} — configurable from the
  * ClickGui without a dedicated screen.
+ *
+ * 5b5t rate-limits chat (AEF chat-spam module), so the minimum delay is 100 ticks (5s)
+ * to stay under the message-rate window; default 220 ticks (~11s) matches the slowest
+ * common antispam window.
  */
 public class ChatSpam extends ToggleableModule {
     private final Property<String> messages = new Property<>(
             "Sell dupes at 0,0! | Join the humza squad!", "Messages", "msg", "messages");
-    private final NumberProperty<Integer> delay = new NumberProperty<>(220, 20, 1200, "Delay Ticks", "delay", "d");
+    private final NumberProperty<Integer> delay = new NumberProperty<>(220, 100, 1200, "Delay Ticks", "delay", "d");
     private final Property<Boolean> randomSuffix = new Property<>(true, "Random Suffix", "suffix", "rs");
 
     private int timer = 0;
