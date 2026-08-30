@@ -62,6 +62,7 @@ public class AutoTool extends ToggleableModule {
                 int searchMax = preferHotbar.getValue() ? 8 : 35;
                 float gainFactor = 1.0f + minGainPct.getValue() / 100.0f;
                 for (int i = 0; i <= searchMax; i++) {
+                    if (i == selected) continue;
                     float s = speedFor(player, i, state);
                     if (s > bestSpeed * gainFactor) {
                         bestSpeed = s;
