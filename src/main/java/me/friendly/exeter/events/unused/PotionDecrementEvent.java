@@ -2,7 +2,4 @@ package me.friendly.exeter.events.unused;
 
 import me.friendly.api.event.Event;
 
-public class PotionDecrementEvent
-extends Event {
-}
-
+public class PotionDecrementEvent extends Event {}

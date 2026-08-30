@@ -5,37 +5,47 @@ import java.awt.datatransfer.StringSelection;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
 
-public final class Grab
-extends Command {
-    public Grab() {
-        super(new String[]{"grab", "grabip", "grabcoords"}, new Argument("ip|coords"));
-    }
+public final class Grab extends Command {
+  public Grab() {
+    super(new String[] {"grab", "grabip", "grabcoords"}, new Argument("ip|coords"));
+  }
 
-    @Override
-    public String dispatch() {
-        String type;
-        switch (type = this.getArgument("ip|coords").getValue()) {
-            case "ip": 
-            case "i": {
-                String address = minecraft.getCurrentServer().ip;
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(address), null);
-                break;
-            }
-            case "coords": 
-            case "coord": 
-            case "coordinates": 
-            case "coordinate": 
-            case "c": {
-//                String coords = String.format("X: %s, Y: %s, Z: %s", (int)minecraft.player.posX, (int)this.minecraft.player.posY, (int)this.minecraft.player.posZ);
-                String coords = String.format("X: %s, Y: %s, Z: %s", minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ());
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(coords), null);
-                break;
-            }
-            default: {
-                return "Incorrect type.";
-            }
+  @Override
+  public String dispatch() {
+    String type;
+    switch (type = this.getArgument("ip|coords").getValue()) {
+      case "ip":
+      case "i":
+        {
+          String address = minecraft.getCurrentServer().ip;
+          Toolkit.getDefaultToolkit()
+              .getSystemClipboard()
+              .setContents(new StringSelection(address), null);
+          break;
         }
-        return "Copied the selected type.";
+      case "coords":
+      case "coord":
+      case "coordinates":
+      case "coordinate":
+      case "c":
+        {
+          //                String coords = String.format("X: %s, Y: %s, Z: %s",
+          // (int)minecraft.player.posX, (int)this.minecraft.player.posY,
+          // (int)this.minecraft.player.posZ);
+          String coords =
+              String.format(
+                  "X: %s, Y: %s, Z: %s",
+                  minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ());
+          Toolkit.getDefaultToolkit()
+              .getSystemClipboard()
+              .setContents(new StringSelection(coords), null);
+          break;
+        }
+      default:
+        {
+          return "Incorrect type.";
+        }
     }
+    return "Copied the selected type.";
+  }
 }
-

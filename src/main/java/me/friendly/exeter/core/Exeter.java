@@ -2,7 +2,6 @@ package me.friendly.exeter.core;
 
 import java.io.*;
 import java.io.File;
-
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
@@ -17,122 +16,126 @@ import me.friendly.exeter.plugin.PluginManager;
 /**
  * Exeter client for Fabric 26.2
  *
- * Exeter client. A client created by Friendly,
- * for Minecraft version 1.8. It has been released
- * or leaked on that version. Gopro336 has obtained
- * that version, and here, has reconstructed the
- * original source code. In this process, Gopro has
- * also ported the client to his preferred version
- * and platform, Minecraft 26.2 Fabric. Furthermore,
- * Gopro has done work to clean up the decompiled code,
- * and javadoc it.
+ * <p>Exeter client. A client created by Friendly, for Minecraft version 1.8. It has been released
+ * or leaked on that version. Gopro336 has obtained that version, and here, has reconstructed the
+ * original source code. In this process, Gopro has also ported the client to his preferred version
+ * and platform, Minecraft 26.2 Fabric. Furthermore, Gopro has done work to clean up the decompiled
+ * code, and javadoc it.
  *
  * @author Friendly
  * @author Gopro336
  * @version b24
  */
 public final class Exeter {
-    private static Exeter instance = null;
-    public static final String TITLE = "Exeter";
-    public static final String HASH = "7fc646b6b65d4257";
-    public static final String BUILD = "b25+2";
-    public final long startTime = System.nanoTime() / 1000000L;
-    private BasicEventManager eventManager;
-    private KeybindManager keybindManager;
-    private ModuleManager moduleManager;
-    private CommandManager commandManager;
-    private FriendManager friendManager;
-    private ConfigManager configManager;
-    private ExeterConfig exeterConfig;
-    private AccountManager accountManager;
-    private PluginManager pluginManager;
-    private File directory;
+  private static Exeter instance = null;
+  public static final String TITLE = "Exeter";
+  public static final String HASH = "854870f33d90af6b";
+  public static final String BUILD = "b25+3";
+  public final long startTime = System.nanoTime() / 1000000L;
+  private BasicEventManager eventManager;
+  private KeybindManager keybindManager;
+  private ModuleManager moduleManager;
+  private CommandManager commandManager;
+  private FriendManager friendManager;
+  private ConfigManager configManager;
+  private ExeterConfig exeterConfig;
+  private AccountManager accountManager;
+  private PluginManager pluginManager;
+  private File directory;
 
-    public Exeter() {
+  public Exeter() {
 
-        Logger.getLogger().print("Initializing...");
-        instance = this;
+    Logger.getLogger().print("Initializing...");
+    instance = this;
 
-        // In exeter 1.8, the config file is named clarinet for whatever reason. I changed that to be exeter
-        this.directory = new File(System.getProperty("user.home"), "exeter");
-//        this.directory = new File(System.getProperty("user.home"), "clarinet");
+    // In exeter 1.8, the config file is named clarinet for whatever reason. I changed that to be
+    // exeter
+    this.directory = new File(System.getProperty("user.home"), "exeter");
+    //        this.directory = new File(System.getProperty("user.home"), "clarinet");
 
-        if (!this.directory.exists()) {
-            Logger.getLogger().print(String.format("%s client directory.", this.directory.mkdir() ? "Created" : "Failed to create"));
-        }
-        this.eventManager = new BasicEventManager();
-        this.configManager = new ConfigManager();
-        this.friendManager = new FriendManager();
-        this.keybindManager = new KeybindManager();
-        this.commandManager = new CommandManager();
-        this.exeterConfig = new ExeterConfig();
-        this.moduleManager = new ModuleManager();
-//        this.accountManager = new AccountManager();
-        this.pluginManager = new PluginManager();
-        this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
-        try {
-            this.pluginManager.onLoad();
-            System.out.println("Plugin manager started.");
-            System.out.println(this.pluginManager.getList() + "has been loaded.");
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        Runtime.getRuntime().addShutdownHook(new Thread("Shutdown Hook Thread"){
+    if (!this.directory.exists()) {
+      Logger.getLogger()
+          .print(
+              String.format(
+                  "%s client directory.", this.directory.mkdir() ? "Created" : "Failed to create"));
+    }
+    this.eventManager = new BasicEventManager();
+    this.configManager = new ConfigManager();
+    this.friendManager = new FriendManager();
+    this.keybindManager = new KeybindManager();
+    this.commandManager = new CommandManager();
+    this.exeterConfig = new ExeterConfig();
+    this.moduleManager = new ModuleManager();
+    //        this.accountManager = new AccountManager();
+    this.pluginManager = new PluginManager();
+    this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
+    try {
+      this.pluginManager.onLoad();
+      System.out.println("Plugin manager started.");
+      System.out.println(this.pluginManager.getList() + "has been loaded.");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread("Shutdown Hook Thread") {
 
-            @Override
-            public void run() {
+              @Override
+              public void run() {
                 Logger.getLogger().print("Shutting down...");
                 getConfigManager().getRegistry().forEach(config -> config.save(new Object[0]));
                 Logger.getLogger().print("Shutdown.");
-            }
-        });
-        Logger.getLogger().print(String.format("Initialized, took %s milliseconds.", System.nanoTime() / 1000000L - this.startTime));
-    }
+              }
+            });
+    Logger.getLogger()
+        .print(
+            String.format(
+                "Initialized, took %s milliseconds.",
+                System.nanoTime() / 1000000L - this.startTime));
+  }
 
-    public static Exeter getInstance() {
-        return instance;
-    }
+  public static Exeter getInstance() {
+    return instance;
+  }
 
-    public ModuleManager getModuleManager() {
-        return this.moduleManager;
-    }
+  public ModuleManager getModuleManager() {
+    return this.moduleManager;
+  }
 
-    public CommandManager getCommandManager() {
-        return this.commandManager;
-    }
+  public CommandManager getCommandManager() {
+    return this.commandManager;
+  }
 
-    public KeybindManager getKeybindManager() {
-        return this.keybindManager;
-    }
+  public KeybindManager getKeybindManager() {
+    return this.keybindManager;
+  }
 
-    public FriendManager getFriendManager() {
-        return this.friendManager;
-    }
+  public FriendManager getFriendManager() {
+    return this.friendManager;
+  }
 
-    public BasicEventManager getEventManager() {
-        return this.eventManager;
-    }
+  public BasicEventManager getEventManager() {
+    return this.eventManager;
+  }
 
-    public ConfigManager getConfigManager() {
-        return this.configManager;
-    }
+  public ConfigManager getConfigManager() {
+    return this.configManager;
+  }
 
-    public ExeterConfig getExeterConfig() {
-        return this.exeterConfig;
-    }
+  public ExeterConfig getExeterConfig() {
+    return this.exeterConfig;
+  }
 
-    // AccountManager is not working
-    public AccountManager getAccountManager() {
-        return this.accountManager;
-    }
+  // AccountManager is not working
+  public AccountManager getAccountManager() {
+    return this.accountManager;
+  }
 
-    public PluginManager getPluginManager() {
-        return this.pluginManager;
-    }
+  public PluginManager getPluginManager() {
+    return this.pluginManager;
+  }
 
-    public File getDirectory() {
-        return this.directory;
-    }
+  public File getDirectory() {
+    return this.directory;
+  }
 }
-

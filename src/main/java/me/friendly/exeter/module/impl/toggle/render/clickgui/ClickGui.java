@@ -11,111 +11,127 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
-public final class ClickGui
-extends Screen {
-    private static ClickGui clickGui;
-//    public final CustomFont guiFont = new CustomFont("Segoe UI", 18.0f);
-    private final ArrayList<Panel> panels = new ArrayList();
+public final class ClickGui extends Screen {
+  private static ClickGui clickGui;
+  //    public final CustomFont guiFont = new CustomFont("Segoe UI", 18.0f);
+  private final ArrayList<Panel> panels = new ArrayList();
 
-    public ClickGui() {
-        super(Component.literal("ClickGui"));
-        if (this.getPanels().isEmpty()) {
-            this.load();
-        }
+  public ClickGui() {
+    super(Component.literal("ClickGui"));
+    if (this.getPanels().isEmpty()) {
+      this.load();
     }
+  }
 
-    public static ClickGui getClickGui() {
-        return clickGui == null ? (clickGui = new ClickGui()) : clickGui;
-    }
+  public static ClickGui getClickGui() {
+    return clickGui == null ? (clickGui = new ClickGui()) : clickGui;
+  }
 
-    private void load() {
-        this.panels.clear();
+  private void load() {
+    this.panels.clear();
 
-        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+    int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
 
-        int totalPanels = ModuleType.values().length + 1;
-        int panelWidth = 90;
-        int totalGuiWidth = totalPanels * panelWidth;
+    int totalPanels = ModuleType.values().length + 1;
+    int panelWidth = 90;
+    int totalGuiWidth = totalPanels * panelWidth;
 
-        int startX = (screenWidth / 2) - (totalGuiWidth / 2);
-        
-        int x = startX - 90;
+    int startX = (screenWidth / 2) - (totalGuiWidth / 2);
 
-        for (final ModuleType moduleType : ModuleType.values()) {
-            this.panels.add(new Panel(moduleType.getLabel(), x += 90, 40, true){
+    int x = startX - 90;
 
-                @Override
-                public void setupItems() {
-                    Exeter.getInstance().getModuleManager().getRegistry().forEach(module -> {
-                        ToggleableModule toggleableModule;
-                        if (module instanceof Toggleable && !module.getLabel().equalsIgnoreCase("ClickGui") && (toggleableModule = (ToggleableModule)module).getModuleType().equals((Object)moduleType)) {
-                            this.addButton(new ModuleButton(toggleableModule));
-                        }
-                    });
-                }
-            });
-        }
-        this.panels.add(new Panel("Client", x += 90, 40, true){
+    for (final ModuleType moduleType : ModuleType.values()) {
+      this.panels.add(
+          new Panel(moduleType.getLabel(), x += 90, 40, true) {
 
             @Override
             public void setupItems() {
-                Exeter.getInstance().getModuleManager().getRegistry().forEach(module -> {
-                    if (!(module instanceof Toggleable || module.getLabel().equalsIgnoreCase("ClickGui"))) {
-                        this.addButton(new ModuleButton((Module)module));
-                    }
-                });
+              Exeter.getInstance()
+                  .getModuleManager()
+                  .getRegistry()
+                  .forEach(
+                      module -> {
+                        ToggleableModule toggleableModule;
+                        if (module instanceof Toggleable
+                            && !module.getLabel().equalsIgnoreCase("ClickGui")
+                            && (toggleableModule = (ToggleableModule) module)
+                                .getModuleType()
+                                .equals((Object) moduleType)) {
+                          this.addButton(new ModuleButton(toggleableModule));
+                        }
+                      });
             }
+          });
+    }
+    this.panels.add(
+        new Panel("Client", x += 90, 40, true) {
+
+          @Override
+          public void setupItems() {
+            Exeter.getInstance()
+                .getModuleManager()
+                .getRegistry()
+                .forEach(
+                    module -> {
+                      if (!(module instanceof Toggleable
+                          || module.getLabel().equalsIgnoreCase("ClickGui"))) {
+                        this.addButton(new ModuleButton((Module) module));
+                      }
+                    });
+          }
         });
-        this.panels.forEach(panel -> panel.getItems().sort((item1, item2) -> item1.getLabel().compareTo(item2.getLabel())));
-    }
+    this.panels.forEach(
+        panel ->
+            panel.getItems().sort((item1, item2) -> item1.getLabel().compareTo(item2.getLabel())));
+  }
 
-    @Override
-    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        RenderMethods.guiGraphics = guiGraphics;
-        RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
-        this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
-    }
+  @Override
+  public void extractRenderState(
+      GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    RenderMethods.guiGraphics = guiGraphics;
+    RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
+    this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
+  }
 
-    // this will recenter the gui when the window size changes
-    @Override
-    public void init() {
-        this.load();
-    }
+  // this will recenter the gui when the window size changes
+  @Override
+  public void init() {
+    this.load();
+  }
 
-//    @Override
-//    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-//        this.drawDefaultBackground();
-//        this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
-//    }
+  //    @Override
+  //    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+  //        this.drawDefaultBackground();
+  //        this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
+  //    }
 
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
-        int mouseX = (int) event.x();
-        int mouseY = (int) event.y();
-        int clickedButton = event.button();
-        this.panels.forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
-        return super.mouseClicked(event, bool);
-    }
+  @Override
+  public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
+    int mouseX = (int) event.x();
+    int mouseY = (int) event.y();
+    int clickedButton = event.button();
+    this.panels.forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
+    return super.mouseClicked(event, bool);
+  }
 
-    @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        int mouseX = (int) event.x();
-        int mouseY = (int) event.y();
-        int releaseButton = event.button();
-        this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
-        return super.mouseReleased(event);
-    }
+  @Override
+  public boolean mouseReleased(MouseButtonEvent event) {
+    int mouseX = (int) event.x();
+    int mouseY = (int) event.y();
+    int releaseButton = event.button();
+    this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
+    return super.mouseReleased(event);
+  }
 
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
+  @Override
+  public boolean isPauseScreen() {
+    return false;
+  }
 
-    public final ArrayList<Panel> getPanels() {
-        return this.panels;
-    }
+  public final ArrayList<Panel> getPanels() {
+    return this.panels;
+  }
 }
-

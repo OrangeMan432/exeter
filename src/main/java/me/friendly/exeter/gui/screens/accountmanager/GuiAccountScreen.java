@@ -1,35 +1,35 @@
-//package me.friendly.exeter.gui.screens.accountmanager;
+// package me.friendly.exeter.gui.screens.accountmanager;
 //
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
-//import java.io.BufferedWriter;
-//import java.io.FileNotFoundException;
-//import java.io.FileReader;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.util.HashMap;
-//import java.util.Random;
-//import java.util.Scanner;
-//import javax.swing.JFileChooser;
-//import javax.swing.JFrame;
-//import javax.swing.filechooser.FileNameExtensionFilter;
-//import me.friendly.exeter.core.Exeter;
-//import me.friendly.exeter.gui.screens.accountmanager.Account;
-//import me.friendly.exeter.gui.screens.accountmanager.AccountException;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiAccountAdd;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiAccountSlot;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiDirectLogin;
-//import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiGraphicsButton;
-//import net.minecraft.client.gui.GuiGraphicsMainMenu;
-//import net.minecraft.client.gui.GuiGraphicsScreen;
-//import net.minecraft.client.gui.GuiGraphicsYesNo;
-//import net.minecraft.client.gui.GuiGraphicsYesNoCallback;
-//import net.minecraft.client.resources.ResourcePackRepository;
+// import java.awt.event.ActionEvent;
+// import java.awt.event.ActionListener;
+// import java.io.BufferedWriter;
+// import java.io.FileNotFoundException;
+// import java.io.FileReader;
+// import java.io.FileWriter;
+// import java.io.IOException;
+// import java.util.HashMap;
+// import java.util.Random;
+// import java.util.Scanner;
+// import javax.swing.JFileChooser;
+// import javax.swing.JFrame;
+// import javax.swing.filechooser.FileNameExtensionFilter;
+// import me.friendly.exeter.core.Exeter;
+// import me.friendly.exeter.gui.screens.accountmanager.Account;
+// import me.friendly.exeter.gui.screens.accountmanager.AccountException;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiAccountAdd;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiAccountSlot;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiDirectLogin;
+// import net.minecraft.client.Minecraft;
+// import net.minecraft.client.gui.GuiGraphicsButton;
+// import net.minecraft.client.gui.GuiGraphicsMainMenu;
+// import net.minecraft.client.gui.GuiGraphicsScreen;
+// import net.minecraft.client.gui.GuiGraphicsYesNo;
+// import net.minecraft.client.gui.GuiGraphicsYesNoCallback;
+// import net.minecraft.client.resources.ResourcePackRepository;
 //
-//public class GuiAccountScreen
-//extends GuiScreen
-//implements GuiYesNoCallback {
+// public class GuiAccountScreen
+// extends GuiScreen
+// implements GuiYesNoCallback {
 //    private String dispErrorString = "";
 //    private boolean deleteMenuOpen = false;
 //    private GuiAccountSlot accountSlot;
@@ -45,13 +45,20 @@
 //    @Override
 //    public void initGui() {
 //        this.buttonList.clear();
-//        this.buttonList.add(new GuiButton(2, this.width / 2 - 76, this.height - 48, 73, 20, "Login"));
-//        this.buttonList.add(new GuiButton(5, this.width / 2, this.height - 48, 73, 20, "Direct Login"));
-//        this.buttonList.add(new GuiButton(1, this.width / 2 - 154, this.height - 48, 73, 20, "Add"));
-//        this.buttonList.add(new GuiButton(3, this.width / 2 + 78, this.height - 48, 73, 20, "Remove"));
-//        this.buttonList.add(new GuiButton(4, this.width / 2 - 76, this.height - 26, 149, 20, "Back"));
-//        this.buttonList.add(new GuiButton(6, this.width / 2 - 154, this.height - 26, 73, 20, "Random"));
-//        this.buttonList.add(new GuiButton(7, this.width / 2 + 78, this.height - 26, 73, 20, "Import"));
+//        this.buttonList.add(new GuiButton(2, this.width / 2 - 76, this.height - 48, 73, 20,
+// "Login"));
+//        this.buttonList.add(new GuiButton(5, this.width / 2, this.height - 48, 73, 20, "Direct
+// Login"));
+//        this.buttonList.add(new GuiButton(1, this.width / 2 - 154, this.height - 48, 73, 20,
+// "Add"));
+//        this.buttonList.add(new GuiButton(3, this.width / 2 + 78, this.height - 48, 73, 20,
+// "Remove"));
+//        this.buttonList.add(new GuiButton(4, this.width / 2 - 76, this.height - 26, 149, 20,
+// "Back"));
+//        this.buttonList.add(new GuiButton(6, this.width / 2 - 154, this.height - 26, 73, 20,
+// "Random"));
+//        this.buttonList.add(new GuiButton(7, this.width / 2 + 78, this.height - 26, 73, 20,
+// "Import"));
 //        this.accountSlot = new GuiAccountSlot(this);
 //    }
 //
@@ -76,7 +83,8 @@
 //            ++this.accountSlot.selected;
 //        }
 //        if (keyCode == 28) {
-//            Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.selected);
+//            Account account =
+// (Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.selected);
 //            try {
 //                Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
 //            }
@@ -102,14 +110,16 @@
 //            }
 //            if (guiButton.id == 2) {
 //                try {
-//                    Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.getSelected());
+//                    Account account =
+// (Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.getSelected());
 //                    if (account.isPremium()) {
 //                        try {
 //                            HashMap<String, Object> map = new HashMap<String, Object>(3, 1.0f);
 //                            map.put("user", account.getLabel());
 //                            map.put("password", account.getPassword());
 //                            map.put("version", 13);
-//                            Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
+//                            Minecraft.getInstance().processLogin(account.getLabel(),
+// account.getPassword());
 //                        }
 //                        catch (Exception exception) {
 //                            Exeter.getInstance().getAccountManager().unregister(account);
@@ -125,10 +135,12 @@
 //        }
 //        if (guiButton.id == 3) {
 //            try {
-//                String s1 = "Are you sure you want to delete the alt \"" + ((Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.getSelected())).getLabel() + "\"" + "?";
+//                String s1 = "Are you sure you want to delete the alt \"" +
+// ((Account)Exeter.getInstance().getAccountManager().getRegistry().get(this.accountSlot.getSelected())).getLabel() + "\"" + "?";
 //                String s3 = "Delete";
 //                String s4 = "Cancel";
-//                GuiYesNo guiyesno = new GuiYesNo(this, s1, "", s3, s4, this.accountSlot.getSelected());
+//                GuiYesNo guiyesno = new GuiYesNo(this, s1, "", s3, s4,
+// this.accountSlot.getSelected());
 //                this.deleteMenuOpen = true;
 //                this.mc.displayGuiScreen(guiyesno);
 //            }
@@ -145,7 +157,8 @@
 //        }
 //        if (guiButton.id == 6) {
 //            Random random = new Random();
-//            Account a1 = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(random.nextInt(Exeter.getInstance().getAccountManager().getRegistry().size()));
+//            Account a1 =
+// (Account)Exeter.getInstance().getAccountManager().getRegistry().get(random.nextInt(Exeter.getInstance().getAccountManager().getRegistry().size()));
 //            try {
 //                if (a1.isPremium()) {
 //                    try {
@@ -180,13 +193,15 @@
 //
 //            @Override
 //            public void actionPerformed(ActionEvent e) {
-//                if (e.getActionCommand().equals("ApproveSelection") && chooser.getSelectedFile() != null) {
+//                if (e.getActionCommand().equals("ApproveSelection") && chooser.getSelectedFile()
+// != null) {
 //                    try {
 //                        Scanner scanner = new Scanner(new FileReader(chooser.getSelectedFile()));
 //                        scanner.useDelimiter("\n");
 //                        while (scanner.hasNext()) {
 //                            String[] split = scanner.next().trim().split(":");
-//                            Exeter.getInstance().getAccountManager().getRegistry().add(new Account(split[0], split[1]));
+//                            Exeter.getInstance().getAccountManager().getRegistry().add(new
+// Account(split[0], split[1]));
 //                        }
 //                        scanner.close();
 //                    }
@@ -195,10 +210,12 @@
 //                    }
 //                    try {
 //                        StringBuilder data = new StringBuilder();
-//                        for (Account alt : Exeter.getInstance().getAccountManager().getRegistry()) {
+//                        for (Account alt : Exeter.getInstance().getAccountManager().getRegistry())
+// {
 //                            data.append(alt.getFileLine() + "\n");
 //                        }
-//                        BufferedWriter writer = new BufferedWriter(new FileWriter(Exeter.getInstance().getDirectory() + "/accounts.txt"));
+//                        BufferedWriter writer = new BufferedWriter(new
+// FileWriter(Exeter.getInstance().getDirectory() + "/accounts.txt"));
 //                        writer.write(data.toString());
 //                        writer.close();
 //                    }
@@ -223,8 +240,13 @@
 //    @Override
 //    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 //        this.accountSlot.drawScreen(mouseX, mouseY, partialTicks);
-//        this.mc.fontRenderer.drawStringWithShadow(Minecraft.getInstance().getSession().getUsername(), this.width - this.mc.fontRenderer.getStringWidth(Minecraft.getInstance().getSession().getUsername()) - 2, 2.0f, 0xA0A0A0);
-//        this.mc.fontRenderer.drawStringWithShadow("Accounts: " + Exeter.getInstance().getAccountManager().getRegistry().size(), 2.0f, 2.0f, 0xA0A0A0);
+//
+// this.mc.fontRenderer.drawStringWithShadow(Minecraft.getInstance().getSession().getUsername(),
+// this.width -
+// this.mc.fontRenderer.getStringWidth(Minecraft.getInstance().getSession().getUsername()) - 2,
+// 2.0f, 0xA0A0A0);
+//        this.mc.fontRenderer.drawStringWithShadow("Accounts: " +
+// Exeter.getInstance().getAccountManager().getRegistry().size(), 2.0f, 2.0f, 0xA0A0A0);
 //        if (this.dispErrorString.length() > 1) {
 //            ++this.timer;
 //            if (this.timer > 100) {
@@ -234,5 +256,5 @@
 //        }
 //        super.drawScreen(mouseX, mouseY, partialTicks);
 //    }
-//}
+// }
 //

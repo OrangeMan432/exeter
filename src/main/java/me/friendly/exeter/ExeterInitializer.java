@@ -5,8 +5,8 @@ import net.fabricmc.api.ModInitializer;
 
 public class ExeterInitializer implements ModInitializer {
 
-    @Override
-    public void onInitialize() {
-        new Exeter();
-    }
+  @Override
+  public void onInitialize() {
+    new Exeter();
+  }
 }

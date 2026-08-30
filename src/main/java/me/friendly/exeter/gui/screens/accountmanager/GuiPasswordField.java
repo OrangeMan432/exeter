@@ -1,17 +1,17 @@
-//package me.friendly.exeter.gui.screens.accountmanager;///*
+// package me.friendly.exeter.gui.screens.accountmanager;///*
 //
-//import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.FontRenderer;
-//import net.minecraft.client.gui.GuiGraphics;
-//import net.minecraft.client.gui.GuiGraphicsScreen;
-//import com.mojang.blaze3d.vertex.BufferBuilder;
-//import com.mojang.blaze3d.vertex.Tesselator;
-//import net.minecraft.client.renderer.WorldRenderer;
-//import net.minecraft.util.ChatAllowedCharacters;
-//import org.lwjgl.opengl.GL11;
+// import net.minecraft.client.Minecraft;
+// import net.minecraft.client.gui.FontRenderer;
+// import net.minecraft.client.gui.GuiGraphics;
+// import net.minecraft.client.gui.GuiGraphicsScreen;
+// import com.mojang.blaze3d.vertex.BufferBuilder;
+// import com.mojang.blaze3d.vertex.Tesselator;
+// import net.minecraft.client.renderer.WorldRenderer;
+// import net.minecraft.util.ChatAllowedCharacters;
+// import org.lwjgl.opengl.GL11;
 //
-//public class GuiPasswordField
-//extends Gui {
+// public class GuiPasswordField
+// extends Gui {
 //    private final FontRenderer fontRenderer;
 //    private final int xPos;
 //    private final int yPos;
@@ -31,7 +31,8 @@
 //    private int disabledColor = 0x707070;
 //    private boolean field_73823_s = true;
 //
-//    public GuiPasswordField(FontRenderer par1FontRenderer, int par2, int par3, int par4, int par5) {
+//    public GuiPasswordField(FontRenderer par1FontRenderer, int par2, int par3, int par4, int par5)
+// {
 //        this.fontRenderer = par1FontRenderer;
 //        this.xPos = par2;
 //        this.yPos = par3;
@@ -44,7 +45,8 @@
 //    }
 //
 //    public void setText(String par1Str) {
-//        this.text = par1Str.length() > this.maxStringLength ? par1Str.substring(0, this.maxStringLength) : par1Str;
+//        this.text = par1Str.length() > this.maxStringLength ? par1Str.substring(0,
+// this.maxStringLength) : par1Str;
 //        this.setCursorPositionEnd();
 //    }
 //
@@ -53,8 +55,10 @@
 //    }
 //
 //    public String getSelectedtext() {
-//        int var1 = this.cursorPosition < this.selectionEnd ? this.cursorPosition : this.selectionEnd;
-//        int var2 = this.cursorPosition < this.selectionEnd ? this.selectionEnd : this.cursorPosition;
+//        int var1 = this.cursorPosition < this.selectionEnd ? this.cursorPosition :
+// this.selectionEnd;
+//        int var2 = this.cursorPosition < this.selectionEnd ? this.selectionEnd :
+// this.cursorPosition;
 //        return this.text.substring(var1, var2);
 //    }
 //
@@ -62,8 +66,10 @@
 //        int var8;
 //        String var2 = "";
 //        String var3 = ChatAllowedCharacters.filterAllowedCharacters(par1Str);
-//        int var4 = this.cursorPosition < this.selectionEnd ? this.cursorPosition : this.selectionEnd;
-//        int var5 = this.cursorPosition < this.selectionEnd ? this.selectionEnd : this.cursorPosition;
+//        int var4 = this.cursorPosition < this.selectionEnd ? this.cursorPosition :
+// this.selectionEnd;
+//        int var5 = this.cursorPosition < this.selectionEnd ? this.selectionEnd :
+// this.cursorPosition;
 //        int var6 = this.maxStringLength - this.text.length() - (var4 - this.selectionEnd);
 //        if (this.text.length() > 0) {
 //            var2 = var2 + this.text.substring(0, var4);
@@ -268,7 +274,8 @@
 //
 //    public void mouseClicked(int par1, int par2, int par3) {
 //        boolean var4;
-//        boolean bl = var4 = par1 >= this.xPos && par1 < this.xPos + this.width && par2 >= this.yPos && par2 < this.yPos + this.height;
+//        boolean bl = var4 = par1 >= this.xPos && par1 < this.xPos + this.width && par2 >=
+// this.yPos && par2 < this.yPos + this.height;
 //        if (this.canLoseFocus) {
 //            this.setFocused(this.isEnabled && var4);
 //        }
@@ -277,33 +284,42 @@
 //            if (this.enableBackgroundDrawing) {
 //                var5 -= 4;
 //            }
-//            String var6 = this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), this.getWidth());
-//            this.setCursorPosition(this.fontRenderer.trimStringToWidth(var6, var5).length() + this.field_73816_n);
+//            String var6 =
+// this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), this.getWidth());
+//            this.setCursorPosition(this.fontRenderer.trimStringToWidth(var6, var5).length() +
+// this.field_73816_n);
 //        }
 //    }
 //
 //    public void drawTextBox() {
 //        if (this.func_73778_q()) {
 //            if (this.getEnableBackgroundDrawing()) {
-//                GuiPasswordField.drawRect(this.xPos - 1, this.yPos - 1, this.xPos + this.width + 1, this.yPos + this.height + 1, -6250336);
-//                GuiPasswordField.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.height, -16777216);
+//                GuiPasswordField.drawRect(this.xPos - 1, this.yPos - 1, this.xPos + this.width +
+// 1, this.yPos + this.height + 1, -6250336);
+//                GuiPasswordField.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos
+// + this.height, -16777216);
 //            }
 //            int var1 = this.isEnabled ? this.enabledColor : this.disabledColor;
 //            int var2 = this.cursorPosition - this.field_73816_n;
 //            int var3 = this.selectionEnd - this.field_73816_n;
-//            String var4 = this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), this.getWidth());
+//            String var4 =
+// this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), this.getWidth());
 //            boolean var5 = var2 >= 0 && var2 <= var4.length();
 //            boolean var6 = this.isFocused && this.cursorCounter / 6 % 2 == 0 && var5;
 //            int var7 = this.enableBackgroundDrawing ? this.xPos + 4 : this.xPos;
-//            int var8 = this.enableBackgroundDrawing ? this.yPos + (this.height - 8) / 2 : this.yPos;
+//            int var8 = this.enableBackgroundDrawing ? this.yPos + (this.height - 8) / 2 :
+// this.yPos;
 //            int var9 = var7;
 //            if (var3 > var4.length()) {
 //                var3 = var4.length();
 //            }
 //            if (var4.length() > 0) {
-//                var9 = Minecraft.getInstance().fontRenderer.drawStringWithShadow(this.text.replaceAll("(?s).", "*"), var7, var8, var1);
+//                var9 =
+// Minecraft.getInstance().fontRenderer.drawStringWithShadow(this.text.replaceAll("(?s).", "*"),
+// var7, var8, var1);
 //            }
-//            boolean var13 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
+//            boolean var13 = this.cursorPosition < this.text.length() || this.text.length() >=
+// this.getMaxStringLength();
 //            int var11 = var9;
 //            if (!var5) {
 //                var11 = var2 > 0 ? var7 + this.width : var7;
@@ -312,18 +328,22 @@
 //                --var9;
 //            }
 //            if (var4.length() > 0 && var5 && var2 < var4.length()) {
-//                Minecraft.getInstance().fontRenderer.drawStringWithShadow(var4.substring(var2), var9, var8, var1);
+//                Minecraft.getInstance().fontRenderer.drawStringWithShadow(var4.substring(var2),
+// var9, var8, var1);
 //            }
 //            if (var6) {
 //                if (var13) {
-//                    Gui.drawRect(var11, var8 - 1, var11 + 1, var8 + 1 + this.fontRenderer.FONT_HEIGHT, -3092272);
+//                    Gui.drawRect(var11, var8 - 1, var11 + 1, var8 + 1 +
+// this.fontRenderer.FONT_HEIGHT, -3092272);
 //                } else {
-//                    Minecraft.getInstance().fontRenderer.drawStringWithShadow("_", var11, var8, var1);
+//                    Minecraft.getInstance().fontRenderer.drawStringWithShadow("_", var11, var8,
+// var1);
 //                }
 //            }
 //            if (var3 != var2) {
 //                int var12 = var7 + this.fontRenderer.getStringWidth(var4.substring(0, var3));
-//                this.drawCursorVertical(var11, var8 - 1, var12 - 1, var8 + 1 + this.fontRenderer.FONT_HEIGHT);
+//                this.drawCursorVertical(var11, var8 - 1, var12 - 1, var8 + 1 +
+// this.fontRenderer.FONT_HEIGHT);
 //            }
 //        }
 //    }
@@ -409,10 +429,12 @@
 //                this.field_73816_n = var2;
 //            }
 //            int var3 = this.getWidth();
-//            String var4 = this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), var3);
+//            String var4 =
+// this.fontRenderer.trimStringToWidth(this.text.substring(this.field_73816_n), var3);
 //            int var5 = var4.length() + this.field_73816_n;
 //            if (par1 == this.field_73816_n) {
-//                this.field_73816_n -= this.fontRenderer.trimStringToWidth(this.text, var3, true).length();
+//                this.field_73816_n -= this.fontRenderer.trimStringToWidth(this.text, var3,
+// true).length();
 //            }
 //            if (par1 > var5) {
 //                this.field_73816_n += par1 - var5;
@@ -431,5 +453,5 @@
 //    public boolean func_73778_q() {
 //        return this.field_73823_s;
 //    }
-//}
+// }
 //

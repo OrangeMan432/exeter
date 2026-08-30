@@ -12,10 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardHandler.class)
 public class MixinKeyboardHandler {
 
-    @Inject(method = "keyPress", at = @At("HEAD"))
-    private void onKeyPress(long window, int action, KeyEvent event, CallbackInfo ci) {
-        if (action == 1 && Exeter.getInstance() != null) {
-            Exeter.getInstance().getEventManager().dispatch(new InputEvent(InputEvent.Type.KEYBOARD_KEY_PRESS, event.key()));
-        }
+  @Inject(method = "keyPress", at = @At("HEAD"))
+  private void onKeyPress(long window, int action, KeyEvent event, CallbackInfo ci) {
+    if (action == 1 && Exeter.getInstance() != null) {
+      Exeter.getInstance()
+          .getEventManager()
+          .dispatch(new InputEvent(InputEvent.Type.KEYBOARD_KEY_PRESS, event.key()));
     }
+  }
 }

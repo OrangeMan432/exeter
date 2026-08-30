@@ -1,15 +1,15 @@
-//package me.friendly.exeter.gui.screens.accountmanager;
+// package me.friendly.exeter.gui.screens.accountmanager;
 //
-//import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
-//import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiGraphicsButton;
-//import net.minecraft.client.gui.GuiGraphicsScreen;
-//import net.minecraft.client.gui.GuiGraphicsTextField;
-//import net.minecraft.util.Session;
-//import org.lwjgl.glfw.GLFW;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
+// import net.minecraft.client.Minecraft;
+// import net.minecraft.client.gui.GuiGraphicsButton;
+// import net.minecraft.client.gui.GuiGraphicsScreen;
+// import net.minecraft.client.gui.GuiGraphicsTextField;
+// import net.minecraft.util.Session;
+// import org.lwjgl.glfw.GLFW;
 //
-//public class GuiDirectLogin
-//extends GuiScreen {
+// public class GuiDirectLogin
+// extends GuiScreen {
 //    private final GuiScreen parentScreen;
 //    private GuiTextField usernameTextField;
 //    private GuiPasswordField passwordTextField;
@@ -43,14 +43,16 @@
 //                String usernameTextFieldText = this.usernameTextField.getText();
 //                String passwordTextFieldText = this.passwordTextField.getText();
 //                try {
-//                    String result = Minecraft.getInstance().processLogin(usernameTextFieldText, passwordTextFieldText).trim();
+//                    String result = Minecraft.getInstance().processLogin(usernameTextFieldText,
+// passwordTextFieldText).trim();
 //                    if (result == null || !result.contains(":")) {
 //                        this.error = result;
 //                        return;
 //                    }
 //                    String[] values = result.split(":");
 //                    if (values.length > 1) {
-//                        this.minecraft.setSession(new Session(values[2], values[4], values[3], "mojang"));
+//                        this.minecraft.setSession(new Session(values[2], values[4], values[3],
+// "mojang"));
 //                    }
 //                    this.minecraft.displayGuiScreen(this.parentScreen);
 //                }
@@ -58,7 +60,8 @@
 //                    exception.printStackTrace();
 //                }
 //            } else {
-//                this.minecraft.setSession(new Session(this.usernameTextField.getText(), "", "", "mojang"));
+//                this.minecraft.setSession(new Session(this.usernameTextField.getText(), "", "",
+// "mojang"));
 //            }
 //            this.minecraft.displayGuiScreen(this.parentScreen);
 //        }
@@ -98,10 +101,14 @@
 //    public void initGui() {
 //        Keyboard.enableRepeatEvents((boolean)true);
 //        this.buttonList.clear();
-//        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, "Done"));
-//        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, "Cancel"));
-//        this.usernameTextField = new GuiTextField(6, this.fontRendererObj, this.width / 2 - 100, 76, 200, 20);
-//        this.passwordTextField = new GuiPasswordField(this.fontRendererObj, this.width / 2 - 100, 116, 200, 20);
+//        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12,
+// "Done"));
+//        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12,
+// "Cancel"));
+//        this.usernameTextField = new GuiTextField(6, this.fontRendererObj, this.width / 2 - 100,
+// 76, 200, 20);
+//        this.passwordTextField = new GuiPasswordField(this.fontRendererObj, this.width / 2 - 100,
+// 116, 200, 20);
 //        this.usernameTextField.setMaxStringLength(512);
 //    }
 //
@@ -114,9 +121,10 @@
 //        this.usernameTextField.drawTextBox();
 //        this.passwordTextField.drawTextBox();
 //        if (this.error != null) {
-//            this.drawCenteredString(this.fontRendererObj, "\u00a7cLogin Failed: " + this.error, this.width / 2, this.height / 4 + 72 + 12, -1);
+//            this.drawCenteredString(this.fontRendererObj, "\u00a7cLogin Failed: " + this.error,
+// this.width / 2, this.height / 4 + 72 + 12, -1);
 //        }
 //        super.drawScreen(mouseX, mouseY, partialTicks);
 //    }
-//}
+// }
 //

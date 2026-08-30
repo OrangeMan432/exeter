@@ -12,34 +12,32 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * This class is not present in the original
- * Exeter 1.8 client. It was added as part
- * of the Fabric 1.21.11 port
+ * This class is not present in the original Exeter 1.8 client. It was added as part of the Fabric
+ * 1.21.11 port
  *
  * @author Gopro336
  */
 @Mixin(value = Connection.class)
 public class MixinNetworkManager {
 
-    @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
-    public void onPacketSend(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
-        PacketEvent packetSendEvent = new PacketEvent(packet);
-        Exeter.getInstance().getEventManager()
-                .dispatch(packetSendEvent);
+  @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
+  public void onPacketSend(
+      Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
+    PacketEvent packetSendEvent = new PacketEvent(packet);
+    Exeter.getInstance().getEventManager().dispatch(packetSendEvent);
 
-        if (packetSendEvent.isCanceled()) {
-            info.cancel();
-        }
+    if (packetSendEvent.isCanceled()) {
+      info.cancel();
     }
+  }
 
-    @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)
-    public void onPacketReceive(ChannelHandlerContext chc, Packet<?> packet, CallbackInfo info) {
-        PacketEvent packetReceiveEvent = new PacketEvent(packet);
-        Exeter.getInstance().getEventManager()
-                .dispatch(packetReceiveEvent);
+  @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)
+  public void onPacketReceive(ChannelHandlerContext chc, Packet<?> packet, CallbackInfo info) {
+    PacketEvent packetReceiveEvent = new PacketEvent(packet);
+    Exeter.getInstance().getEventManager().dispatch(packetReceiveEvent);
 
-        if (packetReceiveEvent.isCanceled()) {
-            info.cancel();
-        }
+    if (packetReceiveEvent.isCanceled()) {
+      info.cancel();
     }
+  }
 }

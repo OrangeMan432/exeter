@@ -1,19 +1,19 @@
-//package me.friendly.exeter.gui.screens.accountmanager;///*
+// package me.friendly.exeter.gui.screens.accountmanager;///*
 //
-//import java.io.IOException;
+// import java.io.IOException;
 //
-//import com.mojang.realmsclient.gui.ChatFormatting;
-//import me.friendly.exeter.core.Exeter;
-//import me.friendly.exeter.gui.screens.accountmanager.Account;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
-//import net.minecraft.client.gui.GuiGraphicsButton;
-//import net.minecraft.client.gui.GuiGraphicsScreen;
-//import net.minecraft.client.gui.GuiGraphicsTextField;
-//import org.lwjgl.glfw.GLFW;
+// import com.mojang.realmsclient.gui.ChatFormatting;
+// import me.friendly.exeter.core.Exeter;
+// import me.friendly.exeter.gui.screens.accountmanager.Account;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiPasswordField;
+// import net.minecraft.client.gui.GuiGraphicsButton;
+// import net.minecraft.client.gui.GuiGraphicsScreen;
+// import net.minecraft.client.gui.GuiGraphicsTextField;
+// import org.lwjgl.glfw.GLFW;
 //
-//public class GuiAccountAdd
-//extends GuiScreen {
+// public class GuiAccountAdd
+// extends GuiScreen {
 //    private GuiTextField usernameBox;
 //    private GuiPasswordField passwordBox;
 //    private String errorMessage = "";
@@ -22,10 +22,14 @@
 //    @Override
 //    public void initGui() {
 //        Keyboard.enableRepeatEvents((boolean)true);
-//        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 96 + 12, "Add"));
-//        this.buttonList.add(new GuiButton(2, this.width / 2 - 100, this.height / 4 + 96 + 36, "Back"));
-//        this.usernameBox = new GuiTextField(6, this.fontRendererObj, this.width / 2 - 100, 76, 200, 20);
-//        this.passwordBox = new GuiPasswordField(this.fontRendererObj, this.width / 2 - 100, 116, 200, 20);
+//        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 96 + 12,
+// "Add"));
+//        this.buttonList.add(new GuiButton(2, this.width / 2 - 100, this.height / 4 + 96 + 36,
+// "Back"));
+//        this.usernameBox = new GuiTextField(6, this.fontRendererObj, this.width / 2 - 100, 76,
+// 200, 20);
+//        this.passwordBox = new GuiPasswordField(this.fontRendererObj, this.width / 2 - 100, 116,
+// 200, 20);
 //        this.usernameBox.setMaxStringLength(120);
 //        this.passwordBox.setMaxStringLength(100);
 //    }
@@ -59,12 +63,15 @@
 //            if (!this.usernameBox.getText().trim().isEmpty()) {
 //                if (this.passwordBox.getText().trim().isEmpty()) {
 //                    Account account = new Account(this.usernameBox.getText().trim());
-//                    if (!Exeter.getInstance().getAccountManager().getRegistry().contains(account)) {
+//                    if (!Exeter.getInstance().getAccountManager().getRegistry().contains(account))
+// {
 //                        Exeter.getInstance().getAccountManager().register(account);
 //                    }
 //                } else {
-//                    Account account = new Account(this.usernameBox.getText().trim(), this.passwordBox.getText().trim());
-//                    if (!Exeter.getInstance().getAccountManager().getRegistry().contains(account)) {
+//                    Account account = new Account(this.usernameBox.getText().trim(),
+// this.passwordBox.getText().trim());
+//                    if (!Exeter.getInstance().getAccountManager().getRegistry().contains(account))
+// {
 //                        Exeter.getInstance().getAccountManager().register(account);
 //                    }
 //                }
@@ -96,9 +103,13 @@
 //    @Override
 //    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 //        this.drawDefaultBackground();
-//        this.mc.fontRenderer.drawStringWithShadow(String.format("%s* \u00a77Username", new Object[]{this.usernameBox.getText().length() > 1 ? ChatFormatting.GREEN : ChatFormatting.RED}), this.width / 2 - 109, 63.0f, 0xA0A0A0);
-//        this.mc.fontRenderer.drawStringWithShadow("Password", this.width / 2 - 100, 103.0f, 0xA0A0A0);
-//        this.mc.fontRenderer.drawStringWithShadow(this.errorMessage, this.width / 2 - this.fontRendererObj.getStringWidth(this.errorMessage), 13.0f, 0xA0A0A0);
+//        this.mc.fontRenderer.drawStringWithShadow(String.format("%s* \u00a77Username", new
+// Object[]{this.usernameBox.getText().length() > 1 ? ChatFormatting.GREEN : ChatFormatting.RED}),
+// this.width / 2 - 109, 63.0f, 0xA0A0A0);
+//        this.mc.fontRenderer.drawStringWithShadow("Password", this.width / 2 - 100, 103.0f,
+// 0xA0A0A0);
+//        this.mc.fontRenderer.drawStringWithShadow(this.errorMessage, this.width / 2 -
+// this.fontRendererObj.getStringWidth(this.errorMessage), 13.0f, 0xA0A0A0);
 //        if (this.errorMessage.length() > 1) {
 //            ++this.errorTime;
 //            if (this.errorTime > 1700) {
@@ -115,5 +126,5 @@
 //        }
 //        super.drawScreen(mouseX, mouseY, partialTicks);
 //    }
-//}
+// }
 //

@@ -9,25 +9,26 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 
 public class Velocity extends ToggleableModule {
 
-    private final Listener<PacketEvent> packetListener = new Listener<PacketEvent>("velocity_packet") {
+  private final Listener<PacketEvent> packetListener =
+      new Listener<PacketEvent>("velocity_packet") {
         @Override
         public void call(PacketEvent event) {
-            if (minecraft.player == null) return;
+          if (minecraft.player == null) return;
 
-            if (event.getPacket() instanceof ClientboundSetEntityMotionPacket packet) {
-                if (packet.id() == minecraft.player.getId()) {
-                    event.setCanceled(true);
-                }
+          if (event.getPacket() instanceof ClientboundSetEntityMotionPacket packet) {
+            if (packet.id() == minecraft.player.getId()) {
+              event.setCanceled(true);
             }
+          }
 
-            if (event.getPacket() instanceof ClientboundExplodePacket) {
-                event.setCanceled(true);
-            }
+          if (event.getPacket() instanceof ClientboundExplodePacket) {
+            event.setCanceled(true);
+          }
         }
-    };
+      };
 
-    public Velocity() {
-        super("Velocity", new String[]{"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.MOVEMENT);
-        this.listeners.add(packetListener);
-    }
+  public Velocity() {
+    super("Velocity", new String[] {"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.MOVEMENT);
+    this.listeners.add(packetListener);
+  }
 }

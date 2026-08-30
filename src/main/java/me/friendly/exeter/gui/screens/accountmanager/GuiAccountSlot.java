@@ -1,14 +1,14 @@
-//package me.friendly.exeter.gui.screens.accountmanager;
+// package me.friendly.exeter.gui.screens.accountmanager;
 //
-//import me.friendly.exeter.core.Exeter;
-//import me.friendly.exeter.gui.screens.accountmanager.Account;
-//import me.friendly.exeter.gui.screens.accountmanager.AccountException;
-//import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
-//import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.GuiGraphicsSlot;
+// import me.friendly.exeter.core.Exeter;
+// import me.friendly.exeter.gui.screens.accountmanager.Account;
+// import me.friendly.exeter.gui.screens.accountmanager.AccountException;
+// import me.friendly.exeter.gui.screens.accountmanager.GuiAccountScreen;
+// import net.minecraft.client.Minecraft;
+// import net.minecraft.client.gui.GuiGraphicsSlot;
 //
-//public class GuiAccountSlot
-//extends GuiSlot {
+// public class GuiAccountSlot
+// extends GuiSlot {
 //    private GuiAccountScreen guiAccountScreen;
 //    int selected;
 //
@@ -32,7 +32,8 @@
 //    protected void elementClicked(int slotIndex, boolean isDoubleClick, int mouseX, int mouseY) {
 //        this.selected = slotIndex;
 //        if (isDoubleClick) {
-//            Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(slotIndex);
+//            Account account =
+// (Account)Exeter.getInstance().getAccountManager().getRegistry().get(slotIndex);
 //            try {
 //                Minecraft.getInstance().processLogin(account.getLabel(), account.getPassword());
 //            }
@@ -59,13 +60,17 @@
 //    @Override
 //    protected void drawSlot(int selectedIndex, int x, int y, int var5, int var6, int var7) {
 //        try {
-//            Account account = (Account)Exeter.getInstance().getAccountManager().getRegistry().get(selectedIndex);
-//            this.mc.fontRenderer.drawCenteredString(((Account)Exeter.getInstance().getAccountManager().getRegistry().get(selectedIndex)).getLabel(), this.mc.displayWidth / 2, y + 2, -5592406, true);
-//            this.mc.fontRenderer.drawCenteredString(account.isPremium() ? account.getPassword().replaceAll("(?s).", "*") : "Not Available", this.mc.displayWidth / 2, y + 15, -5592406, true);
+//            Account account =
+// (Account)Exeter.getInstance().getAccountManager().getRegistry().get(selectedIndex);
+//
+// this.mc.fontRenderer.drawCenteredString(((Account)Exeter.getInstance().getAccountManager().getRegistry().get(selectedIndex)).getLabel(), this.mc.displayWidth / 2, y + 2, -5592406, true);
+//            this.mc.fontRenderer.drawCenteredString(account.isPremium() ?
+// account.getPassword().replaceAll("(?s).", "*") : "Not Available", this.mc.displayWidth / 2, y +
+// 15, -5592406, true);
 //        }
 //        catch (AccountException exception) {
 //            exception.printStackTrace();
 //        }
 //    }
-//}
+// }
 //
