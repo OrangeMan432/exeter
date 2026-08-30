@@ -22,8 +22,14 @@ import net.minecraft.world.item.Items;
  *
  * Safety: only acts while {@code isFallFlying()} is true with an elytra equipped (checked via
  * the chest slot item being {@code Items.ELYTRA} — on 26.2 elytra is a plain item with
- * equipment data, no dedicated ElytraItem class). Horizontal speed is capped so most servers'
- * movement checks don't rubber-band straight-line flight.
+ * equipment data, no dedicated ElytraItem class).
+ *
+ * 5b5t tuning (from the AnarchyExploitFixes config 5b5t runs):
+ *  - old-chunk speed limit is ~1.81 → default cap 1.7 (safety margin)
+ *  - burst windows allow ~3.12-5.0 at high TPS → optional Burst toggle
+ *  - nether roof is hard-capped at 0.5 → auto-applied above y=127 in the nether
+ *  - packet-elytra (glide-toggle) is detected (>25 opens/8s) → we never toggle gliding,
+ *    all modes work on deltaMovement only.
  */
 public class ElytraFly extends ToggleableModule {
     private enum Mode { BOOST, CONTROL, VANILLA }
@@ -33,10 +39,13 @@ public class ElytraFly extends ToggleableModule {
     private final NumberProperty<Double> controlSpeed = new NumberProperty<>(1.8, 0.2, 5.0, "Control Speed", "speed", "s");
     private final Property<Boolean> verticalControl = new Property<>(true, "Vertical Control", "vertical", "v");
     private final Property<Boolean> stabilize = new Property<>(true, "Stabilize", "stabilize", "stab");
+    private final NumberProperty<Double> speedCap = new NumberProperty<>(1.7, 0.4, 4.0, "Speed Cap", "cap");
+    private final Property<Boolean> burst = new Property<>(false, "Burst (new chunks)", "burst", "b");
+    private final Property<Boolean> netherRoofLimit = new Property<>(true, "Nether Roof Limit", "netherroof", "nr");
 
     public ElytraFly() {
         super("ElytraFly", new String[]{"elytrafly", "elytra"}, ModuleType.MOVEMENT);
-        offerProperties(mode, boostFactor, controlSpeed, verticalControl, stabilize);
+        offerProperties(mode, boostFactor, controlSpeed, verticalControl, stabilize, speedCap, burst, netherRoofLimit);
 
         this.listeners.add(new Listener<TickEvent>("elytra_fly_tick") {
             @Override
@@ -81,7 +90,7 @@ public class ElytraFly extends ToggleableModule {
                 if (stabilize.getValue() && mode.getValue() != Mode.VANILLA) {
                     var after = player.getDeltaMovement();
                     double horizontal = Math.sqrt(after.x * after.x + after.z * after.z);
-                    double cap = speedCap();
+                    double cap = effectiveCap(player);
                     if (horizontal > cap) {
                         double scale = cap / horizontal;
                         player.setDeltaMovement(after.x * scale, after.y, after.z * scale);
@@ -91,9 +100,24 @@ public class ElytraFly extends ToggleableModule {
         });
     }
 
-    private double speedCap() {
-        return mode.getValue() == Mode.CONTROL
-                ? controlSpeed.getValue() * 1.5
-                : 2.5 * boostFactor.getValue();
+    /**
+     * Cap effective this tick. Nether roof (y >= 127 in the nether) is hard-limited
+     * to 0.5 like AEF does; Burst raises the cap to the new-chunk burst window (3.1)
+     * which only stays safe in fresh chunks at good TPS.
+     */
+    private double effectiveCap(LocalPlayer player) {
+        if (netherRoofLimit.getValue()
+                && player.level().dimension() == net.minecraft.world.level.Level.NETHER
+                && player.getY() >= 127.0) {
+            return 0.5;
+        }
+        double cap = speedCap.getValue();
+        if (burst.getValue() && mode.getValue() != Mode.CONTROL) {
+            cap = Math.max(cap, 3.1);
+        }
+        if (mode.getValue() == Mode.CONTROL) {
+            cap = Math.min(cap, controlSpeed.getValue() * 1.5);
+        }
+        return cap;
     }
 }
