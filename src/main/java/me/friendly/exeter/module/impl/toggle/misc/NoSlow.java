@@ -47,7 +47,9 @@ public class NoSlow extends ToggleableModule {
                 }
 
                 if (hadFreeSpeed) {
-                    double cap = 0.35; // below most anticheat max-delta thresholds
+                    // Keep restored delta conservative — 5b5t movement checks flag large
+                    // per-tick deltas; 0.2873 ≈ vanilla sprint speed per tick.
+                    double cap = 0.2873;
                     player.setDeltaMovement(
                             clamp(lastFreeX, cap),
                             player.getDeltaMovement().y,
