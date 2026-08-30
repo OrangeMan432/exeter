@@ -16,9 +16,12 @@ import net.minecraft.world.entity.player.Input;
  * (chat wouldn't be sprint-jumpable otherwise) and while using items (bows/pearls/food).
  */
 public class AutoJump extends ToggleableModule {
+    private final Property<Boolean> onlyWhenMoving = new Property<>(true, "Only When Moving", "moving");
+    private final Property<Boolean> skipUsingItem = new Property<>(true, "Skip While Using Item", "skipusing");
 
     public AutoJump() {
         super("AutoJump", new String[]{"autojump", "ajump"}, ModuleType.MOVEMENT);
+        offerProperties(onlyWhenMoving, skipUsingItem);
 
         this.listeners.add(new Listener<TickEvent>("auto_jump_tick") {
             @Override
@@ -26,12 +29,13 @@ public class AutoJump extends ToggleableModule {
                 LocalPlayer player = minecraft.player;
                 if (player == null || minecraft.level == null) return;
                 if (minecraft.gui.screen() != null) return;
-                if (player.isUsingItem()) return;
+                if (skipUsingItem.getValue() && player.isUsingItem()) return;
                 if (!player.onGround()) return;
                 if (player.input == null || player.input.keyPresses == null) return;
 
                 Input keys = player.input.keyPresses;
-                if (keys.forward() || keys.backward() || keys.left() || keys.right()) {
+                boolean moving = keys.forward() || keys.backward() || keys.left() || keys.right();
+                if (onlyWhenMoving.getValue() ? moving : true) {
                     player.jumpFromGround();
                 }
             }
