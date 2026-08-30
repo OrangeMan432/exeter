@@ -53,6 +53,9 @@ public class ChatSpam extends ToggleableModule {
                 String msg = msgs.get(index % msgs.size());
                 index++;
 
+                // Messages support %placeholders% (e.g. "Selling at %coords%! | %players% online").
+                msg = me.friendly.exeter.util.PlaceholderAPI.apply(msg);
+
                 if (randomSuffix.getValue()) {
                     msg = msg + " \u00a77[" + Integer.toHexString((int) (Math.random() * 0xFFFF)) + "]";
                 }

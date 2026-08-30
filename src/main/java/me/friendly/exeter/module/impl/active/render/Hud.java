@@ -33,6 +33,8 @@ extends Module {
     private final Property<Boolean> potions = new Property<Boolean>(true, "Potions", "pots");
     private final Property<Boolean> time = new Property<Boolean>(true, "Time", "t");
     private final Property<Boolean> coords = new Property<Boolean>(true, "Coords", "coord", "c", "cord");
+    private final Property<String> watermarkText = new Property<>("%player% | %fps% fps | %ping% ms", "Watermark Text", "wmtext");
+    private final Property<String> coordsFormat = new Property<>("\u00a7f%coords% \u00a77XYZ", "Coords Format", "coordfmt");
     private final Property<Boolean> arraylist = new Property<Boolean>(true, "ArrayList", "array", "al");
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
     private final EnumProperty<Organize> organize = new EnumProperty<Organize>(Organize.LENGTH, "Organize", "o");
@@ -43,11 +45,16 @@ extends Module {
 
     public Hud() {
         super("Hud", new String[]{"textgui", "hud", "overlay"});
-        this.offerProperties(this.customFont, this.look, this.watermark, this.organize, this.transparent, this.potions, this.armor, this.time, this.direction, this.arraylist, this.coords);
+        this.offerProperties(this.customFont, this.look, this.watermark, this.organize, this.transparent, this.potions, this.armor, this.time, this.direction, this.arraylist, this.coords, this.watermarkText, this.coordsFormat);
 
         hudComponents.add(new HudComponent("Watermark", 2, 2, 100, 9) {
             @Override public void render(int sw, int sh) {
                 String text = String.format("%s \u00a77%s %s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH);
+                // Watermark Text supports %placeholders% (e.g. "%player% | %fps% fps | %ping% ms").
+                String custom = me.friendly.exeter.util.PlaceholderAPI.apply(watermarkText.getValue());
+                if (!custom.isEmpty()) {
+                    text = custom;
+                }
                 FontUtil.drawString(text, getX(), getY(), transparent.getValue() != false ? -1711276033 : -1);
             }
         });
@@ -121,7 +128,8 @@ extends Module {
         });
         hudComponents.add(new HudComponent("Coords", 0, 0, 100, 9) {
             @Override public void render(int sw, int sh) {
-                String text = String.format("\u00a7f%s, %s, %s \u00a77XYZ", (int)minecraft.player.getX(), (int)minecraft.player.getY(), (int)minecraft.player.getZ());
+                // Coords Format supports %placeholders% (default "%coords% XYZ").
+                String text = me.friendly.exeter.util.PlaceholderAPI.apply(coordsFormat.getValue());
                 FontUtil.drawString(text, getX(), getY(), -1);
             }
         });
