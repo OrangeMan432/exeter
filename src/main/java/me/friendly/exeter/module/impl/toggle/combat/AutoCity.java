@@ -82,13 +82,14 @@ public class AutoCity extends ToggleableModule {
                 if (!PlayerUtil.inRange(under, targetRange.getValue())) return;
 
                 // Break via vanilla dig path (server-validated timing).
-                Direction face = Direction.UP; // dig from above
+                final BlockPos cityTarget = under;
+                final Direction face = Direction.UP; // dig from above
                 if (silentAim.getValue()) {
-                    double yaw = PlayerUtil.getYaw(under);
-                    double pitch = PlayerUtil.getPitch(under);
-                    PlayerUtil.withRotation(yaw, pitch, () -> dig(under, face));
+                    double yaw = PlayerUtil.getYaw(cityTarget);
+                    double pitch = PlayerUtil.getPitch(cityTarget);
+                    PlayerUtil.withRotation(yaw, pitch, () -> dig(cityTarget, face));
                 } else {
-                    dig(under, face);
+                    dig(cityTarget, face);
                 }
 
                 if (!under.equals(lastTarget)) {
