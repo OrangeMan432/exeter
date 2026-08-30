@@ -61,6 +61,7 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoLog;
 import me.friendly.exeter.module.impl.toggle.render.NoWeather;
 import me.friendly.exeter.module.impl.toggle.render.CityESP;
 import me.friendly.exeter.module.impl.toggle.render.Freecam;
+import me.friendly.exeter.module.impl.toggle.render.Trajectories;
 import me.friendly.exeter.module.impl.toggle.render.ItemHighlight;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 import me.friendly.exeter.module.impl.toggle.world.AutoMine;
@@ -136,6 +137,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new NoWeather());
         register(new CityESP());
         register(new Freecam());
+        register(new Trajectories());
         register(new ItemHighlight());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
