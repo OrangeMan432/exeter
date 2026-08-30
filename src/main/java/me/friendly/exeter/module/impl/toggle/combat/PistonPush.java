@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -18,7 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
 
-public class AntiHoleCamper extends ToggleableModule {
+public class PistonPush extends ToggleableModule {
     private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
     private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
     private final Property<Boolean> debug = new Property<Boolean>(false, "Debug");
@@ -29,12 +30,13 @@ public class AntiHoleCamper extends ToggleableModule {
     private int lastPlaceTick;
     private Player target;
 
-    public AntiHoleCamper() {
-        super("Anti Hole Camper", new String[]{"antiholecamper", "anti-hole-camper"}, 0xFF0000, ModuleType.COMBAT);
+    public PistonPush() {
+        super("PistonPush", new String[]{"pistonpush", "piston-push"}, 0xFF0000, ModuleType.COMBAT);
         offerProperties(rotate, swingHand, debug, range, placeDelay);
-        this.listeners.add(new Listener<TickEvent>("anti_hole_camper_tick") {
+        this.listeners.add(new Listener<TickEvent>("piston_push_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 onTick();
             }
         });

@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.misc;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -39,6 +40,7 @@ public class AutoItemDupe extends ToggleableModule {
         this.listeners.add(new Listener<TickEvent>("auto_item_dupe_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 if (minecraft.player == null) return;
                 if (phase == Phase.NONE) return;
 

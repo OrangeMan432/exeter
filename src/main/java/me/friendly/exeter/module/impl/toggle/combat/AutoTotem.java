@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.combat;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -14,12 +15,13 @@ public class AutoTotem extends ToggleableModule {
     private final Listener<TickEvent> tickListener = new Listener<TickEvent>("autototem_tick") {
         @Override
         public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
             onTick();
         }
     };
 
     public AutoTotem() {
-        super("Auto Totem", new String[]{"autototem", "auto-totem"}, 0xFF0000, ModuleType.COMBAT);
+        super("AutoTotem", new String[]{"autototem", "auto-totem"}, 0xFF0000, ModuleType.COMBAT);
         this.listeners.add(tickListener);
     }
 

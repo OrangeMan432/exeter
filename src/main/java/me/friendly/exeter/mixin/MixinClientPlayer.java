@@ -16,7 +16,12 @@ public class MixinClientPlayer {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void onTick(CallbackInfo info) {
-        Exeter.getInstance().getEventManager().dispatch(new TickEvent());
+        Exeter.getInstance().getEventManager().dispatch(new TickEvent(Stage.PRE));
+    }
+
+    @Inject(method = "tick", at = @At("RETURN"))
+    public void onTickReturn(CallbackInfo info) {
+        Exeter.getInstance().getEventManager().dispatch(new TickEvent(Stage.POST));
     }
 
     @Inject(method = "onUpdateWalkingPlayer", at = @At("HEAD"))

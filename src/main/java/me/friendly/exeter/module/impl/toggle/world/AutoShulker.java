@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.world;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -57,12 +58,13 @@ public class AutoShulker extends ToggleableModule {
     private final Listener<TickEvent> tickListener = new Listener<TickEvent>("auto_shulker_tick") {
         @Override
         public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
             onTick();
         }
     };
 
     public AutoShulker() {
-        super("Auto Shulker", new String[]{"autoshulker", "auto-shulker"}, 0x00FF00, ModuleType.WORLD);
+        super("AutoShulker", new String[]{"autoshulker", "auto-shulker"}, 0x00FF00, ModuleType.WORLD);
         this.offerProperties(once, emptySlots, disableAfterDeath, range, yRange, targetRange,
                 tickDelay, openDelay, inventory, slot, packetPlace, placeSwing, packetSwing, packetSwitch);
         this.listeners.add(tickListener);

@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.combat;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -37,13 +38,14 @@ extends ToggleableModule {
     private boolean waitingToPlace;
 
     public BedAura() {
-        super("Bed Aura", new String[]{"bedaura", "bed-aura"}, 0xFF0000, ModuleType.COMBAT);
+        super("BedAura", new String[]{"bedaura", "bed-aura"}, 0xFF0000, ModuleType.COMBAT);
 
         this.offerProperties(rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand);
 
         this.listeners.add(new Listener<TickEvent>("bed_aura_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 BedAura.this.onTick();
             }
         });

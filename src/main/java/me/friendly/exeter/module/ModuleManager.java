@@ -10,21 +10,21 @@ import org.lwjgl.glfw.GLFW;
 import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
-import me.friendly.exeter.module.impl.toggle.combat.AntiHoleCamper;
+import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
-import me.friendly.exeter.module.impl.toggle.combat.Velocity;
-import me.friendly.exeter.module.impl.toggle.movement.SpeedPlus;
+import me.friendly.exeter.module.impl.toggle.movement.Speed;
+import me.friendly.exeter.module.impl.toggle.combat.PistonPush;
+import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
+import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.misc.ShulkerDupe;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.DonkeyDupe;
-import me.friendly.exeter.module.impl.toggle.misc.Refill;
-import me.friendly.exeter.module.impl.toggle.misc.KillAura;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 
@@ -39,26 +39,26 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new Hud());
         register(new ClickGui());
         register(new TabGui());
+        register(new EatTimer());
         register(new Colors());
         register(new HUDEditor());
         register(new AntiAim());
         register(new ShulkerDupe());
         register(new AutoItemDupe());
         register(new DonkeyDupe());
-        register(new Refill());
         register(new AutoTotem());
-        register(new KillAura());
         register(new AutoGear());
         register(new SelfBed());
         register(new BedAura());
-        register(new SpeedPlus());
-        register(new AntiHoleCamper());
+        register(new Speed());
+        register(new PistonPush());
+        register(new AutoCart());
         register(new AutoPot());
         register(new AutoShulker());
         register(new Velocity());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
 
-        Exeter.getInstance().getKeybindManager().getKeybindByLabel("Click Gui").setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        Exeter.getInstance().getKeybindManager().getKeybindByLabel("ClickGui").setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         new Config("module_configurations") {
 

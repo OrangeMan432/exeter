@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.combat;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
@@ -78,7 +79,7 @@ public class AutoPot extends ToggleableModule {
     private boolean preHp;
 
     public AutoPot() {
-        super("Auto Pot", new String[]{"autopot", "auto-pot"}, 0xFF0000, ModuleType.COMBAT);
+        super("AutoPot", new String[]{"autopot", "auto-pot"}, 0xFF0000, ModuleType.COMBAT);
 
         offerProperties(
             hp, health, equal, predict, times, predictHpDelay, healthSlot, hpDelay,
@@ -90,6 +91,7 @@ public class AutoPot extends ToggleableModule {
         listeners.add(new Listener<TickEvent>("auto_pot_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 onTick();
             }
         });

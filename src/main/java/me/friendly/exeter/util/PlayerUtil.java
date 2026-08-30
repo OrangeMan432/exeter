@@ -3,6 +3,7 @@ package me.friendly.exeter.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
@@ -118,7 +119,7 @@ public class PlayerUtil {
 
     public static boolean isMoving() {
         if (mc.player == null) return false;
-        return mc.player.input.hasForwardImpulse();
+        return mc.player.input.hasForwardImpulse() || mc.player.input.keyPresses.left() || mc.player.input.keyPresses.right();
     }
 
     public static boolean isSolid(BlockPos pos) {
@@ -140,5 +141,16 @@ public class PlayerUtil {
                 pos.getY() + 0.5,
                 pos.getZ() + 0.5
         ) <= range * range;
+    }
+
+    public static void breakBlock(BlockPos pos, Direction face) {
+        if (mc.player == null || mc.gameMode == null) return;
+        mc.player.connection.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, face
+        ));
+        mc.player.connection.send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+        mc.player.connection.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, face
+        ));
     }
 }

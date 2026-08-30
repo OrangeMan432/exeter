@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.misc;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
@@ -34,6 +35,7 @@ public class ShulkerDupe extends ToggleableModule {
         this.listeners.add(new Listener<TickEvent>("shulker_dupe_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 if (minecraft.player == null) return;
 
                 boolean open = minecraft.gui.screen() instanceof AbstractContainerScreen;

@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.misc;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -33,6 +34,8 @@ public class AutoGear extends ToggleableModule {
     private final Property<Boolean> confirmSort = new Property<Boolean>(true, "Confirm Sort");
     private final Property<Boolean> invasive = new Property<Boolean>(false, "Invasive");
     private final Property<Boolean> closeAfter = new Property<Boolean>(false, "Close After");
+    private final me.friendly.exeter.properties.NumberProperty<Integer> tickDelay = new me.friendly.exeter.properties.NumberProperty<Integer>(0, 0, 20, "Tick Delay");
+    private final me.friendly.exeter.properties.NumberProperty<Integer> movesPerTick = new me.friendly.exeter.properties.NumberProperty<Integer>(36, 1, 36, "Moves Per Tick");
 
     private HashMap<Integer, String> planInventory = new HashMap<>();
     private final HashMap<Integer, String> containerInv = new HashMap<>();
@@ -46,13 +49,14 @@ public class AutoGear extends ToggleableModule {
     private final Listener<TickEvent> tickListener = new Listener<TickEvent>("autogear_tick") {
         @Override
         public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
             onTick();
         }
     };
 
     public AutoGear() {
-        super("Auto Gear", new String[]{"autogear", "auto-gear"}, 0xFF0000, ModuleType.MISCELLANEOUS);
-        offerProperties(enderChest, confirmSort, invasive, closeAfter);
+        super("AutoGear", new String[]{"autogear", "auto-gear"}, 0xFF0000, ModuleType.MISCELLANEOUS);
+        offerProperties(enderChest, confirmSort, invasive, closeAfter, tickDelay, movesPerTick);
         this.listeners.add(tickListener);
     }
 
@@ -112,6 +116,12 @@ public class AutoGear extends ToggleableModule {
         if (minecraft.player == null || minecraft.level == null) return;
         if (planInventory.isEmpty()) return;
 
+        if (delayTimeTicks < tickDelay.getValue()) {
+            delayTimeTicks++;
+            return;
+        }
+        delayTimeTicks = 0;
+
         AbstractContainerMenu menu = minecraft.player.containerMenu;
         if (menu instanceof ChestMenu || menu instanceof ShulkerBoxMenu) {
             boolean chest = menu instanceof ChestMenu;
@@ -151,7 +161,7 @@ public class AutoGear extends ToggleableModule {
                 stepNow = 0;
             }
         } else if (finishSort) {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < movesPerTick.getValue(); i++) {
                 if (!sortItems.isEmpty()) {
                     int slotChange = sortItems.get(stepNow++);
                     minecraft.gameMode.handleContainerInput(menu.containerId, slotChange, 0, ContainerInput.PICKUP, minecraft.player);

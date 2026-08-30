@@ -39,7 +39,7 @@ public final class GuiTabHandler {
             GuiTab guiTab = new GuiTab(this, moduleType.getLabel());
             modules.stream().forEach(module -> {
                 ToggleableModule toggle;
-                if (module instanceof Toggleable && (toggle = (ToggleableModule)module).getModuleType() == moduleType && !toggle.getLabel().equalsIgnoreCase("Click Gui") && !toggle.getLabel().equalsIgnoreCase("Tab Gui")) {
+                if (module instanceof Toggleable && (toggle = (ToggleableModule)module).getModuleType() == moduleType && !toggle.getLabel().equalsIgnoreCase("ClickGui")) {
                     guiTab.getMods().add(new GuiItem(toggle));
                 }
             });

@@ -51,19 +51,19 @@ extends Screen {
                 public void setupItems() {
                     Exeter.getInstance().getModuleManager().getRegistry().forEach(module -> {
                         ToggleableModule toggleableModule;
-                        if (module instanceof Toggleable && !module.getLabel().equalsIgnoreCase("Tab Gui") && !module.getLabel().equalsIgnoreCase("Click Gui") && (toggleableModule = (ToggleableModule)module).getModuleType().equals((Object)moduleType)) {
+                        if (module instanceof Toggleable && !module.getLabel().equalsIgnoreCase("ClickGui") && (toggleableModule = (ToggleableModule)module).getModuleType().equals((Object)moduleType)) {
                             this.addButton(new ModuleButton(toggleableModule));
                         }
                     });
                 }
             });
         }
-        this.panels.add(new Panel("Always Active", x += 90, 40, true){
+        this.panels.add(new Panel("Client", x += 90, 40, true){
 
             @Override
             public void setupItems() {
                 Exeter.getInstance().getModuleManager().getRegistry().forEach(module -> {
-                    if (!(module instanceof Toggleable || module.getLabel().equalsIgnoreCase("Tab Gui") || module.getLabel().equalsIgnoreCase("Click Gui"))) {
+                    if (!(module instanceof Toggleable || module.getLabel().equalsIgnoreCase("ClickGui"))) {
                         this.addButton(new ModuleButton((Module)module));
                     }
                 });

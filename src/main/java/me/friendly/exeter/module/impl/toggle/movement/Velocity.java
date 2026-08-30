@@ -1,4 +1,4 @@
-package me.friendly.exeter.module.impl.toggle.combat;
+package me.friendly.exeter.module.impl.toggle.movement;
 
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
@@ -27,7 +27,7 @@ public class Velocity extends ToggleableModule {
     };
 
     public Velocity() {
-        super("Velocity", new String[]{"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.COMBAT);
+        super("Velocity", new String[]{"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.MOVEMENT);
         this.listeners.add(packetListener);
     }
 }

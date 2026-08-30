@@ -6,7 +6,7 @@ import me.friendly.exeter.module.ToggleableModule;
 public final class ClickGui
 extends ToggleableModule {
     public ClickGui() {
-        super("Click Gui", new String[]{"clickgui"}, ModuleType.RENDER);
+        super("ClickGui", new String[]{"clickgui"}, ModuleType.RENDER);
     }
 
     @Override

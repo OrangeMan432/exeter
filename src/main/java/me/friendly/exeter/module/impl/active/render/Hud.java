@@ -53,12 +53,12 @@ extends Module {
         });
         hudComponents.add(new HudComponent("ArrayList", 2, 2, 100, 9) {
             @Override public void render(int sw, int sh) {
-                List<Module> modules = Exeter.getInstance().getModuleManager().getRegistry();
+                List<Module> modules = new ArrayList<>(Exeter.getInstance().getModuleManager().getRegistry());
                 Organize org = (Organize)((Object) organize.getValue());
                 if (org == Organize.ABC) {
-                    modules.sort((mod1, mod2) -> mod1.getTag().compareTo(mod2.getTag()));
+                    modules.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
                 } else {
-                    modules.sort((mod1, mod2) -> FontUtil.getStringWidth(mod2.getTag()) - FontUtil.getStringWidth(mod1.getTag()));
+                    modules.sort((mod1, mod2) -> FontUtil.getStringWidth(mod2.getLabel()) - FontUtil.getStringWidth(mod1.getLabel()));
                 }
                 boolean bottom = getY() > sh / 2;
                 if (bottom) Collections.reverse(modules);
@@ -67,10 +67,12 @@ extends Module {
                 for (Module module : modules) {
                     if (!(module instanceof Toggleable)) continue;
                     ToggleableModule tm = (ToggleableModule)module;
-                    if (!tm.isDrawn() || tm.getColor() == 0 || !tm.isRunning()) continue;
-                    int lw = FontUtil.getStringWidth(getTag(tm.getTag()));
+                    if (!tm.isRunning()) continue;
+                    int color = tm.getColor() | 0xFF000000;
+                    String label = getTag(tm.getLabel());
+                    int lw = FontUtil.getStringWidth(label);
                     int tx = left ? getX() : getX() + getWidth() - lw;
-                    FontUtil.drawString(getTag(tm.getTag()), tx, py, tm.getColor());
+                    FontUtil.drawString(label, tx, py, color);
                     py += bottom ? -9 : 9;
                 }
             }

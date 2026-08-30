@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.combat;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -27,12 +28,13 @@ public class SelfBed extends ToggleableModule {
     private final Listener<TickEvent> tickListener = new Listener<TickEvent>("self_bed_tick") {
         @Override
         public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
             onTick();
         }
     };
 
     public SelfBed() {
-        super("Self Bed", new String[]{"selfbed", "self-bed"}, 0xFF0000, ModuleType.COMBAT);
+        super("SelfBed", new String[]{"selfbed", "self-bed"}, 0xFF0000, ModuleType.COMBAT);
         this.offerProperties(rotate, range, placeDelay, useDelay);
         this.listeners.add(tickListener);
     }

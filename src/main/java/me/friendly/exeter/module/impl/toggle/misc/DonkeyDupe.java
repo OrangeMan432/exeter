@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.misc;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -29,6 +30,7 @@ public class DonkeyDupe extends ToggleableModule {
         this.listeners.add(new Listener<TickEvent>("donkey_dupe_tick") {
             @Override
             public void call(TickEvent event) {
+                if (event.getStage() != Stage.PRE) return;
                 if (minecraft.player == null || minecraft.level == null) return;
                 if (!autoRide.getValue() || minecraft.player.getVehicle() != null) return;
 

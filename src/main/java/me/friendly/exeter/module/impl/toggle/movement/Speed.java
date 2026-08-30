@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.movement;
 
 import me.friendly.api.event.Listener;
+import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
@@ -11,7 +12,7 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 
-public class SpeedPlus extends ToggleableModule {
+public class Speed extends ToggleableModule {
 
     private final Property<Boolean> damageBoost = new Property<Boolean>(true, "Damage Boost");
     private final Property<Boolean> jump = new Property<Boolean>(true, "Jump");
@@ -28,22 +29,23 @@ public class SpeedPlus extends ToggleableModule {
     private boolean lagDetected;
     private long detectionTime;
 
-    public SpeedPlus() {
-        super("Speed+", new String[]{"speedplus", "speed+"}, 0x00FF00, ModuleType.MOVEMENT);
+    public Speed() {
+        super("Speed", new String[]{"speed"}, 0x00FF00, ModuleType.MOVEMENT);
 
         offerProperties(damageBoost, jump, strict, lavaBoost, waterSpeed, randomBoost);
 
-        listeners.add(new Listener<PacketEvent>("speed_plus_packet") {
+        listeners.add(new Listener<PacketEvent>("speed_packet") {
             @Override
             public void call(PacketEvent event) {
-                SpeedPlus.this.onPacketReceive(event);
+                Speed.this.onPacketReceive(event);
             }
         });
 
-        listeners.add(new Listener<TickEvent>("speed_plus_tick") {
+        listeners.add(new Listener<TickEvent>("speed_tick") {
             @Override
             public void call(TickEvent event) {
-                SpeedPlus.this.onTick(event);
+                if (event.getStage() != Stage.PRE) return;
+                Speed.this.onTick(event);
             }
         });
     }
@@ -135,14 +137,18 @@ public class SpeedPlus extends ToggleableModule {
         double forward = minecraft.player.zza;
         double strafe = minecraft.player.xxa;
 
-        forward = forward > 0 ? 1.0 : forward < 0 ? -1.0 : 0;
-        strafe = strafe > 0 ? 1.0 : strafe < 0 ? -1.0 : 0;
+        if (forward == 0 && strafe == 0) return;
 
-        double cos = Math.cos(Math.toRadians(yaw + 90));
-        double sin = Math.sin(Math.toRadians(yaw + 90));
+        double len = Math.sqrt(forward * forward + strafe * strafe);
+        forward /= len;
+        strafe /= len;
 
-        double newX = forward * sin * speed + strafe * cos * speed;
-        double newZ = forward * cos * speed - strafe * sin * speed;
+        double rad = Math.toRadians(yaw);
+        double sin = Math.sin(rad);
+        double cos = Math.cos(rad);
+
+        double newX = forward * -sin * speed + strafe * cos * speed;
+        double newZ = forward * cos * speed + strafe * sin * speed;
 
         minecraft.player.setDeltaMovement(newX, minecraft.player.getDeltaMovement().y, newZ);
     }

@@ -33,7 +33,7 @@ public class AntiAim extends ToggleableModule {
     private float spinYaw = 0.0f;
 
     public AntiAim() {
-        super("Anti Aim", new String[]{"antiaim", "aa"}, ModuleType.COMBAT);
+        super("AntiAim", new String[]{"antiaim", "aa"}, ModuleType.COMBAT);
         offerProperties(yawMode, pitchMode, pitchValue, spinSpeed);
 
         this.listeners.add(new Listener<PacketEvent>("anti_aim_packet") {
