@@ -52,6 +52,7 @@ import me.friendly.exeter.module.impl.toggle.misc.Timer;
 import me.friendly.exeter.module.impl.toggle.misc.FastEat;
 import me.friendly.exeter.module.impl.toggle.misc.MidClickPearl;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCrystal;
+import me.friendly.exeter.module.impl.toggle.combat.Surround;
 import me.friendly.exeter.module.impl.toggle.render.NoWeather;
 import me.friendly.exeter.module.impl.toggle.render.ItemHighlight;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
@@ -120,6 +121,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new FastEat());
         register(new MidClickPearl());
         register(new AutoCrystal());
+        register(new Surround());
         register(new NoWeather());
         register(new ItemHighlight());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
