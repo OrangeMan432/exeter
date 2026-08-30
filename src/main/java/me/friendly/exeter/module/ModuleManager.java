@@ -54,6 +54,7 @@ import me.friendly.exeter.module.impl.toggle.misc.MidClickPearl;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCrystal;
 import me.friendly.exeter.module.impl.toggle.combat.Surround;
 import me.friendly.exeter.module.impl.toggle.combat.HoleSnap;
+import me.friendly.exeter.module.impl.toggle.combat.AutoCity;
 import me.friendly.exeter.module.impl.toggle.render.NoWeather;
 import me.friendly.exeter.module.impl.toggle.render.ItemHighlight;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
@@ -124,6 +125,7 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new AutoCrystal());
         register(new Surround());
         register(new HoleSnap());
+        register(new AutoCity());
         register(new NoWeather());
         register(new ItemHighlight());
         this.registry.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
