@@ -58,7 +58,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Step());
     register(new Sprint());
 
-
     Exeter.getInstance()
         .getKeybindManager()
         .getKeybindByLabel("ClickGui")

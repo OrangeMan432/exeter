@@ -36,14 +36,17 @@ public class DiscordRPC extends ToggleableModule {
     started = false;
     presence = new RichPresence();
 
-    DiscordIPC.setOnError((code, message) -> {
-      System.err.println("[Exeter] Discord IPC error " + code + ": " + message);
-    });
+    DiscordIPC.setOnError(
+        (code, message) -> {
+          System.err.println("[Exeter] Discord IPC error " + code + ": " + message);
+        });
 
-    if (!DiscordIPC.start(APP_ID, () -> {
-      started = true;
-      updatePresence();
-    })) {
+    if (!DiscordIPC.start(
+        APP_ID,
+        () -> {
+          started = true;
+          updatePresence();
+        })) {
       System.err.println("[Exeter] Failed to connect to Discord");
     }
   }

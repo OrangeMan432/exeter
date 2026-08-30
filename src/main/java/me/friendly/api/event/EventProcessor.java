@@ -1,6 +1,5 @@
 package me.friendly.api.event;
 
-
 /**
  * @author Gopro336 This class is not part of Exeter, but was added as part of the process in
  *     porting to forge.

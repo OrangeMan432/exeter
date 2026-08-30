@@ -108,3 +108,27 @@ jar {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+task format {
+    description = 'Formats all Java source files using google-java-format'
+    group = 'formatting'
+    def jar = layout.buildDirectory.file('google-java-format.jar')
+
+    doFirst {
+        if (!jar.get().asFile.exists()) {
+            ant.get(src: 'https://github.com/google/google-java-format/releases/download/v1.19.2/google-java-format-1.19.2-all-deps.jar',
+                    dest: jar.get().asFile.absolutePath)
+        }
+    }
+
+    doLast {
+        def jarPath = jar.get().asFile.absolutePath
+        fileTree('src/main/java').matching { include '**/*.java' }.each { file ->
+            def proc = ['java', '-jar', jarPath, '--replace', file.absolutePath].execute()
+            proc.waitFor()
+            if (proc.exitValue() != 0) {
+                throw new GradleException("Failed to format ${file.name}: ${proc.errorStream.text}")
+            }
+        }
+    }
+}

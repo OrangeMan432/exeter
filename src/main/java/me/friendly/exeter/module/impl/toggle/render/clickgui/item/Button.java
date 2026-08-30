@@ -7,6 +7,7 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
+
 // import net.minecraft.client.resources.sounds.PositionedSoundRecord;
 // import net.minecraft.resources.ResourceLocation;
 

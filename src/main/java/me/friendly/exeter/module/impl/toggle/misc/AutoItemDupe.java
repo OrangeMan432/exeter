@@ -12,7 +12,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -84,9 +83,8 @@ public class AutoItemDupe extends ToggleableModule {
     switch (phase) {
       case THROW -> {
         if (elapsed < 150) return;
-        minecraft.player
-            .containerMenu
-            .clicked(throwSlot + 36, 1, ContainerInput.THROW, minecraft.player);
+        minecraft.player.containerMenu.clicked(
+            throwSlot + 36, 1, ContainerInput.THROW, minecraft.player);
         phase = Phase.WAIT;
         phaseStart = System.currentTimeMillis();
       }

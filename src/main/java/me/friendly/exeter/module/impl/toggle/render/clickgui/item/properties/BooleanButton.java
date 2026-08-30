@@ -8,6 +8,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.Property;
+
 // import net.minecraft.client.resources.sounds.PositionedSoundRecord;
 // import net.minecraft.resources.ResourceLocation;
 

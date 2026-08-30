@@ -233,9 +233,7 @@ public class AutoPot extends ToggleableModule {
                 origYaw, 90f, minecraft.player.onGround(), false));
     minecraft
         .getConnection()
-        .send(
-            new ServerboundUseItemPacket(
-                InteractionHand.MAIN_HAND, 0, origYaw, 90f));
+        .send(new ServerboundUseItemPacket(InteractionHand.MAIN_HAND, 0, origYaw, 90f));
 
     minecraft.player.setYRot(origYaw);
     minecraft.player.setXRot(origPitch);
