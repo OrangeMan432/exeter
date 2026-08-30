@@ -4,6 +4,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.EnumProperty;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.level.Level;
 
@@ -17,9 +18,13 @@ import net.minecraft.world.level.Level;
  * When disabled, the client resyncs to the server's weather on the next weather packet.
  */
 public class NoWeather extends ToggleableModule {
+    private enum Mode { RAIN, RAIN_AND_THUNDER }
+
+    private final EnumProperty<Mode> mode = new EnumProperty<>(Mode.RAIN_AND_THUNDER, "Mode", "m");
 
     public NoWeather() {
         super("NoWeather", new String[]{"noweather", "norain"}, ModuleType.RENDER);
+        offerProperties(mode);
 
         this.listeners.add(new Listener<TickEvent>("no_weather_tick") {
             @Override
@@ -32,7 +37,7 @@ public class NoWeather extends ToggleableModule {
                 if (level.getRainLevel(1.0f) > 0.0f) {
                     level.setRainLevel(0.0f);
                 }
-                if (level.getThunderLevel(1.0f) > 0.0f) {
+                if (mode.getValue() == Mode.RAIN_AND_THUNDER && level.getThunderLevel(1.0f) > 0.0f) {
                     level.setThunderLevel(0.0f);
                 }
             }
