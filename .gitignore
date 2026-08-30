@@ -29,6 +29,6 @@ forge*changelog.txt
 
 *.DS_Store
 
-# Vim
+# Vim.
 *.un~
 *.swp
