@@ -20,6 +20,9 @@ build
 # Other.
 eclipse
 run
+net/
+replenish.txt
+runClient.log
 
 # Forge.
 forge*changelog.txt
