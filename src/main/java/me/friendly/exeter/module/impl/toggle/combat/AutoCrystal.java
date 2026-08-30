@@ -123,7 +123,7 @@ public class AutoCrystal extends ToggleableModule {
             Vec3 center = Vec3.atCenterOf(pos);
             double dmgEnemy = approxDamage(target.position(), center);
             double dmgSelf = approxDamage(self.position(), center);
-            if (dmgEnemy < bestScore) continue;
+            if (dmgEnemy <= bestScore) continue;
             if (noSuicide.getValue() && dmgSelf >= self.getHealth()) continue;
             if (dmgSelf > maxSelfDamage.getValue()) continue;
             if (!self.hasLineOfSight(target) && self.distanceTo(target) < 3.0) continue;
