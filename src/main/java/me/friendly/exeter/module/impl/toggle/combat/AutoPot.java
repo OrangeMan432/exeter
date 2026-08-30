@@ -312,19 +312,10 @@ public class AutoPot extends ToggleableModule {
     }
 
     private boolean canThrow() {
-        if (only.getValue() || minecraft.player.isInLava() || minecraft.player.isInWater()) {
-            double eyeX = minecraft.player.getX();
-            double eyeZ = minecraft.player.getZ();
-            int feetY = minecraft.player.getBlockY();
-            for (int dy = 1; dy <= 2; dy++) {
-                BlockPos pos = BlockPos.containing(eyeX, feetY - dy, eyeZ);
-                BlockState state = minecraft.level.getBlockState(pos);
-                if (!state.isAir() && !state.getCollisionShape(minecraft.level, pos).isEmpty()) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        // Never throw while in liquid (splash potions are wasted and it looks robotic).
+        if (minecraft.player.isInLava() || minecraft.player.isInWater()) return false;
+        // On Ground Only: require actual grounded state (vanilla-authoritative).
+        if (only.getValue()) return minecraft.player.onGround();
         return true;
     }
 
