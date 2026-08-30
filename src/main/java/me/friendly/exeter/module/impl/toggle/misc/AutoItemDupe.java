@@ -1,39 +1,38 @@
 package me.friendly.exeter.module.impl.toggle.misc;
 
+import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.Property;
+import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 
-/**
- * Auto item dupe, ported in spirit from Lambda's 5bDupes (ToxicAven) AutoItemDupe module.
- *
- * <p>On 5b5t the dupe works by throwing the held stack out of the inventory and then firing the
- * recipe-book "place recipe" packet (wooden_button), which copies the thrown stack back into your
- * inventory. This module performs the throw (the portable part). The recipe-place trigger is NOT
- * wired: in Minecraft 26.2 that packet is {@code ServerboundPlaceRecipePacket(int, RecipeDisplayId,
- * boolean)} and {@code RecipeDisplayId} is an int index only resolvable through internal
- * recipe-manager state, so it cannot be built from public APIs here. Once a display-id lookup is
- * available, send {@code ServerboundPlaceRecipePacket(containerId, displayId, false)} right after
- * the throw to complete the 5b5t dupe. Requires wooden planks anywhere in your inventory.
- */
 public class AutoItemDupe extends ToggleableModule {
+
   private enum Phase {
     NONE,
-    DROP,
-    PICKUP
+    THROW,
+    WAIT,
+    RECIPE,
+    DONE
   }
 
-  private final Property<Boolean> cancelGui = new Property<>(false, "Cancel GUI", "cancelgui");
+  private final Property<Boolean> cancelGui = new Property<>(false, "Cancel GUI");
 
   private Phase phase = Phase.NONE;
-  private long lastClick = 0L;
+  private long phaseStart;
+  private int throwSlot;
+  private int recipeDisplayId = -1;
 
   public AutoItemDupe() {
     super("AutoItemDupe", new String[] {"autoitemdupe", "aidd"}, ModuleType.MISCELLANEOUS);
@@ -44,25 +43,7 @@ public class AutoItemDupe extends ToggleableModule {
           @Override
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
-            if (minecraft.player == null) return;
-            if (phase == Phase.NONE) return;
-
-            if (phase == Phase.DROP) {
-              if (minecraft.player.getInventory().getSelectedItem().isEmpty()) {
-                phase = Phase.NONE;
-                return;
-              }
-              // Throw the currently held stack out of the inventory.
-              minecraft.player.containerMenu.clicked(
-                  minecraft.player.getInventory().getSelectedSlot(),
-                  1,
-                  ContainerInput.THROW,
-                  minecraft.player);
-              phase = Phase.PICKUP;
-              lastClick = System.currentTimeMillis();
-            } else if (phase == Phase.PICKUP) {
-              if (System.currentTimeMillis() - lastClick >= 300L) phase = Phase.NONE;
-            }
+            AutoItemDupe.this.onTick();
           }
         });
   }
@@ -70,26 +51,99 @@ public class AutoItemDupe extends ToggleableModule {
   @Override
   protected void onEnable() {
     super.onEnable();
-    if (minecraft.player == null) {
-      phase = Phase.NONE;
-      return;
-    }
-    boolean hasPlanks = false;
-    for (int i = 0; i < 36; i++) {
-      ItemStack s = minecraft.player.getInventory().getItem(i);
-      if (!s.isEmpty()
-          && s.getItem() instanceof BlockItem bi
-          && bi.getBlock().defaultBlockState().is(BlockTags.PLANKS)) {
-        hasPlanks = true;
-        break;
-      }
-    }
-    phase = hasPlanks ? Phase.DROP : Phase.NONE;
+    phase = Phase.NONE;
+    recipeDisplayId = -1;
+
+    if (minecraft.player == null || minecraft.level == null) return;
+    if (minecraft.player.getInventory().getSelectedItem().isEmpty()) return;
+    if (!hasPlanks()) return;
+
+    recipeDisplayId = findWoodenButtonRecipe();
+    if (recipeDisplayId == -1) return;
+
+    throwSlot = minecraft.player.getInventory().getSelectedSlot();
+    phase = Phase.THROW;
+    phaseStart = System.currentTimeMillis();
   }
 
   @Override
   protected void onDisable() {
     super.onDisable();
-    if (cancelGui.getValue() && minecraft.gui.screen() != null) minecraft.gui.setScreen(null);
+    phase = Phase.NONE;
+    if (cancelGui.getValue() && minecraft.gui.screen() != null) {
+      minecraft.gui.setScreen(null);
+    }
+  }
+
+  private void onTick() {
+    if (minecraft.player == null || minecraft.level == null) return;
+    if (phase == Phase.NONE) return;
+
+    long elapsed = System.currentTimeMillis() - phaseStart;
+
+    switch (phase) {
+      case THROW -> {
+        if (elapsed < 150) return;
+        minecraft.player
+            .containerMenu
+            .clicked(throwSlot + 36, 1, ContainerInput.THROW, minecraft.player);
+        phase = Phase.WAIT;
+        phaseStart = System.currentTimeMillis();
+      }
+      case WAIT -> {
+        if (elapsed < 1000) return;
+        phase = Phase.RECIPE;
+        phaseStart = System.currentTimeMillis();
+      }
+      case RECIPE -> {
+        if (elapsed < 100) return;
+        minecraft
+            .getConnection()
+            .send(
+                new ServerboundPlaceRecipePacket(
+                    minecraft.player.containerMenu.containerId,
+                    new RecipeDisplayId(recipeDisplayId),
+                    false));
+        phase = Phase.DONE;
+        phaseStart = System.currentTimeMillis();
+      }
+      case DONE -> {
+        if (elapsed < 500) return;
+        phase = Phase.NONE;
+      }
+      default -> {}
+    }
+  }
+
+  private boolean hasPlanks() {
+    for (int i = 0; i < 36; i++) {
+      ItemStack s = minecraft.player.getInventory().getItem(i);
+      if (!s.isEmpty()
+          && s.getItem() instanceof BlockItem bi
+          && bi.getBlock().defaultBlockState().is(BlockTags.PLANKS)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private int findWoodenButtonRecipe() {
+    var recipeBook = minecraft.player.getRecipeBook();
+    var collections = recipeBook.getCollections();
+    for (var collection : collections) {
+      List<RecipeDisplayEntry> entries = collection.getRecipes();
+      for (var entry : entries) {
+        var reqs = entry.craftingRequirements();
+        if (reqs.isEmpty()) continue;
+        List<Ingredient> ingredients = reqs.get();
+        if (ingredients.size() == 1) {
+          ItemStack plankTest = new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS);
+          if (ingredients.get(0).test(plankTest)) {
+            return entry.id().index();
+          }
+        }
+      }
+    }
+    return -1;
   }
 }

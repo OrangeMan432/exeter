@@ -68,7 +68,7 @@ public final class ClickGui extends Screen {
           });
     }
     this.panels.add(
-        new Panel("Always Active", x += 90, 40, true) {
+        new Panel("Client", x += 90, 40, true) {
 
           @Override
           public void setupItems() {
