@@ -210,6 +210,8 @@ extends ToggleableModule {
         for (Entity entity : minecraft.level.players()) {
             if (entity == minecraft.player) continue;
             if (!entity.isAlive()) continue;
+            if (me.friendly.exeter.core.Exeter.getInstance().getFriendManager()
+                    .isFriend(entity.getName().getString())) continue;
 
             double distance = minecraft.player.distanceTo(entity);
             if (distance <= targetRange.getValue()) {
