@@ -43,7 +43,6 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoArmor;
 import me.friendly.exeter.module.impl.toggle.misc.AutoEat;
 import me.friendly.exeter.module.impl.toggle.misc.ChatSpam;
 import me.friendly.exeter.module.impl.toggle.misc.InventoryResync;
-import me.friendly.exeter.module.impl.toggle.misc.KillAura;
 import me.friendly.exeter.module.impl.toggle.misc.Refill;
 import me.friendly.exeter.module.impl.toggle.misc.Sprint;
 import me.friendly.exeter.module.impl.toggle.misc.NoSlow;
@@ -90,7 +89,6 @@ public final class ModuleManager extends ListRegistry<Module> {
         register(new AutoPot());
         register(new AutoShulker());
         register(new Velocity());
-        register(new KillAura());
         // --- render batch (26.2 pipeline) ---
         register(new Fullbright());
         register(new ESP());

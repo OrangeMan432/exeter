@@ -22,6 +22,8 @@ public class AntiAFK extends ToggleableModule {
     private final Property<Boolean> swing = new Property<>(true, "Swing", "swing");
     private final Property<Boolean> jump = new Property<>(true, "Jump", "jump");
     private final Property<Boolean> rotate = new Property<>(true, "Rotate", "rotate");
+    private final Property<Boolean> onlyWhenIdle = new Property<>(true, "Only When Idle", "idle", "i");
+    private final Property<Boolean> skipWhenScreenOpen = new Property<>(true, "Skip When Screen Open", "skipscreen");
 
     private int swingTimer = rand(100, 300);
     private int jumpTimer = rand(40, 160);
@@ -29,14 +31,21 @@ public class AntiAFK extends ToggleableModule {
 
     public AntiAFK() {
         super("AntiAFK", new String[]{"antiafk", "afk"}, ModuleType.MISCELLANEOUS);
-        offerProperties(swing, jump, rotate);
+        offerProperties(swing, jump, rotate, onlyWhenIdle, skipWhenScreenOpen);
 
         this.listeners.add(new Listener<TickEvent>("anti_afk_tick") {
             @Override
             public void call(TickEvent event) {
                 LocalPlayer player = minecraft.player;
                 if (player == null || minecraft.level == null) return;
-                if (minecraft.gui.screen() != null) return;
+                if (skipWhenScreenOpen.getValue() && minecraft.gui.screen() != null) return;
+                // Only When Idle: skip if the player is already moving/using an item —
+                // they're clearly not AFK, and extra swings would look robotic.
+                if (onlyWhenIdle.getValue()) {
+                    if (Math.abs(player.getDeltaMovement().x) > 0.05
+                            || Math.abs(player.getDeltaMovement().z) > 0.05
+                            || player.isUsingItem()) return;
+                }
 
                 if (swing.getValue() && --swingTimer <= 0) {
                     player.swing(InteractionHand.MAIN_HAND);
