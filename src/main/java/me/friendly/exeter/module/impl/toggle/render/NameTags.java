@@ -31,6 +31,8 @@ public class NameTags extends ToggleableModule {
     private final Property<Boolean> health = new Property<>(true, "Health", "h", "hp");
     private final Property<Boolean> heart = new Property<>(true, "Heart", "heart");
     private final Property<Boolean> invisibles = new Property<>(false, "Invisibles", "invis", "inv");
+    private final Property<Boolean> showFriends = new Property<>(true, "Show Friends", "friends", "f");
+    private final Property<String> format = new Property<>("%name% %health%", "Format", "fmt");
 
     // Captured from the last level-render pass (ExeterLevelRenderHook fires each frame).
     private Vec3 lastCameraPos;
@@ -39,7 +41,7 @@ public class NameTags extends ToggleableModule {
 
     public NameTags() {
         super("NameTags", new String[]{"nametags", "tags", "nameplates"}, ModuleType.RENDER);
-        offerProperties(health, heart, invisibles);
+        offerProperties(health, heart, invisibles, showFriends, format);
 
         Exeter.getInstance().getEventManager().register(new Listener<LevelRenderEvent>("nametags_capture") {
             @Override
@@ -78,6 +80,8 @@ public class NameTags extends ToggleableModule {
         for (Player p : players) {
             if (p == minecraft.player || !p.isAlive()) continue;
             if (p.isInvisible() && !invisibles.getValue()) continue;
+            if (!showFriends.getValue()
+                    && Exeter.getInstance().getFriendManager().isFriend(p.getName().getString())) continue;
 
             Vec3 rel = p.position().subtract(lastCameraPos).add(0, p.getBbHeight() + 0.35, 0);
             Vector4f clip = new Vector4f((float) rel.x, (float) rel.y, (float) rel.z, 1.0f);
@@ -100,13 +104,12 @@ public class NameTags extends ToggleableModule {
 
     private String buildText(Player p) {
         String name = p.getName().getString();
-        if (Exeter.getInstance().getFriendManager().isFriend(name)) {
+        boolean friend = Exeter.getInstance().getFriendManager().isFriend(name);
+        if (friend) {
             var f = Exeter.getInstance().getFriendManager().getFriendByAliasOrLabel(name);
             if (f != null) name = f.getAlias();
         }
         if (p.isShiftKeyDown()) name = name + " *";
-
-        if (!health.getValue()) return name;
 
         float hp = p.getHealth();
         String color;
@@ -117,10 +120,28 @@ public class NameTags extends ToggleableModule {
         else if (hp > 5.0f) color = "\u00a7c";
         else color = "\u00a74";
 
+        // Custom Format supports %name% %health% %hearts% %ping% (resolved per player).
+        String fmt = format.getValue();
+        if (fmt != null && !fmt.isBlank() && fmt.contains("%")) {
+            return fmt
+                    .replace("%name%", name)
+                    .replace("%health%", color + String.valueOf((int) Math.ceil(hp)))
+                    .replace("%hearts%", color + "\u2764 " + String.valueOf((int) Math.ceil(hp / 2.0f)))
+                    .replace("%ping%", String.valueOf(getPing(p)));
+        }
+
+        if (!health.getValue()) return name;
+
         int shown = (int) Math.ceil(hp);
         String suffix = color + (hp > 0 ? String.valueOf(shown) : "dead");
         if (heart.getValue()) suffix = suffix + " \u2764";
         return name + " " + suffix;
+    }
+
+    private String getPing(Player p) {
+        var conn = minecraft.player != null ? minecraft.player.connection : null;
+        if (conn == null || conn.getPlayerInfo(p.getUUID()) == null) return "0";
+        return String.valueOf(conn.getPlayerInfo(p.getUUID()).getLatency());
     }
 
     private int colorFor(Player p) {
