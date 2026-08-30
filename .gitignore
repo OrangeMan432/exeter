@@ -29,3 +29,8 @@ forge*changelog.txt
 # Vim
 *.un~
 *.swp
+
+# Editor backups
+*~
+*.bak
+*.orig
