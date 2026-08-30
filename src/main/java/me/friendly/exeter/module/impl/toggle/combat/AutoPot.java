@@ -179,8 +179,16 @@ public class AutoPot extends ToggleableModule {
                 potSlot = badSlot.getValue() - 1;
             }
 
+            // Throw in the SAME tick after the swap completes — otherwise the next tick
+            // re-enters this block (potionSlot is now a hotbar slot) and re-runs the SWAP
+            // with the wrong slot indices before ever throwing.
             int slot = potionSlot == -1 ? potSlot : potionSlot;
-            throwPotion(slot);
+            if (slot >= 0 && slot <= 8) {
+                throwPotion(slot);
+            } else {
+                // Still in inventory after swap attempt: bail this cycle, retry next tick.
+                return;
+            }
         }
     }
 
