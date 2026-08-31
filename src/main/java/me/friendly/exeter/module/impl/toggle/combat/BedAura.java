@@ -80,7 +80,7 @@ public class BedAura extends ToggleableModule {
     tickCounter++;
 
     int bedSlot = PlayerUtil.findBed();
-    if (bedSlot == -1 && !autoSwitch.getValue()) return;
+    if (bedSlot == -1) return;
 
     target = findTarget();
     if (target == null) return;
