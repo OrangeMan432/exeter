@@ -6,6 +6,7 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.Property;
 
@@ -63,6 +64,10 @@ public class BooleanButton extends Button {
     if (this.module instanceof ToggleableModule
         && Arrays.asList(this.property.getAliases()).contains("Drawn")) {
       ((ToggleableModule) this.module).toggleDrawn();
+    }
+
+    if (this.module instanceof Debug debug) {
+      debug.syncSettings();
     }
   }
 

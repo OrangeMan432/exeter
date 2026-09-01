@@ -14,7 +14,7 @@ public class Module implements Labeled {
   private final String[] aliases;
 
   /** Properties for the Module. */
-  private final List<Property<?>> properties = new ArrayList<>();
+  protected final List<Property<?>> properties = new ArrayList<>();
 
   private final List<Preset> presets = new ArrayList<Preset>();
   protected Minecraft minecraft = Minecraft.getInstance();

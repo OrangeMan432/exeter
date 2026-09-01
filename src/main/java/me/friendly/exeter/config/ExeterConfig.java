@@ -4,13 +4,13 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Hud;
@@ -43,14 +43,12 @@ public class ExeterConfig {
   private final Path configDir;
   private final Toml tomlReader;
   private final TomlWriter tomlWriter;
-  private final File debugLog;
 
   public ExeterConfig() {
     instance = this;
     this.configDir = FabricLoader.getInstance().getConfigDir().resolve("exeter");
     this.tomlReader = new Toml();
     this.tomlWriter = new TomlWriter();
-    this.debugLog = FabricLoader.getInstance().getConfigDir().resolve("exeter").resolve("debug.log").toFile();
 
     try {
       Files.createDirectories(configDir);
@@ -67,36 +65,28 @@ public class ExeterConfig {
     return configDir;
   }
 
-  private void debugLog(String msg) {
-    try (PrintWriter pw = new PrintWriter(new java.io.FileWriter(debugLog, true))) {
-      pw.println(msg);
-    } catch (Exception e) {
-      // last resort
-    }
-  }
-
   /** Loads all module configurations from TOML files. */
   public void loadAll() {
-    debugLog("=== LOAD ALL START ===");
+    DebugLogger.get().logSystem("Config", "=== LOAD ALL START ===");
     int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      debugLog("Loading module " + count + ": " + module.getLabel());
+      DebugLogger.get().logSystem("Config", "Loading module " + count + ": " + module.getLabel());
       loadModule(module);
       count++;
     }
-    debugLog("=== LOAD ALL END (" + count + " modules) ===");
+    DebugLogger.get().logSystem("Config", "=== LOAD ALL END (" + count + " modules) ===");
   }
 
   /** Saves all module configurations to TOML files. */
   public void saveAll() {
-    debugLog("=== SAVE ALL START ===");
+    DebugLogger.get().logSystem("Config", "=== SAVE ALL START ===");
     int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      debugLog("Saving module " + count + ": " + module.getLabel());
+      DebugLogger.get().logSystem("Config", "Saving module " + count + ": " + module.getLabel());
       saveModule(module);
       count++;
     }
-    debugLog("=== SAVE ALL END (" + count + " modules) ===");
+    DebugLogger.get().logSystem("Config", "=== SAVE ALL END (" + count + " modules) ===");
   }
 
   /** Loads a single module's configuration from its TOML file. */
@@ -104,26 +94,35 @@ public class ExeterConfig {
   public void loadModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
     File file = configDir.resolve(fileName).toFile();
-    debugLog("loadModule: " + module.getLabel() + " from " + file.getAbsolutePath());
+    DebugLogger.get()
+        .logSystem(
+            "Config", "loadModule: " + module.getLabel() + " from " + file.getAbsolutePath());
 
     if (!file.exists()) {
-      debugLog("  file does not exist, skipping");
+      DebugLogger.get().logSystem("Config", "  file does not exist, skipping");
       return;
     }
 
     try {
       Map<String, Object> data = tomlReader.read(file).toMap();
-      debugLog("  raw TOML data keys = " + data.keySet());
+      DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
 
       // Load module state (enabled, drawn, keybind)
       if (module instanceof Toggleable && data.containsKey("module")) {
         Map<String, Object> moduleData = (Map<String, Object>) data.get("module");
         ToggleableModule toggleable = (ToggleableModule) module;
-        debugLog("  module data = " + moduleData);
+        DebugLogger.get().logSystem("Config", "  module data = " + moduleData);
 
         if (moduleData.containsKey("enabled")) {
           Object enabledVal = moduleData.get("enabled");
-          debugLog("  enabled raw = " + enabledVal + " (type=" + (enabledVal != null ? enabledVal.getClass().getName() : "null") + ")");
+          DebugLogger.get()
+              .logSystem(
+                  "Config",
+                  "  enabled raw = "
+                      + enabledVal
+                      + " (type="
+                      + (enabledVal != null ? enabledVal.getClass().getName() : "null")
+                      + ")");
           boolean enabled;
           if (enabledVal instanceof Boolean) {
             enabled = (boolean) enabledVal;
@@ -132,9 +131,13 @@ public class ExeterConfig {
           } else {
             enabled = Boolean.parseBoolean(String.valueOf(enabledVal));
           }
-          debugLog("  setting enabled = " + enabled + " (was " + toggleable.isRunning() + ")");
+          DebugLogger.get()
+              .logSystem(
+                  "Config",
+                  "  setting enabled = " + enabled + " (was " + toggleable.isRunning() + ")");
           toggleable.setRunning(enabled);
-          debugLog("  after setRunning: isRunning = " + toggleable.isRunning());
+          DebugLogger.get()
+              .logSystem("Config", "  after setRunning: isRunning = " + toggleable.isRunning());
         }
 
         if (moduleData.containsKey("drawn")) {
@@ -152,7 +155,8 @@ public class ExeterConfig {
 
         if (moduleData.containsKey("keybind")) {
           int keybind = ((Number) moduleData.get("keybind")).intValue();
-          var kb = Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
+          var kb =
+              Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
           if (kb != null) {
             kb.setKey(keybind);
           }
@@ -162,7 +166,7 @@ public class ExeterConfig {
       // Load properties
       if (data.containsKey("settings")) {
         Map<String, Object> settings = (Map<String, Object>) data.get("settings");
-        debugLog("  settings key set = " + settings.keySet());
+        DebugLogger.get().logSystem("Config", "  settings key set = " + settings.keySet());
 
         // Strip TOML quotes from map keys (toml4j includes them)
         Map<String, Object> cleaned = new HashMap<>();
@@ -177,24 +181,49 @@ public class ExeterConfig {
         for (Property<?> property : module.getProperties()) {
           String key = property.getAliases()[0];
           boolean hasKey = cleaned.containsKey(key);
-          debugLog("  checking property '" + key + "' containsKey=" + hasKey);
+          DebugLogger.get()
+              .logSystem("Config", "  checking property '" + key + "' containsKey=" + hasKey);
           if (hasKey) {
             Object value = cleaned.get(key);
-            debugLog("    loading property " + key + " = " + value + " (type=" + (value != null ? value.getClass().getName() : "null") + ") current=" + property.getValue());
+            DebugLogger.get()
+                .logSystem(
+                    "Config",
+                    "    loading "
+                        + key
+                        + " = "
+                        + value
+                        + " (type="
+                        + (value != null ? value.getClass().getName() : "null")
+                        + ") current="
+                        + property.getValue());
             applyPropertyValue(property, value);
-            debugLog("    after load: " + key + " = " + property.getValue());
+            DebugLogger.get()
+                .logSystem("Config", "    after load: " + key + " = " + property.getValue());
           } else {
-            debugLog("    NOT in settings file, keeping default: " + property.getValue());
+            DebugLogger.get()
+                .logSystem(
+                    "Config", "    NOT in settings file, keeping default: " + property.getValue());
           }
         }
       } else {
-        debugLog("  no [settings] section in file");
+        DebugLogger.get().logSystem("Config", "  no [settings] section in file");
       }
 
       // Load HUD component positions
       if (module instanceof Hud && data.containsKey("components")) {
-        Map<String, Object> components = (Map<String, Object>) data.get("components");
+        Map<String, Object> rawComponents = (Map<String, Object>) data.get("components");
         Hud hud = (Hud) module;
+
+        // Strip TOML quotes from keys
+        Map<String, Object> components = new HashMap<>();
+        for (Map.Entry<String, Object> entry : rawComponents.entrySet()) {
+          String k = entry.getKey();
+          if (k.startsWith("\"") && k.endsWith("\"")) {
+            k = k.substring(1, k.length() - 1);
+          }
+          components.put(k, entry.getValue());
+        }
+
         for (HudComponent comp : hud.getHudComponents()) {
           if (components.containsKey(comp.getLabel())) {
             Map<String, Object> pos = (Map<String, Object>) components.get(comp.getLabel());
@@ -245,7 +274,8 @@ public class ExeterConfig {
   public void saveModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
     File file = configDir.resolve(fileName).toFile();
-    debugLog("saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
+    DebugLogger.get()
+        .logSystem("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
 
     try {
       Map<String, Object> data = new HashMap<>();
@@ -260,9 +290,11 @@ public class ExeterConfig {
             Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
         moduleData.put("keybind", (long) (keybind != null ? keybind.getKey() : 0));
         data.put("module", moduleData);
-        debugLog("  module.enabled = " + toggleable.isRunning());
-        debugLog("  module.drawn = " + toggleable.isDrawn());
-        debugLog("  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));
+        DebugLogger.get().logSystem("Config", "  module.enabled = " + toggleable.isRunning());
+        DebugLogger.get().logSystem("Config", "  module.drawn = " + toggleable.isDrawn());
+        DebugLogger.get()
+            .logSystem(
+                "Config", "  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));
       }
 
       // Save properties
@@ -270,12 +302,20 @@ public class ExeterConfig {
         Map<String, Object> settings = new HashMap<>();
         for (Property<?> property : module.getProperties()) {
           if (property.getAliases()[0].equals("Drawn")) {
-            debugLog("  Skipping Drawn property");
             continue;
           }
           String key = property.getAliases()[0];
           Object value = property.getValue();
-          debugLog("  property: " + key + " = " + value + " (type=" + (value != null ? value.getClass().getName() : "null") + ")");
+          DebugLogger.get()
+              .logSystem(
+                  "Config",
+                  "  property: "
+                      + key
+                      + " = "
+                      + value
+                      + " (type="
+                      + (value != null ? value.getClass().getName() : "null")
+                      + ")");
           if (value instanceof Enum) {
             settings.put(key, ((Enum<?>) value).name());
           } else if (value instanceof Float) {
@@ -288,36 +328,32 @@ public class ExeterConfig {
         }
         if (!settings.isEmpty()) {
           data.put("settings", settings);
-          debugLog("  settings map size = " + settings.size());
-        } else {
-          debugLog("  settings map EMPTY");
+          DebugLogger.get().logSystem("Config", "  settings map size = " + settings.size());
         }
-      } else {
-        debugLog("  no properties");
       }
 
-      debugLog("  data map keys = " + data.keySet());
-      debugLog("  writing TOML to " + file.getAbsolutePath());
+      // Save HUD component positions
+      if (module instanceof Hud) {
+        Hud hud = (Hud) module;
+        Map<String, Object> components = new HashMap<>();
+        for (HudComponent comp : hud.getHudComponents()) {
+          Map<String, Object> pos = new HashMap<>();
+          pos.put("x", (long) comp.getX());
+          pos.put("y", (long) comp.getY());
+          components.put(comp.getLabel(), pos);
+        }
+        if (!components.isEmpty()) {
+          data.put("components", components);
+          DebugLogger.get().logSystem("Config", "  HUD components saved: " + components.keySet());
+        }
+      }
+
+      DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());
       tomlWriter.write(data, file);
-      debugLog("  write SUCCESS for " + module.getLabel());
-
-      // Verify by reading back
-      try {
-        Map<String, Object> verify = tomlReader.read(file).toMap();
-        debugLog("  verify read back keys = " + verify.keySet());
-        if (verify.containsKey("settings")) {
-          Map<String, Object> verifySettings = (Map<String, Object>) verify.get("settings");
-          debugLog("  verify settings = " + verifySettings);
-        }
-        if (verify.containsKey("module")) {
-          Map<String, Object> verifyModule = (Map<String, Object>) verify.get("module");
-          debugLog("  verify module = " + verifyModule);
-        }
-      } catch (Exception ve) {
-        debugLog("  verify FAILED: " + ve.getMessage());
-      }
+      DebugLogger.get().logSystem("Config", "  write SUCCESS for " + module.getLabel());
     } catch (Exception e) {
-      debugLog("FAILED to save config for " + module.getLabel() + ": " + e.getMessage());
+      System.err.println(
+          "[Exeter] Failed to save config for " + module.getLabel() + ": " + e.getMessage());
       e.printStackTrace();
     }
   }
