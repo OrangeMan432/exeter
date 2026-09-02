@@ -94,7 +94,7 @@ public final class Hud extends Module {
             for (Module module : modules) {
               if (!(module instanceof Toggleable)) continue;
               ToggleableModule tm = (ToggleableModule) module;
-              if (!tm.isRunning()) continue;
+              if (!tm.isRunning() || !tm.isDrawn()) continue;
               int color = tm.getColor() | 0xFF000000;
               String label = getTag(tm.getLabel());
               int lw = FontUtil.getStringWidth(label);

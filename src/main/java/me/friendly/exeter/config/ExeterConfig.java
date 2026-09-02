@@ -140,19 +140,6 @@ public class ExeterConfig {
               .logSystem("Config", "  after setRunning: isRunning = " + toggleable.isRunning());
         }
 
-        if (moduleData.containsKey("drawn")) {
-          Object drawnVal = moduleData.get("drawn");
-          boolean drawn;
-          if (drawnVal instanceof Boolean) {
-            drawn = (boolean) drawnVal;
-          } else if (drawnVal instanceof Number) {
-            drawn = ((Number) drawnVal).intValue() != 0;
-          } else {
-            drawn = Boolean.parseBoolean(String.valueOf(drawnVal));
-          }
-          toggleable.setDrawn(drawn);
-        }
-
         if (moduleData.containsKey("keybind")) {
           int keybind = ((Number) moduleData.get("keybind")).intValue();
           var kb =
@@ -327,9 +314,6 @@ public class ExeterConfig {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void savePropertyRecursive(Property<?> property, Map<String, Object> settings) {
     String key = property.getAliases()[0];
-    if (key.equals("Drawn")) {
-      return;
-    }
     Object value = property.getValue();
     DebugLogger.get()
         .logSystem(
@@ -391,13 +375,11 @@ public class ExeterConfig {
         ToggleableModule toggleable = (ToggleableModule) module;
         Map<String, Object> moduleData = new HashMap<>();
         moduleData.put("enabled", toggleable.isRunning());
-        moduleData.put("drawn", toggleable.isDrawn());
         var keybind =
             Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
         moduleData.put("keybind", (long) (keybind != null ? keybind.getKey() : 0));
         data.put("module", moduleData);
         DebugLogger.get().logSystem("Config", "  module.enabled = " + toggleable.isRunning());
-        DebugLogger.get().logSystem("Config", "  module.drawn = " + toggleable.isDrawn());
         DebugLogger.get()
             .logSystem(
                 "Config", "  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));

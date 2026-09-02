@@ -135,11 +135,6 @@ public class BooleanButton extends Button {
   public void toggle() {
     this.property.setValue((Boolean) this.property.getValue() == false);
 
-    if (this.module instanceof ToggleableModule
-        && Arrays.asList(this.property.getAliases()).contains("Drawn")) {
-      ((ToggleableModule) this.module).toggleDrawn();
-    }
-
     if (this.module instanceof Debug debug) {
       debug.syncSettings();
     }

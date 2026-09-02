@@ -55,10 +55,6 @@ public class Module implements Labeled {
   }
 
   protected void offerProperties(Property<?>... properties) {
-    if (this instanceof Toggleable) {
-      Property<Boolean> drawn = new Property<Boolean>(false, "Drawn");
-      this.properties.add(drawn);
-    }
     this.properties.addAll(Arrays.asList(properties));
   }
 
