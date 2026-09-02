@@ -13,6 +13,7 @@ public class Sprint extends ToggleableModule {
 
   public Sprint() {
     super("Sprint", new String[] {"sprint", "autosprint"}, 0xFF0000, ModuleType.MOVEMENT);
+    setDescription("Automatically sprints in the direction you are moving.");
     offerProperties(omni);
 
     this.listeners.add(

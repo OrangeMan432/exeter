@@ -31,6 +31,7 @@ public class Speed extends ToggleableModule {
 
   public Speed() {
     super("Speed", new String[] {"speed"}, 0x00FF00, ModuleType.MOVEMENT);
+    setDescription("Increases movement speed with various methods.");
 
     offerProperties(damageBoost, jump, strict, lavaBoost, waterSpeed, randomBoost);
 

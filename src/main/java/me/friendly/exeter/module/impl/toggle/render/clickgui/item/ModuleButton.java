@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
 import java.util.ArrayList;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
@@ -42,6 +43,14 @@ public class ModuleButton extends Button {
     }
   }
 
+  public Module getModule() {
+    return this.module;
+  }
+
+  public boolean isSubOpen() {
+    return this.subOpen;
+  }
+
   public static float calculateRotation(float var0) {
     if ((var0 %= 360.0F) >= 180.0F) {
       var0 -= 360.0F;
@@ -58,38 +67,42 @@ public class ModuleButton extends Button {
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     super.drawScreen(mouseX, mouseY, partialTicks);
     if (!this.items.isEmpty()) {
-      // FontUtil.drawString("...", this.x - 1.0f + (float)this.width - 8.0f, this.y - 2.0f, -1);//
-      // remove this, its not in future
+      var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      boolean showGear =
+          !(guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg)
+              || cg.showGear.getValue();
 
-      int gx = (int) getX() + getWidth() - 12;
-      int gy = (int) getY() + 3;
+      if (showGear) {
+        int gx = (int) getX() + getWidth() - 12;
+        int gy = (int) getY() + 3;
 
-      float target = this.subOpen ? 1.0f : 0.5f;
-      this.gearBrightness += (target - this.gearBrightness) * 0.05f;
+        float target = this.subOpen ? 1.0f : 0.5f;
+        this.gearBrightness += (target - this.gearBrightness) * 0.05f;
 
-      this.gearRotation += this.gearBrightness - 0.5f;
+        this.gearRotation += this.gearBrightness - 0.5f;
 
-      int c = (int) (this.gearBrightness * 255.0f);
-      int tintColor = 0xFF000000 | (c << 16) | (c << 8) | c;
+        int c = (int) (this.gearBrightness * 255.0f);
+        int tintColor = 0xFF000000 | (c << 16) | (c << 8) | c;
 
-      Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
-      pose.pushMatrix();
-      pose.rotateAbout(this.gearRotation * (float) Math.PI / 180.0f, gx + 5, gy + 5);
-      RenderMethods.guiGraphics.blit(
-          RenderPipelines.GUI_TEXTURED,
-          Panel.GEAR_ID,
-          gx,
-          gy,
-          0.0f,
-          0.0f,
-          10,
-          10,
-          128,
-          128,
-          128,
-          128,
-          tintColor);
-      pose.popMatrix();
+        Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
+        pose.pushMatrix();
+        pose.rotateAbout(this.gearRotation * (float) Math.PI / 180.0f, gx + 5, gy + 5);
+        RenderMethods.guiGraphics.blit(
+            RenderPipelines.GUI_TEXTURED,
+            Panel.GEAR_ID,
+            gx,
+            gy,
+            0.0f,
+            0.0f,
+            10,
+            10,
+            128,
+            128,
+            128,
+            128,
+            tintColor);
+        pose.popMatrix();
+      }
 
       if (this.subOpen) {
         float height = 1.0f;

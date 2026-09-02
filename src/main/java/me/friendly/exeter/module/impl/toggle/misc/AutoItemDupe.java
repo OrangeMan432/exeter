@@ -35,6 +35,7 @@ public class AutoItemDupe extends ToggleableModule {
 
   public AutoItemDupe() {
     super("AutoItemDupe", new String[] {"autoitemdupe", "aidd"}, ModuleType.MISCELLANEOUS);
+    setDescription("Dupes wooden buttons using the crafting recipe bug.");
     offerProperties(cancelGui);
 
     this.listeners.add(

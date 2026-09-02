@@ -71,6 +71,7 @@ public class AutoShulker extends ToggleableModule {
 
   public AutoShulker() {
     super("AutoShulker", new String[] {"autoshulker", "auto-shulker"}, 0x00FF00, ModuleType.WORLD);
+    setDescription("Automatically places shulker boxes in the world.");
     this.offerProperties(
         once,
         emptySlots,

@@ -16,6 +16,7 @@ public class NoBedStep extends ToggleableModule {
 
   public NoBedStep() {
     super("NoBedStep", new String[] {"nobedstep", "nobed"}, 0xFF0000, ModuleType.MOVEMENT);
+    setDescription("Removes the step height increase from bed mining.");
 
     this.listeners.add(
         new Listener<TickEvent>("nobedstep_tick") {

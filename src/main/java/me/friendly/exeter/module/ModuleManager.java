@@ -5,7 +5,6 @@ import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
@@ -43,7 +42,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new EatTimer());
     register(new Colors());
     register(new HUDEditor());
-    register(new AntiAim());
     register(new DiscordRPC());
     register(new AutoItemDupe());
     register(new AutoTotem());

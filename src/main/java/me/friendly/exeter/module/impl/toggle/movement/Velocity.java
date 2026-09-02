@@ -29,6 +29,7 @@ public class Velocity extends ToggleableModule {
 
   public Velocity() {
     super("Velocity", new String[] {"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.MOVEMENT);
+    setDescription("Reduces or cancels knockback from attacks.");
     this.listeners.add(packetListener);
   }
 }

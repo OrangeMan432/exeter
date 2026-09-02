@@ -17,6 +17,7 @@ public class Debug extends ToggleableModule {
 
   public Debug() {
     super("Debug", new String[] {"debug"}, 0x00FF00, ModuleType.CLIENT);
+    setDescription("Per-module debug logging to file and chat.");
     offerProperties(logToFile, logToChat);
   }
 

@@ -51,6 +51,12 @@ def getBuild() {
 }
 String build = getBuild()
 
+boolean isDirty = false
+def statusOutput = git("status", "--porcelain")
+if (statusOutput != null && !statusOutput.trim().isEmpty()) {
+    isDirty = true
+}
+
 compileJava {
     // from sn0w
     String contents = ""
@@ -58,6 +64,7 @@ compileJava {
     contents = update.getText( 'UTF-8' )
     contents = contents.replaceAll( 'HASH = "(.*?)"', 'HASH = "' + hash + '"' )
     contents = contents.replaceAll( 'BUILD = "(.*?)"', 'BUILD = "' + build + '"' )
+    contents = contents.replaceAll( 'DIRTY = (.*?)$', 'DIRTY = ' + isDirty )
     update.write( contents, 'UTF-8' )
 }
 

@@ -18,6 +18,7 @@ public class Step extends ToggleableModule {
 
   public Step() {
     super("Step", new String[] {"step", "stepup"}, 0xFF0000, ModuleType.MOVEMENT);
+    setDescription("Steps up full blocks instantly without jumping.");
     this.offerProperties(height);
 
     this.listeners.add(

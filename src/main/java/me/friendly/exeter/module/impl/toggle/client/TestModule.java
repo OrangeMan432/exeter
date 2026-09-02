@@ -22,6 +22,7 @@ public class TestModule extends ToggleableModule {
 
   public TestModule() {
     super("TestModule", new String[] {"testmodule", "test"}, 0xFFAA00, ModuleType.CLIENT);
+    setDescription("Sends test debug messages for verifying the Debug system.");
     offerProperties(testInfo, testWarning, testError, testMultiLine, testAllModules, clearLog);
 
     this.listeners.add(

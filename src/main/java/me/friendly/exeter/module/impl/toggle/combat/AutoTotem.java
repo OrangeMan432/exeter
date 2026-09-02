@@ -23,6 +23,7 @@ public class AutoTotem extends ToggleableModule {
 
   public AutoTotem() {
     super("AutoTotem", new String[] {"autototem", "auto-totem"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Equips totems of undying into your offhand automatically.");
     this.listeners.add(tickListener);
   }
 

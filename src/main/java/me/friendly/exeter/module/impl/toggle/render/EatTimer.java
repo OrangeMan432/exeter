@@ -44,6 +44,7 @@ public class EatTimer extends ToggleableModule {
 
   public EatTimer() {
     super("EatTimer", new String[] {"eattimer", "eat-timer"}, 0x00FF00, ModuleType.RENDER);
+    setDescription("Displays a progress bar while eating food.");
     this.listeners.add(renderListener);
   }
 }
