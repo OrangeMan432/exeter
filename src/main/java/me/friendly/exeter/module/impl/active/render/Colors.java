@@ -43,6 +43,7 @@ public final class Colors extends Module {
 
   public Colors() {
     super("Colors", new String[] {"Colors", "Color"});
+    setDescription("Configures the client accent color and rainbow effects.");
     offerProperties(hue, saturation, lightness, hudRainbow, rainbowSpeed, rainbowHue);
   }
 

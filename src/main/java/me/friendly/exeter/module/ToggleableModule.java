@@ -6,12 +6,12 @@ import me.friendly.api.event.Listener;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.keybind.Keybind;
+import me.friendly.exeter.properties.Property;
 
 /** A Module implementation of Toggleable. */
 public class ToggleableModule extends Module implements Toggleable {
 
   private boolean running;
-  private boolean drawn;
   private final int color;
   private final ModuleType moduleType;
   protected final List<Listener<?>> listeners = new ArrayList<>();
@@ -29,9 +29,9 @@ public class ToggleableModule extends Module implements Toggleable {
   private ToggleableModule(
       String label, String[] aliases, boolean drawn, int color, ModuleType moduleType) {
     super(label, aliases);
-    this.drawn = drawn;
     this.color = color;
     this.moduleType = moduleType;
+    this.properties.add(new Property<>(drawn, "Drawn"));
     Exeter.getInstance()
         .getKeybindManager()
         .register(
@@ -88,16 +88,32 @@ public class ToggleableModule extends Module implements Toggleable {
     this.setRunning(!this.running);
   }
 
+  @SuppressWarnings("unchecked")
   public boolean isDrawn() {
-    return this.drawn;
+    Property<Boolean> drawnProp = getDrawnProperty();
+    return drawnProp != null && drawnProp.getValue();
   }
 
+  @SuppressWarnings("unchecked")
   public void setDrawn(boolean drawn) {
-    this.drawn = drawn;
+    Property<Boolean> drawnProp = getDrawnProperty();
+    if (drawnProp != null) {
+      drawnProp.setValue(drawn);
+    }
   }
 
   public void toggleDrawn() {
-    this.setDrawn(!this.drawn);
+    this.setDrawn(!this.isDrawn());
+  }
+
+  @SuppressWarnings("unchecked")
+  private Property<Boolean> getDrawnProperty() {
+    for (Property<?> p : this.properties) {
+      if (p.getAliases()[0].equals("Drawn")) {
+        return (Property<Boolean>) p;
+      }
+    }
+    return null;
   }
 
   public int getColor() {

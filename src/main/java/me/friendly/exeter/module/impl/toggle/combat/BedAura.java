@@ -42,6 +42,7 @@ public class BedAura extends ToggleableModule {
 
   public BedAura() {
     super("BedAura", new String[] {"bedaura", "bed-aura"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Automatically places and breaks beds for combat.");
 
     this.offerProperties(
         rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand);
@@ -80,7 +81,7 @@ public class BedAura extends ToggleableModule {
     tickCounter++;
 
     int bedSlot = PlayerUtil.findBed();
-    if (bedSlot == -1 && !autoSwitch.getValue()) return;
+    if (bedSlot == -1) return;
 
     target = findTarget();
     if (target == null) return;

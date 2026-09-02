@@ -86,6 +86,7 @@ public class AutoPot extends ToggleableModule {
 
   public AutoPot() {
     super("AutoPot", new String[] {"autopot", "auto-pot"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Automatically throws healing and speed potions.");
 
     offerProperties(
         hp,

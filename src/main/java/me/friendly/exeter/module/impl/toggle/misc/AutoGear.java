@@ -55,6 +55,7 @@ public class AutoGear extends ToggleableModule {
 
   public AutoGear() {
     super("AutoGear", new String[] {"autogear", "auto-gear"}, 0xFF0000, ModuleType.MISCELLANEOUS);
+    setDescription("Automatically sorts and equips best gear from your inventory.");
     offerProperties(enderChest, confirmSort, invasive, closeAfter, tickDelay, movesPerTick);
     this.listeners.add(tickListener);
   }

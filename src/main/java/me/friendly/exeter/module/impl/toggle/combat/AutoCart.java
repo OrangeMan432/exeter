@@ -52,6 +52,7 @@ public class AutoCart extends ToggleableModule {
 
   public AutoCart() {
     super("AutoCart", new String[] {"autocart", "auto-cart"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Automatically places TNT minecarts on rails for PvP.");
     offerProperties(
         tntCarts,
         cartsPerTick,

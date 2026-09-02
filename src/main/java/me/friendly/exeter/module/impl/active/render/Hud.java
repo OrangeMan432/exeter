@@ -47,6 +47,7 @@ public final class Hud extends Module {
 
   public Hud() {
     super("Hud", new String[] {"textgui", "hud", "overlay"});
+    setDescription("On-screen overlay showing coords, armor, potions, and more.");
     this.offerProperties(
         this.customFont,
         this.look,
@@ -64,7 +65,9 @@ public final class Hud extends Module {
         new HudComponent("Watermark", 2, 2, 100, 9) {
           @Override
           public void render(int sw, int sh) {
-            String text = String.format("%s \u00a77%s %s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH);
+            String dirty = Exeter.DIRTY ? " (dirty)" : "";
+            String text =
+                String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
             FontUtil.drawString(
                 text, getX(), getY(), transparent.getValue() != false ? -1711276033 : -1);
           }
@@ -91,7 +94,7 @@ public final class Hud extends Module {
             for (Module module : modules) {
               if (!(module instanceof Toggleable)) continue;
               ToggleableModule tm = (ToggleableModule) module;
-              if (!tm.isRunning()) continue;
+              if (!tm.isRunning() || !tm.isDrawn()) continue;
               int color = tm.getColor() | 0xFF000000;
               String label = getTag(tm.getLabel());
               int lw = FontUtil.getStringWidth(label);

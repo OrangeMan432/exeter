@@ -12,20 +12,14 @@ public class Module implements Labeled {
   private final String label;
   private String tag;
   private final String[] aliases;
+  private String description = "";
 
   /** Properties for the Module. */
-  private final List<Property<?>> properties = new ArrayList<>();
+  protected final List<Property<?>> properties = new ArrayList<>();
 
   private final List<Preset> presets = new ArrayList<Preset>();
   protected Minecraft minecraft = Minecraft.getInstance();
 
-  /**
-   * Creates a new Module. It's important that the given label does not contain any whitespaces and
-   * that no modules with the same name exist. A modules name is its unique identifier.
-   *
-   * @param label the label for the new module.
-   * @param aliases the aliases of the new module.
-   */
   protected Module(String label, String[] aliases) {
     this.label = this.tag = label;
     this.aliases = aliases;
@@ -48,15 +42,19 @@ public class Module implements Labeled {
     this.tag = tag;
   }
 
+  public String getDescription() {
+    return this.description;
+  }
+
+  protected void setDescription(String description) {
+    this.description = description;
+  }
+
   public List<Property<?>> getProperties() {
     return this.properties;
   }
 
   protected void offerProperties(Property<?>... properties) {
-    if (this instanceof Toggleable) {
-      Property<Boolean> drawn = new Property<Boolean>(false, "Drawn");
-      this.properties.add(drawn);
-    }
     this.properties.addAll(Arrays.asList(properties));
   }
 

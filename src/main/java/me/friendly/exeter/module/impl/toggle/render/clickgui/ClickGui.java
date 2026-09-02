@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
@@ -28,6 +29,13 @@ public final class ClickGui extends Screen {
 
   public static ClickGui getClickGui() {
     return clickGui == null ? (clickGui = new ClickGui()) : clickGui;
+  }
+
+  private me.friendly.exeter.module.impl.toggle.render.ClickGui getClickGuiModule() {
+    Module m = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    return m instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui
+        ? (me.friendly.exeter.module.impl.toggle.render.ClickGui) m
+        : null;
   }
 
   private void load() {
@@ -80,6 +88,9 @@ public final class ClickGui extends Screen {
                       if (module instanceof ToggleableModule toggleable
                           && toggleable.getModuleType() == ModuleType.CLIENT) {
                         this.addButton(new ModuleButton(toggleable));
+                      } else if (module
+                          instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+                        this.addButton(new ModuleButton(module));
                       } else if (!(module instanceof Toggleable
                           || module.getLabel().equalsIgnoreCase("ClickGui"))) {
                         this.addButton(new ModuleButton((Module) module));
@@ -96,8 +107,42 @@ public final class ClickGui extends Screen {
   public void extractRenderState(
       GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
     RenderMethods.guiGraphics = guiGraphics;
-    RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
+
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    boolean showBg = guiModule == null || guiModule.showBackground.getValue();
+    boolean showDesc = guiModule == null || guiModule.showDescriptions.getValue();
+
+    if (showBg) {
+      RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
+    }
     this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
+
+    if (showDesc) {
+      String hoveredDesc = null;
+      for (Panel panel : this.panels) {
+        if (!panel.getOpen()) continue;
+        for (var item : panel.getItems()) {
+          if (item instanceof ModuleButton moduleButton) {
+            float ix = item.getX();
+            float iy = item.getY();
+            int iw = item.getWidth();
+            int ih = item.getHeight();
+            if (mouseX >= ix && mouseX <= ix + iw && mouseY >= iy && mouseY <= iy + ih) {
+              String desc = moduleButton.getModule().getDescription();
+              if (desc != null && !desc.isEmpty()) {
+                hoveredDesc = desc;
+              }
+            }
+          }
+        }
+      }
+
+      if (hoveredDesc != null) {
+        int textWidth = FontUtil.getStringWidth(hoveredDesc);
+        int centerX = this.width / 2 - textWidth / 2;
+        FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
+      }
+    }
   }
 
   // this will recenter the gui when the window size changes
@@ -105,12 +150,6 @@ public final class ClickGui extends Screen {
   public void init() {
     this.load();
   }
-
-  //    @Override
-  //    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-  //        this.drawDefaultBackground();
-  //        this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
-  //    }
 
   @Override
   public boolean mouseClicked(MouseButtonEvent event, boolean bool) {

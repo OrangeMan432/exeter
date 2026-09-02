@@ -5,10 +5,11 @@ import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.module.impl.active.combat.AntiAim;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.active.render.Hud;
+import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
+import me.friendly.exeter.module.impl.toggle.client.TestModule;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
@@ -41,7 +42,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new EatTimer());
     register(new Colors());
     register(new HUDEditor());
-    register(new AntiAim());
     register(new DiscordRPC());
     register(new AutoItemDupe());
     register(new AutoTotem());
@@ -57,6 +57,16 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new NoBedStep());
     register(new Step());
     register(new Sprint());
+    register(new TestModule());
+    register(new Debug());
+
+    // Initialize per-module debug toggles after all modules are registered
+    for (Module m : registry) {
+      if (m instanceof Debug debug) {
+        debug.initModuleToggles(registry);
+        break;
+      }
+    }
 
     Exeter.getInstance()
         .getKeybindManager()

@@ -32,6 +32,7 @@ public class PistonPush extends ToggleableModule {
 
   public PistonPush() {
     super("PistonPush", new String[] {"pistonpush", "piston-push"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Uses pistons to push players into dangerous positions.");
     offerProperties(rotate, swingHand, debug, range, placeDelay);
     this.listeners.add(
         new Listener<TickEvent>("piston_push_tick") {

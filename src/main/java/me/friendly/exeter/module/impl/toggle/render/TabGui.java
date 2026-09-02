@@ -19,6 +19,7 @@ public final class TabGui extends ToggleableModule {
 
   public TabGui() {
     super("TabGui", new String[] {"tabgui", "tg"}, ModuleType.RENDER);
+    setDescription("Renders a category-based tab menu for quick module access.");
     this.guiTabHandler = new GuiTabHandler();
     this.listeners.add(
         new Listener<RenderGameOverlayEvent>("tab_gui_render_game_overlay_listener") {

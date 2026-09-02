@@ -35,6 +35,7 @@ public class SelfBed extends ToggleableModule {
 
   public SelfBed() {
     super("SelfBed", new String[] {"selfbed", "self-bed"}, 0xFF0000, ModuleType.COMBAT);
+    setDescription("Places and uses beds at your position for self-combat.");
     this.offerProperties(rotate, range, placeDelay, useDelay);
     this.listeners.add(tickListener);
   }

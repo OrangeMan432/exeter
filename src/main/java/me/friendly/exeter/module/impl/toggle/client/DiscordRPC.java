@@ -19,6 +19,7 @@ public class DiscordRPC extends ToggleableModule {
 
   public DiscordRPC() {
     super("DiscordRPC", new String[] {"discordrpc", "rpc"}, 0x5865F2, ModuleType.CLIENT);
+    setDescription("Shows Exeter activity on your Discord rich presence.");
 
     this.listeners.add(
         new Listener<TickEvent>("discord_rpc_tick") {

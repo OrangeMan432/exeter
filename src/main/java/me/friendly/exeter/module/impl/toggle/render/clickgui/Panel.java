@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
@@ -65,9 +66,19 @@ public abstract class Panel implements Labeled {
 
   public abstract void setupItems();
 
+  private static me.friendly.exeter.module.impl.toggle.render.ClickGui getClickGuiModule() {
+    var m = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    return m instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui
+        ? (me.friendly.exeter.module.impl.toggle.render.ClickGui) m
+        : null;
+  }
+
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     this.drag(mouseX, mouseY);
     registerTextures(Minecraft.getInstance());
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
+    boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
+    boolean showModuleCount = guiMod != null && guiMod.showModuleCount.getValue();
     float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
     RenderMethods.drawGradientRect(
         this.x,
@@ -92,14 +103,30 @@ public abstract class Panel implements Labeled {
       this.angle += 3;
     }
 
-    int arrowX = getX() + getWidth() - 14;
-    int arrowY = getY();
-    Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
-    pose.pushMatrix();
-    pose.rotateAbout(this.angle * (float) Math.PI / 180.0f, arrowX + 5, arrowY + 5);
-    RenderMethods.guiGraphics.blit(
-        ARROW_ID, arrowX, arrowY, arrowX + 10, arrowY + 10, 0.0f, 1.0f, 0.0f, 1.0f);
-    pose.popMatrix();
+    if (showArrow) {
+      int arrowX = getX() + getWidth() - 14;
+      int arrowY = getY();
+      Matrix3x2fStack pose = RenderMethods.guiGraphics.pose();
+      pose.pushMatrix();
+      pose.rotateAbout(this.angle * (float) Math.PI / 180.0f, arrowX + 5, arrowY + 5);
+      RenderMethods.guiGraphics.blit(
+          ARROW_ID, arrowX, arrowY, arrowX + 10, arrowY + 10, 0.0f, 1.0f, 0.0f, 1.0f);
+      pose.popMatrix();
+    } else if (showModuleCount) {
+      int count = this.items.size();
+      String countStr = "[" + count + "]";
+      int textW = FontUtil.getStringWidth(countStr);
+      float rx = (float) (this.x + this.width) - textW - 3.0f;
+      FontUtil.drawString("[", rx, (float) this.y + 1.5f, 0xFF888888);
+      int numW = FontUtil.getStringWidth(String.valueOf(count));
+      FontUtil.drawString(
+          String.valueOf(count),
+          rx + FontUtil.getStringWidth("["),
+          (float) this.y + 1.5f,
+          0xFFFFFFFF);
+      FontUtil.drawString(
+          "]", rx + textW - FontUtil.getStringWidth("]"), (float) this.y + 1.5f, 0xFF888888);
+    }
 
     if (this.open) {
       int y = this.getY() + this.getHeight() - 3;
