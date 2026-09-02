@@ -77,24 +77,21 @@ public abstract class Panel implements Labeled {
     this.drag(mouseX, mouseY);
     registerTextures(Minecraft.getInstance());
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
-    boolean showGradient = guiMod == null || guiMod.showGradient.getValue();
     boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
     float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
-    if (showGradient) {
-      RenderMethods.drawGradientRect(
-          this.x,
-          (float) this.y - 1.5f,
-          this.x + this.width,
-          this.y + this.height - 6,
-          Colors.getClientColorCustomAlpha(77),
-          Colors.getClientColorCustomAlpha(77));
-      RenderMethods.drawRect(
-          this.x,
-          (float) this.y + 12f,
-          this.x + this.width,
-          this.y + this.height + (this.open ? totalItemHeight : -1),
-          0x77000000);
-    }
+    RenderMethods.drawGradientRect(
+        this.x,
+        (float) this.y - 1.5f,
+        this.x + this.width,
+        this.y + this.height - 6,
+        Colors.getClientColorCustomAlpha(77),
+        Colors.getClientColorCustomAlpha(77));
+    RenderMethods.drawRect(
+        this.x,
+        (float) this.y + 12f,
+        this.x + this.width,
+        this.y + this.height + (this.open ? totalItemHeight : -1),
+        0x77000000);
     FontUtil.drawString(this.getLabel(), (float) this.x + 3.0f, (float) this.y + 1.5f, -1);
 
     if (!open) {

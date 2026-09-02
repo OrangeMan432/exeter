@@ -4,6 +4,7 @@ import java.awt.*;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
@@ -21,38 +22,40 @@ public class Button extends Item implements Labeled {
 
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-    //  The original exeter
-    // RenderMethods.drawGradientRect(this.x, this.y, this.x + (float)this.width, this.y +
-    // (float)this.height, this.getState() ? (!this.isHovering(mouseX, mouseY) ? 2012955202 :
-    // 1442529858) : (!this.isHovering(mouseX, mouseY) ? 0x33555555 : -2007673515), this.getState()
-    // ? (!this.isHovering(mouseX, mouseY) ? -1426374078 : -1711586750) : (!this.isHovering(mouseX,
-    // mouseY) ? 0x55555555 : -1722460843));
+    var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    boolean useGradient =
+        !(guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg)
+            || cg.showGradient.getValue();
 
-    // Future
-    // RenderMethods.drawGradientRect(this.x, this.y, this.x + (float)this.width, this.y +
-    // (float)this.height, this.getState() ? (!this.isHovering(mouseX, mouseY) ? 0x77FB4242 :
-    // 0x55FB4242) : (!this.isHovering(mouseX, mouseY) ? 0x33555555 : 0x77AAAAAB), this.getState() ?
-    // (!this.isHovering(mouseX, mouseY) ? 0x77FB4242 : 0x55FB4242) : (!this.isHovering(mouseX,
-    // mouseY) ? 0x55555555 : 0x66AAAAAB));
-    RenderMethods.drawGradientRect(
-        this.x,
-        this.y,
-        this.x + (float) this.width,
-        this.y + (float) this.height,
+    int topColor =
         this.getState()
             ? (!this.isHovering(mouseX, mouseY)
                 ? Colors.getClientColorCustomAlpha(88)
                 : Colors.getClientColorCustomAlpha(44))
             : (!this.isHovering(mouseX, mouseY)
                 ? Colors.getDarkerClientColorCustomAlpha(77)
-                : Colors.getDarkerClientColorCustomAlpha(33)),
+                : Colors.getDarkerClientColorCustomAlpha(33));
+    int bottomColor =
         this.getState()
             ? (!this.isHovering(mouseX, mouseY)
                 ? Colors.getClientColorCustomAlpha(55)
                 : Colors.getClientColorCustomAlpha(77))
             : (!this.isHovering(mouseX, mouseY)
                 ? Colors.getDarkerClientColorCustomAlpha(55)
-                : Colors.getDarkerClientColorCustomAlpha(66)));
+                : Colors.getDarkerClientColorCustomAlpha(66));
+
+    if (useGradient) {
+      RenderMethods.drawGradientRect(
+          this.x,
+          this.y,
+          this.x + (float) this.width,
+          this.y + (float) this.height,
+          topColor,
+          bottomColor);
+    } else {
+      RenderMethods.drawRect(
+          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, topColor);
+    }
 
     FontUtil.drawString(
         this.getLabel(), this.x + 2.0f, this.y + 4.0f, this.getState() ? -1 : -5592406);
