@@ -78,6 +78,7 @@ public abstract class Panel implements Labeled {
     registerTextures(Minecraft.getInstance());
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
     boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
+    boolean showModuleCount = guiMod != null && guiMod.showModuleCount.getValue();
     float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
     RenderMethods.drawGradientRect(
         this.x,
@@ -111,6 +112,20 @@ public abstract class Panel implements Labeled {
       RenderMethods.guiGraphics.blit(
           ARROW_ID, arrowX, arrowY, arrowX + 10, arrowY + 10, 0.0f, 1.0f, 0.0f, 1.0f);
       pose.popMatrix();
+    } else if (showModuleCount) {
+      int count = this.items.size();
+      String countStr = "[" + count + "]";
+      int textW = FontUtil.getStringWidth(countStr);
+      float rx = (float) (this.x + this.width) - textW - 3.0f;
+      FontUtil.drawString("[", rx, (float) this.y + 1.5f, 0xFF888888);
+      int numW = FontUtil.getStringWidth(String.valueOf(count));
+      FontUtil.drawString(
+          String.valueOf(count),
+          rx + FontUtil.getStringWidth("["),
+          (float) this.y + 1.5f,
+          0xFFFFFFFF);
+      FontUtil.drawString(
+          "]", rx + textW - FontUtil.getStringWidth("]"), (float) this.y + 1.5f, 0xFF888888);
     }
 
     if (this.open) {

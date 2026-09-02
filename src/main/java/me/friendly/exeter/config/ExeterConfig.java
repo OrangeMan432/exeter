@@ -196,13 +196,67 @@ public class ExeterConfig {
                         + (value != null ? value.getClass().getName() : "null")
                         + ") current="
                         + property.getValue());
-            applyPropertyValue(property, value);
-            DebugLogger.get()
-                .logSystem("Config", "    after load: " + key + " = " + property.getValue());
+
+            if (value instanceof Map) {
+              DebugLogger.get()
+                  .logSystem("Config", "    value is nested map, loading children");
+              Map<String, Object> childMap = (Map<String, Object>) value;
+              for (Property<?> child : property.getChildren()) {
+                String childKey = child.getAliases()[0];
+                if (childMap.containsKey(childKey)) {
+                  Object childValue = childMap.get(childKey);
+                  DebugLogger.get()
+                      .logSystem(
+                          "Config",
+                          "    loading child "
+                              + childKey
+                              + " = "
+                              + childValue
+                              + " (type="
+                              + (childValue != null ? childValue.getClass().getName() : "null")
+                              + ")");
+                  applyPropertyValue(child, childValue);
+                  DebugLogger.get()
+                      .logSystem(
+                          "Config",
+                          "    after load child: " + childKey + " = " + child.getValue());
+                }
+              }
+            } else {
+              applyPropertyValue(property, value);
+              DebugLogger.get()
+                  .logSystem("Config", "    after load: " + key + " = " + property.getValue());
+            }
           } else {
             DebugLogger.get()
                 .logSystem(
                     "Config", "    NOT in settings file, keeping default: " + property.getValue());
+          }
+        }
+
+        // Second pass: handle __ separated child keys
+        for (Property<?> property : module.getProperties()) {
+          String parentKey = property.getAliases()[0];
+          for (Property<?> child : property.getChildren()) {
+            String childFlatKey = parentKey + "__" + child.getAliases()[0];
+            if (cleaned.containsKey(childFlatKey)) {
+              Object childValue = cleaned.get(childFlatKey);
+              DebugLogger.get()
+                  .logSystem(
+                      "Config",
+                      "    loading child (flat key) "
+                          + childFlatKey
+                          + " = "
+                          + childValue
+                          + " (type="
+                          + (childValue != null ? childValue.getClass().getName() : "null")
+                          + ")");
+              applyPropertyValue(child, childValue);
+              DebugLogger.get()
+                  .logSystem(
+                      "Config",
+                      "    after load child: " + child.getAliases()[0] + " = " + child.getValue());
+            }
           }
         }
       } else {
@@ -270,6 +324,58 @@ public class ExeterConfig {
     }
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void savePropertyRecursive(Property<?> property, Map<String, Object> settings) {
+    String key = property.getAliases()[0];
+    if (key.equals("Drawn")) {
+      return;
+    }
+    Object value = property.getValue();
+    DebugLogger.get()
+        .logSystem(
+            "Config",
+            "  property: "
+                + key
+                + " = "
+                + value
+                + " (type="
+                + (value != null ? value.getClass().getName() : "null")
+                + ")");
+    if (value instanceof Enum) {
+      settings.put(key, ((Enum<?>) value).name());
+    } else if (value instanceof Float) {
+      settings.put(key, ((Float) value).doubleValue());
+    } else if (value instanceof Integer) {
+      settings.put(key, ((Integer) value).longValue());
+    } else {
+      settings.put(key, value);
+    }
+
+    for (Property<?> child : property.getChildren()) {
+      String childKey = key + "__" + child.getAliases()[0];
+      Object childValue = child.getValue();
+      DebugLogger.get()
+          .logSystem(
+              "Config",
+              "  child property: "
+                  + childKey
+                  + " = "
+                  + childValue
+                  + " (type="
+                  + (childValue != null ? childValue.getClass().getName() : "null")
+                  + ")");
+      if (childValue instanceof Enum) {
+        settings.put(childKey, ((Enum<?>) childValue).name());
+      } else if (childValue instanceof Float) {
+        settings.put(childKey, ((Float) childValue).doubleValue());
+      } else if (childValue instanceof Integer) {
+        settings.put(childKey, ((Integer) childValue).longValue());
+      } else {
+        settings.put(childKey, childValue);
+      }
+    }
+  }
+
   /** Saves a single module's configuration to its TOML file. */
   public void saveModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
@@ -297,34 +403,11 @@ public class ExeterConfig {
                 "Config", "  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));
       }
 
-      // Save properties
+      // Save properties (including children)
       if (!module.getProperties().isEmpty()) {
         Map<String, Object> settings = new HashMap<>();
         for (Property<?> property : module.getProperties()) {
-          if (property.getAliases()[0].equals("Drawn")) {
-            continue;
-          }
-          String key = property.getAliases()[0];
-          Object value = property.getValue();
-          DebugLogger.get()
-              .logSystem(
-                  "Config",
-                  "  property: "
-                      + key
-                      + " = "
-                      + value
-                      + " (type="
-                      + (value != null ? value.getClass().getName() : "null")
-                      + ")");
-          if (value instanceof Enum) {
-            settings.put(key, ((Enum<?>) value).name());
-          } else if (value instanceof Float) {
-            settings.put(key, ((Float) value).doubleValue());
-          } else if (value instanceof Integer) {
-            settings.put(key, ((Integer) value).longValue());
-          } else {
-            settings.put(key, value);
-          }
+          savePropertyRecursive(property, settings);
         }
         if (!settings.isEmpty()) {
           data.put("settings", settings);

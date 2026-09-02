@@ -6,38 +6,33 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.EnumProperty;
 
-// import net.minecraft.client.resources.sounds.PositionedSoundRecord;
-// import net.minecraft.resources.ResourceLocation;
-
 public class EnumButton extends Button {
   private EnumProperty property;
+  private final boolean child;
+  private static final float CHILD_OFFSET = 1.0f;
 
-  public EnumButton(EnumProperty property) {
+  public EnumButton(EnumProperty property, boolean child) {
     super(property.getAliases()[0]);
     this.property = property;
+    this.child = child;
   }
 
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-    //        RenderMethods.drawRect(this.x, this.y, this.x + (float)this.width + 7.4f, this.y +
-    // (float)this.height, this.getState() ? (!this.isHovering(mouseX, mouseY) ? 2012955202 :
-    // -1711586750) : (!this.isHovering(mouseX, mouseY) ? 0x11333333 : -2009910477));
+    float offsetX = child ? CHILD_OFFSET : 0.0f;
     RenderMethods.drawRect(
-        this.x,
+        this.x + offsetX,
         this.y,
-        this.x + (float) this.width + 7.4f,
+        this.x + offsetX + (float) this.width + 7.4f,
         this.y + (float) this.height,
         this.getState()
             ? (!this.isHovering(mouseX, mouseY)
                 ? Colors.getClientColorCustomAlpha(77)
                 : Colors.getClientColorCustomAlpha(55))
             : (!this.isHovering(mouseX, mouseY) ? 0x11333333 : -2009910477));
-    //        FontUtil.drawString(String.format("%s\u00a77 %s", this.getLabel(),
-    // this.property.getFixedValue()), this.x + 2.3f, this.y - 1.0f, this.getState() ? -1 :
-    // -5592406);
     FontUtil.drawString(
         String.format("%s\u00a77 %s", this.getLabel(), this.property.getFixedValue()),
-        this.x + 2.0f,
+        this.x + offsetX + 2.0f,
         this.y + 4.0f,
         this.getState() ? -1 : -5592406);
   }
@@ -46,8 +41,6 @@ public class EnumButton extends Button {
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     super.mouseClicked(mouseX, mouseY, mouseButton);
     if (this.isHovering(mouseX, mouseY)) {
-      //
-      // Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
       if (mouseButton == 0) {
         this.property.increment();
       } else if (mouseButton == 1) {

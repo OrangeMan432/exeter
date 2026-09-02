@@ -15,38 +15,36 @@ public class NumberSlider extends Item {
   private Number min;
   private Number max;
   private int difference;
+  private final boolean child;
+  private static final float CHILD_OFFSET = 1.0f;
 
-  public NumberSlider(NumberProperty numberProperty) {
+  public NumberSlider(NumberProperty numberProperty, boolean child) {
     super(numberProperty.getAliases()[0]);
     this.numberProperty = numberProperty;
     this.min = (Number) numberProperty.getMinimum();
     this.max = (Number) numberProperty.getMaximum();
     this.difference = max.intValue() - min.intValue();
+    this.child = child;
   }
 
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     dragSetting(mouseX, mouseY);
-    //        RenderMethods.drawRect(x, y, ((Number)numberProperty.getValue()).floatValue() <=
-    // min.floatValue() ? x : x + (width + 7.4F) * partialMultiplier(), y + height - 0.5f,
-    // !isHovering(mouseX, mouseY) ? 2012955202 : -1711586750);
+    float offsetX = child ? CHILD_OFFSET : 0.0f;
+    float h = (float) this.getHeight();
     RenderMethods.drawRect(
-        x,
-        y,
+        x + offsetX,
+        y + h - 1.0f,
         ((Number) numberProperty.getValue()).floatValue() <= min.floatValue()
-            ? x
-            : x + (width + 7.4F) * partialMultiplier(),
-        y + height - 0.5f,
+            ? x + offsetX
+            : x + offsetX + ((float) this.width + 7.4F) * partialMultiplier(),
+        y + h,
         !isHovering(mouseX, mouseY)
             ? Colors.getClientColorCustomAlpha(77)
             : Colors.getClientColorCustomAlpha(55));
-    //        RenderMethods.drawRect(x, y, x + getValueWidth(), y + height, !isHovering(mouseX,
-    // mouseY) ? 0x775CE843 : 0x66A317BD);//2002577475 : -1721964477);
-    //        FontUtil.drawString(String.format("%s\u00a77 %s", this.getLabel(),
-    // this.numberProperty.getValue()), this.x + 2.3f, this.y - 1.0f, -1);
     FontUtil.drawString(
         String.format("%s\u00a77 %s", this.getLabel(), this.numberProperty.getValue()),
-        this.x + 2.0f,
+        this.x + offsetX + 2.0f,
         this.y + 4.0f,
         -1);
   }
@@ -95,7 +93,7 @@ public class NumberSlider extends Item {
     return (float) mouseX >= this.getX()
         && (float) mouseX <= this.getX() + (float) this.getWidth()
         && (float) mouseY >= this.getY()
-        && (float) mouseY <= this.getY() + (float) this.height;
+        && (float) mouseY <= this.getY() + (float) this.getHeight();
   }
 
   private float getValueWidth() {
