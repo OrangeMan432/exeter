@@ -14,6 +14,7 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.Enu
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.NumberSlider;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2fStack;
@@ -64,6 +65,9 @@ public class ModuleButton extends Button {
   }
 
   private BooleanButton createPropertyButton(Property<?> property, boolean child) {
+    if (property instanceof PopupProperty) {
+      return null;
+    }
     if (property.getValue() instanceof Boolean) {
       return new BooleanButton(property, module, child);
     }
@@ -78,6 +82,9 @@ public class ModuleButton extends Button {
   }
 
   private Item createOtherPropertyButton(Property<?> property, boolean child) {
+    if (property instanceof PopupProperty) {
+      return new PopupButton((PopupProperty) property, child);
+    }
     if (property instanceof EnumProperty) {
       return new EnumButton((EnumProperty) property, child);
     }

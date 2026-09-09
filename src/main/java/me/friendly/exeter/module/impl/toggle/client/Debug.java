@@ -1,36 +1,78 @@
 package me.friendly.exeter.module.impl.toggle.client;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
+import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 
 public class Debug extends ToggleableModule {
 
   private final Property<Boolean> logToFile = new Property<Boolean>(false, "Log To File");
   private final Property<Boolean> logToChat = new Property<Boolean>(false, "Log To Chat");
+  private final PopupProperty modulesPopup;
 
-  private final Map<String, Property<Boolean>> moduleToggles = new LinkedHashMap<>();
+  private final Map<String, Boolean> moduleToggles = new LinkedHashMap<>();
+  private List<Module> allModules;
 
   public Debug() {
     super("Debug", new String[] {"debug"}, 0x00FF00, ModuleType.CLIENT);
     setDescription("Per-module debug logging to file and chat.");
-    offerProperties(logToFile, logToChat);
+    this.modulesPopup = new PopupProperty("Modules", this::openModulesPopup);
+    offerProperties(logToFile, logToChat, modulesPopup);
   }
 
-  /** Called after all modules are registered to create per-module toggle properties. */
   public void initModuleToggles(Iterable<Module> modules) {
+    this.allModules = new ArrayList<>();
     for (Module module : modules) {
       if (module == this) continue;
       if (module instanceof ToggleableModule) {
-        Property<Boolean> toggle = new Property<Boolean>(false, module.getLabel());
-        moduleToggles.put(module.getLabel(), toggle);
-        this.properties.add(toggle);
+        this.allModules.add(module);
+        moduleToggles.putIfAbsent(module.getLabel(), false);
       }
     }
+  }
+
+  private void openModulesPopup() {
+    List<SearchSelectPopup.ToggleItem> items = new ArrayList<>();
+    for (Module module : allModules) {
+      String name = module.getLabel();
+      items.add(
+          new SearchSelectPopup.ToggleItem() {
+            @Override
+            public String getLabel() {
+              return name;
+            }
+
+            @Override
+            public boolean isEnabled() {
+              return moduleToggles.getOrDefault(name, false);
+            }
+
+            @Override
+            public void setEnabled(boolean enabled) {
+              moduleToggles.put(name, enabled);
+            }
+          });
+    }
+
+    ClickGui.getClickGui()
+        .openPopup(
+            new SearchSelectPopup(
+                "Debug Module Toggles",
+                items,
+                () -> {
+                  syncSettings();
+                  ClickGui.getClickGui().closePopup();
+                },
+                () -> ClickGui.getClickGui().closePopup()));
   }
 
   @Override
@@ -52,8 +94,8 @@ public class Debug extends ToggleableModule {
     logger.setLogToFile(logToFile.getValue());
     logger.setLogToChat(logToChat.getValue());
 
-    for (Map.Entry<String, Property<Boolean>> entry : moduleToggles.entrySet()) {
-      logger.setModuleEnabled(entry.getKey(), entry.getValue().getValue());
+    for (Map.Entry<String, Boolean> entry : moduleToggles.entrySet()) {
+      logger.setModuleEnabled(entry.getKey(), entry.getValue());
     }
   }
 
@@ -65,7 +107,7 @@ public class Debug extends ToggleableModule {
     return logToChat;
   }
 
-  public Map<String, Property<Boolean>> getModuleToggles() {
+  public Map<String, Boolean> getModuleToggles() {
     return moduleToggles;
   }
 }

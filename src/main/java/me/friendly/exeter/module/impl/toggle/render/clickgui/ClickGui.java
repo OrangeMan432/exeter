@@ -17,8 +17,8 @@ import net.minecraft.network.chat.Component;
 
 public final class ClickGui extends Screen {
   private static ClickGui clickGui;
-  //    public final CustomFont guiFont = new CustomFont("Segoe UI", 18.0f);
   private final ArrayList<Panel> panels = new ArrayList();
+  private SearchSelectPopup popup;
 
   public ClickGui() {
     super(Component.literal("ClickGui"));
@@ -31,6 +31,18 @@ public final class ClickGui extends Screen {
     return clickGui == null ? (clickGui = new ClickGui()) : clickGui;
   }
 
+  public void openPopup(SearchSelectPopup popup) {
+    this.popup = popup;
+  }
+
+  public void closePopup() {
+    this.popup = null;
+  }
+
+  public SearchSelectPopup getPopup() {
+    return this.popup;
+  }
+
   private me.friendly.exeter.module.impl.toggle.render.ClickGui getClickGuiModule() {
     Module m = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
     return m instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui
@@ -40,22 +52,17 @@ public final class ClickGui extends Screen {
 
   private void load() {
     this.panels.clear();
-
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-
     int totalPanels = ModuleType.values().length;
     int panelWidth = 90;
     int totalGuiWidth = totalPanels * panelWidth;
-
     int startX = (screenWidth / 2) - (totalGuiWidth / 2);
-
     int x = startX - 90;
 
     for (final ModuleType moduleType : ModuleType.values()) {
       if (moduleType == ModuleType.CLIENT) continue;
       this.panels.add(
           new Panel(moduleType.getLabel(), x += 90, 40, true) {
-
             @Override
             public void setupItems() {
               Exeter.getInstance()
@@ -77,7 +84,6 @@ public final class ClickGui extends Screen {
     }
     this.panels.add(
         new Panel("Client", x += 90, 40, true) {
-
           @Override
           public void setupItems() {
             Exeter.getInstance()
@@ -136,16 +142,18 @@ public final class ClickGui extends Screen {
           }
         }
       }
-
       if (hoveredDesc != null) {
         int textWidth = FontUtil.getStringWidth(hoveredDesc);
         int centerX = this.width / 2 - textWidth / 2;
         FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
       }
     }
+
+    if (popup != null) {
+      popup.render(mouseX, mouseY, partialTicks, this.width, this.height);
+    }
   }
 
-  // this will recenter the gui when the window size changes
   @Override
   public void init() {
     this.load();
@@ -156,6 +164,13 @@ public final class ClickGui extends Screen {
     int mouseX = (int) event.x();
     int mouseY = (int) event.y();
     int clickedButton = event.button();
+
+    if (popup != null) {
+      if (popup.mouseClicked(mouseX, mouseY, clickedButton)) {
+        return true;
+      }
+    }
+
     this.panels.forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
     return super.mouseClicked(event, bool);
   }
@@ -165,8 +180,59 @@ public final class ClickGui extends Screen {
     int mouseX = (int) event.x();
     int mouseY = (int) event.y();
     int releaseButton = event.button();
+
+    if (popup != null) {
+      if (popup.mouseReleased(mouseX, mouseY, releaseButton)) {
+        return true;
+      }
+    }
+
     this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
     return super.mouseReleased(event);
+  }
+
+  @Override
+  public boolean mouseDragged(
+      net.minecraft.client.input.MouseButtonEvent event, double deltaX, double deltaY) {
+    if (popup != null) {
+      int mouseX = (int) event.x();
+      int mouseY = (int) event.y();
+      if (popup.mouseDragged(mouseX, mouseY)) {
+        return true;
+      }
+    }
+    return super.mouseDragged(event, deltaX, deltaY);
+  }
+
+  @Override
+  public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollDelta) {
+    if (popup != null) {
+      if (popup.mouseScrolled(scrollDelta)) {
+        return true;
+      }
+    }
+    return super.mouseScrolled(mouseX, mouseY, scrollX, scrollDelta);
+  }
+
+  @Override
+  public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+    if (popup != null) {
+      if (popup.keyPressed(event.key(), event.scancode(), event.modifiers())) {
+        return true;
+      }
+    }
+    return super.keyPressed(event);
+  }
+
+  @Override
+  public boolean charTyped(net.minecraft.client.input.CharacterEvent event) {
+    if (popup != null) {
+      char c = (char) event.codepoint();
+      if (popup.charTyped(c, 0)) {
+        return true;
+      }
+    }
+    return super.charTyped(event);
   }
 
   @Override
