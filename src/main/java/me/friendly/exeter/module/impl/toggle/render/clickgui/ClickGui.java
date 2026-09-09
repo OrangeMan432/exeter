@@ -169,7 +169,7 @@ public final class ClickGui extends Screen {
           int padding = 4;
           int descW = Math.max(headerW, textW) + padding * 2;
           int headerH = 18;
-          int descH = headerH + padding + 10 + padding;
+          int descH = headerH - 6 + padding + 8 + padding;
 
           RenderMethods.drawGradientRect(
               descX, descY - 1.5f, descX + descW, descY + headerH - 6,
@@ -177,7 +177,7 @@ public final class ClickGui extends Screen {
           RenderMethods.drawRect(
               descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
           FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
-          FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH + padding, 0xFFCCCCCC);
+          FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
         } else {
           int textWidth = FontUtil.getStringWidth(hoveredDesc);
           int centerX = this.width / 2 - textWidth / 2;
