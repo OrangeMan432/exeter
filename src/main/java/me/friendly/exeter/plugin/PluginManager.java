@@ -31,7 +31,7 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
    */
   @Override
   public File getFile() {
-    return new File("plugins");
+    return new File(Exeter.getInstance().getDirectory(), "plugins");
   }
 
   /**

@@ -29,8 +29,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
-  public static final String HASH = "5f97b53c8c562c4c";
-  public static final String BUILD = "b26+3";
+  public static final String HASH = "fd1586d8e4ae063b";
+  public static final String BUILD = "b26+4";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
@@ -51,7 +51,7 @@ public final class Exeter {
 
     // In exeter 1.8, the config file is named clarinet for whatever reason. I changed that to be
     // exeter
-    this.directory = new File(new File("exeter").getAbsolutePath());
+    this.directory = new File("config/exeter");
 
     if (!this.directory.exists()) {
       Logger.getLogger()
