@@ -29,8 +29,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
-  public static final String HASH = "9ed5f39ba41f48c3";
-  public static final String BUILD = "b25+18";
+  public static final String HASH = "c9197f40676025f7";
+  public static final String BUILD = "b25+19";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;

@@ -8,6 +8,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -52,17 +53,30 @@ public final class ClickGui extends Screen {
 
   private void load() {
     this.panels.clear();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment alignment =
+        guiModule != null ? guiModule.panelAlignment.getValue()
+            : me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.CENTERED;
+
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int totalPanels = ModuleType.values().length;
     int panelWidth = 90;
     int totalGuiWidth = totalPanels * panelWidth;
-    int startX = (screenWidth / 2) - (totalGuiWidth / 2);
-    int x = startX - 90;
+
+    int x;
+    int y;
+    if (alignment == me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.TOP_LEFT) {
+      x = 4 - 90;
+      y = 4;
+    } else {
+      x = (screenWidth / 2) - (totalGuiWidth / 2) - 90;
+      y = 40;
+    }
 
     for (final ModuleType moduleType : ModuleType.values()) {
       if (moduleType == ModuleType.CLIENT) continue;
       this.panels.add(
-          new Panel(moduleType.getLabel(), x += 90, 40, true) {
+          new Panel(moduleType.getLabel(), x += 90, y, true) {
             @Override
             public void setupItems() {
               Exeter.getInstance()
@@ -83,7 +97,7 @@ public final class ClickGui extends Screen {
           });
     }
     this.panels.add(
-        new Panel("Client", x += 90, 40, true) {
+        new Panel("Client", x += 90, y, true) {
           @Override
           public void setupItems() {
             Exeter.getInstance()
@@ -117,6 +131,8 @@ public final class ClickGui extends Screen {
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
     boolean showBg = guiModule == null || guiModule.showBackground.getValue();
     boolean showDesc = guiModule == null || guiModule.showDescriptions.getValue();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode descMode =
+        guiModule != null ? guiModule.getDescriptionMode() : null;
 
     if (showBg) {
       RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
@@ -142,10 +158,31 @@ public final class ClickGui extends Screen {
           }
         }
       }
+
       if (hoveredDesc != null) {
-        int textWidth = FontUtil.getStringWidth(hoveredDesc);
-        int centerX = this.width / 2 - textWidth / 2;
-        FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
+        if (descMode == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
+          Panel lastPanel = this.panels.isEmpty() ? null : this.panels.get(this.panels.size() - 1);
+          int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
+          int descY = lastPanel != null ? lastPanel.getY() : 4;
+          int headerW = FontUtil.getStringWidth("Description");
+          int textW = FontUtil.getStringWidth(hoveredDesc);
+          int padding = 4;
+          int descW = Math.max(headerW, textW) + padding * 2;
+          int headerH = 18;
+          int descH = headerH + padding + 10 + padding;
+
+          RenderMethods.drawGradientRect(
+              descX, descY - 1.5f, descX + descW, descY + headerH - 6,
+              Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));
+          RenderMethods.drawRect(
+              descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
+          FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
+          FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH + padding, 0xFFCCCCCC);
+        } else {
+          int textWidth = FontUtil.getStringWidth(hoveredDesc);
+          int centerX = this.width / 2 - textWidth / 2;
+          FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
+        }
       }
     }
 
