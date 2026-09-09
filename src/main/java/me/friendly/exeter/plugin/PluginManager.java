@@ -31,7 +31,7 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
    */
   @Override
   public File getFile() {
-    return new File(Exeter.getInstance().getDirectory(), "plugins");
+    return new File("plugins");
   }
 
   /**
@@ -59,7 +59,7 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
             String className = name.replaceAll("/", ".");
             className = className.substring(0, className.length() - 6);
             URLClassLoader classLoader =
-                new URLClassLoader(new URL[] {new URL("file:///" + file.getAbsolutePath())});
+                new URLClassLoader(new URL[] {new URL("file:///" + file.getAbsolutePath())}, getClass().getClassLoader());
             Class<?> clazz = classLoader.loadClass(className);
             if (clazz == null || !clazz.getSuperclass().equals(Plugin.class)) continue;
             this.getList().add((Plugin) clazz.newInstance());
