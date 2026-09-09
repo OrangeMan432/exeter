@@ -221,6 +221,28 @@ public abstract class Panel implements Labeled {
     return this.items;
   }
 
+  public boolean containsMouse(int mouseX, int mouseY) {
+    return mouseX >= this.getX()
+        && mouseX <= this.getX() + this.getWidth()
+        && mouseY >= this.getY()
+        && mouseY <= this.getY() + this.getHeight() + (this.open ? this.getTotalItemHeight() : 0);
+  }
+
+  public void scroll(int delta) {
+    int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    int totalH = this.getTotalItemHeight() + this.height;
+    int minY = this.height - totalH;
+    int maxY = screenH - this.height;
+    int newY = this.y + delta;
+    if (newY < minY) {
+      newY = minY;
+    }
+    if (newY > maxY) {
+      newY = maxY;
+    }
+    this.y = newY;
+  }
+
   private boolean isHovering(int mouseX, int mouseY) {
     return mouseX >= this.getX()
         && mouseX <= this.getX() + this.getWidth()

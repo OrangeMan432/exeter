@@ -211,6 +211,22 @@ public final class ClickGui extends Screen {
         return true;
       }
     }
+
+    int scroll = (int) (scrollDelta * 12);
+    boolean hoveringPanel = false;
+    for (Panel panel : this.panels) {
+      if (panel.containsMouse((int) mouseX, (int) mouseY)) {
+        hoveringPanel = true;
+        break;
+      }
+    }
+    if (hoveringPanel) {
+      for (Panel panel : this.panels) {
+        panel.scroll(scroll);
+      }
+      return true;
+    }
+
     return super.mouseScrolled(mouseX, mouseY, scrollX, scrollDelta);
   }
 
