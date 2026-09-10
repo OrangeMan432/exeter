@@ -37,6 +37,8 @@ public class CrystalAura extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
+  private final NumberProperty<Double> lethalHealth =
+      new NumberProperty<Double>(6.0, 0.0, 20.0, "Lethal Health");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -46,7 +48,15 @@ public class CrystalAura extends ToggleableModule {
     super("CrystalAura", new String[] {"crystalaura", "crystal-aura"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Places and breaks end crystals around targets.");
     offerProperties(
-        targetRange, placeRange, breakRange, placeDelay, breakDelay, rotate, swingHand, autoSwitch);
+        targetRange,
+        placeRange,
+        breakRange,
+        placeDelay,
+        breakDelay,
+        rotate,
+        swingHand,
+        autoSwitch,
+        lethalHealth);
     this.listeners.add(
         new Listener<TickEvent>("crystalaura_tick") {
           @Override
@@ -80,9 +90,11 @@ public class CrystalAura extends ToggleableModule {
       }
     }
 
-    if (tickCounter - lastPlaceTick < placeDelay.getValue()) return;
     Player target = findTarget();
     if (target == null) return;
+    // Future-pattern Lethal: low-HP targets are one crystal from dead, skip the wait.
+    boolean lethal = target.getHealth() <= lethalHealth.getValue().floatValue();
+    if (!lethal && tickCounter - lastPlaceTick < placeDelay.getValue()) return;
     int crystalSlot = PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (crystalSlot == -1) return;
     BlockPos base = findBase(target);

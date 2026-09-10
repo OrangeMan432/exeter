@@ -91,24 +91,55 @@ public class PistonPush extends ToggleableModule {
       PlayerUtil.setRotation(pistonYaw, 0f);
     }
 
-    PlayerUtil.swapTo(pistonSlot);
-    PlayerUtil.useItemOn(pos.pistonPos, Direction.UP);
+    boolean needPiston = pistonSlot != minecraft.player.getInventory().getSelectedSlot();
+    if (needPiston) {
+      PlayerUtil.swapTo(pistonSlot);
+    }
+    clickNeighbor(pos.pistonPos);
     if (swingHand.getValue()) PlayerUtil.swingHand();
-    PlayerUtil.swapBack();
+    if (needPiston) {
+      PlayerUtil.swapBack();
+    }
 
     if (rotate.getValue()) {
       PlayerUtil.setRotation(
           PlayerUtil.getYaw(pos.redstonePos), PlayerUtil.getPitch(pos.redstonePos));
     }
 
-    PlayerUtil.swapTo(redstoneSlot);
-    PlayerUtil.useItemOn(pos.redstonePos, Direction.UP);
+    boolean needRedstone = redstoneSlot != minecraft.player.getInventory().getSelectedSlot();
+    if (needRedstone) {
+      PlayerUtil.swapTo(redstoneSlot);
+    }
+    clickNeighbor(pos.redstonePos);
     if (swingHand.getValue()) PlayerUtil.swingHand();
-    PlayerUtil.swapBack();
+    if (needRedstone) {
+      PlayerUtil.swapBack();
+    }
 
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
+
+    if (debug.getValue()) {
+      me.friendly.exeter.logging.Logger.getLogger()
+          .printToChat(
+              String.format(
+                  "PistonPush -> %s piston %s redstone %s",
+                  target.getName().getString(), pos.pistonPos.toShortString(), pos.redstonePos.toShortString()));
+    }
+  }
+
+  /** Clicks a solid neighbor face so the server accepts the placement. */
+  private void clickNeighbor(BlockPos pos) {
+    for (Direction dir : Direction.values()) {
+      BlockPos neighbor = pos.relative(dir);
+      if (PlayerUtil.isSolid(neighbor)) {
+        PlayerUtil.useItemOn(neighbor, dir.getOpposite());
+        return;
+      }
+    }
+    // Fallback: legacy top-face click on the block below.
+    PlayerUtil.useItemOn(pos.below(), Direction.UP);
   }
 
   private float getYawForDirection(Direction facing) {

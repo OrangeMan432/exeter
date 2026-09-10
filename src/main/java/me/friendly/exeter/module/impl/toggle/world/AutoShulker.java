@@ -240,7 +240,7 @@ public class AutoShulker extends ToggleableModule {
       }
     }
 
-    var target = getNearestPlayer(12.0);
+    var target = getNearestPlayer(targetRange.getValue());
     if (target == null) {
       blockAim =
           posList.stream()
@@ -374,6 +374,7 @@ public class AutoShulker extends ToggleableModule {
 
   private boolean canBeClicked(BlockPos pos) {
     BlockState state = minecraft.level.getBlockState(pos);
+    if (isBlackListed(state)) return false;
     return !state.isAir() && !state.getCollisionShape(minecraft.level, pos).isEmpty();
   }
 

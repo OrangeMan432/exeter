@@ -34,6 +34,8 @@ public class KillAura extends ToggleableModule {
   private final Property<Boolean> targetHostiles = new Property<Boolean>(true, "Hostiles");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> onlyWeapon = new Property<Boolean>(false, "Only Weapon");
+  private final Property<Boolean> antiWeakness =
+      new Property<Boolean>(true, "Anti Weakness");
 
   private int tickCounter = -100;
 
@@ -50,7 +52,8 @@ public class KillAura extends ToggleableModule {
         targetPlayers,
         targetHostiles,
         autoSwitch,
-        onlyWeapon);
+        onlyWeapon,
+        antiWeakness);
     this.listeners.add(
         new Listener<TickEvent>("killaura_tick") {
           @Override
@@ -80,6 +83,23 @@ public class KillAura extends ToggleableModule {
 
     int weaponSlot = findWeaponSlot();
     if (onlyWeapon.getValue() && weaponSlot == -1) return;
+    // Future-pattern AntiWeakness: weakness ruins damage unless holding a sword.
+    if (antiWeakness.getValue()
+        && minecraft.player.hasEffect(net.minecraft.world.effect.MobEffects.WEAKNESS)
+        && weaponSlot != -1) {
+      boolean needSword =
+          weaponSlot != minecraft.player.getInventory().getSelectedSlot() || !isSwordHeld();
+      if (needSword) {
+        PlayerUtil.swapTo(weaponSlot);
+        minecraft.gameMode.attack(minecraft.player, target);
+        if (swingHand.getValue()) {
+          minecraft.player.swing(InteractionHand.MAIN_HAND);
+        }
+        PlayerUtil.swapBack();
+        tickCounter = 0;
+        return;
+      }
+    }
     boolean needSwitch =
         autoSwitch.getValue()
             && weaponSlot != -1
@@ -137,6 +157,12 @@ public class KillAura extends ToggleableModule {
         .min(Comparator.comparingDouble(minecraft.player::distanceTo))
         .map(e -> (LivingEntity) e)
         .orElse(null);
+  }
+
+  private boolean isSwordHeld() {
+    ItemStack held = minecraft.player.getMainHandItem();
+    if (held.isEmpty()) return false;
+    return BuiltInRegistries.ITEM.getKey(held.getItem()).getPath().endsWith("_sword");
   }
 
   private int findWeaponSlot() {

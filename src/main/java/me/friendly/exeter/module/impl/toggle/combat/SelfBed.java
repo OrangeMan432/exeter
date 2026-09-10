@@ -5,6 +5,7 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
@@ -14,9 +15,14 @@ import net.minecraft.world.level.block.BedBlock;
 public class SelfBed extends ToggleableModule {
 
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
-  private final Property<Double> range = new Property<Double>(5.0, "Place Range");
-  private final Property<Integer> placeDelay = new Property<Integer>(1, "Place Delay");
-  private final Property<Integer> useDelay = new Property<Integer>(0, "Use Delay");
+  private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
+  private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
+  private final NumberProperty<Double> range =
+      new NumberProperty<Double>(5.0, 0.0, 10.0, "Place Range");
+  private final NumberProperty<Integer> placeDelay =
+      new NumberProperty<Integer>(1, 0, 20, "Place Delay");
+  private final NumberProperty<Integer> useDelay =
+      new NumberProperty<Integer>(0, 0, 20, "Use Delay");
 
   private int tickCounter;
   private int lastPlaceTick;
@@ -36,7 +42,7 @@ public class SelfBed extends ToggleableModule {
   public SelfBed() {
     super("SelfBed", new String[] {"selfbed", "self-bed"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Places and uses beds at your position for self-combat.");
-    this.offerProperties(rotate, range, placeDelay, useDelay);
+    this.offerProperties(rotate, autoSwitch, switchBack, range, placeDelay, useDelay);
     this.listeners.add(tickListener);
   }
 
@@ -119,7 +125,11 @@ public class SelfBed extends ToggleableModule {
   }
 
   private void placeBed(BlockPos supportPos, BlockPos footPos, int slot) {
-    PlayerUtil.swapTo(slot);
+    boolean needSwitch =
+        autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot();
+    if (needSwitch) {
+      PlayerUtil.swapTo(slot);
+    }
 
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
@@ -133,11 +143,17 @@ public class SelfBed extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    PlayerUtil.swapBack();
+    if (needSwitch && switchBack.getValue()) {
+      PlayerUtil.swapBack();
+    }
   }
 
   private void useBed(BlockPos usePos, int slot) {
-    PlayerUtil.swapTo(slot);
+    boolean needSwitch =
+        autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot();
+    if (needSwitch) {
+      PlayerUtil.swapTo(slot);
+    }
 
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
@@ -151,7 +167,9 @@ public class SelfBed extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    PlayerUtil.swapBack();
+    if (needSwitch && switchBack.getValue()) {
+      PlayerUtil.swapBack();
+    }
   }
 
   private BlockPos findSupport(BlockPos pos) {

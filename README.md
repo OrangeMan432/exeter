@@ -1,13 +1,12 @@
-# Exeter (Minecraft 26.2 — Fabric)
+# Skid Client (Minecraft 26.2 — Fabric)
 
-Exeter is an anarchy-oriented Minecraft client ported to **Minecraft 26.2 on Fabric**. It is a
-from-scratch continuation of the original Exeter client (`evelyn-gosselin/Exeter-1.12.2-fork`),
+Skid Client is an anarchy-oriented Minecraft client for **Minecraft 26.2 on Fabric**. It is a
+from-scratch continuation of the Exeter client (`evelyn-gosselin/Exeter-1.12.2-fork`),
 rebuilt against the modern Fabric toolchain so it can finally hang with the 1.12.2 clients on
-today's anarchy servers.
+today's anarchy servers. PvP logic follows Future-style patterns, movement follows
+RusherHack-style patterns, and the UI stays Exeter.
 
 ## Why this exists
-
-The goal, straight from the project owner's brief:
 
 - **Beat the 1.12.2 clients at their own game.** The 1.12.2 generation had years of polish; this
   port closes that gap on 26.2.
@@ -18,8 +17,6 @@ The goal, straight from the project owner's brief:
   dropped or corrupted.
 - **No artificial delay.** Modules do the work every tick they can; there is no built-in throttling
   slowing you down for no reason.
-- **Lemon-style utility.** The good stuff from Lemon Client — dupes, QoL, combat helpers — ported
-  in and kept working.
 
 ## Modules
 
@@ -29,46 +26,53 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 
 | Module | Notes |
 | --- | --- |
-| `Anti Aim` | Scrambles the rotation sent to the server (local view untouched). **Yaw Mode:** Off / Spin / Random. **Pitch Mode:** Off / Up (90) / Down (-90) / Zero (0) / Custom. Plus Spin Speed and Pitch Value sliders. |
-| `KillAura` | Attacks the nearest living entity in range every few ticks (Range / Delay sliders). Server still validates reach. |
+| `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
+| `CrystalAura` | Places and breaks end crystals around the nearest player. Place/break delays, rotate, auto-switch, lethal fast-path on low-HP targets. |
+| `Surround` | Places obsidian around your feet to block crystals. Auto-switch, rotate, blocks-per-tick, auto-disable. |
+| `BedAura` | Automatically places and breaks beds for combat. Rotate, auto-switch, place/break delays. |
+| `SelfBed` | Places and uses beds at your position for self-combat. |
+| `AutoTotem` | Keeps a Totem of Undying in your offhand. Lethal fast-path under Min Health, cursor guard, gapple swap-back, live totem count tag. |
+| `AutoEat` | Eats food when hungry, gapples first when low on HP. |
+| `AutoPot` | Automatically throws healing, swiftness, and debuff splash potions. Friend-aware, packet cleanup on death. |
+| `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/SkidClient/AutoGear.json`. |
+| `AutoCart` | Minecart-based combat automation. |
+| `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
+| `Criticals` | Spoofs a micro-jump on 26.2 attack packets so hits land as criticals. |
 
 ### Miscellaneous
 
 | Module | Notes |
 | --- | --- |
-| `ShulkerDupe` | Shulker / container dupe (ported from **Lemon Client**). Vanilla/Forge/Fabric **≤ 1.19** only. |
-| `AutoItemDupe` | Recipe-book item dupe (ported from **Lambda 5bDupes** by ToxicAven). **5b5t-specific**. Throws the held stack; the recipe-place trigger is not wired — see note below. |
-| `DonkeyDupe` | Chested-horse (donkey/llama) dupe helper. Auto-rides the nearest chested horse with a chest; the dupe itself is a server-side bug triggered on disconnect while mounted. |
-| `Refill` | Keeps the hotbar filled from the main inventory. One stack moved per tick via the stack-size-aware click path, so overstacked (127) items are moved correctly. Only runs while no container screen is open. |
-| `AutoTotem` | Keeps a Totem of Undying in your offhand, moved from the main inventory via the stack-size-aware click path. Skips a tick if you are holding an item in the cursor. |
+| `AutoItemDupe` | Recipe-book wooden-button dupe. Resolves the `RecipeDisplayId` from the client recipe book and fires `ServerboundPlaceRecipePacket`. Server-specific, not magic. |
+
+### Movement
+
+| Module | Notes |
+| --- | --- |
+| `Speed` | Strafe-based speed with damage/lava/water boosts. |
+| `Sprint` | Auto-sprint with omnidirectional mode. |
+| `Step` | Step height via the `STEP_HEIGHT` attribute. |
+| `Velocity` | Scales knockback by Horizontal/Vertical percent with optional explosion cancel and jump reset. |
+| `ElytraFly` | Boosted elytra flight with pitch steering and auto takeoff. |
+| `NoFall` | Resets fall distance to prevent fall damage. |
+| `NoBedStep` | Step variant tuned for bed-PvP terrain. |
+
+### World
+
+| Module | Notes |
+| --- | --- |
+| `AutoShulker` | Automatically places and opens shulker boxes. Container blacklist honored, player-following target range. |
 
 ### Render
 
 | Module | Notes |
 | --- | --- |
-| `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor` | Client UI. |
-
-### Dupe compatibility (read this)
-
-These are **server-version / server-specific exploits**, not magic:
-
-- `ShulkerDupe` only duplicates on servers running the old container-desync dupe (vanilla/forge/fabric
-  1.19 and below). On 1.21+ it will click slots and do nothing.
-- `AutoItemDupe` is the 5b5t recipe-book dupe. It throws the held stack (the portable part); the
-  recipe-place trigger (`ServerboundPlaceRecipePacket`) is **not wired** because in Minecraft 26.2
-  that packet requires an `int` `RecipeDisplayId` that is only resolvable through internal
-  recipe-manager state — there is no public API to map a recipe name to its display id. It does
-  nothing on servers without that intentional dupe.
-- `DonkeyDupe` only helps on servers where the chested-horse dupe is live. It rides the horse; you
-  still trigger the dupe by disconnecting while mounted.
-
-If a dupe stops working, the server patched it — that is expected, not a bug in this client.
+| `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor`, `EatTimer` | Client UI (Exeter). |
 
 ## Controls
 
 Modules are toggleable, bindable, and configurable through the ClickGui (Right Shift to open). Each
-module has a settings panel for its properties (e.g. `Anti Aim`'s yaw/pitch modes, `DonkeyDupe`'s
-ride range, `Refill`'s behavior).
+module has a settings panel for its properties.
 
 ## Building
 
@@ -79,19 +83,18 @@ chmod +x gradlew
 ./gradlew build
 ```
 
-The built jar lands in `build/libs/`. Drop it in your `.minecraft/mods` folder alongside Fabric API
-and a compatible Meteor/Exeter loader.
+The built jar lands in `build/libs/`. Drop it in your `.minecraft/mods` folder alongside Fabric API.
 
 ## Configuration
 
-Settings persist to a Gson JSON config (`friends.json` lives alongside the client config) — no TOML,
-no dead dependencies.
+Settings persist to a Gson JSON config (`friends.json` lives alongside the client config).
 
 ## Credits
 
-- **Exeter** — original client by `evelyn-gosselin`.
-- **Lemon Client** (`ov-4/lemon-client`) — `ShulkerDupe` logic.
-- **Lambda 5bDupes** (`ToxicAven/5b-AutoDupes`) — `AutoItemDupe` logic.
+- **Exeter** — original client by `evelyn-gosselin`, UI foundation.
+- **Future** (2.9 patterns: AutoCrystal settings, AntiWeakness, Lethal) — PvP design reference.
+- **RusherHack-style** movement design reference.
+- **Meteor** (open source) — aura cross-check (walls-range, cooldown).
 
 ## Disclaimer
 
