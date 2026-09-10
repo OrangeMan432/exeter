@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "exeter",
   "version": "${version}",
-  "name": "Exeter",
-  "description": "A Minecraft client based on Exeter.",
+  "name": "Skid Client",
+  "description": "Skid Client - an anarchy-oriented Minecraft client.",
   "authors": [
     "Friendly",
     "Gopro336"

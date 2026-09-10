@@ -4,24 +4,52 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.Property;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.world.phys.Vec3;
 
 public class Velocity extends ToggleableModule {
+
+  private final NumberProperty<Double> horizontal =
+      new NumberProperty<Double>(0.0, 0.0, 100.0, "Horizontal");
+  private final NumberProperty<Double> vertical =
+      new NumberProperty<Double>(0.0, 0.0, 100.0, "Vertical");
+  private final Property<Boolean> explosions =
+      new Property<Boolean>(true, "Explosions");
+  private final Property<Boolean> jumpReset =
+      new Property<Boolean>(false, "Jump Reset");
 
   private final Listener<PacketEvent> packetListener =
       new Listener<PacketEvent>("velocity_packet") {
         @Override
         public void call(PacketEvent event) {
-          if (minecraft.player == null) return;
+          if (minecraft.player == null || minecraft.level == null) return;
 
           if (event.getPacket() instanceof ClientboundSetEntityMotionPacket packet) {
-            if (packet.id() == minecraft.player.getId()) {
+            if (packet.id() != minecraft.player.getId()) return;
+            double h = horizontal.getValue() / 100.0;
+            double v = vertical.getValue() / 100.0;
+            if (h <= 0.0 && v <= 0.0) {
               event.setCanceled(true);
+              return;
+            }
+            if (h >= 1.0 && v >= 1.0) return;
+            // Partial take: cancel the server velocity, apply our scaled share.
+            event.setCanceled(true);
+            Vec3 motion = packet.movement();
+            double x = motion.x * h;
+            double y = motion.y * v;
+            double z = motion.z * h;
+            minecraft.player.setDeltaMovement(
+                minecraft.player.getDeltaMovement().add(x, y, z));
+            if (jumpReset.getValue() && minecraft.player.onGround()) {
+              minecraft.player.jumpFromGround();
             }
           }
 
-          if (event.getPacket() instanceof ClientboundExplodePacket) {
+          if (event.getPacket() instanceof ClientboundExplodePacket && explosions.getValue()) {
             event.setCanceled(true);
           }
         }
@@ -29,7 +57,8 @@ public class Velocity extends ToggleableModule {
 
   public Velocity() {
     super("Velocity", new String[] {"velocity", "velocity-cancel"}, 0xFF0000, ModuleType.MOVEMENT);
-    setDescription("Reduces or cancels knockback from attacks.");
+    setDescription("Scales knockback from attacks and explosions.");
+    offerProperties(horizontal, vertical, explosions, jumpReset);
     this.listeners.add(packetListener);
   }
 }

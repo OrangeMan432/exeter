@@ -15,7 +15,7 @@ public final class Logger {
    * @param message to be printed
    */
   public void print(String message) {
-    System.out.println(String.format("[%s] %s", "Exeter", message));
+    System.out.println(String.format("[%s] %s", "Skid Client", message));
   }
 
   /**
@@ -27,7 +27,7 @@ public final class Logger {
     Minecraft.getInstance()
         .player
         .sendSystemMessage(
-            Component.literal(String.format("§c[%s] §7%s", "Exeter", message.replace("&", "§")))
+            Component.literal(String.format("§c[%s] §7%s", "Skid Client", message.replace("&", "§")))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)));
   }
 
