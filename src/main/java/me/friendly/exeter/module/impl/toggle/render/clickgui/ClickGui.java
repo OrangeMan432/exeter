@@ -74,7 +74,7 @@ public final class ClickGui extends Screen {
     }
 
     for (final ModuleType moduleType : ModuleType.values()) {
-      if (moduleType == ModuleType.CLIENT) continue;
+      if (moduleType == ModuleType.CLIENT || moduleType == ModuleType.HUD) continue;
       this.panels.add(
           new Panel(moduleType.getLabel(), x += 90, y, true) {
             @Override
@@ -112,7 +112,8 @@ public final class ClickGui extends Screen {
                           instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
                         this.addButton(new ModuleButton(module));
                       } else if (!(module instanceof Toggleable
-                          || module.getLabel().equalsIgnoreCase("ClickGui"))) {
+                          || module.getLabel().equalsIgnoreCase("ClickGui")
+                          || module.getLabel().equalsIgnoreCase("HudRenderer"))) {
                         this.addButton(new ModuleButton((Module) module));
                       }
                     });

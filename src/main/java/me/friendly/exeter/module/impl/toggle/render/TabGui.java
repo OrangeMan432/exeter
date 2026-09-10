@@ -4,12 +4,12 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.InputEvent;
 import me.friendly.exeter.events.RenderGameOverlayEvent;
+import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.active.render.Hud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.render.tabgui.GuiTabHandler;
 import me.friendly.exeter.properties.EnumProperty;
-import me.friendly.exeter.properties.Property;
 import org.lwjgl.glfw.GLFW;
 
 public final class TabGui extends ToggleableModule {
@@ -26,12 +26,12 @@ public final class TabGui extends ToggleableModule {
 
           @Override
           public void call(RenderGameOverlayEvent event) {
-            Hud hud = (Hud) Exeter.getInstance().getModuleManager().getModuleByAlias("textgui");
-            Property watermark = hud.getPropertyByAlias("Watermark");
             if (((TabGui) TabGui.this).minecraft.gui.hud.getDebugOverlay().showDebugScreen()) {
               return;
             }
-            TabGui.this.guiTabHandler.drawGui(3, (Boolean) watermark.getValue() != false ? 13 : 3);
+            Module wmModule = Exeter.getInstance().getModuleManager().getModuleByAlias("watermark");
+            boolean watermarkOn = wmModule instanceof WatermarkHud wm && wm.isRunning() && wm.isDrawn();
+            TabGui.this.guiTabHandler.drawGui(3, watermarkOn ? 13 : 3);
           }
         });
     this.listeners.add(

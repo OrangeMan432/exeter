@@ -29,8 +29,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
-  public static final String HASH = "fd1586d8e4ae063b";
-  public static final String BUILD = "b26+4";
+  public static final String HASH = "189de57c3e8de9d7";
+  public static final String BUILD = "b26+5";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
@@ -68,7 +68,6 @@ public final class Exeter {
     this.moduleManager = new ModuleManager();
     //        this.accountManager = new AccountManager();
     this.pluginManager = new PluginManager();
-    this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
     try {
       this.pluginManager.onLoad();
       System.out.println("Plugin manager started.");
@@ -76,6 +75,7 @@ public final class Exeter {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread("Shutdown Hook Thread") {

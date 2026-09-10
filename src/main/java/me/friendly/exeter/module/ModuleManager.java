@@ -6,7 +6,6 @@ import me.friendly.exeter.config.Config;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
-import me.friendly.exeter.module.impl.active.render.Hud;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
 import me.friendly.exeter.module.impl.toggle.client.TestModule;
@@ -27,6 +26,14 @@ import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.render.TabGui;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.PotionsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 import org.lwjgl.glfw.GLFW;
 
@@ -36,7 +43,7 @@ public final class ModuleManager extends ListRegistry<Module> {
   public ModuleManager() {
     this.registry = new ArrayList();
 
-    register(new Hud());
+    register(new HudRenderer());
     register(new ClickGui());
     register(new TabGui());
     register(new EatTimer());
@@ -60,7 +67,14 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new TestModule());
     register(new Debug());
 
-    // Initialize per-module debug toggles after all modules are registered
+    register(new WatermarkHud());
+    register(new ArrayListHud());
+    register(new ArmorHud());
+    register(new PotionsHud());
+    register(new CoordsHud());
+    register(new TimeHud());
+    register(new DirectionHud());
+
     for (Module m : registry) {
       if (m instanceof Debug debug) {
         debug.initModuleToggles(registry);

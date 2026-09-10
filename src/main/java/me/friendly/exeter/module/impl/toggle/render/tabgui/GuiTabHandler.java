@@ -9,7 +9,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.active.render.Hud;
+
 import me.friendly.exeter.module.impl.toggle.render.tabgui.item.GuiItem;
 import me.friendly.exeter.module.impl.toggle.render.tabgui.item.GuiTab;
 import net.minecraft.client.Minecraft;
@@ -33,6 +33,7 @@ public final class GuiTabHandler {
     java.util.List<Module> modules = Exeter.getInstance().getModuleManager().getRegistry();
     modules.sort((mod1, mod2) -> mod1.getLabel().compareTo(mod2.getLabel()));
     for (ModuleType moduleType : ModuleType.values()) {
+      if (moduleType == ModuleType.HUD) continue;
       GuiTab guiTab = new GuiTab(this, moduleType.getLabel());
       modules.stream()
           .forEach(
@@ -93,12 +94,7 @@ public final class GuiTabHandler {
     int yOff = y + 2;
     for (int index = 0; index < this.tabs.size(); ++index) {
       GuiTab tab = this.tabs.get(index);
-      if (Hud.customFont.getValue()) {
-        FontUtil.drawString(tab.getLabel(), x + 2, yOff, -197380);
-      } else {
-        FontUtil.drawString(tab.getLabel(), x + 2, yOff, -197380);
-      }
-      //            FontUtil.drawString(tab.getLabel(), x + 2, yOff, -197380);
+      FontUtil.drawString(tab.getLabel(), x + 2, yOff, -197380);
       if (this.selectedTab == index && !this.mainMenu) {
         tab.drawTabMenu(this.mc, x + guiWidth, yOff - 2);
       }

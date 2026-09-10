@@ -13,8 +13,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.active.render.Hud;
-import me.friendly.exeter.module.impl.toggle.render.hud.HudComponent;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
@@ -36,6 +35,11 @@ import net.fabricmc.loader.api.FabricLoader;
  * CustomFont = false
  * Watermark = false
  * Casing = "DEFAULT"
+ *
+ * [hud]
+ * x = 5
+ * y = 5
+ * corner = "TOP_LEFT"
  * </pre>
  */
 public class ExeterConfig {
@@ -250,30 +254,23 @@ public class ExeterConfig {
         DebugLogger.get().logSystem("Config", "  no [settings] section in file");
       }
 
-      // Load HUD component positions
-      if (module instanceof Hud && data.containsKey("components")) {
-        Map<String, Object> rawComponents = (Map<String, Object>) data.get("components");
-        Hud hud = (Hud) module;
+      // Load HUD module position and corner
+      if (module instanceof HudModule && data.containsKey("hud")) {
+        HudModule hudModule = (HudModule) module;
+        Map<String, Object> hudData = (Map<String, Object>) data.get("hud");
 
-        // Strip TOML quotes from keys
-        Map<String, Object> components = new HashMap<>();
-        for (Map.Entry<String, Object> entry : rawComponents.entrySet()) {
-          String k = entry.getKey();
-          if (k.startsWith("\"") && k.endsWith("\"")) {
-            k = k.substring(1, k.length() - 1);
-          }
-          components.put(k, entry.getValue());
+        if (hudData.containsKey("x")) {
+          hudModule.setX(((Number) hudData.get("x")).intValue());
         }
-
-        for (HudComponent comp : hud.getHudComponents()) {
-          if (components.containsKey(comp.getLabel())) {
-            Map<String, Object> pos = (Map<String, Object>) components.get(comp.getLabel());
-            if (pos.containsKey("x")) {
-              comp.setX(((Long) pos.get("x")).intValue());
-            }
-            if (pos.containsKey("y")) {
-              comp.setY(((Long) pos.get("y")).intValue());
-            }
+        if (hudData.containsKey("y")) {
+          hudModule.setY(((Number) hudData.get("y")).intValue());
+        }
+        if (hudData.containsKey("corner")) {
+          String cornerName = hudData.get("corner").toString();
+          try {
+            hudModule.setCorner(HudModule.Corner.valueOf(cornerName));
+          } catch (IllegalArgumentException e) {
+            DebugLogger.get().logSystem("Config", "  invalid corner value: " + cornerName);
           }
         }
       }
@@ -397,20 +394,19 @@ public class ExeterConfig {
         }
       }
 
-      // Save HUD component positions
-      if (module instanceof Hud) {
-        Hud hud = (Hud) module;
-        Map<String, Object> components = new HashMap<>();
-        for (HudComponent comp : hud.getHudComponents()) {
-          Map<String, Object> pos = new HashMap<>();
-          pos.put("x", (long) comp.getX());
-          pos.put("y", (long) comp.getY());
-          components.put(comp.getLabel(), pos);
-        }
-        if (!components.isEmpty()) {
-          data.put("components", components);
-          DebugLogger.get().logSystem("Config", "  HUD components saved: " + components.keySet());
-        }
+      // Save HUD module position and corner
+      if (module instanceof HudModule) {
+        HudModule hudModule = (HudModule) module;
+        Map<String, Object> hudData = new HashMap<>();
+        hudData.put("x", (long) hudModule.getX());
+        hudData.put("y", (long) hudModule.getY());
+        hudData.put("corner", hudModule.getCorner().name());
+        data.put("hud", hudData);
+        DebugLogger.get()
+            .logSystem(
+                "Config",
+                "  HUD position: x=" + hudModule.getX() + " y=" + hudModule.getY()
+                    + " corner=" + hudModule.getCorner());
       }
 
       DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());
