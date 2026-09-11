@@ -153,7 +153,6 @@ public final class TabGui extends ToggleableModule {
             }
           }
         });
-    this.setRunning(true);
   }
 
   private static enum Mode {
