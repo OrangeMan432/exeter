@@ -164,24 +164,24 @@ public class PistonCrystal extends ToggleableModule {
   private void placePiston() {
     int slot = PlayerUtil.findInHotbar(PistonCrystal::isPiston);
     if (slot == -1) return;
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
       PlayerUtil.setRotation(yawFor(pushDir), 0f);
     }
-    clickNeighbor(pistonPos);
+    PlayerUtil.clickNeighbor(pistonPos);
     swing();
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void placeCrystal() {
     int slot = PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (slot == -1) return;
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
@@ -192,7 +192,7 @@ public class PistonCrystal extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void power() {
@@ -204,7 +204,7 @@ public class PistonCrystal extends ToggleableModule {
                     && (s.getItem() == Items.REDSTONE_TORCH
                         || s.getItem() == Items.REDSTONE_BLOCK));
     if (slot == -1) return;
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
@@ -215,7 +215,7 @@ public class PistonCrystal extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private Player findTarget() {
@@ -240,33 +240,10 @@ public class PistonCrystal extends ToggleableModule {
     }
   }
 
-  private void swap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapTo(slot);
-    }
-  }
-
-  private void unswap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapBack();
-    }
-  }
-
   private void swing() {
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
-  }
-
-  private void clickNeighbor(BlockPos pos) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbor = pos.relative(dir);
-      if (PlayerUtil.isSolid(neighbor)) {
-        PlayerUtil.useItemOn(neighbor, dir.getOpposite());
-        return;
-      }
-    }
-    PlayerUtil.useItemOn(pos.below(), Direction.UP);
   }
 
   private void advance() {

@@ -65,6 +65,36 @@ public class PlayerUtil {
     previousSlot = -1;
   }
 
+  /**
+   * Silent swap that reports whether it acted. Pair with {@link #swapBackIf}.
+   * Replaces the copy-pasted swap/unswap blocks across placer modules.
+   */
+  public static boolean swapToSlot(int slot, boolean autoSwitch) {
+    if (!autoSwitch || mc.player == null) return false;
+    if (slot == mc.player.getInventory().getSelectedSlot()) return false;
+    swapTo(slot);
+    return true;
+  }
+
+  public static void swapBackIf(boolean swapped) {
+    if (swapped) {
+      swapBack();
+    }
+  }
+
+  /** Clicks a solid neighbor face so the server accepts the placement. */
+  public static void clickNeighbor(BlockPos pos) {
+    for (Direction dir : Direction.values()) {
+      BlockPos neighbor = pos.relative(dir);
+      if (isSolid(neighbor)) {
+        useItemOn(neighbor, dir.getOpposite());
+        return;
+      }
+    }
+    // Fallback: legacy top-face click on the block below.
+    useItemOn(pos.below(), Direction.UP);
+  }
+
   public static void withRotation(double yaw, double pitch, Runnable action) {
     if (mc.player == null) return;
     float origYaw = mc.player.getYRot();

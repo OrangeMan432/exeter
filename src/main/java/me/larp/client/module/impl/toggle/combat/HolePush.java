@@ -125,18 +125,18 @@ public class HolePush extends ToggleableModule {
   }
 
   private void placePiston(BlockPos pos, Direction pushDir, int slot) {
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
       PlayerUtil.setRotation(yawFor(pushDir), 0f);
     }
-    clickNeighbor(pos);
+    PlayerUtil.clickNeighbor(pos);
     swing();
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void power(BlockPos pistonPos) {
@@ -147,39 +147,16 @@ public class HolePush extends ToggleableModule {
                     && (s.getItem() == Items.REDSTONE_TORCH
                         || s.getItem() == Items.REDSTONE_BLOCK));
     if (slot == -1) return;
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     PlayerUtil.useItemOn(pistonPos, Direction.UP);
     swing();
-    unswap(slot);
-  }
-
-  private void swap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapTo(slot);
-    }
-  }
-
-  private void unswap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapBack();
-    }
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void swing() {
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
-  }
-
-  private void clickNeighbor(BlockPos pos) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbor = pos.relative(dir);
-      if (PlayerUtil.isSolid(neighbor)) {
-        PlayerUtil.useItemOn(neighbor, dir.getOpposite());
-        return;
-      }
-    }
-    PlayerUtil.useItemOn(pos.below(), Direction.UP);
   }
 
   private float yawFor(Direction facing) {

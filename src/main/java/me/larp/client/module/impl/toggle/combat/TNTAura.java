@@ -117,22 +117,22 @@ public class TNTAura extends ToggleableModule {
   }
 
   private void place(BlockPos pos, int slot) {
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
       PlayerUtil.setRotation(PlayerUtil.getYaw(pos), PlayerUtil.getPitch(pos));
     }
-    clickNeighbor(pos);
+    PlayerUtil.clickNeighbor(pos);
     swing();
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void ignite(BlockPos pos, int slot) {
-    swap(slot);
+    boolean swapped = PlayerUtil.swapToSlot(slot, autoSwitch.getValue());
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
     if (rotate.getValue()) {
@@ -144,36 +144,13 @@ public class TNTAura extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    unswap(slot);
-  }
-
-  private void swap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapTo(slot);
-    }
-  }
-
-  private void unswap(int slot) {
-    if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
-      PlayerUtil.swapBack();
-    }
+    PlayerUtil.swapBackIf(swapped);
   }
 
   private void swing() {
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
-  }
-
-  private void clickNeighbor(BlockPos pos) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbor = pos.relative(dir);
-      if (PlayerUtil.isSolid(neighbor)) {
-        PlayerUtil.useItemOn(neighbor, dir.getOpposite());
-        return;
-      }
-    }
-    PlayerUtil.useItemOn(pos.below(), Direction.UP);
   }
 
   private static boolean isTNT(ItemStack stack) {

@@ -58,6 +58,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `AutoItemDupe` | Recipe-book wooden-button dupe. Resolves the `RecipeDisplayId` from the client recipe book and fires `ServerboundPlaceRecipePacket`. Server-specific, not magic. |
+| `DiscordRPC` | Rich presence with your App ID, throttled to dodge rate limits. |
 | `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
 | `ChestStealer` | Loots chests and shulkers on a delay with auto-close. |

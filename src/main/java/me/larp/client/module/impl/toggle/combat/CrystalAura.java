@@ -20,8 +20,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -275,10 +273,5 @@ public class CrystalAura extends ToggleableModule {
     if (needSwitch) {
       PlayerUtil.swapBack();
     }
-  }
-
-  private static boolean isObsidianItem(ItemStack stack) {
-    if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem item)) return false;
-    return item.getBlock() == Blocks.OBSIDIAN;
   }
 }
