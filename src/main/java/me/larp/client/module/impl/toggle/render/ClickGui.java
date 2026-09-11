@@ -11,6 +11,11 @@ public final class ClickGui extends ToggleableModule {
     TEXT
   }
 
+  public enum Style {
+    CLASSIC,
+    MODERN
+  }
+
   public final Property<Boolean> showBackground = new Property<Boolean>(true, "Background", "bg");
   public final Property<Boolean> showDescriptions =
       new Property<Boolean>(true, "Descriptions", "desc");
@@ -21,12 +26,20 @@ public final class ClickGui extends ToggleableModule {
   public final Property<Boolean> showGear =
       new Property<Boolean>(true, "Gear", "gear")
           .addChild(new EnumProperty<GearMode>(GearMode.IMAGE, "Mode", "mode"));
+  public final EnumProperty<Style> style =
+      new EnumProperty<Style>(Style.MODERN, "Style", "style");
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
     offerProperties(
-        showBackground, showDescriptions, showGear, showArrow, showModuleCount, showGradient);
+        showBackground,
+        showDescriptions,
+        showGear,
+        showArrow,
+        showModuleCount,
+        showGradient,
+        style);
   }
 
   public GearMode getGearMode() {
@@ -53,8 +66,13 @@ public final class ClickGui extends ToggleableModule {
   @Override
   protected void onEnable() {
     super.onEnable();
-    this.minecraft.gui.setScreen(
-        me.larp.client.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
+    if (style.getValue() == Style.MODERN) {
+      this.minecraft.gui.setScreen(
+          me.larp.client.module.impl.toggle.render.clickgui.ModernGui.getModernGui());
+    } else {
+      this.minecraft.gui.setScreen(
+          me.larp.client.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
+    }
     this.setRunning(false);
   }
 }

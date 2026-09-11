@@ -91,30 +91,35 @@ public final class Render3D {
       Vec3 targetPos,
       int color,
       float lineWidth) {
-    Vec3 adjusted = targetPos.subtract(camera.position());
-    Vec3 origin = from.subtract(camera.position());
-    float dx = (float) (adjusted.x - origin.x);
-    float dy = (float) (adjusted.y - origin.y);
-    float dz = (float) (adjusted.z - origin.z);
-    float len = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-    if (len < 0.001f) return;
-    float nx = dx / len;
-    float ny = dy / len;
-    float nz = dz / len;
+    drawPath(
+        storage,
+        camera,
+        matrices,
+        java.util.List.of(from, targetPos),
+        color,
+        lineWidth);
+  }
+
+  /** Batched polyline in one geometry submit: landing previews etc. */
+  public static void drawPath(
+      SubmitNodeStorage storage,
+      Camera camera,
+      PoseStack matrices,
+      java.util.List<Vec3> points,
+      int color,
+      float lineWidth) {
+    if (points.size() < 2) return;
+    Vec3 cam = camera.position();
     storage.submitCustomGeometry(
         matrices,
         RenderTypes.lines(),
         (pose, buffer) -> {
-          buffer
-              .addVertex((float) origin.x, (float) origin.y, (float) origin.z)
-              .setColor(color)
-              .setNormal(nx, ny, nz)
-              .setLineWidth(lineWidth);
-          buffer
-              .addVertex((float) adjusted.x, (float) adjusted.y, (float) adjusted.z)
-              .setColor(color)
-              .setNormal(nx, ny, nz)
-              .setLineWidth(lineWidth);
+          for (int i = 0; i < points.size() - 1; i++) {
+            Vec3 a = points.get(i).subtract(cam);
+            Vec3 b = points.get(i + 1).subtract(cam);
+            line(
+                buffer, a.x, a.y, a.z, b.x, b.y, b.z, color, lineWidth);
+          }
         });
   }
 

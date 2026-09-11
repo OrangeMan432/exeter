@@ -9,7 +9,6 @@ import me.larp.client.module.impl.active.render.Colors;
 import me.larp.client.module.impl.active.render.Hud;
 import me.larp.client.module.impl.toggle.client.Debug;
 import me.larp.client.module.impl.toggle.client.DiscordRPC;
-import me.larp.client.module.impl.toggle.client.TestModule;
 import me.larp.client.module.impl.toggle.combat.AnchorAura;
 import me.larp.client.module.impl.toggle.combat.AntiRegear;
 import me.larp.client.module.impl.toggle.combat.AutoArmor;
@@ -41,6 +40,7 @@ import me.larp.client.module.impl.toggle.misc.AutoGear;
 import me.larp.client.module.impl.toggle.misc.AutoItemDupe;
 import me.larp.client.module.impl.toggle.misc.AutoLog;
 import me.larp.client.module.impl.toggle.misc.AutoTool;
+import me.larp.client.module.impl.toggle.misc.ChatSuffix;
 import me.larp.client.module.impl.toggle.misc.ChestStealer;
 import me.larp.client.module.impl.toggle.misc.PingSpoof;
 import me.larp.client.module.impl.toggle.misc.Replenish;
@@ -63,16 +63,20 @@ import me.larp.client.module.impl.toggle.movement.AntiVoid;
 import me.larp.client.module.impl.toggle.movement.Speed;
 import me.larp.client.module.impl.toggle.movement.Sprint;
 import me.larp.client.module.impl.toggle.movement.Step;
+import me.larp.client.module.impl.toggle.movement.Timer;
 import me.larp.client.module.impl.toggle.movement.TargetStrafe;
 import me.larp.client.module.impl.toggle.movement.Velocity;
 import me.larp.client.module.impl.toggle.render.ClickGui;
 import me.larp.client.module.impl.toggle.render.EatTimer;
 import me.larp.client.module.impl.toggle.render.HUDEditor;
 import me.larp.client.module.impl.toggle.render.HoleESP;
+import me.larp.client.module.impl.toggle.render.TabGui;
 import me.larp.client.module.impl.toggle.render.Nametags;
 import me.larp.client.module.impl.toggle.render.StorageESP;
-import me.larp.client.module.impl.toggle.render.TabGui;
 import me.larp.client.module.impl.toggle.render.Tracers;
+import me.larp.client.module.impl.toggle.render.Trajectories;
+import me.larp.client.module.impl.toggle.render.Waypoints;
+import me.larp.client.module.impl.toggle.render.LogoutSpots;
 import me.larp.client.module.impl.toggle.world.AutoMine;
 import me.larp.client.module.impl.toggle.world.AutoShulker;
 import me.larp.client.module.impl.toggle.world.InstaMine;
@@ -93,6 +97,9 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new HUDEditor());
     register(new HoleESP());
     register(new Tracers());
+    register(new Trajectories());
+    register(new Waypoints());
+    register(new LogoutSpots());
     register(new StorageESP());
     register(new Nametags());
     register(new DiscordRPC());
@@ -115,6 +122,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoGear());
     register(new Announcer());
     register(new AutoLog());
+    register(new ChatSuffix());
     register(new ChestStealer());
     register(new AutoTool());
     register(new PingSpoof());
@@ -155,7 +163,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Step());
     register(new Sprint());
     register(new TargetStrafe());
-    register(new TestModule());
+    register(new Timer());
     register(new Debug());
 
     // Initialize per-module debug toggles after all modules are registered
@@ -171,6 +179,21 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindByLabel("ClickGui")
         .setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
+    // Default binds for the core kit. Saved configs override these on load.
+    bind("KillAura", GLFW.GLFW_KEY_R);
+    bind("CrystalAura", GLFW.GLFW_KEY_C);
+    bind("Surround", GLFW.GLFW_KEY_V);
+    bind("AutoTotem", GLFW.GLFW_KEY_G);
+    bind("Sprint", GLFW.GLFW_KEY_X);
+    bind("Speed", GLFW.GLFW_KEY_H);
+    bind("Step", GLFW.GLFW_KEY_B);
+    bind("AutoArmor", GLFW.GLFW_KEY_O);
+    bind("BedAura", GLFW.GLFW_KEY_K);
+    bind("AnchorAura", GLFW.GLFW_KEY_P);
+    bind("NoFall", GLFW.GLFW_KEY_N);
+    bind("Scaffold", GLFW.GLFW_KEY_U);
+    bind("ElytraFly", GLFW.GLFW_KEY_J);
+
     new Config("module_configurations") {
 
       @Override
@@ -185,8 +208,14 @@ public final class ModuleManager extends ListRegistry<Module> {
     };
   }
 
-  public <T extends Module> T getModule(Class<T> clazz) {
-    for (Module module : registry) {
+  private void bind(String label, int key) {
+    var keybind = Larp.getInstance().getKeybindManager().getKeybindByLabel(label);
+    if (keybind != null && keybind.getKey() == 0) {
+      keybind.setKey(key);
+    }
+  }
+
+  public <T extends Module> T getModule(Class<T> clazz) {    for (Module module : registry) {
       if (clazz.isInstance(module)) {
         return clazz.cast(module);
       }

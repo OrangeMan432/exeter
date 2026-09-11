@@ -7,7 +7,6 @@ import me.larp.client.command.CommandManager;
 import me.larp.client.config.ConfigManager;
 import me.larp.client.config.LarpConfig;
 import me.larp.client.friend.FriendManager;
-import me.larp.client.gui.screens.accountmanager.AccountManager;
 import me.larp.client.keybind.KeybindManager;
 import me.larp.client.logging.Logger;
 import me.larp.client.module.ModuleManager;
@@ -25,8 +24,8 @@ import me.larp.client.plugin.PluginManager;
 public final class Larp {
   private static Larp instance = null;
   public static final String TITLE = "Larp Client";
-  public static final String HASH = "414521a0d92252c2";
-  public static final String BUILD = "b25+49";
+  public static final String HASH = "30714f73ae2e0029";
+  public static final String BUILD = "b25+50";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
@@ -36,7 +35,6 @@ public final class Larp {
   private FriendManager friendManager;
   private ConfigManager configManager;
   private LarpConfig larpConfig;
-  private AccountManager accountManager;
   private PluginManager pluginManager;
   private File directory;
 
@@ -120,11 +118,6 @@ public final class Larp {
 
   public LarpConfig getLarpConfig() {
     return this.larpConfig;
-  }
-
-  // AccountManager is not working
-  public AccountManager getAccountManager() {
-    return this.accountManager;
   }
 
   public PluginManager getPluginManager() {

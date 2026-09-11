@@ -37,6 +37,8 @@ public final class Hud extends Module {
       new Property<Boolean>(true, "Coords", "coord", "c", "cord");
   private final Property<Boolean> arraylist =
       new Property<Boolean>(true, "ArrayList", "array", "al");
+  private final Property<Boolean> targetHud =
+      new Property<Boolean>(true, "TargetHUD", "target", "thud");
   private final SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
   private final EnumProperty<Organize> organize =
       new EnumProperty<Organize>(Organize.LENGTH, "Organize", "o");
@@ -59,6 +61,7 @@ public final class Hud extends Module {
         this.time,
         this.direction,
         this.arraylist,
+        this.targetHud,
         this.coords);
 
     hudComponents.add(
@@ -67,9 +70,30 @@ public final class Hud extends Module {
           public void render(int sw, int sh) {
             String dirty = Larp.DIRTY ? " (dirty)" : "";
             String text =
-                String.format("%s \u00a77%s.%s%s", Larp.TITLE, Larp.BUILD, Larp.HASH, dirty);
+                String.format(
+                    "%s \u00a77%s.%s%s \u00a78[\u00a7f%d fps\u00a78] [\u00a7f%dms\u00a78]",
+                    Larp.TITLE, Larp.BUILD, Larp.HASH, dirty, fps(), ping());
             FontUtil.drawString(
                 text, getX(), getY(), transparent.getValue() != false ? -1711276033 : -1);
+          }
+
+          private int fps() {
+            try {
+              return net.minecraft.client.Minecraft.getInstance().getFps();
+            } catch (Exception e) {
+              return 0;
+            }
+          }
+
+          private int ping() {
+            try {
+              var mc = net.minecraft.client.Minecraft.getInstance();
+              if (mc.getConnection() == null || mc.player == null) return 0;
+              var info = mc.getConnection().getPlayerInfo(mc.player.getUUID());
+              return info != null ? info.getLatency() : 0;
+            } catch (Exception e) {
+              return 0;
+            }
           }
         });
     hudComponents.add(
@@ -99,6 +123,10 @@ public final class Hud extends Module {
               String label = getTag(tm.getLabel());
               int lw = FontUtil.getStringWidth(label);
               int tx = left ? getX() : getX() + getWidth() - lw;
+              // Sidebar accent bar, left or right edge.
+              int barX = left ? getX() - 2 : getX() + getWidth() + 1;
+              me.larp.api.minecraft.render.RenderMethods.drawRect(
+                  barX, py - 1, barX + 1, py + 8, color);
               FontUtil.drawString(label, tx, py, color);
               py += bottom ? -9 : 9;
             }
@@ -185,6 +213,42 @@ public final class Hud extends Module {
           }
         });
     hudComponents.add(
+        new HudComponent("TargetHUD", 0, 0, 120, 27) {
+          @Override
+          public void render(int sw, int sh) {
+            net.minecraft.world.entity.player.Player target = findTarget();
+            if (target == null) return;
+            String name = target.getGameProfile().name();
+            float hp = target.getHealth() + target.getAbsorptionAmount();
+            String hpText = String.format("%.0f HP", hp);
+            String distText =
+                String.format("%.0fm", minecraft.player.distanceTo(target));
+            int nameColor = hp > 12 ? 0xFF55FF55 : hp > 6 ? 0xFFFFAA00 : 0xFFFF5555;
+            FontUtil.drawString(name, getX() + 2, getY() + 2, -1);
+            FontUtil.drawString(hpText, getX() + 2, getY() + 12, nameColor);
+            FontUtil.drawString(
+                distText,
+                getX() + getWidth() - FontUtil.getStringWidth(distText) - 2,
+                getY() + 12,
+                0xFF888888);
+          }
+
+          private net.minecraft.world.entity.player.Player findTarget() {
+            if (minecraft.level == null || minecraft.player == null) return null;
+            net.minecraft.world.entity.player.Player best = null;
+            double bestDist = 12.0;
+            for (var entity : minecraft.level.players()) {
+              if (entity == minecraft.player || !entity.isAlive()) continue;
+              double d = minecraft.player.distanceTo(entity);
+              if (d < bestDist) {
+                bestDist = d;
+                best = entity;
+              }
+            }
+            return best;
+          }
+        });
+    hudComponents.add(
         new HudComponent("Direction", 0, 0, 100, 9) {
           @Override
           public void render(int sw, int sh) {
@@ -238,6 +302,8 @@ public final class Hud extends Module {
         return time.getValue();
       case "Direction":
         return direction.getValue();
+      case "TargetHUD":
+        return targetHud.getValue();
       default:
         return false;
     }
@@ -281,6 +347,12 @@ public final class Hud extends Module {
         case "Direction":
           if (c.getX() == 0 && c.getY() == 0) {
             c.setX(sw - 100);
+            c.setY(sh / 2 + 40);
+          }
+          break;
+        case "TargetHUD":
+          if (c.getX() == 0 && c.getY() == 0) {
+            c.setX(sw / 2 - 60);
             c.setY(sh / 2 + 40);
           }
           break;
