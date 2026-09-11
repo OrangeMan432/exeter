@@ -52,6 +52,7 @@ import me.larp.client.module.impl.toggle.misc.AutoTool;
 import me.larp.client.module.impl.toggle.misc.ChestAura;
 import me.larp.client.module.impl.toggle.misc.ChatSuffix;
 import me.larp.client.module.impl.toggle.misc.ChestStealer;
+import me.larp.client.module.impl.toggle.misc.CoordLogger;
 import me.larp.client.module.impl.toggle.misc.ChorusControl;
 import me.larp.client.module.impl.toggle.misc.HitboxDesync;
 import me.larp.client.module.impl.toggle.misc.InvCleaner;
@@ -157,6 +158,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new ChatSuffix());
     register(new ChestStealer());
     register(new ChestAura());
+    register(new CoordLogger());
     register(new ChorusControl());
     register(new HitboxDesync());
     register(new InvCleaner());

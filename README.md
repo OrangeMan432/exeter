@@ -72,6 +72,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `ChestAura` | Meteor-Rejects-pattern auto-opener: rotates and opens storage in range so ChestStealer can empty it, double-chest aware with forget timer. |
 | `AutoTool` | Swaps to the fastest hotbar tool while mining. |
 | `PingSpoof` | Delays keepalives for fake low ping. |
+| `CoordLogger` | Meteor-Rejects-pattern intel: logs player/wolf teleports and wither/end-portal/dragon world events with coords. |
 
 ### Movement
 
