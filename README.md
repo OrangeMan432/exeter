@@ -58,6 +58,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `AutoItemDupe` | Recipe-book wooden-button dupe. Resolves the `RecipeDisplayId` from the client recipe book and fires `ServerboundPlaceRecipePacket`. Server-specific, not magic. |
+| `ShulkerDupe` | Techale-pattern 5b5t dupe (via Lambda): throw shulker, craft button, place stack, mine. Stand on a crafting table. |
 | `DiscordRPC` | Rich presence with your App ID, throttled to dodge rate limits. |
 | `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
@@ -85,6 +86,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Jesus` | Walk on water, sneak to dive. |
 | `Parkour` | 6b6t-pattern auto ledge jumps. |
 | `SafeWalk` | 6b6t-pattern edge stop. |
+| `Scaffold` | Bridging and towering with block swap. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World
@@ -136,6 +138,7 @@ Settings persist per-module as Gson JSON in `.minecraft/config/larp/` (`friends.
 - **6b6t AnarchyClient** (`6b6t/AnarchyClient`, MIT) — Parkour/SafeWalk patterns.
 - **Combatant** (`pivosos2007/combatant-client`, GPL-3.0) — 26.2 ElytraFly modes reference.
 - **Lemon Client** (`ov-4/lemon-client`) — CevBreaker/SpeedMine/PistonCrystal/TNTAura patterns, ShulkerDupe logic.
+- **Lambda 5b-AutoDupes** (`ToxicAven/5b-AutoDupes`) — ShulkerDupe method.
 - **BlackOut Meteor addon** (`pierogiee/BlackOut`) — PacketFly pattern.
 
 ## Disclaimer

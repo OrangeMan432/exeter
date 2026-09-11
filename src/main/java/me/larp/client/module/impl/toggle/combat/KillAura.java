@@ -78,7 +78,12 @@ public class KillAura extends ToggleableModule {
     // Meteor-pattern: full-charge hits only (0 = Future-style spam).
     if (minecraft.player.getAttackStrengthScale(0.0F) < cooldown.getValue().floatValue()) return;
 
-    int weaponSlot = findWeaponSlot();
+    // Shield-break: axes disable blocking targets, so prefer one when raised.
+    int weaponSlot =
+        target.isBlocking() ? findAxeSlot() : findWeaponSlot();
+    if (weaponSlot == -1) {
+      weaponSlot = findWeaponSlot();
+    }
     if (onlyWeapon.getValue() && weaponSlot == -1) return;
     // Future-pattern AntiWeakness: weakness ruins damage unless holding a sword.
     if (antiWeakness.getValue()
@@ -162,6 +167,18 @@ public class KillAura extends ToggleableModule {
     ItemStack held = minecraft.player.getMainHandItem();
     if (held.isEmpty()) return false;
     return BuiltInRegistries.ITEM.getKey(held.getItem()).getPath().endsWith("_sword");
+  }
+
+  private int findAxeSlot() {
+    for (int i = 0; i < 9; i++) {
+      ItemStack stack = minecraft.player.getInventory().getItem(i);
+      if (stack.isEmpty()) continue;
+      if (stack.getItem() instanceof AxeItem
+          || BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().endsWith("_axe")) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   private int findWeaponSlot() {
