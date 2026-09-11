@@ -27,7 +27,7 @@ public final class ClickGui extends ToggleableModule {
       new Property<Boolean>(true, "Gear", "gear")
           .addChild(new EnumProperty<GearMode>(GearMode.IMAGE, "Mode", "mode"));
   public final EnumProperty<Style> style =
-      new EnumProperty<Style>(Style.MODERN, "Style", "style");
+      new EnumProperty<Style>(Style.CLASSIC, "Style", "style");
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
