@@ -10,6 +10,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.CrystalDamage;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 public class CrystalAura extends ToggleableModule {
 
@@ -39,6 +41,10 @@ public class CrystalAura extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final NumberProperty<Double> lethalHealth =
       new NumberProperty<Double>(6.0, 0.0, 20.0, "Lethal Health");
+  private final NumberProperty<Double> minDamage =
+      new NumberProperty<Double>(6.0, 0.0, 20.0, "Min Damage");
+  private final NumberProperty<Double> maxSelf =
+      new NumberProperty<Double>(10.0, 0.0, 20.0, "Max Self");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -56,7 +62,9 @@ public class CrystalAura extends ToggleableModule {
         rotate,
         swingHand,
         autoSwitch,
-        lethalHealth);
+        lethalHealth,
+        minDamage,
+        maxSelf);
     this.listeners.add(
         new Listener<TickEvent>("crystalaura_tick") {
           @Override
@@ -152,8 +160,9 @@ public class CrystalAura extends ToggleableModule {
   private BlockPos findBase(Player target) {
     double placeRangeSq = placeRange.getValue() * placeRange.getValue();
     BlockPos origin = target.blockPosition();
-    BlockPos best = null;
-    double bestScore = Double.MAX_VALUE;
+    boolean lethal = target.getHealth() <= lethalHealth.getValue().floatValue();
+    // Gather in-range candidates first, damage-score only the closest few.
+    List<BlockPos> nearby = new ArrayList<>();
     for (int x = -3; x <= 3; x++) {
       for (int y = -2; y <= 2; y++) {
         for (int z = -3; z <= 3; z++) {
@@ -166,12 +175,30 @@ public class CrystalAura extends ToggleableModule {
           if (minecraft.player.distanceToSqr(
                   crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5)
               > placeRangeSq) continue;
-          double score = crystalPos.distSqr(target.blockPosition());
-          if (score < bestScore) {
-            bestScore = score;
-            best = base;
-          }
+          nearby.add(base);
         }
+      }
+    }
+    nearby.sort(Comparator.comparingDouble(b -> b.distSqr(origin)));
+    if (nearby.size() > 12) {
+      nearby = nearby.subList(0, 12);
+    }
+    BlockPos best = null;
+    double bestDamage = lethal ? -1.0 : minDamage.getValue();
+    for (BlockPos base : nearby) {
+      BlockPos crystalPos = base.above();
+      Vec3 spawn =
+          new Vec3(crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5);
+      double targetDamage = CrystalDamage.crystalDamage(target, spawn);
+      if (!lethal && targetDamage < minDamage.getValue()) continue;
+      double selfDamage = CrystalDamage.crystalDamage(minecraft.player, spawn);
+      if (selfDamage > maxSelf.getValue()) continue;
+      if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) {
+        continue;
+      }
+      if (targetDamage > bestDamage) {
+        bestDamage = targetDamage;
+        best = base;
       }
     }
     return best;

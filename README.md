@@ -27,9 +27,13 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
-| `CrystalAura` | Places and breaks end crystals around the nearest player. Place/break delays, rotate, auto-switch, lethal fast-path on low-HP targets. |
+| `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path. |
 | `Surround` | Shoreline-pattern obsidian feet trap. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |
 | `AutoTrap` | Cages targets in obsidian (feet + head + top). |
+| `SelfTrap` | Fully cages yourself in obsidian (feet + head + top). |
+| `HoleFill` | Fills holes near enemies with obsidian, proximity mode included. |
+| `AutoWeb` | Webs targets feet-first. |
+| `AutoArmor` | Shoreline-pattern armor manager for 26.2 component armor. Blast-priority scoring, durability gate, binding skip, elytra priority. |
 | `BedAura` | Automatically places and breaks beds for combat. Rotate, auto-switch, place/break delays. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
@@ -55,6 +59,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Step` | Step height via the `STEP_HEIGHT` attribute. |
 | `Velocity` | Scales knockback by Horizontal/Vertical percent with optional explosion cancel and jump reset. |
 | `ElytraFly` | Boosted elytra flight with pitch steering and auto takeoff. |
+| `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
