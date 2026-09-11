@@ -69,6 +69,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Announcer` | Public-chat pops, kills, joins, leaves with cooldown and style. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
 | `ChestStealer` | Loots chests and shulkers on a delay with auto-close. |
+| `ChestAura` | Meteor-Rejects-pattern auto-opener: rotates and opens storage in range so ChestStealer can empty it, double-chest aware with forget timer. |
 | `AutoTool` | Swaps to the fastest hotbar tool while mining. |
 | `PingSpoof` | Delays keepalives for fake low ping. |
 
