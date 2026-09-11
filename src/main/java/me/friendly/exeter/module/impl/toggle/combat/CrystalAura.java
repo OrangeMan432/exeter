@@ -2,7 +2,9 @@ package me.friendly.exeter.module.impl.toggle.combat;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
@@ -45,10 +47,22 @@ public class CrystalAura extends ToggleableModule {
       new NumberProperty<Double>(6.0, 0.0, 20.0, "Min Damage");
   private final NumberProperty<Double> maxSelf =
       new NumberProperty<Double>(10.0, 0.0, 20.0, "Max Self");
+  private final NumberProperty<Integer> burst =
+      new NumberProperty<Integer>(1, 1, 5, "Burst Packets");
+  private final NumberProperty<Integer> existedTicks =
+      new NumberProperty<Integer>(0, 0, 20, "Exist Ticks");
+  private final NumberProperty<Integer> maxAttacks =
+      new NumberProperty<Integer>(2, 1, 10, "Max Attacks");
+  private final Property<Boolean> setDead =
+      new Property<Boolean>(true, "Set Dead");
+  private final Property<Boolean> pauseEat =
+      new Property<Boolean>(false, "Pause On Eat");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
   private int lastBreakTick = -100;
+  // BlackOut-pattern existence + inhibit tracking: id -> [firstSeenTick, attacks].
+  private final Map<Integer, int[]> crystalStats = new HashMap<>();
 
   public CrystalAura() {
     super("CrystalAura", new String[] {"crystalaura", "crystal-aura"}, 0xFF0000, ModuleType.COMBAT);
@@ -64,7 +78,12 @@ public class CrystalAura extends ToggleableModule {
         autoSwitch,
         lethalHealth,
         minDamage,
-        maxSelf);
+        maxSelf,
+        burst,
+        existedTicks,
+        maxAttacks,
+        setDead,
+        pauseEat);
     this.listeners.add(
         new Listener<TickEvent>("crystalaura_tick") {
           @Override
@@ -81,15 +100,17 @@ public class CrystalAura extends ToggleableModule {
     tickCounter = 0;
     lastPlaceTick = -100;
     lastBreakTick = -100;
+    crystalStats.clear();
   }
 
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
     tickCounter++;
+    boolean eating = pauseEat.getValue() && minecraft.player.isUsingItem();
 
     // Break first: crystals detonate the same tick they are attacked.
-    if (tickCounter - lastBreakTick >= breakDelay.getValue()) {
+    if (!eating && tickCounter - lastBreakTick >= breakDelay.getValue()) {
       EndCrystal crystal = findCrystal();
       if (crystal != null) {
         attackCrystal(crystal);
@@ -98,6 +119,7 @@ public class CrystalAura extends ToggleableModule {
       }
     }
 
+    if (eating) return;
     Player target = findTarget();
     if (target == null) return;
     // Future-pattern Lethal: low-HP targets are one crystal from dead, skip the wait.
@@ -120,6 +142,10 @@ public class CrystalAura extends ToggleableModule {
       if (!crystal.isAlive()) continue;
       double dist = minecraft.player.distanceToSqr(crystal);
       if (dist > rangeSq) continue;
+      // BlackOut-pattern existence validation + inhibit cap.
+      int[] stats = crystalStats.computeIfAbsent(crystal.getId(), k -> new int[] {tickCounter, 0});
+      if (tickCounter - stats[0] < existedTicks.getValue()) continue;
+      if (stats[1] >= maxAttacks.getValue()) continue;
       if (dist < bestDist) {
         bestDist = dist;
         best = crystal;
@@ -135,12 +161,21 @@ public class CrystalAura extends ToggleableModule {
       BlockPos pos = crystal.blockPosition();
       PlayerUtil.setRotation(PlayerUtil.getYaw(pos), PlayerUtil.getPitch(pos));
     }
-    minecraft.gameMode.attack(minecraft.player, crystal);
+    // BlackOut-pattern burst: several attack packets per crystal.
+    for (int i = 0; i < burst.getValue(); i++) {
+      minecraft.gameMode.attack(minecraft.player, crystal);
+    }
     if (swingHand.getValue()) {
       minecraft.player.swing(InteractionHand.MAIN_HAND);
     }
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
+    }
+    int[] stats = crystalStats.computeIfAbsent(crystal.getId(), k -> new int[] {tickCounter, 0});
+    stats[1]++;
+    // BlackOut-pattern despawn sim: stop rendering the dead crystal now.
+    if (setDead.getValue()) {
+      crystal.discard();
     }
   }
 

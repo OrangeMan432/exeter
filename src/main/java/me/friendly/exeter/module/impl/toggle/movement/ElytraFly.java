@@ -12,6 +12,7 @@ import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,7 +27,15 @@ public class ElytraFly extends ToggleableModule {
     BOOST,
     STATIC,
     VANILLA,
-    FIREWORK
+    FIREWORK,
+    GLIDE,
+    BOUNCE
+  }
+
+  private enum GlideState {
+    CRUISE,
+    DIVE,
+    CLIMB
   }
 
   private final EnumProperty<Mode> mode = new EnumProperty<Mode>(Mode.BOOST, "Mode");
@@ -42,11 +51,46 @@ public class ElytraFly extends ToggleableModule {
       new Property<Boolean>(true, "Pitch Steer");
   private final Property<Boolean> autoTakeoff =
       new Property<Boolean>(false, "Auto Takeoff");
+  private final Property<Boolean> durabilityGuard =
+      new Property<Boolean>(true, "Durability Guard");
+  private final NumberProperty<Integer> minDurability =
+      new NumberProperty<Integer>(5, 1, 50, "Min Durability");
+  private final NumberProperty<Integer> cruiseAltitude =
+      new NumberProperty<Integer>(180, 0, 320, "Cruise Altitude");
+  private final NumberProperty<Double> stallSpeed =
+      new NumberProperty<Double>(14.0, 5.0, 40.0, "Stall Speed");
+  private final NumberProperty<Double> momentumSpeed =
+      new NumberProperty<Double>(27.0, 10.0, 60.0, "Momentum Speed");
+  private final NumberProperty<Double> diveAngle =
+      new NumberProperty<Double>(38.0, 0.0, 90.0, "Dive Angle");
+  private final NumberProperty<Double> climbAngle =
+      new NumberProperty<Double>(40.0, 0.0, 90.0, "Climb Angle");
+  private final NumberProperty<Double> pitchStep =
+      new NumberProperty<Double>(10.0, 1.0, 40.0, "Pitch Step");
+  private final NumberProperty<Integer> bounceDelay =
+      new NumberProperty<Integer>(1, 0, 20, "Bounce Delay");
+  private final NumberProperty<Integer> rocketCooldown =
+      new NumberProperty<Integer>(3500, 500, 10000, "Rocket Cooldown");
+
+  private final double[] speedSamples = new double[10];
+  private int speedSampleIndex;
+  private double speedAvg;
+  private double lastX;
+  private double lastZ;
+  private double cruisePhase;
+  private GlideState glideState = GlideState.CRUISE;
+  private boolean climbingToTarget;
+  private long lastRocketTime;
+  private int sinceJump;
+  private int sinceFalling;
 
   public ElytraFly() {
     super("ElytraFly", new String[] {"elytrafly", "elytra-fly"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Combatant-pattern elytra engine.");
-    offerProperties(speed, vertical, drag, lift, pitchSteer, autoTakeoff, mode);
+    offerProperties(
+        speed, vertical, drag, lift, pitchSteer, autoTakeoff, durabilityGuard, minDurability,
+        cruiseAltitude, stallSpeed, momentumSpeed, diveAngle, climbAngle, pitchStep,
+        bounceDelay, rocketCooldown, mode);
     this.listeners.add(
         new Listener<TickEvent>("elytrafly_tick") {
           @Override
@@ -64,6 +108,23 @@ public class ElytraFly extends ToggleableModule {
     if (minecraft.player.getAbilities().instabuild) return;
     if (minecraft.player.hasEffect(MobEffects.LEVITATION)) return;
 
+    // BlackOut-pattern durability guard: never break the elytra mid-flight.
+    if (durabilityGuard.getValue()) {
+      ItemStack chest =
+          minecraft.player.getItemBySlot(EquipmentSlot.CHEST);
+      if (chest.is(Items.ELYTRA)
+          && (chest.getMaxDamage() - chest.getDamageValue()) < minDurability.getValue()) {
+        setRunning(false);
+        return;
+      }
+    }
+    trackSpeed();
+
+    if (mode.getValue() == Mode.BOUNCE) {
+      tickBounce();
+      return;
+    }
+
     if (!minecraft.player.isFallFlying()) {
       if (autoTakeoff.getValue()
           && minecraft.player.isSprinting()
@@ -80,6 +141,8 @@ public class ElytraFly extends ToggleableModule {
       case STATIC -> tickStatic();
       case VANILLA -> tickVanilla();
       case FIREWORK -> tickFirework();
+      case GLIDE -> tickGlide();
+      case BOUNCE -> tickBounce();
     }
   }
 
@@ -156,6 +219,98 @@ public class ElytraFly extends ToggleableModule {
     vel = vel.add(look.scale(speed.getValue() * 0.02));
     double liftY = -Math.sin(Math.toRadians(pitch)) * lift.getValue();
     minecraft.player.setDeltaMovement(vel.x, vel.y + liftY, vel.z);
+  }
+
+  /** BlackOut-pattern glide autopilot: climb to cruise, dive on stall. */
+  private void tickGlide() {
+    if (!minecraft.player.isFallFlying()) return;
+    double y = minecraft.player.getY();
+    long now = System.currentTimeMillis();
+
+    if (!climbingToTarget && y < cruiseAltitude.getValue() - 10) {
+      climbingToTarget = true;
+    }
+    GlideState state;
+    if (climbingToTarget) {
+      state = GlideState.CLIMB;
+      if (now - lastRocketTime >= rocketCooldown.getValue() && useRocket()) {
+        lastRocketTime = now;
+      }
+      if (y >= cruiseAltitude.getValue() + 2) {
+        climbingToTarget = false;
+      }
+    } else {
+      if (speedAvg <= stallSpeed.getValue()) {
+        glideState = GlideState.DIVE;
+      } else if (speedAvg >= momentumSpeed.getValue()) {
+        glideState = GlideState.CRUISE;
+      }
+      state = glideState;
+    }
+
+    float targetPitch;
+    if (state == GlideState.DIVE) {
+      targetPitch = diveAngle.getValue().floatValue();
+    } else if (state == GlideState.CLIMB) {
+      float base = -climbAngle.getValue().floatValue();
+      targetPitch = speedAvg < 15 ? base / 2f : base;
+    } else {
+      cruisePhase += 0.019;
+      double tri = 2.0 * Math.abs(2.0 * (cruisePhase - Math.floor(cruisePhase + 0.5))) - 1.0;
+      targetPitch = (float) -(4.0 + 8.0 * (0.5 * (tri + 1.0)));
+    }
+    minecraft.player.setXRot(
+        net.minecraft.util.Mth.approach(
+            minecraft.player.getXRot(), targetPitch, pitchStep.getValue().floatValue()));
+  }
+
+  /** BlackOut-pattern bounce: jump on touchdown, redeploy in the air. */
+  private void tickBounce() {
+    minecraft.player.setSprinting(true);
+    if (sinceFalling <= 1 && minecraft.player.onGround()) {
+      minecraft.player.jumpFromGround();
+      sinceJump = 0;
+    } else if (sinceJump > bounceDelay.getValue() && !minecraft.player.isFallFlying()) {
+      minecraft.player.startFallFlying();
+      minecraft.getConnection().send(
+          new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+              minecraft.player,
+              net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                  .START_FALL_FLYING));
+    }
+    sinceJump++;
+    sinceFalling = minecraft.player.isFallFlying() ? 0 : sinceFalling + 1;
+    if (minecraft.player.isFallFlying()) {
+      tickBoost();
+    }
+  }
+
+  private void trackSpeed() {
+    double dx = minecraft.player.getX() - lastX;
+    double dz = minecraft.player.getZ() - lastZ;
+    speedSamples[speedSampleIndex] = Math.sqrt(dx * dx + dz * dz) * 20.0;
+    speedSampleIndex = (speedSampleIndex + 1) % speedSamples.length;
+    double sum = 0;
+    for (double s : speedSamples) sum += s;
+    speedAvg = sum / speedSamples.length;
+    lastX = minecraft.player.getX();
+    lastZ = minecraft.player.getZ();
+  }
+
+  private boolean useRocket() {
+    int rocketSlot = PlayerUtil.findInHotbar(
+        s -> !s.isEmpty() && s.getItem() == Items.FIREWORK_ROCKET);
+    if (rocketSlot == -1) return false;
+    boolean needSwitch =
+        rocketSlot != minecraft.player.getInventory().getSelectedSlot();
+    if (needSwitch) {
+      PlayerUtil.swapTo(rocketSlot);
+    }
+    minecraft.gameMode.useItem(minecraft.player, InteractionHand.MAIN_HAND);
+    if (needSwitch) {
+      PlayerUtil.swapBack();
+    }
+    return true;
   }
 
   /** Burns a firework whenever gliding slow. */

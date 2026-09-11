@@ -36,6 +36,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoWeb` | Webs targets feet-first. |
 | `AutoArmor` | Shoreline-pattern armor manager for 26.2 component armor. Blast-priority scoring, durability gate, binding skip, elytra priority. |
 | `BedAura` | Automatically places and breaks beds for combat. BlackOut-style damage gates (MinDamage/MaxSelf), rotate, auto-switch, place/break delays. |
+| `CevBreaker` | Lemon-pattern head-cover miner with damage-scored crystal seating. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
 | `AutoEat` | Eats food when hungry, gapples first when low on HP. |
@@ -85,6 +86,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | --- | --- |
 | `AutoShulker` | Automatically places and opens shulker boxes. Container blacklist honored, player-following target range. |
 | `InstaMine` | Packet mine for instant soft-block breaks. |
+| `SpeedMine` | Lemon-pattern targeted mining with pickaxe swap. |
 
 ### Render
 
@@ -122,6 +124,7 @@ Settings persist to a Gson JSON config (`friends.json` lives alongside the clien
 - **Nicotine** (`tranarchy/nicotine`, GPL-3.0) — 26.x 3D render pipeline reference.
 - **6b6t AnarchyClient** (`6b6t/AnarchyClient`, MIT) — Parkour/SafeWalk patterns.
 - **Combatant** (`pivosos2007/combatant-client`, GPL-3.0) — 26.2 ElytraFly modes reference.
+- **Lemon Client** (`ov-4/lemon-client`) — CevBreaker/SpeedMine patterns, ShulkerDupe logic.
 
 ## Disclaimer
 

@@ -21,6 +21,7 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoWeb;
 import me.friendly.exeter.module.impl.toggle.combat.AutoXP;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.BlockLag;
+import me.friendly.exeter.module.impl.toggle.combat.CevBreaker;
 import me.friendly.exeter.module.impl.toggle.combat.CrystalAura;
 import me.friendly.exeter.module.impl.toggle.combat.Criticals;
 import me.friendly.exeter.module.impl.toggle.combat.HoleFill;
@@ -59,6 +60,7 @@ import me.friendly.exeter.module.impl.toggle.render.HoleESP;
 import me.friendly.exeter.module.impl.toggle.render.TabGui;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 import me.friendly.exeter.module.impl.toggle.world.InstaMine;
+import me.friendly.exeter.module.impl.toggle.world.SpeedMine;
 import org.lwjgl.glfw.GLFW;
 
 /** Manages {@link Module}s for Exeter. */
@@ -98,12 +100,14 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Replenish());
     register(new SelfBed());
     register(new BedAura());
+    register(new CevBreaker());
     register(new Speed());
     register(new PistonPush());
     register(new AutoCart());
     register(new AutoPot());
     register(new AutoShulker());
     register(new InstaMine());
+    register(new SpeedMine());
     register(new Velocity());
     register(new FakeLag());
     register(new FastFall());
