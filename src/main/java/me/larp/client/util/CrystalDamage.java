@@ -17,8 +17,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * BlackOut-ported explosion damage pipeline: exposure sampling, armor,
- * toughness, resistance, protection. Difficulty assumes HARD (anarchy).
+ * BlackOut-ported explosion damage pipeline: exposure sampling, armor, toughness, resistance,
+ * protection. Difficulty assumes HARD (anarchy).
  */
 public final class CrystalDamage {
 
@@ -28,8 +28,7 @@ public final class CrystalDamage {
     return explosionDamage(entity, entity.getBoundingBox(), crystalPos, 6.0);
   }
 
-  public static double explosionDamage(
-      LivingEntity entity, AABB box, Vec3 pos, double strength) {
+  public static double explosionDamage(LivingEntity entity, AABB box, Vec3 pos, double strength) {
     if (entity == null || !entity.isAlive()) return 0.0;
     double q = strength * 2.0;
     Vec3 feet = new Vec3(box.minX, box.minY, box.minZ);

@@ -10,8 +10,7 @@ import me.larp.client.properties.NumberProperty;
 /** Falls faster than vanilla for quick drops and dodge-downs. */
 public class FastFall extends ToggleableModule {
 
-  private final NumberProperty<Double> speed =
-      new NumberProperty<Double>(2.0, 1.0, 5.0, "Speed");
+  private final NumberProperty<Double> speed = new NumberProperty<Double>(2.0, 1.0, 5.0, "Speed");
 
   public FastFall() {
     super("FastFall", new String[] {"fastfall", "fast-fall"}, 0x00FF00, ModuleType.MOVEMENT);

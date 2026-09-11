@@ -20,22 +20,19 @@ import net.minecraft.world.item.ItemStack;
 
 public class KillAura extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(4.5, 1.0, 6.0, "Range");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(4.5, 1.0, 6.0, "Range");
   private final NumberProperty<Double> wallsRange =
       new NumberProperty<Double>(3.5, 0.0, 6.0, "Walls Range");
   private final NumberProperty<Double> cooldown =
       new NumberProperty<Double>(1.0, 0.0, 1.0, "Cooldown");
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(1, 0, 20, "Delay");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(1, 0, 20, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> targetPlayers = new Property<Boolean>(true, "Players");
   private final Property<Boolean> targetHostiles = new Property<Boolean>(true, "Hostiles");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> onlyWeapon = new Property<Boolean>(false, "Only Weapon");
-  private final Property<Boolean> antiWeakness =
-      new Property<Boolean>(true, "Anti Weakness");
+  private final Property<Boolean> antiWeakness = new Property<Boolean>(true, "Anti Weakness");
 
   private int tickCounter = -100;
 

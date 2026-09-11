@@ -16,8 +16,8 @@ import me.larp.client.plugin.PluginManager;
 /**
  * Larp client for Fabric 26.2
  *
- * <p>Larp Client, an anarchy-oriented client rebuilt from the Exeter codebase
- * for Minecraft 26.2 Fabric.
+ * <p>Larp Client, an anarchy-oriented client rebuilt from the Exeter codebase for Minecraft 26.2
+ * Fabric.
  *
  * @author SirHumza
  * @author orangeman432
@@ -25,8 +25,8 @@ import me.larp.client.plugin.PluginManager;
 public final class Larp {
   private static Larp instance = null;
   public static final String TITLE = "Larp Client";
-  public static final String HASH = "8a67cc64f7802cc4";
-  public static final String BUILD = "b25+40";
+  public static final String HASH = "e0cdfb50a3d45db1";
+  public static final String BUILD = "b25+41";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;

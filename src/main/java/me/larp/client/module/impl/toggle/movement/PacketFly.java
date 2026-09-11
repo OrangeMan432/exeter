@@ -20,14 +20,13 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * BlackOut-addon-pattern PacketFly: cancels vanilla movement, sends its own
- * position + bounds-offset packets, confirms matching server teleports.
- * Self-sent packets ride an allowlist so they are never re-canceled.
+ * BlackOut-addon-pattern PacketFly: cancels vanilla movement, sends its own position +
+ * bounds-offset packets, confirms matching server teleports. Self-sent packets ride an allowlist so
+ * they are never re-canceled.
  */
 public class PacketFly extends ToggleableModule {
 
-  private final NumberProperty<Double> speed =
-      new NumberProperty<Double>(0.5, 0.05, 5.0, "Speed");
+  private final NumberProperty<Double> speed = new NumberProperty<Double>(0.5, 0.05, 5.0, "Speed");
   private final NumberProperty<Double> packets =
       new NumberProperty<Double>(2.0, 1.0, 10.0, "Packets");
   private final NumberProperty<Double> upSpeed =
@@ -38,18 +37,14 @@ public class PacketFly extends ToggleableModule {
       new NumberProperty<Double>(10.0, 0.0, 100.0, "XZ Bound");
   private final NumberProperty<Double> yBound =
       new NumberProperty<Double>(5.0, 0.0, 100.0, "Y Bound");
-  private final Property<Boolean> onGroundSpoof =
-      new Property<Boolean>(true, "Ground Spoof");
-  private final Property<Boolean> strictVertical =
-      new Property<Boolean>(false, "Strict Vertical");
-  private final Property<Boolean> antiKick =
-      new Property<Boolean>(true, "Anti Kick");
+  private final Property<Boolean> onGroundSpoof = new Property<Boolean>(true, "Ground Spoof");
+  private final Property<Boolean> strictVertical = new Property<Boolean>(false, "Strict Vertical");
+  private final Property<Boolean> antiKick = new Property<Boolean>(true, "Anti Kick");
   private final NumberProperty<Double> kickAmount =
       new NumberProperty<Double>(0.04, 0.0, 0.2, "Kick Amount");
   private final NumberProperty<Integer> kickDelay =
       new NumberProperty<Integer>(20, 5, 100, "Kick Delay");
-  private final Property<Boolean> phase =
-      new Property<Boolean>(true, "Phase");
+  private final Property<Boolean> phase = new Property<Boolean>(true, "Phase");
 
   private final Set<Packet<?>> own = new HashSet<>();
   private final Map<Integer, Vec3> expected = new ConcurrentHashMap<>();
@@ -63,8 +58,18 @@ public class PacketFly extends ToggleableModule {
     super("PacketFly", new String[] {"packetfly", "packet-fly"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Packet-based flight with bounds spoofing.");
     offerProperties(
-        speed, packets, upSpeed, downSpeed, xzBound, yBound, onGroundSpoof, strictVertical,
-        antiKick, kickAmount, kickDelay, phase);
+        speed,
+        packets,
+        upSpeed,
+        downSpeed,
+        xzBound,
+        yBound,
+        onGroundSpoof,
+        strictVertical,
+        antiKick,
+        kickAmount,
+        kickDelay,
+        phase);
     this.listeners.add(
         new Listener<TickEvent>("packetfly_tick") {
           @Override
@@ -211,7 +216,6 @@ public class PacketFly extends ToggleableModule {
 
   private boolean insideBlock() {
     return !minecraft.level.noCollision(
-        minecraft.player,
-        minecraft.player.getBoundingBox().deflate(0.0625, 0, 0.0625));
+        minecraft.player, minecraft.player.getBoundingBox().deflate(0.0625, 0, 0.0625));
   }
 }

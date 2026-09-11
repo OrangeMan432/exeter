@@ -17,9 +17,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Combatant-pattern ElytraFly for 26.2: BOOST pitch steering, STATIC direct
- * control, VANILLA drag physics, FIREWORK auto-boost. Elytra + durability
- * gated like the original.
+ * Combatant-pattern ElytraFly for 26.2: BOOST pitch steering, STATIC direct control, VANILLA drag
+ * physics, FIREWORK auto-boost. Elytra + durability gated like the original.
  */
 public class ElytraFly extends ToggleableModule {
 
@@ -39,22 +38,16 @@ public class ElytraFly extends ToggleableModule {
   }
 
   private final EnumProperty<Mode> mode = new EnumProperty<Mode>(Mode.BOOST, "Mode");
-  private final NumberProperty<Double> speed =
-      new NumberProperty<Double>(1.5, 0.1, 5.0, "Speed");
+  private final NumberProperty<Double> speed = new NumberProperty<Double>(1.5, 0.1, 5.0, "Speed");
   private final NumberProperty<Double> vertical =
       new NumberProperty<Double>(1.0, 0.0, 3.0, "Vertical");
-  private final NumberProperty<Double> drag =
-      new NumberProperty<Double>(0.99, 0.9, 1.0, "Drag");
-  private final NumberProperty<Double> lift =
-      new NumberProperty<Double>(0.06, 0.0, 0.3, "Lift");
-  private final Property<Boolean> pitchSteer =
-      new Property<Boolean>(true, "Pitch Steer");
-  private final Property<Boolean> autoTakeoff =
-      new Property<Boolean>(true, "Auto Takeoff");
+  private final NumberProperty<Double> drag = new NumberProperty<Double>(0.99, 0.9, 1.0, "Drag");
+  private final NumberProperty<Double> lift = new NumberProperty<Double>(0.06, 0.0, 0.3, "Lift");
+  private final Property<Boolean> pitchSteer = new Property<Boolean>(true, "Pitch Steer");
+  private final Property<Boolean> autoTakeoff = new Property<Boolean>(true, "Auto Takeoff");
   private final NumberProperty<Integer> deployDelay =
       new NumberProperty<Integer>(10, 0, 40, "Deploy Delay");
-  private final Property<Boolean> durabilityGuard =
-      new Property<Boolean>(true, "Durability Guard");
+  private final Property<Boolean> durabilityGuard = new Property<Boolean>(true, "Durability Guard");
   private final NumberProperty<Integer> minDurability =
       new NumberProperty<Integer>(5, 1, 50, "Min Durability");
   private final NumberProperty<Integer> cruiseAltitude =
@@ -92,9 +85,24 @@ public class ElytraFly extends ToggleableModule {
     super("ElytraFly", new String[] {"elytrafly", "elytra-fly"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Combatant-pattern elytra engine.");
     offerProperties(
-        speed, vertical, drag, lift, pitchSteer, autoTakeoff, deployDelay, durabilityGuard,
-        minDurability, cruiseAltitude, stallSpeed, momentumSpeed, diveAngle, climbAngle,
-        pitchStep, bounceDelay, rocketCooldown, mode);
+        speed,
+        vertical,
+        drag,
+        lift,
+        pitchSteer,
+        autoTakeoff,
+        deployDelay,
+        durabilityGuard,
+        minDurability,
+        cruiseAltitude,
+        stallSpeed,
+        momentumSpeed,
+        diveAngle,
+        climbAngle,
+        pitchStep,
+        bounceDelay,
+        rocketCooldown,
+        mode);
     this.listeners.add(
         new Listener<TickEvent>("elytrafly_tick") {
           @Override
@@ -122,8 +130,7 @@ public class ElytraFly extends ToggleableModule {
 
     // BlackOut-pattern durability guard: never break the elytra mid-flight.
     if (durabilityGuard.getValue()) {
-      ItemStack chest =
-          minecraft.player.getItemBySlot(EquipmentSlot.CHEST);
+      ItemStack chest = minecraft.player.getItemBySlot(EquipmentSlot.CHEST);
       if (chest.is(Items.ELYTRA)
           && (chest.getMaxDamage() - chest.getDamageValue()) < minDurability.getValue()) {
         setRunning(false);
@@ -168,11 +175,13 @@ public class ElytraFly extends ToggleableModule {
   /** Starts fall flight client + server side and stamps the deploy tick. */
   private void deploy() {
     minecraft.player.startFallFlying();
-    minecraft.getConnection().send(
-        new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
-            minecraft.player,
-            net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
-                .START_FALL_FLYING));
+    minecraft
+        .getConnection()
+        .send(
+            new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+                minecraft.player,
+                net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                    .START_FALL_FLYING));
     deployTick = tickCounter;
   }
 
@@ -323,11 +332,10 @@ public class ElytraFly extends ToggleableModule {
   }
 
   private boolean useRocket() {
-    int rocketSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.FIREWORK_ROCKET);
+    int rocketSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.FIREWORK_ROCKET);
     if (rocketSlot == -1) return false;
-    boolean needSwitch =
-        rocketSlot != minecraft.player.getInventory().getSelectedSlot();
+    boolean needSwitch = rocketSlot != minecraft.player.getInventory().getSelectedSlot();
     if (needSwitch) {
       PlayerUtil.swapTo(rocketSlot);
     }
@@ -344,11 +352,10 @@ public class ElytraFly extends ToggleableModule {
     Vec3 vel = minecraft.player.getDeltaMovement();
     double hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
     if (hSpeed > speed.getValue()) return;
-    int rocketSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.FIREWORK_ROCKET);
+    int rocketSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.FIREWORK_ROCKET);
     if (rocketSlot == -1) return;
-    boolean needSwitch =
-        rocketSlot != minecraft.player.getInventory().getSelectedSlot();
+    boolean needSwitch = rocketSlot != minecraft.player.getInventory().getSelectedSlot();
     if (needSwitch) {
       PlayerUtil.swapTo(rocketSlot);
     }

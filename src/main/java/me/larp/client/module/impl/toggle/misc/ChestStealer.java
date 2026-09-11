@@ -14,17 +14,17 @@ import net.minecraft.world.inventory.ShulkerBoxMenu;
 /** Empties chests and shulkers into your inventory on a delay. */
 public class ChestStealer extends ToggleableModule {
 
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(2, 0, 20, "Delay");
-  private final Property<Boolean> shulkers =
-      new Property<Boolean>(true, "Shulkers");
-  private final Property<Boolean> autoClose =
-      new Property<Boolean>(true, "Auto Close");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(2, 0, 20, "Delay");
+  private final Property<Boolean> shulkers = new Property<Boolean>(true, "Shulkers");
+  private final Property<Boolean> autoClose = new Property<Boolean>(true, "Auto Close");
 
   private int tickCounter;
 
   public ChestStealer() {
-    super("ChestStealer", new String[] {"cheststealer", "stealer"}, 0x00FFFF,
+    super(
+        "ChestStealer",
+        new String[] {"cheststealer", "stealer"},
+        0x00FFFF,
         ModuleType.MISCELLANEOUS);
     setDescription("Loots containers automatically.");
     offerProperties(delay, shulkers, autoClose);
@@ -55,7 +55,10 @@ public class ChestStealer extends ToggleableModule {
     for (int i = 0; i < size; i++) {
       if (minecraft.player.containerMenu.getSlot(i).getItem().isEmpty()) continue;
       minecraft.gameMode.handleContainerInput(
-          minecraft.player.containerMenu.containerId, i, 0, ContainerInput.QUICK_MOVE,
+          minecraft.player.containerMenu.containerId,
+          i,
+          0,
+          ContainerInput.QUICK_MOVE,
           minecraft.player);
       tickCounter = 0;
       return;

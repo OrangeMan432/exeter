@@ -18,8 +18,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Lemon-pattern TNTAura: seats TNT by the target and lights it with
- * flint and steel. Primed TNT needs no line of sight to hurt.
+ * Lemon-pattern TNTAura: seats TNT by the target and lights it with flint and steel. Primed TNT
+ * needs no line of sight to hurt.
  */
 public class TNTAura extends ToggleableModule {
 
@@ -67,8 +67,8 @@ public class TNTAura extends ToggleableModule {
     if (target == null) return;
     int tntSlot = PlayerUtil.findInHotbar(TNTAura::isTNT);
     if (tntSlot == -1) return;
-    int steelSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.FLINT_AND_STEEL);
+    int steelSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.FLINT_AND_STEEL);
     if (steelSlot == -1) return;
 
     BlockPos spot = findSpot(target);

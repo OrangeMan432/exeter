@@ -10,8 +10,8 @@ import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 /**
- * Shoreline-pattern criticals: PACKET mode sends the 0.05/0/0.03/0 offset chain,
- * GRIM mode nudges position while airborne. Skips crystals like Shoreline does.
+ * Shoreline-pattern criticals: PACKET mode sends the 0.05/0/0.03/0 offset chain, GRIM mode nudges
+ * position while airborne. Skips crystals like Shoreline does.
  */
 public class Criticals extends ToggleableModule {
 
@@ -21,8 +21,7 @@ public class Criticals extends ToggleableModule {
   }
 
   private final EnumProperty<Mode> mode = new EnumProperty<Mode>(Mode.PACKET, "Mode");
-  private final Property<Boolean> onlyWeapon =
-      new Property<Boolean>(true, "Only Weapon");
+  private final Property<Boolean> onlyWeapon = new Property<Boolean>(true, "Only Weapon");
 
   private final Listener<PacketEvent> packetListener =
       new Listener<PacketEvent>("criticals_packet") {
@@ -78,7 +77,8 @@ public class Criticals extends ToggleableModule {
     if (held.isEmpty()) return false;
     String path =
         net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(held.getItem()).getPath();
-    return path.endsWith("_sword") || path.endsWith("_axe")
+    return path.endsWith("_sword")
+        || path.endsWith("_axe")
         || held.getItem() == net.minecraft.world.item.Items.MACE
         || held.getItem() == net.minecraft.world.item.Items.TRIDENT;
   }

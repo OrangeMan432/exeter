@@ -10,7 +10,6 @@ import me.larp.client.util.PlayerUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 
 /** Swaps to the fastest hotbar tool for the block you are mining. */
 public class AutoTool extends ToggleableModule {
@@ -18,8 +17,7 @@ public class AutoTool extends ToggleableModule {
   private final Property<Boolean> swingHand = new Property<Boolean>(false, "Swing Hand");
 
   public AutoTool() {
-    super("AutoTool", new String[] {"autotool", "auto-tool"}, 0x00FFFF,
-        ModuleType.MISCELLANEOUS);
+    super("AutoTool", new String[] {"autotool", "auto-tool"}, 0x00FFFF, ModuleType.MISCELLANEOUS);
     setDescription("Auto-swaps to the best mining tool.");
     offerProperties(swingHand);
     this.listeners.add(

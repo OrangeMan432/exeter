@@ -22,9 +22,9 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 /**
- * Shoreline-pattern AutoArmor for 26.2 (no ArmorItem class here): scores
- * EQUIPPABLE pieces by tier + blast priority, gates on durability, skips
- * binding curses and prized elytras. Equips one piece per tick via shift-click.
+ * Shoreline-pattern AutoArmor for 26.2 (no ArmorItem class here): scores EQUIPPABLE pieces by tier
+ * + blast priority, gates on durability, skips binding curses and prized elytras. Equips one piece
+ * per tick via shift-click.
  */
 public class AutoArmor extends ToggleableModule {
 
@@ -37,10 +37,8 @@ public class AutoArmor extends ToggleableModule {
       new EnumProperty<Priority>(Priority.BLAST, "Priority");
   private final NumberProperty<Double> minDurability =
       new NumberProperty<Double>(0.0, 0.0, 0.2, "Min Durability");
-  private final Property<Boolean> elytraPriority =
-      new Property<Boolean>(true, "Elytra Priority");
-  private final Property<Boolean> noBinding =
-      new Property<Boolean>(true, "No Binding");
+  private final Property<Boolean> elytraPriority = new Property<Boolean>(true, "Elytra Priority");
+  private final Property<Boolean> noBinding = new Property<Boolean>(true, "No Binding");
 
   public AutoArmor() {
     super("AutoArmor", new String[] {"autoarmor", "auto-armor"}, 0xFF0000, ModuleType.COMBAT);
@@ -66,9 +64,10 @@ public class AutoArmor extends ToggleableModule {
     Holder<Enchantment> prot = resolve(Enchantments.PROTECTION);
     Holder<Enchantment> binding = resolve(Enchantments.BINDING_CURSE);
 
-    for (EquipmentSlot slot : new EquipmentSlot[] {
-      EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
-    }) {
+    for (EquipmentSlot slot :
+        new EquipmentSlot[] {
+          EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+        }) {
       ItemStack worn = minecraft.player.getItemBySlot(slot);
       if (elytraPriority.getValue()
           && slot == EquipmentSlot.CHEST
@@ -82,14 +81,19 @@ public class AutoArmor extends ToggleableModule {
       if (best == -1) continue;
       // Shift-click moves it straight into its armor slot.
       minecraft.gameMode.handleContainerInput(
-          minecraft.player.containerMenu.containerId, best, 0, ContainerInput.QUICK_MOVE,
+          minecraft.player.containerMenu.containerId,
+          best,
+          0,
+          ContainerInput.QUICK_MOVE,
           minecraft.player);
       return;
     }
   }
 
   private int findBest(
-      EquipmentSlot slot, Holder<Enchantment> blast, Holder<Enchantment> prot,
+      EquipmentSlot slot,
+      Holder<Enchantment> blast,
+      Holder<Enchantment> prot,
       Holder<Enchantment> binding) {
     List<int[]> candidates = new ArrayList<>();
     for (int i = 9; i < 45; i++) {
@@ -101,10 +105,7 @@ public class AutoArmor extends ToggleableModule {
       if (durability(stack) < minDurability.getValue()) continue;
       candidates.add(new int[] {i, score(stack, blast, prot)});
     }
-    return candidates.stream()
-        .max(Comparator.comparingInt(a -> a[1]))
-        .map(a -> a[0])
-        .orElse(-1);
+    return candidates.stream().max(Comparator.comparingInt(a -> a[1])).map(a -> a[0]).orElse(-1);
   }
 
   private int score(ItemStack stack, Holder<Enchantment> blast, Holder<Enchantment> prot) {
@@ -135,13 +136,9 @@ public class AutoArmor extends ToggleableModule {
     return (stack.getMaxDamage() - stack.getDamageValue()) / (double) stack.getMaxDamage();
   }
 
-  private Holder<Enchantment> resolve(
-      net.minecraft.resources.ResourceKey<Enchantment> key) {
+  private Holder<Enchantment> resolve(net.minecraft.resources.ResourceKey<Enchantment> key) {
     try {
-      return minecraft.level
-          .registryAccess()
-          .lookupOrThrow(Registries.ENCHANTMENT)
-          .getOrThrow(key);
+      return minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
     } catch (Exception e) {
       return null;
     }

@@ -16,7 +16,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -24,9 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Lemon-pattern CevBreaker: packet-mines the cover above the target's head,
- * then seats a damage-scored crystal in whatever valid spot opens up.
- * Self-validating: never places without an obsidian/bedrock base.
+ * Lemon-pattern CevBreaker: packet-mines the cover above the target's head, then seats a
+ * damage-scored crystal in whatever valid spot opens up. Self-validating: never places without an
+ * obsidian/bedrock base.
  */
 public class CevBreaker extends ToggleableModule {
 
@@ -41,8 +40,7 @@ public class CevBreaker extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
-  private final Property<Boolean> pauseEat =
-      new Property<Boolean>(true, "Pause On Eat");
+  private final Property<Boolean> pauseEat = new Property<Boolean>(true, "Pause On Eat");
 
   public CevBreaker() {
     super("CevBreaker", new String[] {"cevbreaker", "cev-breaker"}, 0xFF0000, ModuleType.COMBAT);
@@ -86,28 +84,31 @@ public class CevBreaker extends ToggleableModule {
     }
 
     // Cover is open: seat a crystal wherever the base validates.
-    int crystalSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
+    int crystalSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (crystalSlot == -1) return;
     BlockPos base = findValidBase(target);
     if (base == null) return;
     Vec3 spawn = new Vec3(base.getX() + 0.5, base.above().getY(), base.getZ() + 0.5);
-    double targetDamage =
-        CrystalDamage.crystalDamage(target, spawn);
+    double targetDamage = CrystalDamage.crystalDamage(target, spawn);
     if (targetDamage < minDamage.getValue()) return;
-    double selfDamage =
-        CrystalDamage.crystalDamage(minecraft.player, spawn);
+    double selfDamage = CrystalDamage.crystalDamage(minecraft.player, spawn);
     if (selfDamage > maxSelf.getValue()) return;
-    if (selfDamage + 0.5
-        >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) return;
+    if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount())
+      return;
     click(base, Direction.UP, crystalSlot);
   }
 
   private BlockPos findValidBase(Player target) {
     BlockPos origin = target.blockPosition();
     BlockPos[] candidates = {
-      origin.above(), origin, origin.above(2), origin.north(), origin.south(),
-      origin.east(), origin.west()
+      origin.above(),
+      origin,
+      origin.above(2),
+      origin.north(),
+      origin.south(),
+      origin.east(),
+      origin.west()
     };
     BlockPos best = null;
     double bestScore = Double.MAX_VALUE;
@@ -142,12 +143,16 @@ public class CevBreaker extends ToggleableModule {
 
   private void mine(BlockPos pos) {
     swapToBestTool(pos);
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, Direction.UP));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, Direction.UP));
   }
 
   private void swapToBestTool(BlockPos pos) {
@@ -163,7 +168,8 @@ public class CevBreaker extends ToggleableModule {
         best = i;
       }
     }
-    if (best != -1 && autoSwitch.getValue()
+    if (best != -1
+        && autoSwitch.getValue()
         && best != minecraft.player.getInventory().getSelectedSlot()) {
       PlayerUtil.swapTo(best);
     }

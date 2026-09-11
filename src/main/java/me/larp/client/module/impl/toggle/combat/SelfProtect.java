@@ -12,19 +12,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Lemon-pattern SelfProtect: keeps Surround running while enemies are close,
- * releases it when the area is clear.
+ * Lemon-pattern SelfProtect: keeps Surround running while enemies are close, releases it when the
+ * area is clear.
  */
 public class SelfProtect extends ToggleableModule {
 
   private final NumberProperty<Double> enemyRange =
       new NumberProperty<Double>(8.0, 1.0, 16.0, "Enemy Range");
-  private final Property<Boolean> release =
-      new Property<Boolean>(true, "Release When Clear");
+  private final Property<Boolean> release = new Property<Boolean>(true, "Release When Clear");
 
   public SelfProtect() {
-    super("SelfProtect", new String[] {"selfprotect", "self-protect"}, 0xFF0000,
-        ModuleType.COMBAT);
+    super("SelfProtect", new String[] {"selfprotect", "self-protect"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Auto-runs Surround when enemies approach.");
     offerProperties(enemyRange, release);
     this.listeners.add(
@@ -41,8 +39,7 @@ public class SelfProtect extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null) return;
     if (minecraft.player.isDeadOrDying()) return;
 
-    Surround surround =
-        Larp.getInstance().getModuleManager().getModule(Surround.class);
+    Surround surround = Larp.getInstance().getModuleManager().getModule(Surround.class);
     if (surround == null) return;
 
     boolean threatened = false;

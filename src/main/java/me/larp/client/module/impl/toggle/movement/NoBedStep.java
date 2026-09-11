@@ -42,8 +42,7 @@ public class NoBedStep extends ToggleableModule {
 
   private void onTick() {
     if (minecraft.player == null) return;
-    Module stepModule =
-        Larp.getInstance().getModuleManager().getModule(Step.class);
+    Module stepModule = Larp.getInstance().getModuleManager().getModule(Step.class);
     boolean stepRunning = stepModule instanceof ToggleableModule t && t.isRunning();
     if (stepRunning) return;
     updateStep();

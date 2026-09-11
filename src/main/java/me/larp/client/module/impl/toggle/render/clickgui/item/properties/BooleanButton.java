@@ -6,7 +6,6 @@ import java.util.List;
 import me.larp.api.minecraft.render.RenderMethods;
 import me.larp.api.minecraft.render.font.FontUtil;
 import me.larp.client.module.Module;
-import me.larp.client.module.ToggleableModule;
 import me.larp.client.module.impl.active.render.Colors;
 import me.larp.client.module.impl.toggle.client.Debug;
 import me.larp.client.module.impl.toggle.render.clickgui.item.Button;

@@ -125,7 +125,9 @@ public class PistonPush extends ToggleableModule {
           .printToChat(
               String.format(
                   "PistonPush -> %s piston %s redstone %s",
-                  target.getName().getString(), pos.pistonPos.toShortString(), pos.redstonePos.toShortString()));
+                  target.getName().getString(),
+                  pos.pistonPos.toShortString(),
+                  pos.redstonePos.toShortString()));
     }
   }
 

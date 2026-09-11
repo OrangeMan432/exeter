@@ -18,10 +18,8 @@ public class Tracers extends ToggleableModule {
       new NumberProperty<Double>(64.0, 8.0, 256.0, "Range");
   private final NumberProperty<Double> lineWidth =
       new NumberProperty<Double>(2.0, 1.0, 5.0, "Line Width");
-  private final Property<Boolean> players =
-      new Property<Boolean>(true, "Players");
-  private final Property<Boolean> hostiles =
-      new Property<Boolean>(false, "Hostiles");
+  private final Property<Boolean> players = new Property<Boolean>(true, "Players");
+  private final Property<Boolean> hostiles = new Property<Boolean>(false, "Hostiles");
 
   public Tracers() {
     super("Tracers", new String[] {"tracers", "lines"}, 0xFF00FF, ModuleType.RENDER);

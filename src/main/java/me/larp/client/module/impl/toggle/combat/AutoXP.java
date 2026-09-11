@@ -15,8 +15,7 @@ import net.minecraft.world.item.Items;
 /** Throws XP bottles for mending, looking straight down like the originals. */
 public class AutoXP extends ToggleableModule {
 
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(2, 0, 20, "Delay");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(2, 0, 20, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
 
@@ -48,8 +47,8 @@ public class AutoXP extends ToggleableModule {
     if (tickCounter++ < delay.getValue()) return;
     tickCounter = 0;
 
-    int bottleSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.EXPERIENCE_BOTTLE);
+    int bottleSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.EXPERIENCE_BOTTLE);
     if (bottleSlot == -1) return;
 
     boolean needSwitch =

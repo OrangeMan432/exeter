@@ -16,8 +16,7 @@ import net.minecraft.world.phys.AABB;
 /** Draws outlines around safe holes in range. Nicotine-pattern 3D rendering. */
 public class HoleESP extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(12.0, 2.0, 32.0, "Range");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(12.0, 2.0, 32.0, "Range");
   private final NumberProperty<Double> lineWidth =
       new NumberProperty<Double>(2.0, 1.0, 5.0, "Line Width");
   private final NumberProperty<Integer> maxHoles =

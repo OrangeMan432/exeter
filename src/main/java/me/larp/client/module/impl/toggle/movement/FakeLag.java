@@ -15,8 +15,8 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 /**
- * FakeLag: chokes movement packets then flushes them, teleporting you on the
- * server side. Flushes automatically so you never hard-desync.
+ * FakeLag: chokes movement packets then flushes them, teleporting you on the server side. Flushes
+ * automatically so you never hard-desync.
  */
 public class FakeLag extends ToggleableModule {
 

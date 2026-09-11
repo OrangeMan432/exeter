@@ -1,9 +1,9 @@
 package me.larp.client.plugin;
 
 /**
- * Plugins can be used to add functionality, modules or commands to Larp. Plugins are located in
- * the larp/plugins folder. A Plugin should be a jar file. Dependencies like Mixin don't need to
- * be included as they are already included in the Larp jar.
+ * Plugins can be used to add functionality, modules or commands to Larp. Plugins are located in the
+ * larp/plugins folder. A Plugin should be a jar file. Dependencies like Mixin don't need to be
+ * included as they are already included in the Larp jar.
  */
 public abstract class Plugin {
   private final String name;

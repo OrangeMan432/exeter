@@ -17,8 +17,7 @@ public class SafeWalk extends ToggleableModule {
 
   private final NumberProperty<Double> lookAhead =
       new NumberProperty<Double>(0.6, 0.2, 1.5, "Look Ahead");
-  private final Property<Boolean> blocksOnly =
-      new Property<Boolean>(false, "Blocks Only");
+  private final Property<Boolean> blocksOnly = new Property<Boolean>(false, "Blocks Only");
 
   public SafeWalk() {
     super("SafeWalk", new String[] {"safewalk", "safe-walk"}, 0x00FF00, ModuleType.MOVEMENT);

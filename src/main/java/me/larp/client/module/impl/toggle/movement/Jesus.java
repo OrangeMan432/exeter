@@ -10,8 +10,7 @@ import me.larp.client.properties.Property;
 /** Walk on water: holds you at the surface while moving. */
 public class Jesus extends ToggleableModule {
 
-  private final Property<Boolean> dip =
-      new Property<Boolean>(true, "Dip");
+  private final Property<Boolean> dip = new Property<Boolean>(true, "Dip");
 
   public Jesus() {
     super("Jesus", new String[] {"jesus", "water-walk"}, 0x00FF00, ModuleType.MOVEMENT);
@@ -36,9 +35,10 @@ public class Jesus extends ToggleableModule {
       return;
     }
     if (minecraft.player.getDeltaMovement().y < 0.0) {
-      double hSpeed = Math.sqrt(
-          minecraft.player.getDeltaMovement().x * minecraft.player.getDeltaMovement().x
-              + minecraft.player.getDeltaMovement().z * minecraft.player.getDeltaMovement().z);
+      double hSpeed =
+          Math.sqrt(
+              minecraft.player.getDeltaMovement().x * minecraft.player.getDeltaMovement().x
+                  + minecraft.player.getDeltaMovement().z * minecraft.player.getDeltaMovement().z);
       double boost = hSpeed < 0.3 && dip.getValue() ? 1.1 : 1.0;
       minecraft.player.setDeltaMovement(
           minecraft.player.getDeltaMovement().x * boost,

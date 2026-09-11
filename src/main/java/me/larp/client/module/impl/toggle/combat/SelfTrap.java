@@ -27,8 +27,7 @@ public class SelfTrap extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> top = new Property<Boolean>(true, "Top");
-  private final Property<Boolean> autoDisable =
-      new Property<Boolean>(false, "Auto Disable");
+  private final Property<Boolean> autoDisable = new Property<Boolean>(false, "Auto Disable");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
   public SelfTrap() {

@@ -29,8 +29,7 @@ public abstract class Panel implements Labeled {
   public boolean drag;
   private final ArrayList<Item> items = new ArrayList();
 
-  private static final Identifier ARROW_ID =
-      Identifier.parse("minecraft:textures/larp/arrow.png");
+  private static final Identifier ARROW_ID = Identifier.parse("minecraft:textures/larp/arrow.png");
   public static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/larp/gear.png");
   private static boolean texturesRegistered = false;
 

@@ -11,17 +11,15 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
 
 /**
- * Shoreline-pattern offhand manager: absorption-aware health, fall-lethal
- * fast-path, gapple while holding use on a sword, live totem count tag.
+ * Shoreline-pattern offhand manager: absorption-aware health, fall-lethal fast-path, gapple while
+ * holding use on a sword, live totem count tag.
  */
 public class AutoTotem extends ToggleableModule {
 
   private final NumberProperty<Double> minHealth =
       new NumberProperty<Double>(14.0, 0.0, 36.0, "Min Health");
-  private final Property<Boolean> gappleSwap =
-      new Property<Boolean>(true, "Gapple Swap");
-  private final Property<Boolean> fallLethal =
-      new Property<Boolean>(true, "Fall Lethal");
+  private final Property<Boolean> gappleSwap = new Property<Boolean>(true, "Gapple Swap");
+  private final Property<Boolean> fallLethal = new Property<Boolean>(true, "Fall Lethal");
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("autototem_tick") {
@@ -49,8 +47,7 @@ public class AutoTotem extends ToggleableModule {
     setTag("AutoTotem [" + countTotems() + "]");
 
     boolean wantTotem = wantTotem();
-    boolean holdingTotem =
-        minecraft.player.getOffhandItem().getItem() == Items.TOTEM_OF_UNDYING;
+    boolean holdingTotem = minecraft.player.getOffhandItem().getItem() == Items.TOTEM_OF_UNDYING;
     boolean holdingGapple =
         minecraft.player.getOffhandItem().getItem() == Items.GOLDEN_APPLE
             || minecraft.player.getOffhandItem().getItem() == Items.ENCHANTED_GOLDEN_APPLE;
@@ -99,8 +96,7 @@ public class AutoTotem extends ToggleableModule {
 
   /** Shoreline-pattern: absorption counts, fall damage can be lethal, use-key wants gapple. */
   private boolean wantTotem() {
-    float effective =
-        minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount();
+    float effective = minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount();
     if (effective <= minHealth.getValue().floatValue()) return true;
     if (fallLethal.getValue()) {
       // Rough vanilla fall math: (distance - 3) / 2 hearts, boots ignored (safe side).
@@ -130,8 +126,7 @@ public class AutoTotem extends ToggleableModule {
     if (minecraft.player == null) return 0;
     int count = 0;
     for (int i = 0; i < 45; i++) {
-      if (minecraft.player.containerMenu.getSlot(i).getItem().getItem()
-          == Items.TOTEM_OF_UNDYING) {
+      if (minecraft.player.containerMenu.getSlot(i).getItem().getItem() == Items.TOTEM_OF_UNDYING) {
         count += minecraft.player.containerMenu.getSlot(i).getItem().getCount();
       }
     }

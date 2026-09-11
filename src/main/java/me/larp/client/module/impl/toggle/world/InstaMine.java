@@ -11,7 +11,6 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 
 /** Packet mine: fires STOP right after START so soft blocks break instantly. */
 public class InstaMine extends ToggleableModule {
@@ -52,8 +51,10 @@ public class InstaMine extends ToggleableModule {
     }
     if (!minecraft.player.blockPosition().closerThan(pos, 5.0)) return;
 
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, hit.getDirection()));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, hit.getDirection()));
   }
 }

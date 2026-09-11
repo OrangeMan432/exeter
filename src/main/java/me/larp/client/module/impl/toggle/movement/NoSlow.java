@@ -4,8 +4,8 @@ import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
 
 /**
- * Removes the using-item movement slowdown via a LocalPlayer mixin
- * (isSlowDueToUsingItem forced false while running).
+ * Removes the using-item movement slowdown via a LocalPlayer mixin (isSlowDueToUsingItem forced
+ * false while running).
  */
 public class NoSlow extends ToggleableModule {
 

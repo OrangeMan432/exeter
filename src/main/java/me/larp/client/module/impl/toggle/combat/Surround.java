@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Shoreline-pattern surround: center on enable, attack crystals blocking slots,
- * jump-disable, instant re-place on explosion sound.
+ * Shoreline-pattern surround: center on enable, attack crystals blocking slots, jump-disable,
+ * instant re-place on explosion sound.
  */
 public class Surround extends ToggleableModule {
 
@@ -32,18 +32,14 @@ public class Surround extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> center = new Property<Boolean>(true, "Center");
   private final Property<Boolean> attack = new Property<Boolean>(true, "Attack");
-  private final Property<Boolean> jumpDisable =
-      new Property<Boolean>(true, "Jump Disable");
+  private final Property<Boolean> jumpDisable = new Property<Boolean>(true, "Jump Disable");
   private final NumberProperty<Integer> blocksPerTick =
       new NumberProperty<Integer>(4, 1, 8, "Blocks Per Tick");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
-  private final Property<Boolean> support =
-      new Property<Boolean>(true, "Support");
-  private final Property<Boolean> antiCev =
-      new Property<Boolean>(true, "Anti CEV");
-  private final Property<Boolean> pauseEat =
-      new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> support = new Property<Boolean>(true, "Support");
+  private final Property<Boolean> antiCev = new Property<Boolean>(true, "Anti CEV");
+  private final Property<Boolean> pauseEat = new Property<Boolean>(false, "Pause On Eat");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
   private static final int[][] OFFSETS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -55,8 +51,17 @@ public class Surround extends ToggleableModule {
     super("Surround", new String[] {"surround", "self-trap-feet"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Shoreline-pattern obsidian feet trap.");
     offerProperties(
-        rotate, autoSwitch, center, attack, jumpDisable, blocksPerTick, placeRange, support,
-        antiCev, pauseEat, swingHand);
+        rotate,
+        autoSwitch,
+        center,
+        attack,
+        jumpDisable,
+        blocksPerTick,
+        placeRange,
+        support,
+        antiCev,
+        pauseEat,
+        swingHand);
     this.listeners.add(
         new Listener<TickEvent>("surround_tick") {
           @Override

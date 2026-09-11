@@ -10,8 +10,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Nicotine-ported 3D box rendering, adapted to 26.2 vertex signatures
- * (no entry params). Outline-only via vanilla lines pipeline.
+ * Nicotine-ported 3D box rendering, adapted to 26.2 vertex signatures (no entry params).
+ * Outline-only via vanilla lines pipeline.
  */
 public final class Render3D {
 
@@ -53,7 +53,8 @@ public final class Render3D {
         });
   }
 
-  private static void line(      com.mojang.blaze3d.vertex.VertexConsumer buffer,
+  private static void line(
+      com.mojang.blaze3d.vertex.VertexConsumer buffer,
       double x0,
       double y0,
       double z0,

@@ -2,7 +2,6 @@ package me.larp.client.module;
 
 import java.util.*;
 import me.larp.api.interfaces.Labeled;
-import me.larp.api.interfaces.Toggleable;
 import me.larp.client.presets.Preset;
 import me.larp.client.properties.Property;
 import net.minecraft.client.Minecraft;

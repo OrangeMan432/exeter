@@ -14,8 +14,7 @@ public class Replenish extends ToggleableModule {
 
   private final NumberProperty<Integer> threshold =
       new NumberProperty<Integer>(8, 1, 64, "Threshold");
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(2, 0, 20, "Delay");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(2, 0, 20, "Delay");
 
   private int tickCounter;
 
@@ -54,7 +53,10 @@ public class Replenish extends ToggleableModule {
       if (source == -1) continue;
       // Shift-click merges the inventory stack into the hotbar stack.
       minecraft.gameMode.handleContainerInput(
-          minecraft.player.containerMenu.containerId, source, 0, ContainerInput.QUICK_MOVE,
+          minecraft.player.containerMenu.containerId,
+          source,
+          0,
+          ContainerInput.QUICK_MOVE,
           minecraft.player);
       tickCounter = 0;
       return;

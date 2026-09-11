@@ -17,17 +17,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Lemon-pattern AntiRegear: breaks enemy shulkers and ender chests in range
- * so nobody restocks mid-fight. Packet mining with tool swap.
+ * Lemon-pattern AntiRegear: breaks enemy shulkers and ender chests in range so nobody restocks
+ * mid-fight. Packet mining with tool swap.
  */
 public class AntiRegear extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
-  private final Property<Boolean> shulkers =
-      new Property<Boolean>(true, "Shulkers");
-  private final Property<Boolean> enderChests =
-      new Property<Boolean>(true, "Ender Chests");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
+  private final Property<Boolean> shulkers = new Property<Boolean>(true, "Shulkers");
+  private final Property<Boolean> enderChests = new Property<Boolean>(true, "Ender Chests");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -60,19 +57,26 @@ public class AntiRegear extends ToggleableModule {
       PlayerUtil.setRotation(PlayerUtil.getYaw(target), PlayerUtil.getPitch(target));
     }
     Direction face = bestFace(target);
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, target, face));
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, target, face));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, target, face));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, target, face));
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    setTag("AntiRegear [" + minecraft.level.getBlockState(target).getBlock().getName().getString() + "]");
+    setTag(
+        "AntiRegear ["
+            + minecraft.level.getBlockState(target).getBlock().getName().getString()
+            + "]");
   }
 
   private BlockPos findContainer() {
@@ -86,7 +90,8 @@ public class AntiRegear extends ToggleableModule {
           BlockPos pos = origin.offset(x, y, z);
           Block block = minecraft.level.getBlockState(pos).getBlock();
           boolean wanted =
-              (shulkers.getValue() && block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+              (shulkers.getValue()
+                      && block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
                   || (enderChests.getValue() && block == Blocks.ENDER_CHEST);
           if (!wanted) continue;
           if (!PlayerUtil.inRange(pos, range.getValue())) continue;

@@ -106,9 +106,7 @@ public class ModuleButton extends Button {
 
       if (showGear) {
         var guiClick =
-            guiMod instanceof me.larp.client.module.impl.toggle.render.ClickGui cg2
-                ? cg2
-                : null;
+            guiMod instanceof me.larp.client.module.impl.toggle.render.ClickGui cg2 ? cg2 : null;
         ClickGui.GearMode gearMode =
             guiClick != null ? guiClick.getGearMode() : ClickGui.GearMode.IMAGE;
 

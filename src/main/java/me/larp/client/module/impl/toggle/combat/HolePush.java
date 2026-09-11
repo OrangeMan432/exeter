@@ -18,8 +18,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Lemon-pattern HolePush: when an enemy stands next to a hole, seats a piston
- * to shove them in and powers it with a torch.
+ * Lemon-pattern HolePush: when an enemy stands next to a hole, seats a piston to shove them in and
+ * powers it with a torch.
  */
 public class HolePush extends ToggleableModule {
 
@@ -27,8 +27,7 @@ public class HolePush extends ToggleableModule {
       new NumberProperty<Double>(8.0, 1.0, 12.0, "Target Range");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(4, 0, 20, "Delay");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(4, 0, 20, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -141,9 +140,12 @@ public class HolePush extends ToggleableModule {
   }
 
   private void power(BlockPos pistonPos) {
-    int slot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty()
-            && (s.getItem() == Items.REDSTONE_TORCH || s.getItem() == Items.REDSTONE_BLOCK));
+    int slot =
+        PlayerUtil.findInHotbar(
+            s ->
+                !s.isEmpty()
+                    && (s.getItem() == Items.REDSTONE_TORCH
+                        || s.getItem() == Items.REDSTONE_BLOCK));
     if (slot == -1) return;
     swap(slot);
     PlayerUtil.useItemOn(pistonPos, Direction.UP);

@@ -9,22 +9,19 @@ import me.larp.client.properties.NumberProperty;
 import me.larp.client.properties.Property;
 import me.larp.client.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 
 /**
- * Lemon-pattern SpeedMine: targeted packet mining with auto pickaxe swap and
- * per-tick START refresh so server progress never resets.
+ * Lemon-pattern SpeedMine: targeted packet mining with auto pickaxe swap and per-tick START refresh
+ * so server progress never resets.
  */
 public class SpeedMine extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -66,12 +63,16 @@ public class SpeedMine extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.setRotation(PlayerUtil.getYaw(pos), PlayerUtil.getPitch(pos));
     }
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, hit.getDirection()));
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, hit.getDirection()));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, hit.getDirection()));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, hit.getDirection()));
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }

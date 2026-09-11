@@ -20,19 +20,27 @@ import net.minecraft.world.level.block.state.BlockState;
 /** Automatically mines ores and valuables in range with packet speed. */
 public class AutoMine extends ToggleableModule {
 
-  private static final Set<Block> ORES = Set.of(
-      Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE,
-      Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE,
-      Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE,
-      Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE,
-      Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE,
-      Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE,
-      Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE,
-      Blocks.NETHER_GOLD_ORE, Blocks.NETHER_QUARTZ_ORE,
-      Blocks.ANCIENT_DEBRIS);
+  private static final Set<Block> ORES =
+      Set.of(
+          Blocks.COAL_ORE,
+          Blocks.DEEPSLATE_COAL_ORE,
+          Blocks.IRON_ORE,
+          Blocks.DEEPSLATE_IRON_ORE,
+          Blocks.GOLD_ORE,
+          Blocks.DEEPSLATE_GOLD_ORE,
+          Blocks.REDSTONE_ORE,
+          Blocks.DEEPSLATE_REDSTONE_ORE,
+          Blocks.LAPIS_ORE,
+          Blocks.DEEPSLATE_LAPIS_ORE,
+          Blocks.DIAMOND_ORE,
+          Blocks.DEEPSLATE_DIAMOND_ORE,
+          Blocks.EMERALD_ORE,
+          Blocks.DEEPSLATE_EMERALD_ORE,
+          Blocks.NETHER_GOLD_ORE,
+          Blocks.NETHER_QUARTZ_ORE,
+          Blocks.ANCIENT_DEBRIS);
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(5.0, 1.0, 6.0, "Range");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -65,19 +73,26 @@ public class AutoMine extends ToggleableModule {
       PlayerUtil.setRotation(PlayerUtil.getYaw(target), PlayerUtil.getPitch(target));
     }
     Direction face = bestFace(target);
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, target, face));
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, target, face));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, target, face));
+    minecraft
+        .getConnection()
+        .send(
+            new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, target, face));
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
-    setTag("AutoMine [" + minecraft.level.getBlockState(target).getBlock().getName().getString() + "]");
+    setTag(
+        "AutoMine ["
+            + minecraft.level.getBlockState(target).getBlock().getName().getString()
+            + "]");
   }
 
   private BlockPos findOre() {

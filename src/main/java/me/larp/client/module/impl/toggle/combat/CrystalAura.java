@@ -53,10 +53,8 @@ public class CrystalAura extends ToggleableModule {
       new NumberProperty<Integer>(0, 0, 20, "Exist Ticks");
   private final NumberProperty<Integer> maxAttacks =
       new NumberProperty<Integer>(2, 1, 10, "Max Attacks");
-  private final Property<Boolean> setDead =
-      new Property<Boolean>(true, "Set Dead");
-  private final Property<Boolean> pauseEat =
-      new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> setDead = new Property<Boolean>(true, "Set Dead");
+  private final Property<Boolean> pauseEat = new Property<Boolean>(false, "Pause On Eat");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -135,7 +133,8 @@ public class CrystalAura extends ToggleableModule {
     // Future-pattern Lethal: low-HP targets are one crystal from dead, skip the wait.
     boolean lethal = target.getHealth() <= lethalHealth.getValue().floatValue();
     if (!lethal && tickCounter - lastPlaceTick < placeDelay.getValue()) return;
-    int crystalSlot = PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
+    int crystalSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (crystalSlot == -1) return;
     BlockPos base = findBase(target);
     if (base == null) return;
@@ -232,13 +231,13 @@ public class CrystalAura extends ToggleableModule {
     double bestDamage = lethal ? -1.0 : minDamage.getValue();
     for (BlockPos base : nearby) {
       BlockPos crystalPos = base.above();
-      Vec3 spawn =
-          new Vec3(crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5);
+      Vec3 spawn = new Vec3(crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5);
       double targetDamage = CrystalDamage.crystalDamage(target, spawn);
       if (!lethal && targetDamage < minDamage.getValue()) continue;
       double selfDamage = CrystalDamage.crystalDamage(minecraft.player, spawn);
       if (selfDamage > maxSelf.getValue()) continue;
-      if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) {
+      if (selfDamage + 0.5
+          >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) {
         continue;
       }
       if (targetDamage > bestDamage) {

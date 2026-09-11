@@ -13,16 +13,15 @@ import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 /** Delays keepalive packets so the tab list shows fake low ping. */
 public class PingSpoof extends ToggleableModule {
 
-  private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(500, 50, 5000, "Delay");
+  private final NumberProperty<Integer> delay = new NumberProperty<Integer>(500, 50, 5000, "Delay");
 
   private Packet<?> held;
   private long heldAt;
   private boolean flushing;
 
   public PingSpoof() {
-    super("PingSpoof", new String[] {"pingspoof", "ping-spoof"}, 0x00FFFF,
-        ModuleType.MISCELLANEOUS);
+    super(
+        "PingSpoof", new String[] {"pingspoof", "ping-spoof"}, 0x00FFFF, ModuleType.MISCELLANEOUS);
     setDescription("Spoofs your ping with delayed keepalives.");
     offerProperties(delay);
     this.listeners.add(

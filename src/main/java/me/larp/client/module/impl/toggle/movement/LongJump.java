@@ -12,15 +12,13 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Shoreline NORMAL-mode staged longjump: boost, hop at 0.42, glide the lead,
- * then friction out. Resets on collision like the original.
+ * Shoreline NORMAL-mode staged longjump: boost, hop at 0.42, glide the lead, then friction out.
+ * Resets on collision like the original.
  */
 public class LongJump extends ToggleableModule {
 
-  private final NumberProperty<Double> boost =
-      new NumberProperty<Double>(4.5, 0.5, 10.0, "Boost");
-  private final Property<Boolean> autoDisable =
-      new Property<Boolean>(true, "Auto Disable");
+  private final NumberProperty<Double> boost = new NumberProperty<Double>(4.5, 0.5, 10.0, "Boost");
+  private final Property<Boolean> autoDisable = new Property<Boolean>(true, "Auto Disable");
 
   private int stage;
   private double distance;

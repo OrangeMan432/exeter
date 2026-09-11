@@ -1,6 +1,5 @@
 package me.larp.client.module.impl.toggle.combat;
 
-import java.util.Comparator;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
@@ -24,8 +23,7 @@ public class AutoWeb extends ToggleableModule {
       new NumberProperty<Double>(6.0, 1.0, 10.0, "Target Range");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
-  private final Property<Boolean> doubleWeb =
-      new Property<Boolean>(true, "Double Web");
+  private final Property<Boolean> doubleWeb = new Property<Boolean>(true, "Double Web");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -60,8 +58,7 @@ public class AutoWeb extends ToggleableModule {
     }
     if (doubleWeb.getValue()) {
       BlockPos head = feet.above();
-      if (PlayerUtil.isAirOrReplaceable(head)
-          && PlayerUtil.inRange(head, placeRange.getValue())) {
+      if (PlayerUtil.isAirOrReplaceable(head) && PlayerUtil.inRange(head, placeRange.getValue())) {
         placeWeb(head, webSlot);
       }
     }

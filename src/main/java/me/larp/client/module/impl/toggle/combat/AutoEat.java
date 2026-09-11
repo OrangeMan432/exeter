@@ -14,12 +14,10 @@ import net.minecraft.world.item.Items;
 
 public class AutoEat extends ToggleableModule {
 
-  private final NumberProperty<Integer> hunger =
-      new NumberProperty<Integer>(16, 0, 20, "Hunger");
+  private final NumberProperty<Integer> hunger = new NumberProperty<Integer>(16, 0, 20, "Hunger");
   private final NumberProperty<Double> health =
       new NumberProperty<Double>(14.0, 0.0, 20.0, "Health");
-  private final Property<Boolean> gappleFirst =
-      new Property<Boolean>(true, "Gapple First");
+  private final Property<Boolean> gappleFirst = new Property<Boolean>(true, "Gapple First");
 
   private boolean eating;
   private int eatSlot = -1;
@@ -49,8 +47,8 @@ public class AutoEat extends ToggleableModule {
     if (minecraft.player.isDeadOrDying()) return;
 
     boolean needFood = minecraft.player.getFoodData().getFoodLevel() <= hunger.getValue();
-    boolean needHeal = minecraft.player.getHealth() <= health.getValue().floatValue()
-        && hasGapple();
+    boolean needHeal =
+        minecraft.player.getHealth() <= health.getValue().floatValue() && hasGapple();
 
     if (eating) {
       if ((!needFood && !needHeal) || eatSlot == -1) {
@@ -97,8 +95,10 @@ public class AutoEat extends ToggleableModule {
 
   private int findGapple() {
     return PlayerUtil.findInHotbar(
-        s -> !s.isEmpty()
-            && (s.getItem() == Items.GOLDEN_APPLE || s.getItem() == Items.ENCHANTED_GOLDEN_APPLE));
+        s ->
+            !s.isEmpty()
+                && (s.getItem() == Items.GOLDEN_APPLE
+                    || s.getItem() == Items.ENCHANTED_GOLDEN_APPLE));
   }
 
   private int findFood() {

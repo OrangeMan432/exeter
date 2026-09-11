@@ -16,8 +16,7 @@ public class Nametags extends ToggleableModule {
 
   private final NumberProperty<Double> range =
       new NumberProperty<Double>(64.0, 8.0, 256.0, "Range");
-  private final NumberProperty<Double> scale =
-      new NumberProperty<Double>(1.0, 0.5, 3.0, "Scale");
+  private final NumberProperty<Double> scale = new NumberProperty<Double>(1.0, 0.5, 3.0, "Scale");
   private final Property<Boolean> health = new Property<Boolean>(true, "Health");
   private final Property<Boolean> distance = new Property<Boolean>(true, "Distance");
 
@@ -43,7 +42,8 @@ public class Nametags extends ToggleableModule {
       if (dist > range.getValue()) continue;
       StringBuilder tag = new StringBuilder(player.getGameProfile().name());
       if (health.getValue()) {
-        tag.append(" ").append(String.format("%.0f", player.getHealth() + player.getAbsorptionAmount()));
+        tag.append(" ")
+            .append(String.format("%.0f", player.getHealth() + player.getAbsorptionAmount()));
       }
       if (distance.getValue()) {
         tag.append(" [").append(String.format("%.0f", dist)).append("m]");

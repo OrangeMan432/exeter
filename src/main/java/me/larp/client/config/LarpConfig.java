@@ -96,8 +96,7 @@ public class LarpConfig {
     }
 
     try {
-      Map<String, Object> data =
-          gson.fromJson(Files.readString(file.toPath()), Map.class);
+      Map<String, Object> data = gson.fromJson(Files.readString(file.toPath()), Map.class);
       if (data == null) return;
       DebugLogger.get().logSystem("Config", "  raw JSON data keys = " + data.keySet());
 
@@ -136,8 +135,7 @@ public class LarpConfig {
 
         if (moduleData.containsKey("keybind")) {
           int keybind = ((Number) moduleData.get("keybind")).intValue();
-          var kb =
-              Larp.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
+          var kb = Larp.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
           if (kb != null) {
             kb.setKey(keybind);
           }
@@ -169,8 +167,7 @@ public class LarpConfig {
                         + property.getValue());
 
             if (value instanceof Map) {
-              DebugLogger.get()
-                  .logSystem("Config", "    value is nested map, loading children");
+              DebugLogger.get().logSystem("Config", "    value is nested map, loading children");
               Map<String, Object> childMap = (Map<String, Object>) value;
               for (Property<?> child : property.getChildren()) {
                 String childKey = child.getAliases()[0];
@@ -189,8 +186,7 @@ public class LarpConfig {
                   applyPropertyValue(child, childValue);
                   DebugLogger.get()
                       .logSystem(
-                          "Config",
-                          "    after load child: " + childKey + " = " + child.getValue());
+                          "Config", "    after load child: " + childKey + " = " + child.getValue());
                 }
               }
             } else {

@@ -8,8 +8,8 @@ import me.larp.client.events.RenderWorldEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -29,9 +29,7 @@ public abstract class MixinLevelRenderer {
 
   @Final @Shadow private SubmitNodeStorage submitNodeStorage;
 
-  @Inject(
-      method = "render",
-      at = @At("HEAD"))
+  @Inject(method = "render", at = @At("HEAD"))
   private void onRenderHead(
       GraphicsResourceAllocator resourceAllocator,
       DeltaTracker deltaTracker,
@@ -59,7 +57,6 @@ public abstract class MixinLevelRenderer {
     Larp.getInstance()
         .getEventManager()
         .dispatch(
-            new RenderWorldEvent(
-                this.larp$camera, this.larp$matrixStack, this.submitNodeStorage));
+            new RenderWorldEvent(this.larp$camera, this.larp$matrixStack, this.submitNodeStorage));
   }
 }

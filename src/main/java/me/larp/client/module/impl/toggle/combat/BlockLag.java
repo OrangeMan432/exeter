@@ -14,15 +14,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Shoreline-pattern BlockLag: buries an obsidian block at your feet and
- * centers you into it so the server rubberbands you inside.
+ * Shoreline-pattern BlockLag: buries an obsidian block at your feet and centers you into it so the
+ * server rubberbands you inside.
  */
 public class BlockLag extends ToggleableModule {
 
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
-  private final Property<Boolean> autoDisable =
-      new Property<Boolean>(true, "Auto Disable");
+  private final Property<Boolean> autoDisable = new Property<Boolean>(true, "Auto Disable");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
   public BlockLag() {

@@ -14,16 +14,11 @@ import net.minecraft.world.entity.player.Player;
 /** Orbits the nearest target at range while you hold forward. */
 public class TargetStrafe extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(2.5, 0.5, 6.0, "Range");
-  private final NumberProperty<Double> speed =
-      new NumberProperty<Double>(0.35, 0.05, 1.0, "Speed");
-  private final Property<Boolean> direction =
-      new Property<Boolean>(true, "Direction");
-  private final Property<Boolean> onlyForward =
-      new Property<Boolean>(true, "Only Forward");
-  private final Property<Boolean> autoJump =
-      new Property<Boolean>(false, "Auto Jump");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(2.5, 0.5, 6.0, "Range");
+  private final NumberProperty<Double> speed = new NumberProperty<Double>(0.35, 0.05, 1.0, "Speed");
+  private final Property<Boolean> direction = new Property<Boolean>(true, "Direction");
+  private final Property<Boolean> onlyForward = new Property<Boolean>(true, "Only Forward");
+  private final Property<Boolean> autoJump = new Property<Boolean>(false, "Auto Jump");
 
   public TargetStrafe() {
     super("TargetStrafe", new String[] {"targetstrafe", "strafe"}, 0x00FF00, ModuleType.MOVEMENT);
@@ -62,12 +57,9 @@ public class TargetStrafe extends ToggleableModule {
 
     double mx = (tx + rx) * speed.getValue() * 3.0;
     double mz = (tz + rz) * speed.getValue() * 3.0;
-    minecraft.player.setDeltaMovement(
-        mx, minecraft.player.getDeltaMovement().y, mz);
+    minecraft.player.setDeltaMovement(mx, minecraft.player.getDeltaMovement().y, mz);
 
-    if (autoJump.getValue()
-        && minecraft.player.onGround()
-        && !minecraft.player.isInWater()) {
+    if (autoJump.getValue() && minecraft.player.onGround() && !minecraft.player.isInWater()) {
       minecraft.player.jumpFromGround();
     }
   }

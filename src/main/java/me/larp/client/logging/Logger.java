@@ -27,7 +27,8 @@ public final class Logger {
     Minecraft.getInstance()
         .player
         .sendSystemMessage(
-            Component.literal(String.format("§c[%s] §7%s", "Larp Client", message.replace("&", "§")))
+            Component.literal(
+                    String.format("§c[%s] §7%s", "Larp Client", message.replace("&", "§")))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)));
   }
 

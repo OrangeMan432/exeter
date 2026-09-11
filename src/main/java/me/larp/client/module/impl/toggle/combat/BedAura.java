@@ -148,8 +148,8 @@ public class BedAura extends ToggleableModule {
         CrystalDamage.explosionDamage(
             minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
     if (selfDamage > maxSelf.getValue()) return;
-    if (selfDamage + 0.5
-        >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) return;
+    if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount())
+      return;
 
     placeBed(placePos, bedSlot);
     lastBedPos = placePos;

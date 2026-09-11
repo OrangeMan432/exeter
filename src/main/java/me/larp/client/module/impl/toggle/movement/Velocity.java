@@ -16,10 +16,8 @@ public class Velocity extends ToggleableModule {
       new NumberProperty<Double>(0.0, 0.0, 100.0, "Horizontal");
   private final NumberProperty<Double> vertical =
       new NumberProperty<Double>(0.0, 0.0, 100.0, "Vertical");
-  private final Property<Boolean> explosions =
-      new Property<Boolean>(true, "Explosions");
-  private final Property<Boolean> jumpReset =
-      new Property<Boolean>(false, "Jump Reset");
+  private final Property<Boolean> explosions = new Property<Boolean>(true, "Explosions");
+  private final Property<Boolean> jumpReset = new Property<Boolean>(false, "Jump Reset");
 
   private final Listener<PacketEvent> packetListener =
       new Listener<PacketEvent>("velocity_packet") {

@@ -15,16 +15,12 @@ import net.minecraft.world.entity.Entity;
 /** Meteor-pattern AutoLog: disconnects on low HP, totem pops, or nearby players. */
 public class AutoLog extends ToggleableModule {
 
-  private final Property<Boolean> onHealth =
-      new Property<Boolean>(true, "On Health");
+  private final Property<Boolean> onHealth = new Property<Boolean>(true, "On Health");
   private final NumberProperty<Double> health =
       new NumberProperty<Double>(8.0, 0.0, 20.0, "Health");
-  private final Property<Boolean> onPop =
-      new Property<Boolean>(false, "On Pop");
-  private final NumberProperty<Integer> pops =
-      new NumberProperty<Integer>(1, 1, 5, "Pops");
-  private final Property<Boolean> onPlayer =
-      new Property<Boolean>(false, "On Player");
+  private final Property<Boolean> onPop = new Property<Boolean>(false, "On Pop");
+  private final NumberProperty<Integer> pops = new NumberProperty<Integer>(1, 1, 5, "Pops");
+  private final Property<Boolean> onPlayer = new Property<Boolean>(false, "On Player");
   private final NumberProperty<Double> playerRange =
       new NumberProperty<Double>(50.0, 5.0, 200.0, "Player Range");
 

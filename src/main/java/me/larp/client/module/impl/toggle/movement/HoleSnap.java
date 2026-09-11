@@ -1,6 +1,5 @@
 package me.larp.client.module.impl.toggle.movement;
 
-import java.util.Comparator;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
@@ -14,12 +13,9 @@ import net.minecraft.core.BlockPos;
 /** Anarchy staple: steers you into the nearest safe hole and centers you in it. */
 public class HoleSnap extends ToggleableModule {
 
-  private final NumberProperty<Double> range =
-      new NumberProperty<Double>(5.0, 1.0, 10.0, "Range");
-  private final NumberProperty<Double> snap =
-      new NumberProperty<Double>(0.25, 0.05, 1.0, "Snap");
-  private final Property<Boolean> autoDisable =
-      new Property<Boolean>(true, "Auto Disable");
+  private final NumberProperty<Double> range = new NumberProperty<Double>(5.0, 1.0, 10.0, "Range");
+  private final NumberProperty<Double> snap = new NumberProperty<Double>(0.25, 0.05, 1.0, "Snap");
+  private final Property<Boolean> autoDisable = new Property<Boolean>(true, "Auto Disable");
 
   public HoleSnap() {
     super("HoleSnap", new String[] {"holesnap", "hole-snap"}, 0x00FF00, ModuleType.MOVEMENT);

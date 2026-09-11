@@ -26,8 +26,7 @@ public class StorageESP extends ToggleableModule {
       new NumberProperty<Double>(2.0, 1.0, 5.0, "Line Width");
   private final Property<Boolean> chests = new Property<Boolean>(true, "Chests");
   private final Property<Boolean> shulkers = new Property<Boolean>(true, "Shulkers");
-  private final Property<Boolean> enderChests =
-      new Property<Boolean>(true, "Ender Chests");
+  private final Property<Boolean> enderChests = new Property<Boolean>(true, "Ender Chests");
   private final Property<Boolean> others = new Property<Boolean>(false, "Others");
 
   public StorageESP() {

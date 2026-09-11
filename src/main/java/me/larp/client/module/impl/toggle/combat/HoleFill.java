@@ -14,14 +14,13 @@ import me.larp.client.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Shoreline-pattern HoleFill: fills air holes near enemies so they cannot
- * retreat into them. Proximity mode only fills holes the enemy can reach.
+ * Shoreline-pattern HoleFill: fills air holes near enemies so they cannot retreat into them.
+ * Proximity mode only fills holes the enemy can reach.
  */
 public class HoleFill extends ToggleableModule {
 
@@ -29,22 +28,26 @@ public class HoleFill extends ToggleableModule {
       new NumberProperty<Double>(4.0, 0.0, 6.0, "Place Range");
   private final NumberProperty<Double> enemyRange =
       new NumberProperty<Double>(10.0, 0.0, 15.0, "Enemy Range");
-  private final Property<Boolean> proximity =
-      new Property<Boolean>(true, "Proximity Check");
+  private final Property<Boolean> proximity = new Property<Boolean>(true, "Proximity Check");
   private final NumberProperty<Double> proximityRange =
       new NumberProperty<Double>(2.0, 0.0, 5.0, "Proximity Range");
   private final NumberProperty<Integer> blocksPerTick =
       new NumberProperty<Integer>(2, 1, 5, "Blocks Per Tick");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
-  private final Property<Boolean> autoDisable =
-      new Property<Boolean>(false, "Auto Disable");
+  private final Property<Boolean> autoDisable = new Property<Boolean>(false, "Auto Disable");
 
   public HoleFill() {
     super("HoleFill", new String[] {"holefill", "hole-fill"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Fills holes near enemies with obsidian.");
     offerProperties(
-        placeRange, enemyRange, proximity, proximityRange, blocksPerTick, rotate, autoSwitch,
+        placeRange,
+        enemyRange,
+        proximity,
+        proximityRange,
+        blocksPerTick,
+        rotate,
+        autoSwitch,
         autoDisable);
     this.listeners.add(
         new Listener<TickEvent>("holefill_tick") {

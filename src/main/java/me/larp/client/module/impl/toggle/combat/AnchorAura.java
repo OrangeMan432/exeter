@@ -1,8 +1,5 @@
 package me.larp.client.module.impl.toggle.combat;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
@@ -25,8 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * BlackOut-pattern AnchorAura: place anchor, charge with glowstone, detonate.
- * Damage-gated on both place and explode like the original.
+ * BlackOut-pattern AnchorAura: place anchor, charge with glowstone, detonate. Damage-gated on both
+ * place and explode like the original.
  */
 public class AnchorAura extends ToggleableModule {
 
@@ -34,8 +31,7 @@ public class AnchorAura extends ToggleableModule {
       new NumberProperty<Double>(10.0, 1.0, 15.0, "Target Distance");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
-  private final NumberProperty<Integer> charges =
-      new NumberProperty<Integer>(2, 1, 4, "Charges");
+  private final NumberProperty<Integer> charges = new NumberProperty<Integer>(2, 1, 4, "Charges");
   private final NumberProperty<Integer> placeDelay =
       new NumberProperty<Integer>(4, 0, 20, "Place Delay");
   private final NumberProperty<Integer> actionDelay =
@@ -60,8 +56,18 @@ public class AnchorAura extends ToggleableModule {
     super("AnchorAura", new String[] {"anchoraura", "anchor-aura"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Anchor place, charge, and detonate engine.");
     offerProperties(
-        targetDistance, placeRange, charges, placeDelay, actionDelay, minPlace, maxSelfPlace,
-        minExplode, maxSelfExplode, rotate, autoSwitch, swingHand);
+        targetDistance,
+        placeRange,
+        charges,
+        placeDelay,
+        actionDelay,
+        minPlace,
+        maxSelfPlace,
+        minExplode,
+        maxSelfExplode,
+        rotate,
+        autoSwitch,
+        swingHand);
     this.listeners.add(
         new Listener<TickEvent>("anchoraura_tick") {
           @Override
@@ -150,10 +156,11 @@ public class AnchorAura extends ToggleableModule {
     double targetDamage = CrystalDamage.explosionDamage(target, target.getBoundingBox(), boom, 5.0);
     if (targetDamage < minPlace.getValue()) return;
     double selfDamage =
-        CrystalDamage.explosionDamage(minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
+        CrystalDamage.explosionDamage(
+            minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
     if (selfDamage > maxSelfPlace.getValue()) return;
-    if (selfDamage + 0.5
-        >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) return;
+    if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount())
+      return;
     click(spot.below(), Direction.UP, anchorSlot);
     lastPlaceTick = tickCounter;
   }
@@ -182,8 +189,8 @@ public class AnchorAura extends ToggleableModule {
 
   private void tryCharge(BlockPos anchor) {
     if (tickCounter - lastActionTick < actionDelay.getValue()) return;
-    int glowSlot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.GLOWSTONE_DUST);
+    int glowSlot =
+        PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.GLOWSTONE_DUST);
     if (glowSlot == -1) {
       glowSlot = PlayerUtil.findInHotbar(AnchorAura::isGlowstoneBlock);
       if (glowSlot == -1) return;
@@ -198,10 +205,11 @@ public class AnchorAura extends ToggleableModule {
     double targetDamage = CrystalDamage.explosionDamage(target, target.getBoundingBox(), boom, 5.0);
     if (targetDamage < minExplode.getValue()) return;
     double selfDamage =
-        CrystalDamage.explosionDamage(minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
+        CrystalDamage.explosionDamage(
+            minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
     if (selfDamage > maxSelfExplode.getValue()) return;
-    if (selfDamage + 0.5
-        >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) return;
+    if (selfDamage + 0.5 >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount())
+      return;
     // Explode with an empty hand so the click detonates instead of charging.
     click(anchor, Direction.UP, findEmptySlot());
     lastActionTick = tickCounter;

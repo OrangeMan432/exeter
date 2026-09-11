@@ -20,9 +20,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * BlackOut-pattern PistonCrystal: seats a piston behind the target, drops a
- * crystal between piston and target, powers with a torch, breaks on contact.
- * Staged with per-stage delays like the original.
+ * BlackOut-pattern PistonCrystal: seats a piston behind the target, drops a crystal between piston
+ * and target, powers with a torch, breaks on contact. Staged with per-stage delays like the
+ * original.
  */
 public class PistonCrystal extends ToggleableModule {
 
@@ -35,8 +35,7 @@ public class PistonCrystal extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
-  private final Property<Boolean> pauseEat =
-      new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> pauseEat = new Property<Boolean>(false, "Pause On Eat");
 
   private int tickCounter;
   private int lastStageTick;
@@ -46,11 +45,13 @@ public class PistonCrystal extends ToggleableModule {
   private Direction pushDir;
 
   public PistonCrystal() {
-    super("PistonCrystal", new String[] {"pistoncrystal", "piston-crystal"}, 0xFF0000,
+    super(
+        "PistonCrystal",
+        new String[] {"pistoncrystal", "piston-crystal"},
+        0xFF0000,
         ModuleType.COMBAT);
     setDescription("Pushes crystals into targets with pistons.");
-    offerProperties(
-        targetRange, placeRange, stageDelay, rotate, autoSwitch, swingHand, pauseEat);
+    offerProperties(targetRange, placeRange, stageDelay, rotate, autoSwitch, swingHand, pauseEat);
     this.listeners.add(
         new Listener<TickEvent>("pistoncrystal_tick") {
           @Override
@@ -178,8 +179,7 @@ public class PistonCrystal extends ToggleableModule {
   }
 
   private void placeCrystal() {
-    int slot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
+    int slot = PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (slot == -1) return;
     swap(slot);
     float yaw = minecraft.player.getYRot();
@@ -197,8 +197,12 @@ public class PistonCrystal extends ToggleableModule {
 
   private void power() {
     // Redstone torch on top of the piston: piston top face is solid support.
-    int slot = PlayerUtil.findInHotbar(
-        s -> !s.isEmpty() && (s.getItem() == Items.REDSTONE_TORCH || s.getItem() == Items.REDSTONE_BLOCK));
+    int slot =
+        PlayerUtil.findInHotbar(
+            s ->
+                !s.isEmpty()
+                    && (s.getItem() == Items.REDSTONE_TORCH
+                        || s.getItem() == Items.REDSTONE_BLOCK));
     if (slot == -1) return;
     swap(slot);
     float yaw = minecraft.player.getYRot();
