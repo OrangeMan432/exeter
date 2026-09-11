@@ -8,7 +8,7 @@ import me.larp.client.config.ProfileManager;
 /** Raven-style profiles: .profile save/load/list/delete/5b5t */
 public final class Profile extends Command {
   public Profile() {
-    super(new String[] {"profile", "profiles"}, new Argument("action"), new Argument("name"));
+    super(new String[] {"profile", "profiles", "config"}, new Argument("action"), new Argument("name"));
   }
 
   @Override

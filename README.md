@@ -107,6 +107,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor`, `EatTimer` | Client UI (Exeter). |
+| `Fullbright` | Night vision plus max gamma, restored on disable. |
 | `HoleESP` | Nicotine-pattern 3D hole outlines on the 26.2 render pipeline. |
 | `Tracers` | Crosshair lines to players. |
 | `StorageESP` | Boxes chests, shulkers, ender chests, barrels. |

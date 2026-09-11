@@ -68,6 +68,7 @@ import me.larp.client.module.impl.toggle.movement.TargetStrafe;
 import me.larp.client.module.impl.toggle.movement.Velocity;
 import me.larp.client.module.impl.toggle.render.ClickGui;
 import me.larp.client.module.impl.toggle.render.EatTimer;
+import me.larp.client.module.impl.toggle.render.Fullbright;
 import me.larp.client.module.impl.toggle.render.HUDEditor;
 import me.larp.client.module.impl.toggle.render.HoleESP;
 import me.larp.client.module.impl.toggle.render.TabGui;
@@ -95,6 +96,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new EatTimer());
     register(new Colors());
     register(new HUDEditor());
+    register(new Fullbright());
     register(new HoleESP());
     register(new Tracers());
     register(new Trajectories());
