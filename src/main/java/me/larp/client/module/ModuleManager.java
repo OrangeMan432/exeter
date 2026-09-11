@@ -88,6 +88,7 @@ import me.larp.client.module.impl.toggle.render.HUDEditor;
 import me.larp.client.module.impl.toggle.render.HoleESP;
 import me.larp.client.module.impl.toggle.render.TabGui;
 import me.larp.client.module.impl.toggle.render.Nametags;
+import me.larp.client.module.impl.toggle.render.NewChunks;
 import me.larp.client.module.impl.toggle.render.PlayerESP;
 import me.larp.client.module.impl.toggle.render.StorageESP;
 import me.larp.client.module.impl.toggle.render.Tracers;
@@ -123,6 +124,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new LogoutSpots());
     register(new StorageESP());
     register(new Nametags());
+    register(new NewChunks());
     register(new PlayerESP());
     register(new DiscordRPC());
     register(new AutoItemDupe());
