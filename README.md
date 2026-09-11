@@ -55,6 +55,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
 | `ChestStealer` | Loots chests and shulkers on a delay with auto-close. |
+| `AutoTool` | Swaps to the fastest hotbar tool while mining. |
+| `PingSpoof` | Delays keepalives for fake low ping. |
 
 ### Movement
 
@@ -80,6 +82,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `AutoShulker` | Automatically places and opens shulker boxes. Container blacklist honored, player-following target range. |
+| `InstaMine` | Packet mine for instant soft-block breaks. |
 
 ### Render
 

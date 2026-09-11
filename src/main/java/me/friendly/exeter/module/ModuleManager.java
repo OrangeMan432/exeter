@@ -32,7 +32,9 @@ import me.friendly.exeter.module.impl.toggle.combat.Surround;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.AutoLog;
+import me.friendly.exeter.module.impl.toggle.misc.AutoTool;
 import me.friendly.exeter.module.impl.toggle.misc.ChestStealer;
+import me.friendly.exeter.module.impl.toggle.misc.PingSpoof;
 import me.friendly.exeter.module.impl.toggle.misc.Replenish;
 import me.friendly.exeter.module.impl.toggle.movement.ElytraFly;
 import me.friendly.exeter.module.impl.toggle.movement.FakeLag;
@@ -53,6 +55,7 @@ import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.render.TabGui;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
+import me.friendly.exeter.module.impl.toggle.world.InstaMine;
 import org.lwjgl.glfw.GLFW;
 
 /** Manages {@link Module}s for Exeter. */
@@ -86,6 +89,8 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoGear());
     register(new AutoLog());
     register(new ChestStealer());
+    register(new AutoTool());
+    register(new PingSpoof());
     register(new Replenish());
     register(new SelfBed());
     register(new BedAura());
@@ -94,6 +99,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoCart());
     register(new AutoPot());
     register(new AutoShulker());
+    register(new InstaMine());
     register(new Velocity());
     register(new FakeLag());
     register(new FastFall());
