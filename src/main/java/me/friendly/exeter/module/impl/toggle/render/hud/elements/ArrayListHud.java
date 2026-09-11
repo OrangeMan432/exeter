@@ -1,7 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
@@ -54,23 +54,31 @@ public final class ArrayListHud extends HudModule {
   public void render(int scaledWidth, int scaledHeight) {
     List<Module> modules =
         new ArrayList<>(Exeter.getInstance().getModuleManager().getRegistry());
-    if (organize.getValue() == Organize.ABC) {
-      modules.sort((a, b) -> a.getLabel().compareTo(b.getLabel()));
-    } else {
-      modules.sort((a, b) -> FontUtil.getStringWidth(b.getLabel()) - FontUtil.getStringWidth(a.getLabel()));
-    }
-    boolean bottom = getY() > scaledHeight / 2;
-    if (bottom) Collections.reverse(modules);
 
-    int py = getY();
+    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
+    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+
+    Comparator<Module> cmp;
+    if (organize.getValue() == Organize.ABC) {
+      cmp = Comparator.comparing(Module::getLabel);
+    } else {
+      cmp = Comparator.comparingInt(
+              (Module m) -> FontUtil.getStringWidth(getTag(m.getLabel())))
+          .reversed();
+    }
+    modules.sort(cmp);
+
+    int py = top ? getY() : getY() + getHeight() - 9;
     for (Module module : modules) {
       if (!(module instanceof ToggleableModule tm)) continue;
       if (!tm.isRunning() || !tm.isDrawn()) continue;
       if (tm.getModuleType() == ModuleType.HUD) continue;
       int color = tm.getColor() | 0xFF000000;
       String label = getTag(tm.getLabel());
-      FontUtil.drawString(label, getX(), py, color);
-      py += bottom ? -9 : 9;
+      int lw = FontUtil.getStringWidth(label);
+      int px = right ? getX() + getWidth() - lw : getX();
+      FontUtil.drawString(label, px, py, color);
+      py += top ? 9 : -9;
     }
   }
 

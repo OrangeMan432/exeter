@@ -7,8 +7,6 @@ import me.friendly.exeter.events.RenderGameOverlayEvent;
 import me.friendly.exeter.module.Module;
 
 public final class HudRenderer extends Module {
-  private boolean defaultPositionsInitialized = false;
-
   public HudRenderer() {
     super("HudRenderer", new String[] {"hudrenderer"});
     setDescription("Central renderer for all HUD elements.");
@@ -23,21 +21,17 @@ public final class HudRenderer extends Module {
                     || event.getType() != RenderGameOverlayEvent.Type.IN_GAME) {
                   return;
                 }
+                if (minecraft.gui.screen() instanceof HudEditorScreen) {
+                  return;
+                }
                 int sw = minecraft.getWindow().getGuiScaledWidth();
                 int sh = minecraft.getWindow().getGuiScaledHeight();
                 List<HudModule> active = HudModule.getActive();
-                if (!defaultPositionsInitialized) {
-                  HudModule.defaultLayout(active, sw, sh);
-                  defaultPositionsInitialized = true;
-                }
+                HudModule.layoutByCorner(active, sw, sh);
                 for (HudModule m : active) {
                   m.render(sw, sh);
                 }
               }
             });
-  }
-
-  public void relayout() {
-    defaultPositionsInitialized = false;
   }
 }

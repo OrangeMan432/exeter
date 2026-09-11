@@ -140,6 +140,9 @@ public final class HudEditorScreen extends Screen {
     if (dragging != null) {
       if (!Minecraft.getInstance().hasShiftDown()) {
         snapToNearest(dragging);
+        int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
       }
       dragging = null;
     }
@@ -177,31 +180,17 @@ public final class HudEditorScreen extends Screen {
   private void snapToNearest(HudModule m) {
     int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
-    int margin = 5;
 
-    int snapLeft = margin;
-    int snapCenter = scaledWidth / 2 - m.getWidth() / 2;
-    int snapRight = scaledWidth - m.getWidth() - margin;
-    int snapTop = margin;
-    int snapBottom = scaledHeight - m.getHeight() - margin;
+    int centerX = scaledWidth / 2;
+    int centerY = scaledHeight / 2;
+    boolean right = m.getX() + m.getWidth() / 2 > centerX;
+    boolean bottom = m.getY() + m.getHeight() / 2 > centerY;
 
-    int bestDist = Integer.MAX_VALUE;
-    HudModule.Corner bestCorner = m.getCorner();
-
-    int[] xs = {snapLeft, snapCenter, snapRight};
-    int[] ys = {snapTop, snapBottom};
-    HudModule.Corner[] corners = {HudModule.Corner.TOP_LEFT, HudModule.Corner.BOTTOM_LEFT, HudModule.Corner.TOP_RIGHT, HudModule.Corner.BOTTOM_RIGHT};
-    int ci = 0;
-    for (int y : ys) {
-      for (int x : xs) {
-        int dist = Math.abs(m.getX() - x) + Math.abs(m.getY() - y);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestCorner = corners[ci];
-        }
-      }
-      ci++;
-    }
+    HudModule.Corner bestCorner;
+    if (right && bottom) bestCorner = HudModule.Corner.BOTTOM_RIGHT;
+    else if (right) bestCorner = HudModule.Corner.TOP_RIGHT;
+    else if (bottom) bestCorner = HudModule.Corner.BOTTOM_LEFT;
+    else bestCorner = HudModule.Corner.TOP_LEFT;
     m.setCorner(bestCorner);
   }
 }
