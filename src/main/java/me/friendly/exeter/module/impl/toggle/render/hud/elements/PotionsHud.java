@@ -2,8 +2,8 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import net.minecraft.world.effect.MobEffect;
@@ -38,9 +38,9 @@ public final class PotionsHud extends HudModule {
       if (effects == null || effects.isEmpty()) return;
       float tickRate = minecraft.level.tickRateManager().tickrate();
       List<MobEffectInstance> sortedEffects = new ArrayList<>(effects);
-      boolean bottom = getY() > scaledHeight / 2;
-      if (bottom) Collections.reverse(sortedEffects);
-      int py = getY();
+      boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
+      boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+      int py = top ? getY() : getY() + getHeight() - 9;
       for (MobEffectInstance effect : sortedEffects) {
         if (effect == null) continue;
         MobEffect mobEffect = effect.getEffect().value();
@@ -48,8 +48,10 @@ public final class PotionsHud extends HudModule {
         String name = net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
         String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
         String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
-        RenderMethods.guiGraphics.text(minecraft.font, text, getX(), py, 0xFF000000 | mobEffect.getColor(), true);
-        py += bottom ? -9 : 9;
+        int lw = FontUtil.getStringWidth(text);
+        int px = right ? getX() + getWidth() - lw : getX();
+        RenderMethods.guiGraphics.text(minecraft.font, text, px, py, 0xFF000000 | mobEffect.getColor(), true);
+        py += top ? 9 : -9;
       }
     } catch (Exception e) {
       System.out.println("[PotionsHud] render error: " + e.getMessage());
