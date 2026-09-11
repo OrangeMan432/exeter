@@ -115,6 +115,10 @@ public final class HudEditorScreen extends Screen {
     ensurePanel();
     hudPanel.mouseClicked(mouseX, mouseY, button);
 
+    int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+    int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
+
     List<HudModule> modules = HudModule.getActive();
     for (int i = modules.size() - 1; i >= 0; i--) {
       HudModule m = modules.get(i);
