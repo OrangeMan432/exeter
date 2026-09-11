@@ -12,13 +12,16 @@ import me.larp.client.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 public final class ClickGui extends Screen {
   private static ClickGui clickGui;
   //    public final CustomFont guiFont = new CustomFont("Segoe UI", 18.0f);
   private final ArrayList<Panel> panels = new ArrayList();
+  private String search = "";
 
   public ClickGui() {
     super(Component.literal("ClickGui"));
@@ -117,12 +120,20 @@ public final class ClickGui extends Screen {
     }
     this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
 
+    // Search bar under the description line.
+    String query = search.isEmpty() ? "Search modules..." : search;
+    int queryWidth = FontUtil.getStringWidth(query);
+    int sx = this.width / 2 - queryWidth / 2;
+    int sColor = search.isEmpty() ? 0xFF666666 : 0xFFFFFFFF;
+    RenderMethods.drawRect(sx - 4, 12, sx + queryWidth + 4, 24, 0xAA000000);
+    FontUtil.drawString(query, sx, 15, sColor);
+
     if (showDesc) {
       String hoveredDesc = null;
       for (Panel panel : this.panels) {
         if (!panel.getOpen()) continue;
         for (var item : panel.getItems()) {
-          if (item instanceof ModuleButton moduleButton) {
+          if (item instanceof ModuleButton moduleButton && panel.matchesSearch(item)) {
             float ix = item.getX();
             float iy = item.getY();
             int iw = item.getWidth();
@@ -152,6 +163,29 @@ public final class ClickGui extends Screen {
   }
 
   @Override
+  public boolean keyPressed(KeyEvent event) {
+    int key = event.key();
+    if (key == GLFW.GLFW_KEY_BACKSPACE && !search.isEmpty()) {
+      search = search.substring(0, search.length() - 1);
+      return true;
+    }
+    if (key == GLFW.GLFW_KEY_ESCAPE) {
+      search = "";
+      return super.keyPressed(event);
+    }
+    String name = GLFW.glfwGetKeyName(key, event.scancode());
+    if (name != null && name.length() == 1 && search.length() < 24) {
+      search += name.toLowerCase();
+      return true;
+    }
+    if (key == GLFW.GLFW_KEY_SPACE && search.length() < 24) {
+      search += " ";
+      return true;
+    }
+    return super.keyPressed(event);
+  }
+
+  @Override
   public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
     int mouseX = (int) event.x();
     int mouseY = (int) event.y();
@@ -176,5 +210,9 @@ public final class ClickGui extends Screen {
 
   public final ArrayList<Panel> getPanels() {
     return this.panels;
+  }
+
+  public String getSearch() {
+    return this.search;
   }
 }

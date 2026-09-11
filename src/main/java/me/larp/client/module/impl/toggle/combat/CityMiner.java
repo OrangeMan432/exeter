@@ -28,17 +28,21 @@ public class CityMiner extends ToggleableModule {
       new NumberProperty<Double>(8.0, 1.0, 12.0, "Target Range");
   private final NumberProperty<Double> mineRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Mine Range");
+  private final NumberProperty<Integer> delay =
+      new NumberProperty<Integer>(0, 0, 20, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
   private BlockPos current;
+  private int tickCounter;
+  private int lastMineTick = -100;
 
   public CityMiner() {
     super("CityMiner", new String[] {"cityminer", "city-miner", "surroundbreaker"}, 0xFF0000,
         ModuleType.COMBAT);
     setDescription("Mines open enemy surrounds and traps.");
-    offerProperties(targetRange, mineRange, rotate, autoSwitch, swingHand);
+    offerProperties(targetRange, mineRange, delay, rotate, autoSwitch, swingHand);
     this.listeners.add(
         new Listener<TickEvent>("cityminer_tick") {
           @Override
@@ -53,11 +57,15 @@ public class CityMiner extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     current = null;
+    tickCounter = 0;
+    lastMineTick = -100;
   }
 
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
+    tickCounter++;
+    if (tickCounter - lastMineTick < delay.getValue()) return;
 
     Player target = findTarget();
     if (target == null) {
@@ -94,6 +102,7 @@ public class CityMiner extends ToggleableModule {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
     setTag("CityMiner [" + minecraft.level.getBlockState(current).getBlock().getName().getString() + "]");
+    lastMineTick = tickCounter;
   }
 
   private BlockPos pickBlock(Player target) {

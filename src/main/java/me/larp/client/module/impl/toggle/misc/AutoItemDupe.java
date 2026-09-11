@@ -6,6 +6,7 @@ import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
+import me.larp.client.properties.NumberProperty;
 import me.larp.client.properties.Property;
 import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.tags.BlockTags;
@@ -27,6 +28,12 @@ public class AutoItemDupe extends ToggleableModule {
   }
 
   private final Property<Boolean> cancelGui = new Property<>(false, "Cancel GUI");
+  private final NumberProperty<Integer> throwMs =
+      new NumberProperty<Integer>(150, 0, 1000, "Throw Ms");
+  private final NumberProperty<Integer> waitMs =
+      new NumberProperty<Integer>(1000, 0, 5000, "Wait Ms");
+  private final NumberProperty<Integer> recipeMs =
+      new NumberProperty<Integer>(100, 0, 1000, "Recipe Ms");
 
   private Phase phase = Phase.NONE;
   private long phaseStart;
@@ -36,7 +43,7 @@ public class AutoItemDupe extends ToggleableModule {
   public AutoItemDupe() {
     super("AutoItemDupe", new String[] {"autoitemdupe", "aidd"}, ModuleType.MISCELLANEOUS);
     setDescription("Dupes wooden buttons using the crafting recipe bug.");
-    offerProperties(cancelGui);
+    offerProperties(cancelGui, throwMs, waitMs, recipeMs);
 
     this.listeners.add(
         new Listener<TickEvent>("auto_item_dupe_tick") {
@@ -83,19 +90,19 @@ public class AutoItemDupe extends ToggleableModule {
 
     switch (phase) {
       case THROW -> {
-        if (elapsed < 150) return;
+        if (elapsed < throwMs.getValue()) return;
         minecraft.player.containerMenu.clicked(
             throwSlot + 36, 1, ContainerInput.THROW, minecraft.player);
         phase = Phase.WAIT;
         phaseStart = System.currentTimeMillis();
       }
       case WAIT -> {
-        if (elapsed < 1000) return;
+        if (elapsed < waitMs.getValue()) return;
         phase = Phase.RECIPE;
         phaseStart = System.currentTimeMillis();
       }
       case RECIPE -> {
-        if (elapsed < 100) return;
+        if (elapsed < recipeMs.getValue()) return;
         minecraft
             .getConnection()
             .send(

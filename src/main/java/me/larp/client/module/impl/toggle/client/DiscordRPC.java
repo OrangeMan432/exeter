@@ -5,6 +5,7 @@ import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
+import me.larp.client.properties.NumberProperty;
 import meteordevelopment.discordipc.DiscordIPC;
 import meteordevelopment.discordipc.RichPresence;
 import net.minecraft.client.multiplayer.ServerData;
@@ -18,9 +19,13 @@ public class DiscordRPC extends ToggleableModule {
   private boolean started;
   private int tickCounter;
 
+  private final NumberProperty<Integer> updateSeconds =
+      new NumberProperty<Integer>(5, 1, 60, "Update Seconds");
+
   public DiscordRPC() {
     super("DiscordRPC", new String[] {"discordrpc", "rpc"}, 0x5865F2, ModuleType.CLIENT);
     setDescription("Shows Larp Client activity on your Discord rich presence.");
+    offerProperties(updateSeconds);
 
     this.listeners.add(
         new Listener<TickEvent>("discord_rpc_tick") {
@@ -65,8 +70,8 @@ public class DiscordRPC extends ToggleableModule {
 
   private void onTick() {
     if (!started) return;
-    // Discord rate-limits activity updates: refresh every 5 seconds, not every tick.
-    if (tickCounter++ < 100) return;
+    // Discord rate-limits activity updates: refresh on interval, not every tick.
+    if (tickCounter++ < updateSeconds.getValue() * 20) return;
     tickCounter = 0;
     updatePresence();
   }

@@ -19,11 +19,13 @@ public class TargetStrafe extends ToggleableModule {
   private final Property<Boolean> direction = new Property<Boolean>(true, "Direction");
   private final Property<Boolean> onlyForward = new Property<Boolean>(true, "Only Forward");
   private final Property<Boolean> autoJump = new Property<Boolean>(false, "Auto Jump");
+  private final NumberProperty<Double> pull =
+      new NumberProperty<Double>(0.4, 0.0, 2.0, "Pull");
 
   public TargetStrafe() {
     super("TargetStrafe", new String[] {"targetstrafe", "strafe"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Strafes around your target in fights.");
-    offerProperties(range, speed, direction, onlyForward, autoJump);
+    offerProperties(range, speed, direction, onlyForward, autoJump, pull);
     this.listeners.add(
         new Listener<TickEvent>("targetstrafe_tick") {
           @Override
@@ -51,7 +53,7 @@ public class TargetStrafe extends ToggleableModule {
     double dir = direction.getValue() ? 1.0 : -1.0;
     double tx = (-dz / dist) * dir;
     double tz = (dx / dist) * dir;
-    double radial = (dist - range.getValue()) * 0.4;
+    double radial = (dist - range.getValue()) * pull.getValue();
     double rx = (dx / dist) * -radial;
     double rz = (dz / dist) * -radial;
 

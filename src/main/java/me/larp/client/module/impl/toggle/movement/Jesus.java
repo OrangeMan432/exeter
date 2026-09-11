@@ -5,17 +5,20 @@ import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
+import me.larp.client.properties.NumberProperty;
 import me.larp.client.properties.Property;
 
 /** Walk on water: holds you at the surface while moving. */
 public class Jesus extends ToggleableModule {
 
   private final Property<Boolean> dip = new Property<Boolean>(true, "Dip");
+  private final NumberProperty<Double> rise =
+      new NumberProperty<Double>(0.12, 0.02, 0.4, "Rise");
 
   public Jesus() {
     super("Jesus", new String[] {"jesus", "water-walk"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Walk on water.");
-    offerProperties(dip);
+    offerProperties(dip, rise);
     this.listeners.add(
         new Listener<TickEvent>("jesus_tick") {
           @Override
@@ -42,7 +45,7 @@ public class Jesus extends ToggleableModule {
       double boost = hSpeed < 0.3 && dip.getValue() ? 1.1 : 1.0;
       minecraft.player.setDeltaMovement(
           minecraft.player.getDeltaMovement().x * boost,
-          0.12,
+          rise.getValue(),
           minecraft.player.getDeltaMovement().z * boost);
     }
   }
