@@ -47,7 +47,6 @@ import me.larp.client.module.impl.toggle.misc.ChestStealer;
 import me.larp.client.module.impl.toggle.misc.PingSpoof;
 import me.larp.client.module.impl.toggle.misc.Replenish;
 import me.larp.client.module.impl.toggle.misc.ShulkerDupe;
-import me.larp.client.module.impl.toggle.misc.Spammer;
 import me.larp.client.module.impl.toggle.misc.VisualRange;
 import me.larp.client.module.impl.toggle.movement.ElytraFly;
 import me.larp.client.module.impl.toggle.movement.FakeLag;
@@ -140,7 +139,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new PingSpoof());
     register(new Replenish());
     register(new ShulkerDupe());
-    register(new Spammer());
     register(new SelfBed());
     register(new BedAura());
     register(new CevBreaker());
