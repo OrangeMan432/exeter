@@ -2,8 +2,10 @@ package me.friendly.exeter.util;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -51,8 +53,7 @@ public final class Render3D {
         });
   }
 
-  private static void line(
-      com.mojang.blaze3d.vertex.VertexConsumer buffer,
+  private static void line(      com.mojang.blaze3d.vertex.VertexConsumer buffer,
       double x0,
       double y0,
       double z0,
@@ -78,5 +79,76 @@ public final class Render3D {
         .setColor(color)
         .setNormal(nx, ny, nz)
         .setLineWidth(lineWidth);
+  }
+
+  /** Nicotine-pattern tracer from crosshair to the target position. */
+  public static void drawTracer(
+      SubmitNodeStorage storage,
+      Camera camera,
+      PoseStack matrices,
+      Vec3 from,
+      Vec3 targetPos,
+      int color,
+      float lineWidth) {
+    Vec3 adjusted = targetPos.subtract(camera.position());
+    Vec3 origin = from.subtract(camera.position());
+    float dx = (float) (adjusted.x - origin.x);
+    float dy = (float) (adjusted.y - origin.y);
+    float dz = (float) (adjusted.z - origin.z);
+    float len = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (len < 0.001f) return;
+    float nx = dx / len;
+    float ny = dy / len;
+    float nz = dz / len;
+    storage.submitCustomGeometry(
+        matrices,
+        RenderTypes.lines(),
+        (pose, buffer) -> {
+          buffer
+              .addVertex((float) origin.x, (float) origin.y, (float) origin.z)
+              .setColor(color)
+              .setNormal(nx, ny, nz)
+              .setLineWidth(lineWidth);
+          buffer
+              .addVertex((float) adjusted.x, (float) adjusted.y, (float) adjusted.z)
+              .setColor(color)
+              .setNormal(nx, ny, nz)
+              .setLineWidth(lineWidth);
+        });
+  }
+
+  /** Nicotine-pattern floating text at a world position. */
+  public static void drawText(
+      SubmitNodeStorage storage,
+      PoseStack matrices,
+      Camera camera,
+      net.minecraft.client.Minecraft mc,
+      Vec3 position,
+      String text,
+      int color,
+      float scale) {
+    Font font = mc.font;
+    Vec3 cameraPos = camera.position();
+    matrices.pushPose();
+    matrices.translate(
+        (float) (position.x - cameraPos.x),
+        (float) (position.y - cameraPos.y) + 0.5f,
+        (float) (position.z - cameraPos.z));
+    matrices.mulPose(camera.rotation());
+    float size = 0.025f * scale;
+    matrices.scale(size, -size, size);
+    float x = (float) font.width(text) / 2.0f;
+    storage.submitText(
+        matrices,
+        -x,
+        0,
+        Component.literal(text).getVisualOrderText(),
+        false,
+        Font.DisplayMode.SEE_THROUGH,
+        0,
+        color,
+        0x50000000,
+        0);
+    matrices.popPose();
   }
 }
