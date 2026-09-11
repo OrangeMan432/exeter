@@ -88,6 +88,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `PacketFly` | BlackOut-addon-pattern packet flight with bounds spoof and teleport confirm. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
 | `TargetStrafe` | Orbits targets at range with radial correction. |
+| `Confuse` | Meteor-Rejects-pattern teleporter: RandomTP/Switch/Circle jumps around enemies with wall checks and circle ESP. |
 | `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
 | `FastFall` | Falls faster than vanilla for quick drops. |
 | `Jesus` | Walk on water, sneak to dive. |

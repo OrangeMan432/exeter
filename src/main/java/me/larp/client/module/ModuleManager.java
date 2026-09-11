@@ -75,6 +75,7 @@ import me.larp.client.module.impl.toggle.movement.Scaffold;
 import me.larp.client.module.impl.toggle.movement.Spider;
 import me.larp.client.module.impl.toggle.movement.AntiVoid;
 import me.larp.client.module.impl.toggle.movement.BoatFly;
+import me.larp.client.module.impl.toggle.movement.Confuse;
 import me.larp.client.module.impl.toggle.movement.Speed;
 import me.larp.client.module.impl.toggle.movement.Sprint;
 import me.larp.client.module.impl.toggle.movement.Step;
@@ -205,6 +206,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Step());
     register(new Sprint());
     register(new TargetStrafe());
+    register(new Confuse());
     register(new Timer());
     register(new Debug());
 
