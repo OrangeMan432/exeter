@@ -18,6 +18,7 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTrap;
 import me.friendly.exeter.module.impl.toggle.combat.AutoWeb;
+import me.friendly.exeter.module.impl.toggle.combat.AutoXP;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.BlockLag;
 import me.friendly.exeter.module.impl.toggle.combat.CrystalAura;
@@ -41,6 +42,7 @@ import me.friendly.exeter.module.impl.toggle.movement.Jesus;
 import me.friendly.exeter.module.impl.toggle.movement.LongJump;
 import me.friendly.exeter.module.impl.toggle.movement.NoBedStep;
 import me.friendly.exeter.module.impl.toggle.movement.NoFall;
+import me.friendly.exeter.module.impl.toggle.movement.NoSlow;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
@@ -71,6 +73,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AnchorAura());
     register(new AutoArmor());
     register(new AutoWeb());
+    register(new AutoXP());
     register(new BlockLag());
     register(new SelfTrap());
     register(new HoleFill());
@@ -99,6 +102,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new LongJump());
     register(new ElytraFly());
     register(new NoFall());
+    register(new NoSlow());
     register(new NoBedStep());
     register(new Step());
     register(new Sprint());
@@ -131,6 +135,15 @@ public final class ModuleManager extends ListRegistry<Module> {
         ExeterConfig.getInstance().saveAll();
       }
     };
+  }
+
+  public <T extends Module> T getModule(Class<T> clazz) {
+    for (Module module : registry) {
+      if (clazz.isInstance(module)) {
+        return clazz.cast(module);
+      }
+    }
+    return null;
   }
 
   public Module getModuleByAlias(String alias) {

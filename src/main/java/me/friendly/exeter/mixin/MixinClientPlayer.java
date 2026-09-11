@@ -4,12 +4,16 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.MotionUpdateEvent;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.module.Module;
+import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.movement.NoSlow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = LocalPlayer.class)
 public class MixinClientPlayer {
@@ -32,6 +36,14 @@ public class MixinClientPlayer {
   @Inject(method = "onUpdateWalkingPlayer", at = @At("RETURN"))
   public void onMotionUpdateReturn(CallbackInfo info) {
     dispatchMotionUpdate(Stage.POST);
+  }
+
+  @Inject(method = "isSlowDueToUsingItem", at = @At("HEAD"), cancellable = true)
+  private void onIsSlowDueToUsingItem(CallbackInfoReturnable<Boolean> info) {
+    Module module = Exeter.getInstance().getModuleManager().getModule(NoSlow.class);
+    if (module instanceof ToggleableModule toggle && toggle.isRunning()) {
+      info.setReturnValue(false);
+    }
   }
 
   private void dispatchMotionUpdate(Stage stage) {

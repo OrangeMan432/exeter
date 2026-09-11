@@ -40,6 +40,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
 | `AutoEat` | Eats food when hungry, gapples first when low on HP. |
 | `AutoPot` | Automatically throws healing, swiftness, and debuff splash potions. Friend-aware, packet cleanup on death. |
+| `AutoXP` | Throws XP bottles looking down for mending. |
 | `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/SkidClient/AutoGear.json`. |
 | `AutoCart` | Minecart-based combat automation. |
 | `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
@@ -66,6 +67,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `ElytraFly` | Boosted elytra flight with pitch steering and auto takeoff. |
 | `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
+| `NoSlow` | Removes eating/drinking slowdown via LocalPlayer mixin. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
 | `TargetStrafe` | Orbits targets at range with radial correction. |
 | `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
