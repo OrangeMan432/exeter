@@ -42,7 +42,8 @@ public class NoBedStep extends ToggleableModule {
 
   private void onTick() {
     if (minecraft.player == null) return;
-    Module stepModule = Exeter.getInstance().getModuleManager().getModuleByAlias("step");
+    Module stepModule =
+        Exeter.getInstance().getModuleManager().getModule(Step.class);
     boolean stepRunning = stepModule instanceof ToggleableModule t && t.isRunning();
     if (stepRunning) return;
     updateStep();

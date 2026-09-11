@@ -79,6 +79,17 @@ public class AutoCart extends ToggleableModule {
   }
 
   @Override
+  protected void onDisable() {
+    super.onDisable();
+    // Never leave a silent swap dangling: listeners stop, so the pending restore would not fire.
+    if (swapPending) {
+      PlayerUtil.swapBack();
+      swapPending = false;
+    }
+    isLighting = false;
+  }
+
+  @Override
   public String getTag() {
     return String.format("%d", cartsPlaced);
   }

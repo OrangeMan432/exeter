@@ -80,8 +80,8 @@ Fabric 26.2 Minecraft client mod. Branch `skid` tracks `origin/skid` on
 
 ## Workflow
 
-- Work on `skid`; commit + push only when asked. Commit messages look like
-  `skid: <what changed>`.
+- Work on `skid`; commit and push to `origin/skid` freely as work lands.
+  Commit messages look like `skid: <what changed>`.
 - README.md documents the real module roster — update its tables when adding
   modules. Credits section lists every client code was ported from; extend it.
 - Reference sources live outside the repo in the opencode temp dir
