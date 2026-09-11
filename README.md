@@ -42,6 +42,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/SkidClient/AutoGear.json`. |
 | `AutoCart` | Minecart-based combat automation. |
 | `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
+| `BlockLag` | Shoreline-pattern burrow: rubberbands you inside obsidian. |
 | `Criticals` | Shoreline packet patterns (PACKET chain + GRIM mode) on 26.2 attack packets. |
 
 ### Miscellaneous
@@ -49,6 +50,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `AutoItemDupe` | Recipe-book wooden-button dupe. Resolves the `RecipeDisplayId` from the client recipe book and fires `ServerboundPlaceRecipePacket`. Server-specific, not magic. |
+| `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
+| `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
 
 ### Movement
 
@@ -62,6 +65,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
+| `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
+| `Jesus` | Walk on water, sneak to dive. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World
