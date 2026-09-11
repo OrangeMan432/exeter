@@ -91,6 +91,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Scaffold` | Bridging and towering with block swap. |
 | `Spider` | Wall climbing on contact. |
 | `AntiVoid` | Void catch with drift-back and auto-disable. |
+| `BoatFly` | Directional boat flight with vertical keys. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World

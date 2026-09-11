@@ -63,6 +63,7 @@ import me.larp.client.module.impl.toggle.movement.SafeWalk;
 import me.larp.client.module.impl.toggle.movement.Scaffold;
 import me.larp.client.module.impl.toggle.movement.Spider;
 import me.larp.client.module.impl.toggle.movement.AntiVoid;
+import me.larp.client.module.impl.toggle.movement.BoatFly;
 import me.larp.client.module.impl.toggle.movement.Speed;
 import me.larp.client.module.impl.toggle.movement.Sprint;
 import me.larp.client.module.impl.toggle.movement.Step;
@@ -167,6 +168,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Scaffold());
     register(new Spider());
     register(new AntiVoid());
+    register(new BoatFly());
     register(new NoBedStep());
     register(new Step());
     register(new Sprint());
