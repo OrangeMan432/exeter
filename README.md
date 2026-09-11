@@ -75,6 +75,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
 | `FastFall` | Falls faster than vanilla for quick drops. |
 | `Jesus` | Walk on water, sneak to dive. |
+| `Parkour` | 6b6t-pattern auto ledge jumps. |
+| `SafeWalk` | 6b6t-pattern edge stop. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World
@@ -89,6 +91,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor`, `EatTimer` | Client UI (Exeter). |
+| `HoleESP` | Nicotine-pattern 3D hole outlines on the 26.2 render pipeline. |
 
 ## Controls
 
@@ -116,6 +119,8 @@ Settings persist to a Gson JSON config (`friends.json` lives alongside the clien
 - **Future** (2.9 patterns: AutoCrystal settings, AntiWeakness, Lethal) — PvP design reference.
 - **RusherHack-style** movement design reference.
 - **Meteor** (open source) — aura cross-check (walls-range, cooldown).
+- **Nicotine** (`tranarchy/nicotine`, GPL-3.0) — 26.x 3D render pipeline reference.
+- **6b6t AnarchyClient** (`6b6t/AnarchyClient`, MIT) — Parkour/SafeWalk patterns.
 
 ## Disclaimer
 
