@@ -18,6 +18,10 @@ Fabric 26.2 Minecraft client mod. Branch `skid` tracks `origin/skid` on
 - `compileJava` rewrites `HASH`/`BUILD`/`DIRTY` inside
   `src/main/java/me/larp/client/core/Larp.java` on every compile. A dirty
   `Larp.java` after building is expected, not a mistake.
+- Prism refresh: copy `build/libs/larp-client-1.0.jar` to
+  `~/Library/Application Support/PrismLauncher/instances/26.2/minecraft/mods/`,
+  verify with `unzip -t`, and NEVER copy while the game is running (the JVM
+  memory-maps the jar; replacing it mid-session corrupts class reads).
 - CI (`.github/workflows/gradle.yml`) is stale (JDK 11, `main` branch). Do not
   trust it; verify locally.
 - `format` task exists (google-java-format, downloads its own jar on first run).
