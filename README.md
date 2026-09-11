@@ -117,9 +117,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 Modules are toggleable, bindable, and configurable through the ClickGui (Right Shift to open). Each
 module has a settings panel for its properties. The GUI has two styles (Classic panels, Modern
 window with sidebar, search, and inline settings) switchable in the ClickGui module settings.
-Core modules ship with default keybinds (KillAura R, CrystalAura C, Surround V, AutoTotem G,
-Sprint X, Speed H, Step B, AutoArmor O, BedAura K, AnchorAura P, NoFall N, Scaffold U,
-ElytraFly J) — rebind freely, configs persist per profile (`.profile save/load`).
+Bind everything yourself in-game; configs and profiles persist per profile (`.profile save/load`).
 
 ## Building
 

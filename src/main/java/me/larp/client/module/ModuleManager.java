@@ -179,21 +179,6 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindByLabel("ClickGui")
         .setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
-    // Default binds for the core kit. Saved configs override these on load.
-    bind("KillAura", GLFW.GLFW_KEY_R);
-    bind("CrystalAura", GLFW.GLFW_KEY_C);
-    bind("Surround", GLFW.GLFW_KEY_V);
-    bind("AutoTotem", GLFW.GLFW_KEY_G);
-    bind("Sprint", GLFW.GLFW_KEY_X);
-    bind("Speed", GLFW.GLFW_KEY_H);
-    bind("Step", GLFW.GLFW_KEY_B);
-    bind("AutoArmor", GLFW.GLFW_KEY_O);
-    bind("BedAura", GLFW.GLFW_KEY_K);
-    bind("AnchorAura", GLFW.GLFW_KEY_P);
-    bind("NoFall", GLFW.GLFW_KEY_N);
-    bind("Scaffold", GLFW.GLFW_KEY_U);
-    bind("ElytraFly", GLFW.GLFW_KEY_J);
-
     new Config("module_configurations") {
 
       @Override
@@ -206,13 +191,6 @@ public final class ModuleManager extends ListRegistry<Module> {
         LarpConfig.getInstance().saveAll();
       }
     };
-  }
-
-  private void bind(String label, int key) {
-    var keybind = Larp.getInstance().getKeybindManager().getKeybindByLabel(label);
-    if (keybind != null && keybind.getKey() == 0) {
-      keybind.setKey(key);
-    }
   }
 
   public <T extends Module> T getModule(Class<T> clazz) {    for (Module module : registry) {

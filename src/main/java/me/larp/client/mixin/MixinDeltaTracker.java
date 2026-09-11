@@ -1,24 +1,25 @@
 package me.larp.client.mixin;
 
 import net.minecraft.client.DeltaTracker;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(targets = "net.minecraft.client.DeltaTracker$Timer")
-public interface MixinDeltaTracker {
+public abstract class MixinDeltaTracker {
 
-  @Mutable
-  @Accessor("msPerTick")
-  void setMsPerTick(float msPerTick);
+  @Mutable @Final @Shadow private float msPerTick;
 
-  @Accessor("msPerTick")
-  float getMsPerTick();
+  public void setMsPerTick(float msPerTick) {
+    this.msPerTick = msPerTick;
+  }
 
-  @Accessor("deltaTicks")
-  float getDeltaTicks();
+  public float getMsPerTick() {
+    return this.msPerTick;
+  }
 
-  static MixinDeltaTracker of(DeltaTracker timer) {
+  public static MixinDeltaTracker of(DeltaTracker timer) {
     return (MixinDeltaTracker) timer;
   }
 }
