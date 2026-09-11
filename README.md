@@ -32,6 +32,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AntiRegear` | Lemon-pattern shulker and ender chest breaker. |
 | `Surround` | Shoreline-pattern obsidian feet trap plus Lemon support blocks, Anti CEV head cover, and pause on eat. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |
 | `AutoTrap` | Cages targets in obsidian (feet + head + top). |
+| `AutoSelfFill` | Lemon-pattern self hole seal with block choice. |
+| `CrystalGuard` | Lemon-pattern cev defense: breaks crystals on you. |
 | `SelfTrap` | Fully cages yourself in obsidian (feet + head + top). |
 | `HoleFill` | Fills holes near enemies with obsidian, proximity mode included. |
 | `AutoWeb` | Webs targets feet-first. |

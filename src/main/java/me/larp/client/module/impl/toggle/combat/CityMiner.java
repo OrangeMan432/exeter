@@ -30,6 +30,8 @@ public class CityMiner extends ToggleableModule {
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Mine Range");
   private final NumberProperty<Integer> delay =
       new NumberProperty<Integer>(0, 0, 20, "Delay");
+  private final Property<Boolean> doubleMine =
+      new Property<Boolean>(true, "Double Mine");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -42,7 +44,7 @@ public class CityMiner extends ToggleableModule {
     super("CityMiner", new String[] {"cityminer", "city-miner", "surroundbreaker"}, 0xFF0000,
         ModuleType.COMBAT);
     setDescription("Mines open enemy surrounds and traps.");
-    offerProperties(targetRange, mineRange, delay, rotate, autoSwitch, swingHand);
+    offerProperties(targetRange, mineRange, delay, doubleMine, rotate, autoSwitch, swingHand);
     this.listeners.add(
         new Listener<TickEvent>("cityminer_tick") {
           @Override
@@ -89,12 +91,14 @@ public class CityMiner extends ToggleableModule {
       PlayerUtil.setRotation(PlayerUtil.getYaw(current), PlayerUtil.getPitch(current));
     }
     Direction face = bestFace(current);
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, current, face));
-    minecraft.getConnection().send(
-        new ServerboundPlayerActionPacket(
-            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, current, face));
+    minePackets(current, face);
+    // Lemon-pattern double mine: feet and head slots together.
+    if (doubleMine.getValue()) {
+      BlockPos second = current.above();
+      if (isBreakable(second) && PlayerUtil.inRange(second, mineRange.getValue())) {
+        minePackets(second, bestFace(second));
+      }
+    }
     if (swingHand.getValue()) {
       PlayerUtil.swingHand();
     }
@@ -103,6 +107,15 @@ public class CityMiner extends ToggleableModule {
     }
     setTag("CityMiner [" + minecraft.level.getBlockState(current).getBlock().getName().getString() + "]");
     lastMineTick = tickCounter;
+  }
+
+  private void minePackets(BlockPos pos, Direction face) {
+    minecraft.getConnection().send(
+        new ServerboundPlayerActionPacket(
+            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, face));
+    minecraft.getConnection().send(
+        new ServerboundPlayerActionPacket(
+            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, face));
   }
 
   private BlockPos pickBlock(Player target) {
