@@ -4,16 +4,23 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
-/** Spoofs a micro-jump on every attack packet so hits land as criticals. */
+/**
+ * Shoreline-pattern criticals: PACKET mode sends the 0.05/0/0.03/0 offset chain,
+ * GRIM mode nudges position while airborne. Skips crystals like Shoreline does.
+ */
 public class Criticals extends ToggleableModule {
 
-  private final NumberProperty<Double> offset =
-      new NumberProperty<Double>(0.0625, 0.01, 0.2, "Offset");
+  public enum Mode {
+    PACKET,
+    GRIM
+  }
+
+  private final EnumProperty<Mode> mode = new EnumProperty<Mode>(Mode.PACKET, "Mode");
   private final Property<Boolean> onlyWeapon =
       new Property<Boolean>(true, "Only Weapon");
 
@@ -23,20 +30,35 @@ public class Criticals extends ToggleableModule {
         public void call(PacketEvent event) {
           if (!(event.getPacket() instanceof ServerboundAttackPacket)) return;
           if (minecraft.player == null || minecraft.level == null) return;
-          if (!minecraft.player.onGround()) return;
           if (minecraft.player.isInWater() || minecraft.player.isInLava()) return;
           if (minecraft.player.isFallFlying()) return;
+          if (minecraft.player.isPassenger()) return;
           if (minecraft.player.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS)) return;
           if (onlyWeapon.getValue() && !isWeaponHeld()) return;
 
           double x = minecraft.player.getX();
           double y = minecraft.player.getY();
           double z = minecraft.player.getZ();
-          double off = offset.getValue();
-          // Vanilla crit check needs falling without touching ground: up then down.
+
+          if (mode.getValue() == Mode.GRIM) {
+            if (minecraft.player.onGround()) return;
+            minecraft
+                .getConnection()
+                .send(new ServerboundMovePlayerPacket.Pos(x, y - 0.000001, z, false, false));
+            return;
+          }
+
+          if (!minecraft.player.onGround()) return;
+          // Shoreline PACKET chain.
           minecraft
               .getConnection()
-              .send(new ServerboundMovePlayerPacket.Pos(x, y + off, z, false, false));
+              .send(new ServerboundMovePlayerPacket.Pos(x, y + 0.05, z, false, false));
+          minecraft
+              .getConnection()
+              .send(new ServerboundMovePlayerPacket.Pos(x, y, z, false, false));
+          minecraft
+              .getConnection()
+              .send(new ServerboundMovePlayerPacket.Pos(x, y + 0.03, z, false, false));
           minecraft
               .getConnection()
               .send(new ServerboundMovePlayerPacket.Pos(x, y, z, false, false));
@@ -45,8 +67,8 @@ public class Criticals extends ToggleableModule {
 
   public Criticals() {
     super("Criticals", new String[] {"criticals", "crits"}, 0xFF0000, ModuleType.COMBAT);
-    setDescription("Forces critical hits by spoofing fall distance on attacks.");
-    offerProperties(offset, onlyWeapon);
+    setDescription("Forces critical hits with Shoreline packet patterns.");
+    offerProperties(mode, onlyWeapon);
     this.listeners.add(packetListener);
   }
 

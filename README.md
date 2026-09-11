@@ -28,16 +28,17 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | --- | --- |
 | `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
 | `CrystalAura` | Places and breaks end crystals around the nearest player. Place/break delays, rotate, auto-switch, lethal fast-path on low-HP targets. |
-| `Surround` | Places obsidian around your feet to block crystals. Auto-switch, rotate, blocks-per-tick, auto-disable. |
+| `Surround` | Shoreline-pattern obsidian feet trap. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |
+| `AutoTrap` | Cages targets in obsidian (feet + head + top). |
 | `BedAura` | Automatically places and breaks beds for combat. Rotate, auto-switch, place/break delays. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
-| `AutoTotem` | Keeps a Totem of Undying in your offhand. Lethal fast-path under Min Health, cursor guard, gapple swap-back, live totem count tag. |
+| `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
 | `AutoEat` | Eats food when hungry, gapples first when low on HP. |
 | `AutoPot` | Automatically throws healing, swiftness, and debuff splash potions. Friend-aware, packet cleanup on death. |
 | `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/SkidClient/AutoGear.json`. |
 | `AutoCart` | Minecart-based combat automation. |
 | `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
-| `Criticals` | Spoofs a micro-jump on 26.2 attack packets so hits land as criticals. |
+| `Criticals` | Shoreline packet patterns (PACKET chain + GRIM mode) on 26.2 attack packets. |
 
 ### Miscellaneous
 
@@ -55,6 +56,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Velocity` | Scales knockback by Horizontal/Vertical percent with optional explosion cancel and jump reset. |
 | `ElytraFly` | Boosted elytra flight with pitch steering and auto takeoff. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
+| `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World
