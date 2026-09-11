@@ -73,6 +73,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoTool` | Swaps to the fastest hotbar tool while mining. |
 | `PingSpoof` | Delays keepalives for fake low ping. |
 | `CoordLogger` | Meteor-Rejects-pattern intel: logs player/wolf teleports and wither/end-portal/dragon world events with coords. |
+| `AutoExtinguish` | Meteor-Rejects-pattern fire defense: packet-breaks fire around you and water-buckets yourself when burning. |
 
 ### Movement
 
