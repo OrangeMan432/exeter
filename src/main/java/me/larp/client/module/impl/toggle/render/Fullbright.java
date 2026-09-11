@@ -1,5 +1,8 @@
 package me.larp.client.module.impl.toggle.render;
 
+import me.larp.api.event.Listener;
+import me.larp.api.event.Stage;
+import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
 import me.larp.client.properties.EnumProperty;
@@ -26,6 +29,14 @@ public class Fullbright extends ToggleableModule {
     super("Fullbright", new String[] {"fullbright", "bright", "fb"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Maximum brightness everywhere.");
     offerProperties(mode);
+    this.listeners.add(
+        new Listener<TickEvent>("fullbright_tick") {
+          @Override
+          public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
+            Fullbright.this.onTick();
+          }
+        });
   }
 
   @Override
@@ -35,15 +46,26 @@ public class Fullbright extends ToggleableModule {
     if (mode.getValue() != Mode.NIGHT_VISION) {
       try {
         savedGamma = minecraft.options.gamma().get();
-        minecraft.options.gamma().set(16.0);
+        // Option validation rejects anything above max: clamp to it.
+        minecraft.options.gamma().set(1.0);
       } catch (Exception e) {
         // options unavailable: night vision below still applies
       }
     }
-    if (mode.getValue() != Mode.GAMMA) {
-      minecraft.player.addEffect(
-          new MobEffectInstance(MobEffects.NIGHT_VISION, -1, 0, false, false));
-    }
+    applyNightVision();
+  }
+
+  private void onTick() {
+    if (minecraft.player == null) return;
+    if (mode.getValue() == Mode.GAMMA) return;
+    // Server entity sync strips client-added effects: re-apply every tick.
+    applyNightVision();
+  }
+
+  private void applyNightVision() {
+    if (minecraft.player.hasEffect(MobEffects.NIGHT_VISION)) return;
+    minecraft.player.addEffect(
+        new MobEffectInstance(MobEffects.NIGHT_VISION, -1, 0, false, false));
   }
 
   @Override

@@ -44,7 +44,10 @@ public class ElytraFly extends ToggleableModule {
   private final NumberProperty<Double> drag = new NumberProperty<Double>(0.99, 0.9, 1.0, "Drag");
   private final NumberProperty<Double> lift = new NumberProperty<Double>(0.06, 0.0, 0.3, "Lift");
   private final Property<Boolean> pitchSteer = new Property<Boolean>(true, "Pitch Steer");
-  private final Property<Boolean> autoTakeoff = new Property<Boolean>(true, "Auto Takeoff");
+  private final Property<Boolean> autoTakeoff =
+      new Property<Boolean>(true, "Auto Takeoff");
+  private final Property<Boolean> autoEquip =
+      new Property<Boolean>(true, "Auto Equip");
   private final NumberProperty<Integer> deployDelay =
       new NumberProperty<Integer>(10, 0, 40, "Deploy Delay");
   private final Property<Boolean> durabilityGuard = new Property<Boolean>(true, "Durability Guard");
@@ -91,6 +94,7 @@ public class ElytraFly extends ToggleableModule {
         lift,
         pitchSteer,
         autoTakeoff,
+        autoEquip,
         deployDelay,
         durabilityGuard,
         minDurability,
@@ -138,6 +142,22 @@ public class ElytraFly extends ToggleableModule {
       }
     }
     trackSpeed();
+
+    // Auto-equip an elytra from inventory so takeoff never fails on armor.
+    if (autoEquip.getValue() && !hasElytra()) {
+      for (int i = 9; i < 45; i++) {
+        ItemStack stack = minecraft.player.containerMenu.getSlot(i).getItem();
+        if (!stack.isEmpty() && stack.is(Items.ELYTRA)) {
+          minecraft.gameMode.handleContainerInput(
+              minecraft.player.containerMenu.containerId,
+              i,
+              0,
+              net.minecraft.world.inventory.ContainerInput.QUICK_MOVE,
+              minecraft.player);
+          break;
+        }
+      }
+    }
 
     if (mode.getValue() == Mode.BOUNCE) {
       tickBounce();
