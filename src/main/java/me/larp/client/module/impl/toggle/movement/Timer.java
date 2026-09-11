@@ -46,8 +46,8 @@ public class Timer extends ToggleableModule {
   private void setMsPerTick(float value) {
     try {
       Object tracker = minecraft.getDeltaTracker();
-      if (tracker != null) {
-        MixinDeltaTracker.of((net.minecraft.client.DeltaTracker) tracker).setMsPerTick(value);
+      if (tracker instanceof MixinDeltaTracker mixin) {
+        mixin.setMsPerTick(value);
       }
     } catch (Exception e) {
       // Timer internals differ: fail silent, never crash the tick loop.

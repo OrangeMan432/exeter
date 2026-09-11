@@ -1,6 +1,5 @@
 package me.larp.client.mixin;
 
-import net.minecraft.client.DeltaTracker;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -17,9 +16,5 @@ public abstract class MixinDeltaTracker {
 
   public float getMsPerTick() {
     return this.msPerTick;
-  }
-
-  public static MixinDeltaTracker of(DeltaTracker timer) {
-    return (MixinDeltaTracker) timer;
   }
 }
