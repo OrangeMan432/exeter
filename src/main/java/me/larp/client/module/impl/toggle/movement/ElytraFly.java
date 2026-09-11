@@ -50,7 +50,9 @@ public class ElytraFly extends ToggleableModule {
   private final Property<Boolean> pitchSteer =
       new Property<Boolean>(true, "Pitch Steer");
   private final Property<Boolean> autoTakeoff =
-      new Property<Boolean>(false, "Auto Takeoff");
+      new Property<Boolean>(true, "Auto Takeoff");
+  private final NumberProperty<Integer> deployDelay =
+      new NumberProperty<Integer>(10, 0, 40, "Deploy Delay");
   private final Property<Boolean> durabilityGuard =
       new Property<Boolean>(true, "Durability Guard");
   private final NumberProperty<Integer> minDurability =
@@ -72,6 +74,8 @@ public class ElytraFly extends ToggleableModule {
   private final NumberProperty<Integer> rocketCooldown =
       new NumberProperty<Integer>(3500, 500, 10000, "Rocket Cooldown");
 
+  private int tickCounter;
+  private int deployTick = -100;
   private final double[] speedSamples = new double[10];
   private int speedSampleIndex;
   private double speedAvg;
@@ -88,9 +92,9 @@ public class ElytraFly extends ToggleableModule {
     super("ElytraFly", new String[] {"elytrafly", "elytra-fly"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Combatant-pattern elytra engine.");
     offerProperties(
-        speed, vertical, drag, lift, pitchSteer, autoTakeoff, durabilityGuard, minDurability,
-        cruiseAltitude, stallSpeed, momentumSpeed, diveAngle, climbAngle, pitchStep,
-        bounceDelay, rocketCooldown, mode);
+        speed, vertical, drag, lift, pitchSteer, autoTakeoff, deployDelay, durabilityGuard,
+        minDurability, cruiseAltitude, stallSpeed, momentumSpeed, diveAngle, climbAngle,
+        pitchStep, bounceDelay, rocketCooldown, mode);
     this.listeners.add(
         new Listener<TickEvent>("elytrafly_tick") {
           @Override
@@ -101,12 +105,20 @@ public class ElytraFly extends ToggleableModule {
         });
   }
 
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    tickCounter = 0;
+    deployTick = -100;
+  }
+
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
     if (minecraft.player.isPassenger()) return;
     if (minecraft.player.getAbilities().instabuild) return;
     if (minecraft.player.hasEffect(MobEffects.LEVITATION)) return;
+    tickCounter++;
 
     // BlackOut-pattern durability guard: never break the elytra mid-flight.
     if (durabilityGuard.getValue()) {
@@ -127,12 +139,19 @@ public class ElytraFly extends ToggleableModule {
 
     if (!minecraft.player.isFallFlying()) {
       if (autoTakeoff.getValue()
-          && minecraft.player.isSprinting()
           && !minecraft.player.onGround()
+          && !minecraft.player.isInWater()
+          && !minecraft.player.isInLava()
           && minecraft.player.getDeltaMovement().y < -0.1
           && hasElytra()) {
-        minecraft.player.startFallFlying();
+        deploy();
       }
+      return;
+    }
+
+    // Deploy grace: the server needs a few ticks to accept fall-flying state.
+    // Boosting earlier is what causes the rubberband.
+    if (tickCounter - deployTick < deployDelay.getValue()) {
       return;
     }
 
@@ -144,6 +163,17 @@ public class ElytraFly extends ToggleableModule {
       case GLIDE -> tickGlide();
       case BOUNCE -> tickBounce();
     }
+  }
+
+  /** Starts fall flight client + server side and stamps the deploy tick. */
+  private void deploy() {
+    minecraft.player.startFallFlying();
+    minecraft.getConnection().send(
+        new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+            minecraft.player,
+            net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                .START_FALL_FLYING));
+    deployTick = tickCounter;
   }
 
   /** Pitch steering with jump-key boost. */
@@ -271,12 +301,7 @@ public class ElytraFly extends ToggleableModule {
       minecraft.player.jumpFromGround();
       sinceJump = 0;
     } else if (sinceJump > bounceDelay.getValue() && !minecraft.player.isFallFlying()) {
-      minecraft.player.startFallFlying();
-      minecraft.getConnection().send(
-          new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
-              minecraft.player,
-              net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
-                  .START_FALL_FLYING));
+      deploy();
     }
     sinceJump++;
     sinceFalling = minecraft.player.isFallFlying() ? 0 : sinceFalling + 1;
