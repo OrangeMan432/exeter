@@ -35,6 +35,8 @@ public class HolePush extends ToggleableModule {
 
   private int tickCounter;
   private int lastActionTick = -100;
+  private BlockPos pendingPower;
+  private int pendingPowerTick = -100;
 
   public HolePush() {
     super("HolePush", new String[] {"holepush", "hole-push"}, 0xFF0000, ModuleType.COMBAT);
@@ -55,12 +57,28 @@ public class HolePush extends ToggleableModule {
     super.onEnable();
     tickCounter = 0;
     lastActionTick = -100;
+    pendingPower = null;
+    pendingPowerTick = -100;
   }
 
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
     tickCounter++;
+
+    // Stage 2: power the placed piston after the server has seen it extend.
+    if (pendingPower != null) {
+      if (tickCounter - pendingPowerTick < delay.getValue()) return;
+      BlockPos pos = pendingPower;
+      pendingPower = null;
+      if (minecraft.level.getBlockState(pos).getBlock() == Blocks.PISTON
+          || minecraft.level.getBlockState(pos).getBlock() == Blocks.STICKY_PISTON) {
+        power(pos);
+      }
+      lastActionTick = tickCounter;
+      return;
+    }
+
     if (tickCounter - lastActionTick < delay.getValue()) return;
 
     Player target = findTarget();
@@ -78,7 +96,8 @@ public class HolePush extends ToggleableModule {
       if (!PlayerUtil.isSolid(pistonPos.below())) continue;
       if (!PlayerUtil.inRange(pistonPos, placeRange.getValue())) continue;
       placePiston(pistonPos, dir, pistonSlot);
-      power(pistonPos);
+      pendingPower = pistonPos;
+      pendingPowerTick = tickCounter;
       lastActionTick = tickCounter;
       return;
     }

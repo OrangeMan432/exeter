@@ -27,6 +27,7 @@ public class SelfBed extends ToggleableModule {
   private int tickCounter;
   private int lastPlaceTick;
   private int lastUseTick;
+  private int lastPhaseTick;
   private int phase;
   private boolean hasBed;
 
@@ -51,6 +52,7 @@ public class SelfBed extends ToggleableModule {
     tickCounter = 0;
     lastPlaceTick = -100;
     lastUseTick = -100;
+    lastPhaseTick = -100;
     phase = 0;
     hasBed = false;
     super.onEnable();
@@ -59,6 +61,8 @@ public class SelfBed extends ToggleableModule {
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.player.isDeadOrDying())
       return;
+    // Beds detonate outside the Overworld: never run there.
+    if (minecraft.level.dimension() != net.minecraft.world.level.Level.OVERWORLD) return;
 
     tickCounter++;
 
@@ -86,6 +90,7 @@ public class SelfBed extends ToggleableModule {
       case 0:
         if (hasBed) {
           phase = 1;
+          lastPhaseTick = tickCounter;
           return;
         }
 
@@ -96,6 +101,7 @@ public class SelfBed extends ToggleableModule {
         placeBed(supportPos, footPos, slot);
         lastPlaceTick = tickCounter;
         phase = 1;
+        lastPhaseTick = tickCounter;
         break;
 
       case 1:
@@ -104,7 +110,7 @@ public class SelfBed extends ToggleableModule {
           return;
         }
 
-        if (tickCounter - lastPlaceTick < useDelay.getValue()) return;
+        if (tickCounter - lastPhaseTick < useDelay.getValue()) return;
 
         useBed(usePos, slot);
         lastUseTick = tickCounter;

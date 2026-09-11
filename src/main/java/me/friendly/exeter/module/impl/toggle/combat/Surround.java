@@ -38,6 +38,12 @@ public class Surround extends ToggleableModule {
       new NumberProperty<Integer>(4, 1, 8, "Blocks Per Tick");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
+  private final Property<Boolean> support =
+      new Property<Boolean>(true, "Support");
+  private final Property<Boolean> antiCev =
+      new Property<Boolean>(true, "Anti CEV");
+  private final Property<Boolean> pauseEat =
+      new Property<Boolean>(false, "Pause On Eat");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
   private static final int[][] OFFSETS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -49,7 +55,8 @@ public class Surround extends ToggleableModule {
     super("Surround", new String[] {"surround", "self-trap-feet"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Shoreline-pattern obsidian feet trap.");
     offerProperties(
-        rotate, autoSwitch, center, attack, jumpDisable, blocksPerTick, placeRange, swingHand);
+        rotate, autoSwitch, center, attack, jumpDisable, blocksPerTick, placeRange, support,
+        antiCev, pauseEat, swingHand);
     this.listeners.add(
         new Listener<TickEvent>("surround_tick") {
           @Override
@@ -86,6 +93,7 @@ public class Surround extends ToggleableModule {
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
+    if (pauseEat.getValue() && minecraft.player.isUsingItem()) return;
     if (jumpDisable.getValue() && minecraft.player.getY() > prevY + 0.5) {
       setRunning(false);
       return;
@@ -96,12 +104,29 @@ public class Surround extends ToggleableModule {
 
     surround.clear();
     surround.addAll(collectPositions());
+    // Lemon-pattern Anti CEV: keep a cover block above your head.
+    if (antiCev.getValue()) {
+      BlockPos cover = minecraft.player.blockPosition().above(2);
+      if (PlayerUtil.isAirOrReplaceable(cover)
+          && PlayerUtil.inRange(cover, placeRange.getValue())) {
+        surround.add(cover);
+      }
+    }
 
     int placed = 0;
     for (BlockPos pos : surround) {
       if (placed >= blocksPerTick.getValue()) break;
       if (!PlayerUtil.isAirOrReplaceable(pos)) continue;
       if (!PlayerUtil.inRange(pos, placeRange.getValue())) continue;
+      // Lemon-pattern support: seat the floor block first when it is missing.
+      if (support.getValue()
+          && !PlayerUtil.isSolid(pos.below())
+          && PlayerUtil.isAirOrReplaceable(pos.below())
+          && PlayerUtil.inRange(pos.below(), placeRange.getValue())) {
+        attackPlace(pos.below(), obbySlot);
+        placed++;
+        if (placed >= blocksPerTick.getValue()) break;
+      }
       attackPlace(pos, obbySlot);
       placed++;
     }

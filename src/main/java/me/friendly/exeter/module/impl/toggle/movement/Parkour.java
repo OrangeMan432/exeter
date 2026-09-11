@@ -56,8 +56,10 @@ public class Parkour extends ToggleableModule {
     BlockPos aheadFeet =
         new BlockPos(
             (int) Math.floor(ax), minecraft.player.blockPosition().getY(), (int) Math.floor(az));
-    // Ledge: air at feet ahead, but landing exists below.
+    // Ledge: air at feet AND head ahead (no fence/wall to smash into),
+    // but landing exists below.
     if (!PlayerUtil.isAirOrReplaceable(aheadFeet)) return;
+    if (!PlayerUtil.isAirOrReplaceable(aheadFeet.above())) return;
     boolean landing = false;
     for (int i = 1; i <= 3; i++) {
       if (PlayerUtil.isSolid(aheadFeet.below(i))) {

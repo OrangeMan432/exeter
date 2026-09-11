@@ -30,22 +30,20 @@ public class Jesus extends ToggleableModule {
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null) return;
     if (minecraft.player.isDeadOrDying()) return;
-    if (!minecraft.player.isInWater()) return;
+    if (!minecraft.player.isInWater() && !minecraft.player.isInLava()) return;
     if (minecraft.player.isShiftKeyDown()) {
       // Sneak to dive like vanilla.
       return;
     }
     if (minecraft.player.getDeltaMovement().y < 0.0) {
+      double hSpeed = Math.sqrt(
+          minecraft.player.getDeltaMovement().x * minecraft.player.getDeltaMovement().x
+              + minecraft.player.getDeltaMovement().z * minecraft.player.getDeltaMovement().z);
+      double boost = hSpeed < 0.3 && dip.getValue() ? 1.1 : 1.0;
       minecraft.player.setDeltaMovement(
-          minecraft.player.getDeltaMovement().x,
+          minecraft.player.getDeltaMovement().x * boost,
           0.12,
-          minecraft.player.getDeltaMovement().z);
-      if (dip.getValue()) {
-        minecraft.player.setDeltaMovement(
-            minecraft.player.getDeltaMovement().x * 1.1,
-            minecraft.player.getDeltaMovement().y,
-            minecraft.player.getDeltaMovement().z * 1.1);
-      }
+          minecraft.player.getDeltaMovement().z * boost);
     }
   }
 }

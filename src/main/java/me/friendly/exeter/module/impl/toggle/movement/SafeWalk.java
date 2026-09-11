@@ -54,6 +54,8 @@ public class SafeWalk extends ToggleableModule {
         new BlockPos(
             (int) Math.floor(ax), minecraft.player.blockPosition().getY(), (int) Math.floor(az));
     if (!PlayerUtil.isAirOrReplaceable(aheadFeet)) return;
+    // A wall at head height stops us anyway: only brake for real drops.
+    if (!PlayerUtil.isAirOrReplaceable(aheadFeet.above())) return;
     boolean landing = false;
     for (int i = 1; i <= 4; i++) {
       if (PlayerUtil.isSolid(aheadFeet.below(i))) {

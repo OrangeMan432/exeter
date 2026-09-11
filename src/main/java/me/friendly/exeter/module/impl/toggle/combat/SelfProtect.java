@@ -46,18 +46,24 @@ public class SelfProtect extends ToggleableModule {
     if (surround == null) return;
 
     boolean threatened = false;
+    boolean clear = true;
     for (Entity entity : minecraft.level.players()) {
       if (entity == minecraft.player || !entity.isAlive()) continue;
       if (!(entity instanceof Player)) continue;
-      if (minecraft.player.distanceTo(entity) <= enemyRange.getValue()) {
+      double dist = minecraft.player.distanceTo(entity);
+      if (dist <= enemyRange.getValue()) {
         threatened = true;
         break;
+      }
+      // Hysteresis: only release once NObODY is within range + 3.
+      if (dist <= enemyRange.getValue() + 3.0) {
+        clear = false;
       }
     }
 
     if (threatened && !surround.isRunning()) {
       surround.setRunning(true);
-    } else if (!threatened && release.getValue() && surround.isRunning()) {
+    } else if (!threatened && clear && release.getValue() && surround.isRunning()) {
       surround.setRunning(false);
     }
   }
