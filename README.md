@@ -39,6 +39,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoWeb` | Webs targets feet-first. |
 | `AutoArmor` | Shoreline-pattern armor manager for 26.2 component armor. Blast-priority scoring, durability gate, binding skip, elytra priority. |
 | `BedAura` | Automatically places and breaks beds for combat. BlackOut-style damage gates (MinDamage/MaxSelf), rotate, auto-switch, place/break delays. |
+| `AutoAnvil` | Lemon-pattern anvil drops with height control. |
+| `BlockHead` | Lemon-pattern multi-target head fills. |
 | `CevBreaker` | Lemon-pattern head-cover miner with damage-scored crystal seating. |
 | `CityMiner` | Logic-based surround breaker: sticks to one block, pickaxe swap, packet mine. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
