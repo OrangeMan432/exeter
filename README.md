@@ -101,6 +101,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `AutoShulker` | Automatically places and opens shulker boxes. Container blacklist honored, player-following target range. |
+| `FastPlace` | Shoreline-pattern cooldown-free placing with whitelist/blacklist. |
+| `Nuker` | Shoreline-pattern area breaker with flatten mode. |
 | `InstaMine` | Packet mine for instant soft-block breaks. |
 | `AutoMine` | Auto-breaks ores in range with tool swap. |
 | `SpeedMine` | Lemon-pattern targeted mining with pickaxe swap. |

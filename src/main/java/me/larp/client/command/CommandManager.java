@@ -16,7 +16,6 @@ import me.larp.client.command.impl.client.Modules;
 import me.larp.client.command.impl.client.Prefix;
 import me.larp.client.command.impl.client.Presets;
 import me.larp.client.command.impl.client.Profile;
-import me.larp.client.command.impl.client.GotoCommand;
 import me.larp.client.command.impl.client.Runtime;
 import me.larp.client.command.impl.client.ScreenShot;
 import me.larp.client.command.impl.client.Toggle;
@@ -57,7 +56,6 @@ public final class CommandManager extends ListRegistry<Command> {
     this.register(new ScreenShot());
     this.register(new Profile());
     this.register(new Wp());
-    this.register(new GotoCommand());
     this.registry.sort((cmd1, cmd2) -> cmd1.getAliases()[0].compareTo(cmd2.getAliases()[0]));
     Larp.getInstance()
         .getEventManager()
