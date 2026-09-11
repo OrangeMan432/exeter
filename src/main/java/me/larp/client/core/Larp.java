@@ -16,21 +16,17 @@ import me.larp.client.plugin.PluginManager;
 /**
  * Larp client for Fabric 26.2
  *
- * <p>Larp client. A client created by Friendly, for Minecraft version 1.8. It has been released
- * or leaked on that version. Gopro336 has obtained that version, and here, has reconstructed the
- * original source code. In this process, Gopro has also ported the client to his preferred version
- * and platform, Minecraft 26.2 Fabric. Furthermore, Gopro has done work to clean up the decompiled
- * code, and javadoc it.
+ * <p>Larp Client, an anarchy-oriented client rebuilt from the Exeter codebase
+ * for Minecraft 26.2 Fabric.
  *
- * @author Friendly
- * @author Gopro336
- * @version b24
+ * @author SirHumza
+ * @author orangeman432
  */
 public final class Larp {
   private static Larp instance = null;
   public static final String TITLE = "Larp Client";
-  public static final String HASH = "50db86fe1a5ebee1";
-  public static final String BUILD = "b25+36";
+  public static final String HASH = "4a46b01e792a845e";
+  public static final String BUILD = "b25+37";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
