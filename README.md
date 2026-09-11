@@ -27,7 +27,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | Module | Notes |
 | --- | --- |
 | `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
-| `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path. |
+| `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path, obby support placements, burst packets, existence validation, despawn sim. |
 | `AnchorAura` | BlackOut-pattern anchor engine: place, charge, detonate with MinPlace/MaxSelf/MinExplode gates. |
 | `AntiRegear` | Lemon-pattern shulker and ender chest breaker. |
 | `Surround` | Shoreline-pattern obsidian feet trap plus Lemon support blocks, Anti CEV head cover, and pause on eat. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |
@@ -87,6 +87,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Parkour` | 6b6t-pattern auto ledge jumps. |
 | `SafeWalk` | 6b6t-pattern edge stop. |
 | `Scaffold` | Bridging and towering with block swap. |
+| `Spider` | Wall climbing on contact. |
+| `AntiVoid` | Void catch with drift-back and auto-disable. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 
 ### World

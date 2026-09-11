@@ -20,6 +20,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -52,7 +54,10 @@ public class CrystalAura extends ToggleableModule {
   private final NumberProperty<Integer> maxAttacks =
       new NumberProperty<Integer>(2, 1, 10, "Max Attacks");
   private final Property<Boolean> setDead = new Property<Boolean>(true, "Set Dead");
-  private final Property<Boolean> pauseEat = new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> pauseEat =
+      new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> support =
+      new Property<Boolean>(true, "Support");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -79,7 +84,8 @@ public class CrystalAura extends ToggleableModule {
         existedTicks,
         maxAttacks,
         setDead,
-        pauseEat);
+        pauseEat,
+        support);
     this.listeners.add(
         new Listener<TickEvent>("crystalaura_tick") {
           @Override
@@ -135,9 +141,67 @@ public class CrystalAura extends ToggleableModule {
         PlayerUtil.findInHotbar(s -> !s.isEmpty() && s.getItem() == Items.END_CRYSTAL);
     if (crystalSlot == -1) return;
     BlockPos base = findBase(target);
-    if (base == null) return;
-    placeCrystal(base, crystalSlot);
+    if (base != null) {
+      placeCrystal(base, crystalSlot);
+      lastPlaceTick = tickCounter;
+      return;
+    }
+    // No ready base: seat an obsidian support so next tick has one.
+    if (support.getValue()) {
+      placeSupport(target);
+    }
+  }
+
+  /** Places obsidian where a future crystal base wants to be. */
+  private void placeSupport(Player target) {
+    int obbySlot = PlayerUtil.findInHotbar(CrystalAura::isObsidian);
+    if (obbySlot == -1) return;
+    BlockPos origin = target.blockPosition();
+    BlockPos best = null;
+    double bestScore = Double.MAX_VALUE;
+    for (int x = -3; x <= 3; x++) {
+      for (int y = -1; y <= 2; y++) {
+        for (int z = -3; z <= 3; z++) {
+          BlockPos pos = origin.offset(x, y, z);
+          if (!PlayerUtil.isAirOrReplaceable(pos)) continue;
+          if (!PlayerUtil.isSolid(pos.below())) continue;
+          if (!PlayerUtil.isAirOrReplaceable(pos.above())) continue;
+          if (!PlayerUtil.inRange(pos, placeRange.getValue())) continue;
+          double score = pos.distSqr(origin);
+          if (score < bestScore) {
+            bestScore = score;
+            best = pos;
+          }
+        }
+      }
+    }
+    if (best == null) return;
+    boolean needSwitch =
+        autoSwitch.getValue() && obbySlot != minecraft.player.getInventory().getSelectedSlot();
+    if (needSwitch) {
+      PlayerUtil.swapTo(obbySlot);
+    }
+    float yaw = minecraft.player.getYRot();
+    float pitch = minecraft.player.getXRot();
+    if (rotate.getValue()) {
+      PlayerUtil.setRotation(PlayerUtil.getYaw(best), PlayerUtil.getPitch(best));
+    }
+    PlayerUtil.clickNeighbor(best);
+    if (swingHand.getValue()) {
+      PlayerUtil.swingHand();
+    }
+    if (rotate.getValue()) {
+      PlayerUtil.restoreRotation(yaw, pitch);
+    }
+    if (needSwitch) {
+      PlayerUtil.swapBack();
+    }
     lastPlaceTick = tickCounter;
+  }
+
+  private static boolean isObsidian(ItemStack stack) {
+    if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem item)) return false;
+    return item.getBlock() == Blocks.OBSIDIAN;
   }
 
   private EndCrystal findCrystal() {
