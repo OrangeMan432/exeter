@@ -37,9 +37,14 @@ public final class Profile extends Command {
             : "Failed to save profile &e" + name + "&7.";
       }
       case "load" -> {
+        if (name.equalsIgnoreCase("5b5t") && !ProfileManager.list().contains("5b5t")) {
+          ProfileManager.apply5b5t();
+          return "Applied the &e5b5t&7 setup and saved it.";
+        }
         return ProfileManager.load(name)
             ? "Loaded profile &e" + name + "&7."
-            : "No such profile: &e" + name + "&7.";
+            : "No such profile: &e" + name + "&7. Saved: "
+                + String.join(", ", ProfileManager.list());
       }
       case "delete" -> {
         return ProfileManager.delete(name)
