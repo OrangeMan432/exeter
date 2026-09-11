@@ -62,6 +62,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `ShulkerDupe` | Techale-pattern 5b5t dupe (via Lambda): throw shulker, craft button, place stack, mine. Stand on a crafting table. |
 | `DiscordRPC` | Rich presence with your App ID, throttled to dodge rate limits. |
 | `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
+| `Announcer` | Public-chat pops, kills, joins, leaves with cooldown and style. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
 | `ChestStealer` | Loots chests and shulkers on a delay with auto-close. |
 | `AutoTool` | Swaps to the fastest hotbar tool while mining. |

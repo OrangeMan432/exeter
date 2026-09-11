@@ -36,6 +36,7 @@ import me.larp.client.module.impl.toggle.combat.SelfProtect;
 import me.larp.client.module.impl.toggle.combat.SelfTrap;
 import me.larp.client.module.impl.toggle.combat.Surround;
 import me.larp.client.module.impl.toggle.combat.TNTAura;
+import me.larp.client.module.impl.toggle.misc.Announcer;
 import me.larp.client.module.impl.toggle.misc.AutoGear;
 import me.larp.client.module.impl.toggle.misc.AutoItemDupe;
 import me.larp.client.module.impl.toggle.misc.AutoLog;
@@ -112,6 +113,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new CrystalAura());
     register(new Surround());
     register(new AutoGear());
+    register(new Announcer());
     register(new AutoLog());
     register(new ChestStealer());
     register(new AutoTool());
