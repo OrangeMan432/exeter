@@ -10,6 +10,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.CrystalDamage;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,6 +27,10 @@ public class BedAura extends ToggleableModule {
       new NumberProperty<Double>(5.0, 0.0, 10.0, "Place Range");
   private final NumberProperty<Double> targetRange =
       new NumberProperty<Double>(10.0, 0.0, 20.0, "Target Range");
+  private final NumberProperty<Double> minDamage =
+      new NumberProperty<Double>(4.0, 0.0, 20.0, "Min Damage");
+  private final NumberProperty<Double> maxSelf =
+      new NumberProperty<Double>(8.0, 0.0, 20.0, "Max Self");
   private final NumberProperty<Integer> placeDelay =
       new NumberProperty<Integer>(0, 0, 20, "Place Delay");
   private final NumberProperty<Integer> breakDelay =
@@ -45,7 +50,16 @@ public class BedAura extends ToggleableModule {
     setDescription("Automatically places and breaks beds for combat.");
 
     this.offerProperties(
-        rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand);
+        rotate,
+        autoSwitch,
+        switchBack,
+        placeRange,
+        targetRange,
+        minDamage,
+        maxSelf,
+        placeDelay,
+        breakDelay,
+        swingHand);
 
     this.listeners.add(
         new Listener<TickEvent>("bed_aura_tick") {
@@ -115,6 +129,27 @@ public class BedAura extends ToggleableModule {
 
     BlockPos placePos = findBestPlacePos();
     if (placePos == null) return;
+
+    // Bed explosion gate: worth it on the target, survivable for us.
+    net.minecraft.world.phys.Vec3 boom =
+        new net.minecraft.world.phys.Vec3(
+            placePos.getX() + 0.5, placePos.getY() + 0.5, placePos.getZ() + 0.5);
+    double bestEnemy = 0.0;
+    for (Entity entity : minecraft.level.players()) {
+      if (entity == minecraft.player || !entity.isAlive()) continue;
+      if (!(entity instanceof Player enemy)) continue;
+      if (minecraft.player.distanceTo(entity) > targetRange.getValue()) continue;
+      bestEnemy =
+          Math.max(
+              bestEnemy, CrystalDamage.explosionDamage(enemy, enemy.getBoundingBox(), boom, 5.0));
+    }
+    if (bestEnemy < minDamage.getValue()) return;
+    double selfDamage =
+        CrystalDamage.explosionDamage(
+            minecraft.player, minecraft.player.getBoundingBox(), boom, 5.0);
+    if (selfDamage > maxSelf.getValue()) return;
+    if (selfDamage + 0.5
+        >= minecraft.player.getHealth() + minecraft.player.getAbsorptionAmount()) return;
 
     placeBed(placePos, bedSlot);
     lastBedPos = placePos;

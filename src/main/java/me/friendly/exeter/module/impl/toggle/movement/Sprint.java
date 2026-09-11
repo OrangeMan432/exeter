@@ -10,11 +10,12 @@ import me.friendly.exeter.properties.Property;
 public class Sprint extends ToggleableModule {
 
   private final Property<Boolean> omni = new Property<>(false, "Omnidirectional");
+  private final Property<Boolean> hungerCheck = new Property<>(true, "Hunger Check");
 
   public Sprint() {
     super("Sprint", new String[] {"sprint", "autosprint"}, 0xFF0000, ModuleType.MOVEMENT);
     setDescription("Automatically sprints in the direction you are moving.");
-    offerProperties(omni);
+    offerProperties(omni, hungerCheck);
 
     this.listeners.add(
         new Listener<TickEvent>("sprint_tick") {
@@ -37,6 +38,11 @@ public class Sprint extends ToggleableModule {
   private void onTick() {
     if (minecraft.player == null) return;
     if (minecraft.player.isUsingItem()) return;
+    // Vanilla refuses sprint at 6 hunger or less; don't fight the server.
+    if (hungerCheck.getValue() && minecraft.player.getFoodData().getFoodLevel() <= 6) {
+      minecraft.player.setSprinting(false);
+      return;
+    }
 
     boolean moving;
     if (omni.getValue()) {

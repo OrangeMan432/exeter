@@ -28,13 +28,14 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | --- | --- |
 | `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
 | `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path. |
+| `AnchorAura` | BlackOut-pattern anchor engine: place, charge, detonate with MinPlace/MaxSelf/MinExplode gates. |
 | `Surround` | Shoreline-pattern obsidian feet trap. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |
 | `AutoTrap` | Cages targets in obsidian (feet + head + top). |
 | `SelfTrap` | Fully cages yourself in obsidian (feet + head + top). |
 | `HoleFill` | Fills holes near enemies with obsidian, proximity mode included. |
 | `AutoWeb` | Webs targets feet-first. |
 | `AutoArmor` | Shoreline-pattern armor manager for 26.2 component armor. Blast-priority scoring, durability gate, binding skip, elytra priority. |
-| `BedAura` | Automatically places and breaks beds for combat. Rotate, auto-switch, place/break delays. |
+| `BedAura` | Automatically places and breaks beds for combat. BlackOut-style damage gates (MinDamage/MaxSelf), rotate, auto-switch, place/break delays. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
 | `AutoEat` | Eats food when hungry, gapples first when low on HP. |
@@ -52,6 +53,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoItemDupe` | Recipe-book wooden-button dupe. Resolves the `RecipeDisplayId` from the client recipe book and fires `ServerboundPlaceRecipePacket`. Server-specific, not magic. |
 | `AutoLog` | Meteor-pattern disconnect on low HP, totem pops, or nearby players. |
 | `Replenish` | Meteor-pattern hotbar refill from inventory via shift-click merge. |
+| `ChestStealer` | Loots chests and shulkers on a delay with auto-close. |
 
 ### Movement
 
@@ -65,7 +67,9 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
+| `TargetStrafe` | Orbits targets at range with radial correction. |
 | `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
+| `FastFall` | Falls faster than vanilla for quick drops. |
 | `Jesus` | Walk on water, sneak to dive. |
 | `NoBedStep` | Step variant tuned for bed-PvP terrain. |
 

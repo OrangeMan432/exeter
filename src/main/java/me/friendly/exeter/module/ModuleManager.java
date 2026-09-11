@@ -44,6 +44,7 @@ import me.friendly.exeter.module.impl.toggle.movement.NoFall;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
+import me.friendly.exeter.module.impl.toggle.movement.TargetStrafe;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
@@ -101,6 +102,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new NoBedStep());
     register(new Step());
     register(new Sprint());
+    register(new TargetStrafe());
     register(new TestModule());
     register(new Debug());
 
