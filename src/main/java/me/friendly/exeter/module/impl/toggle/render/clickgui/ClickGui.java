@@ -59,7 +59,7 @@ public final class ClickGui extends Screen {
             : me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.CENTERED;
 
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-    int totalPanels = ModuleType.values().length;
+    int totalPanels = ModuleType.values().length - 1; // exclude HUD, CLIENT added manually
     int panelWidth = 90;
     int totalGuiWidth = totalPanels * panelWidth;
 
