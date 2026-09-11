@@ -45,6 +45,8 @@ public class KillAura extends ToggleableModule {
       new EnumProperty<Priority>(Priority.CLOSEST, "Priority");
   private final NumberProperty<Integer> multi =
       new NumberProperty<Integer>(1, 1, 5, "Multi");
+  private final Property<Boolean> pauseEat = new Property<Boolean>(false, "Pause On Eat");
+  private final Property<Boolean> pauseMine = new Property<Boolean>(false, "Pause On Mine");
 
   private int tickCounter = -100;
 
@@ -64,7 +66,9 @@ public class KillAura extends ToggleableModule {
         onlyWeapon,
         antiWeakness,
         priority,
-        multi);
+        multi,
+        pauseEat,
+        pauseMine);
     this.listeners.add(
         new Listener<TickEvent>("killaura_tick") {
           @Override
@@ -78,12 +82,14 @@ public class KillAura extends ToggleableModule {
   @Override
   protected void onEnable() {
     super.onEnable();
-    tickCounter = -100;
+    tickCounter = 0;
   }
 
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
+    if (pauseEat.getValue() && minecraft.player.isUsingItem()) return;
+    if (pauseMine.getValue() && minecraft.gameMode.isDestroying()) return;
     tickCounter++;
     if (tickCounter < delay.getValue()) return;
 
@@ -106,11 +112,15 @@ public class KillAura extends ToggleableModule {
       boolean needSword =
           weaponSlot != minecraft.player.getInventory().getSelectedSlot() || !isSwordHeld();
       if (needSword) {
+        float yaw = minecraft.player.getYRot();
+        float pitch = minecraft.player.getXRot();
         PlayerUtil.swapTo(weaponSlot);
+        rotateTo(first);
         minecraft.gameMode.attack(minecraft.player, first);
         if (swingHand.getValue()) {
           minecraft.player.swing(InteractionHand.MAIN_HAND);
         }
+        PlayerUtil.restoreRotation(yaw, pitch);
         PlayerUtil.swapBack();
         tickCounter = 0;
         return;
@@ -128,14 +138,7 @@ public class KillAura extends ToggleableModule {
     float pitch = minecraft.player.getXRot();
     for (LivingEntity target : targets) {
       if (rotate.getValue()) {
-        double dx = target.getX() - minecraft.player.getX();
-        double dy =
-            (target.getY() + target.getBbHeight() * 0.5)
-                - (minecraft.player.getY() + minecraft.player.getEyeHeight());
-        double dz = target.getZ() - minecraft.player.getZ();
-        double dist = Math.sqrt(dx * dx + dz * dz);
-        minecraft.player.setYRot((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
-        minecraft.player.setXRot((float) (-Math.toDegrees(Math.atan2(dy, dist))));
+        rotateTo(target);
       }
       minecraft.gameMode.attack(minecraft.player, target);
       if (swingHand.getValue()) {
@@ -152,9 +155,15 @@ public class KillAura extends ToggleableModule {
     tickCounter = 0;
   }
 
-  private LivingEntity findTarget() {
-    List<LivingEntity> found = findTargets(1);
-    return found.isEmpty() ? null : found.get(0);
+  private void rotateTo(LivingEntity target) {
+    double dx = target.getX() - minecraft.player.getX();
+    double dy =
+        (target.getY() + target.getBbHeight() * 0.5)
+            - (minecraft.player.getY() + minecraft.player.getEyeHeight());
+    double dz = target.getZ() - minecraft.player.getZ();
+    double dist = Math.sqrt(dx * dx + dz * dz);
+    minecraft.player.setYRot((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
+    minecraft.player.setXRot((float) (-Math.toDegrees(Math.atan2(dy, dist))));
   }
 
   /** Collects up to max targets by priority score, cheapest first. */
@@ -220,6 +229,7 @@ public class KillAura extends ToggleableModule {
 
   private int findWeaponSlot() {
     int sword = -1;
+    int mace = -1;
     int axe = -1;
     for (int i = 0; i < 9; i++) {
       ItemStack stack = minecraft.player.getInventory().getItem(i);
@@ -228,11 +238,14 @@ public class KillAura extends ToggleableModule {
       String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
       if (path.endsWith("_sword") && sword == -1) {
         sword = i;
+      } else if (stack.getItem() == net.minecraft.world.item.Items.MACE && mace == -1) {
+        mace = i;
       } else if ((stack.getItem() instanceof AxeItem || path.endsWith("_axe")) && axe == -1) {
         axe = i;
       }
     }
     if (sword != -1) return sword;
+    if (mace != -1) return mace;
     return axe;
   }
 }

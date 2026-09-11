@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
+import me.larp.client.events.RenderWorldEvent;
 import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
@@ -14,16 +15,19 @@ import me.larp.client.properties.NumberProperty;
 import me.larp.client.properties.Property;
 import me.larp.client.util.CrystalDamage;
 import me.larp.client.util.PlayerUtil;
+import me.larp.client.util.Render3D;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class CrystalAura extends ToggleableModule {
@@ -34,6 +38,8 @@ public class CrystalAura extends ToggleableModule {
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Place Range");
   private final NumberProperty<Double> breakRange =
       new NumberProperty<Double>(5.0, 1.0, 6.0, "Break Range");
+  private final NumberProperty<Double> breakWallsRange =
+      new NumberProperty<Double>(3.5, 0.0, 6.0, "Break Walls Range");
   private final NumberProperty<Integer> placeDelay =
       new NumberProperty<Integer>(2, 0, 20, "Place Delay");
   private final NumberProperty<Integer> breakDelay =
@@ -60,10 +66,18 @@ public class CrystalAura extends ToggleableModule {
       new Property<Boolean>(false, "Pause On Eat");
   private final Property<Boolean> support =
       new Property<Boolean>(true, "Support");
+  private final Property<Boolean> facePlace = new Property<Boolean>(false, "Face Place");
+  private final NumberProperty<Double> facePlaceMin =
+      new NumberProperty<Double>(2.0, 0.0, 10.0, "Face Min Damage");
+  private final NumberProperty<Double> armorPctGate =
+      new NumberProperty<Double>(20.0, 1.0, 100.0, "Armor Pct Gate");
+  private final Property<Boolean> placeRender = new Property<Boolean>(true, "Place Render");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
   private int lastBreakTick = -100;
+  private BlockPos lastBase;
+  private int lastBaseTick = -100;
   // BlackOut-pattern existence + inhibit tracking: id -> [firstSeenTick, attacks].
   private final Map<Integer, int[]> crystalStats = new HashMap<>();
 
@@ -88,13 +102,24 @@ public class CrystalAura extends ToggleableModule {
         maxAttacks,
         setDead,
         pauseEat,
-        support);
+        support,
+        facePlace,
+        facePlaceMin,
+        armorPctGate,
+        placeRender);
     this.listeners.add(
         new Listener<TickEvent>("crystalaura_tick") {
           @Override
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
             CrystalAura.this.onTick();
+          }
+        });
+    this.listeners.add(
+        new Listener<RenderWorldEvent>("crystalaura_render") {
+          @Override
+          public void call(RenderWorldEvent event) {
+            CrystalAura.this.onRender(event);
           }
         });
   }
@@ -105,6 +130,8 @@ public class CrystalAura extends ToggleableModule {
     tickCounter = 0;
     lastPlaceTick = -100;
     lastBreakTick = -100;
+    lastBase = null;
+    lastBaseTick = -100;
     crystalStats.clear();
   }
 
@@ -211,6 +238,7 @@ public class CrystalAura extends ToggleableModule {
 
   private EndCrystal findCrystal(Player target) {
     double rangeSq = breakRange.getValue() * breakRange.getValue();
+    double wallsSq = breakWallsRange.getValue() * breakWallsRange.getValue();
     EndCrystal best = null;
     double bestScore = Double.MIN_VALUE;
     for (Entity entity : minecraft.level.entitiesForRendering()) {
@@ -218,6 +246,8 @@ public class CrystalAura extends ToggleableModule {
       if (!crystal.isAlive()) continue;
       double dist = minecraft.player.distanceToSqr(crystal);
       if (dist > rangeSq) continue;
+      // Through walls only at reduced break-walls range.
+      if (!minecraft.player.hasLineOfSight(crystal) && dist > wallsSq) continue;
       // BlackOut-pattern existence validation + inhibit cap.
       int[] stats = crystalStats.computeIfAbsent(crystal.getId(), k -> new int[] {tickCounter, 0});
       if (tickCounter - stats[0] < existedTicks.getValue()) continue;
@@ -311,12 +341,17 @@ public class CrystalAura extends ToggleableModule {
       nearby = nearby.subList(0, 12);
     }
     BlockPos best = null;
-    double bestDamage = lethal ? -1.0 : minDamage.getValue();
+    // Face-place: weak armor breaks fast, so accept chip damage to finish the piece.
+    double gate = lethal ? -1.0 : minDamage.getValue();
+    if (!lethal && facePlace.getValue() && isArmorWeak(target)) {
+      gate = Math.min(gate, facePlaceMin.getValue());
+    }
+    double bestDamage = gate;
     for (BlockPos base : nearby) {
       BlockPos crystalPos = base.above();
       Vec3 spawn = new Vec3(crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5);
       double targetDamage = CrystalDamage.crystalDamage(target, spawn);
-      if (!lethal && targetDamage < minDamage.getValue()) continue;
+      if (targetDamage < gate) continue;
       double selfDamage = CrystalDamage.crystalDamage(minecraft.player, spawn);
       if (selfDamage > maxSelf.getValue()) continue;
       if (selfDamage + 0.5
@@ -335,6 +370,22 @@ public class CrystalAura extends ToggleableModule {
     if (minecraft.level == null) return false;
     return minecraft.level.getBlockState(pos).getBlock() == Blocks.OBSIDIAN
         || minecraft.level.getBlockState(pos).getBlock() == Blocks.BEDROCK;
+  }
+
+  /** True when any worn armor piece is below the durability gate. */
+  private boolean isArmorWeak(Player target) {
+    double threshold = armorPctGate.getValue() / 100.0;
+    for (EquipmentSlot slot :
+        new EquipmentSlot[] {
+          EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+        }) {
+      ItemStack stack = target.getItemBySlot(slot);
+      if (stack.isEmpty() || !stack.isDamageableItem() || stack.getMaxDamage() <= 0) continue;
+      double remaining =
+          (double) (stack.getMaxDamage() - stack.getDamageValue()) / stack.getMaxDamage();
+      if (remaining < threshold) return true;
+    }
+    return false;
   }
 
   private void placeCrystal(BlockPos base, int slot) {
@@ -358,5 +409,20 @@ public class CrystalAura extends ToggleableModule {
     if (needSwitch) {
       PlayerUtil.swapBack();
     }
+    lastBase = base.immutable();
+    lastBaseTick = tickCounter;
+  }
+
+  private void onRender(RenderWorldEvent event) {
+    if (!placeRender.getValue() || lastBase == null) return;
+    if (minecraft.level == null || minecraft.player == null) return;
+    if (tickCounter - lastBaseTick > 40) return;
+    Render3D.drawBoxOutline(
+        event.getSubmitNodeStorage(),
+        event.getCamera(),
+        event.getMatrixStack(),
+        new AABB(lastBase),
+        0xFF00FF00,
+        2.0f);
   }
 }
