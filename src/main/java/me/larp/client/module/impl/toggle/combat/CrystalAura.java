@@ -120,10 +120,13 @@ public class CrystalAura extends ToggleableModule {
       crystalStats.keySet().retainAll(alive);
     }
     boolean eating = pauseEat.getValue() && minecraft.player.isUsingItem();
+    Player target = findTarget();
+    if (target == null) return;
 
     // Break first: crystals detonate the same tick they are attacked.
+    // Scored by damage to the current target, not raw distance.
     if (!eating && tickCounter - lastBreakTick >= breakDelay.getValue()) {
-      EndCrystal crystal = findCrystal();
+      EndCrystal crystal = findCrystal(target);
       if (crystal != null) {
         attackCrystal(crystal);
         lastBreakTick = tickCounter;
@@ -132,8 +135,6 @@ public class CrystalAura extends ToggleableModule {
     }
 
     if (eating) return;
-    Player target = findTarget();
-    if (target == null) return;
     // Future-pattern Lethal: low-HP targets are one crystal from dead, skip the wait.
     boolean lethal = target.getHealth() <= lethalHealth.getValue().floatValue();
     if (!lethal && tickCounter - lastPlaceTick < placeDelay.getValue()) return;
@@ -204,10 +205,10 @@ public class CrystalAura extends ToggleableModule {
     return item.getBlock() == Blocks.OBSIDIAN;
   }
 
-  private EndCrystal findCrystal() {
+  private EndCrystal findCrystal(Player target) {
     double rangeSq = breakRange.getValue() * breakRange.getValue();
     EndCrystal best = null;
-    double bestDist = Double.MAX_VALUE;
+    double bestScore = Double.MIN_VALUE;
     for (Entity entity : minecraft.level.entitiesForRendering()) {
       if (!(entity instanceof EndCrystal crystal)) continue;
       if (!crystal.isAlive()) continue;
@@ -217,8 +218,12 @@ public class CrystalAura extends ToggleableModule {
       int[] stats = crystalStats.computeIfAbsent(crystal.getId(), k -> new int[] {tickCounter, 0});
       if (tickCounter - stats[0] < existedTicks.getValue()) continue;
       if (stats[1] >= maxAttacks.getValue()) continue;
-      if (dist < bestDist) {
-        bestDist = dist;
+      // Damage-priority: the crystal hurting the target most goes first.
+      net.minecraft.world.phys.Vec3 at =
+          new net.minecraft.world.phys.Vec3(crystal.getX(), crystal.getY(), crystal.getZ());
+      double score = CrystalDamage.crystalDamage(target, at) - dist * 0.01;
+      if (score > bestScore) {
+        bestScore = score;
         best = crystal;
       }
     }
@@ -251,16 +256,28 @@ public class CrystalAura extends ToggleableModule {
   }
 
   private Player findTarget() {
-    List<Player> players = new ArrayList<>();
+    Player best = null;
+    double bestScore = Double.MAX_VALUE;
     for (Entity entity : minecraft.level.players()) {
       if (entity == minecraft.player) continue;
       if (!entity.isAlive()) continue;
       if (minecraft.player.distanceTo(entity) > targetRange.getValue()) continue;
-      players.add((Player) entity);
+      Player player = (Player) entity;
+      // Never crystal friends.
+      if (me.larp.client.core.Larp.getInstance()
+          .getFriendManager()
+          .isFriend(player.getName().getString())) continue;
+      // Lethal-first: lowest effective health wins ties broken by distance.
+      double score =
+          player.getHealth()
+              + player.getAbsorptionAmount()
+              + minecraft.player.distanceTo(entity) * 0.1;
+      if (score < bestScore) {
+        bestScore = score;
+        best = player;
+      }
     }
-    return players.stream()
-        .min(Comparator.comparingDouble(minecraft.player::distanceTo))
-        .orElse(null);
+    return best;
   }
 
   private BlockPos findBase(Player target) {

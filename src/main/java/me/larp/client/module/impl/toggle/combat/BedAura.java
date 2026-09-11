@@ -138,6 +138,9 @@ public class BedAura extends ToggleableModule {
     for (Entity entity : minecraft.level.players()) {
       if (entity == minecraft.player || !entity.isAlive()) continue;
       if (!(entity instanceof Player enemy)) continue;
+      if (me.larp.client.core.Larp.getInstance()
+          .getFriendManager()
+          .isFriend(enemy.getName().getString())) continue;
       if (minecraft.player.distanceTo(entity) > targetRange.getValue()) continue;
       bestEnemy =
           Math.max(

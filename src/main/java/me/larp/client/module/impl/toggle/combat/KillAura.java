@@ -5,6 +5,7 @@ import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
+import me.larp.client.properties.EnumProperty;
 import me.larp.client.properties.NumberProperty;
 import me.larp.client.properties.Property;
 import me.larp.client.util.PlayerUtil;
@@ -19,6 +20,11 @@ import net.minecraft.world.item.ItemStack;
 
 public class KillAura extends ToggleableModule {
 
+  public enum Priority {
+    CLOSEST,
+    LOWEST_HEALTH
+  }
+
   private final NumberProperty<Double> range = new NumberProperty<Double>(4.5, 1.0, 6.0, "Range");
   private final NumberProperty<Double> wallsRange =
       new NumberProperty<Double>(3.5, 0.0, 6.0, "Walls Range");
@@ -31,7 +37,10 @@ public class KillAura extends ToggleableModule {
   private final Property<Boolean> targetHostiles = new Property<Boolean>(true, "Hostiles");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> onlyWeapon = new Property<Boolean>(false, "Only Weapon");
-  private final Property<Boolean> antiWeakness = new Property<Boolean>(true, "Anti Weakness");
+  private final Property<Boolean> antiWeakness =
+      new Property<Boolean>(true, "Anti Weakness");
+  private final EnumProperty<Priority> priority =
+      new EnumProperty<Priority>(Priority.CLOSEST, "Priority");
 
   private int tickCounter = -100;
 
@@ -49,7 +58,8 @@ public class KillAura extends ToggleableModule {
         targetHostiles,
         autoSwitch,
         onlyWeapon,
-        antiWeakness);
+        antiWeakness,
+        priority);
     this.listeners.add(
         new Listener<TickEvent>("killaura_tick") {
           @Override
@@ -141,12 +151,16 @@ public class KillAura extends ToggleableModule {
     double wallsSq = wallsRange.getValue() * wallsRange.getValue();
     // Hand-rolled loop: the stream + comparator version allocated per tick.
     LivingEntity best = null;
-    double bestDist = Double.MAX_VALUE;
+    double bestScore = Double.MAX_VALUE;
     for (Entity e : minecraft.level.entitiesForRendering()) {
       if (!(e instanceof LivingEntity)) continue;
       if (e == minecraft.player || !e.isAlive()) continue;
-      if (e instanceof Player) {
+      if (e instanceof Player p) {
         if (!targetPlayers.getValue()) continue;
+        // Never attack friends.
+        if (me.larp.client.core.Larp.getInstance()
+            .getFriendManager()
+            .isFriend(p.getName().getString())) continue;
       } else if (e instanceof Enemy) {
         if (!targetHostiles.getValue()) continue;
       } else {
@@ -156,8 +170,12 @@ public class KillAura extends ToggleableModule {
       if (distSq > rangeSq) continue;
       // Through walls only at reduced walls-range (Meteor-pattern).
       if (!minecraft.player.hasLineOfSight(e) && distSq > wallsSq) continue;
-      if (distSq < bestDist) {
-        bestDist = distSq;
+      double score =
+          priority.getValue() == Priority.LOWEST_HEALTH
+              ? ((LivingEntity) e).getHealth() + ((LivingEntity) e).getAbsorptionAmount()
+              : distSq;
+      if (score < bestScore) {
+        bestScore = score;
         best = (LivingEntity) e;
       }
     }

@@ -115,10 +115,14 @@ public class AnchorAura extends ToggleableModule {
     double bestDist = targetDistance.getValue();
     for (Entity entity : minecraft.level.players()) {
       if (entity == minecraft.player || !entity.isAlive()) continue;
+      Player player = (Player) entity;
+      if (me.larp.client.core.Larp.getInstance()
+          .getFriendManager()
+          .isFriend(player.getName().getString())) continue;
       double d = minecraft.player.distanceTo(entity);
       if (d < bestDist) {
         bestDist = d;
-        best = (Player) entity;
+        best = player;
       }
     }
     return best;
