@@ -25,8 +25,8 @@ import me.larp.client.plugin.PluginManager;
 public final class Larp {
   private static Larp instance = null;
   public static final String TITLE = "Larp Client";
-  public static final String HASH = "c220dce4f74b46c8";
-  public static final String BUILD = "b25+39";
+  public static final String HASH = "8a67cc64f7802cc4";
+  public static final String BUILD = "b25+40";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;

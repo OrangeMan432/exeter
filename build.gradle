@@ -89,10 +89,6 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    implementation "com.moandjiezana.toml:toml4j:0.7.2"
-    include "com.moandjiezana.toml:toml4j:0.7.2"
-    compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
-
     implementation "meteordevelopment:discord-ipc:1.1"
     include "meteordevelopment:discord-ipc:1.1"
     implementation "com.google.code.gson:gson:2.11.0"

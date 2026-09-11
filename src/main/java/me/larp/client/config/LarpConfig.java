@@ -1,7 +1,7 @@
 package me.larp.client.config;
 
-import com.moandjiezana.toml.Toml;
-import com.moandjiezana.toml.TomlWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,34 +21,26 @@ import me.larp.client.properties.Property;
 import net.fabricmc.loader.api.FabricLoader;
 
 /**
- * Manages module configuration in TOML format. Each module gets its own .toml file in
+ * Manages module configuration in JSON format. Each module gets its own .json file in
  * .minecraft/config/larp/.
  *
  * <p>Example format:
  *
  * <pre>
- * [module]
- * enabled = false
- * drawn = true
- * keybind = 0
- *
- * [settings]
- * CustomFont = false
- * Watermark = false
- * Casing = "DEFAULT"
+ * {
+ *   "module": { "enabled": false, "keybind": 0 },
+ *   "settings": { "Range": 4.5, "Rotate": true, "Mode": "BOOST" }
+ * }
  * </pre>
  */
 public class LarpConfig {
   private static LarpConfig instance;
   private final Path configDir;
-  private final Toml tomlReader;
-  private final TomlWriter tomlWriter;
+  private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   public LarpConfig() {
     instance = this;
     this.configDir = FabricLoader.getInstance().getConfigDir().resolve("larp");
-    this.tomlReader = new Toml();
-    this.tomlWriter = new TomlWriter();
 
     try {
       Files.createDirectories(configDir);
@@ -89,10 +81,10 @@ public class LarpConfig {
     DebugLogger.get().logSystem("Config", "=== SAVE ALL END (" + count + " modules) ===");
   }
 
-  /** Loads a single module's configuration from its TOML file. */
+  /** Loads a single module's configuration from its JSON file. */
   @SuppressWarnings("unchecked")
   public void loadModule(Module module) {
-    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
+    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".json";
     File file = configDir.resolve(fileName).toFile();
     DebugLogger.get()
         .logSystem(
@@ -104,8 +96,10 @@ public class LarpConfig {
     }
 
     try {
-      Map<String, Object> data = tomlReader.read(file).toMap();
-      DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
+      Map<String, Object> data =
+          gson.fromJson(Files.readString(file.toPath()), Map.class);
+      if (data == null) return;
+      DebugLogger.get().logSystem("Config", "  raw JSON data keys = " + data.keySet());
 
       // Load module state (enabled, drawn, keybind)
       if (module instanceof Toggleable && data.containsKey("module")) {
@@ -150,28 +144,18 @@ public class LarpConfig {
         }
       }
 
-      // Load properties
+      // Load properties (gson keys need no quote stripping)
       if (data.containsKey("settings")) {
         Map<String, Object> settings = (Map<String, Object>) data.get("settings");
         DebugLogger.get().logSystem("Config", "  settings key set = " + settings.keySet());
 
-        // Strip TOML quotes from map keys (toml4j includes them)
-        Map<String, Object> cleaned = new HashMap<>();
-        for (Map.Entry<String, Object> entry : settings.entrySet()) {
-          String k = entry.getKey();
-          if (k.startsWith("\"") && k.endsWith("\"")) {
-            k = k.substring(1, k.length() - 1);
-          }
-          cleaned.put(k, entry.getValue());
-        }
-
         for (Property<?> property : module.getProperties()) {
           String key = property.getAliases()[0];
-          boolean hasKey = cleaned.containsKey(key);
+          boolean hasKey = settings.containsKey(key);
           DebugLogger.get()
               .logSystem("Config", "  checking property '" + key + "' containsKey=" + hasKey);
           if (hasKey) {
-            Object value = cleaned.get(key);
+            Object value = settings.get(key);
             DebugLogger.get()
                 .logSystem(
                     "Config",
@@ -226,8 +210,8 @@ public class LarpConfig {
           String parentKey = property.getAliases()[0];
           for (Property<?> child : property.getChildren()) {
             String childFlatKey = parentKey + "__" + child.getAliases()[0];
-            if (cleaned.containsKey(childFlatKey)) {
-              Object childValue = cleaned.get(childFlatKey);
+            if (settings.containsKey(childFlatKey)) {
+              Object childValue = settings.get(childFlatKey);
               DebugLogger.get()
                   .logSystem(
                       "Config",
@@ -252,27 +236,17 @@ public class LarpConfig {
 
       // Load HUD component positions
       if (module instanceof Hud && data.containsKey("components")) {
-        Map<String, Object> rawComponents = (Map<String, Object>) data.get("components");
         Hud hud = (Hud) module;
-
-        // Strip TOML quotes from keys
-        Map<String, Object> components = new HashMap<>();
-        for (Map.Entry<String, Object> entry : rawComponents.entrySet()) {
-          String k = entry.getKey();
-          if (k.startsWith("\"") && k.endsWith("\"")) {
-            k = k.substring(1, k.length() - 1);
-          }
-          components.put(k, entry.getValue());
-        }
+        Map<String, Object> components = (Map<String, Object>) data.get("components");
 
         for (HudComponent comp : hud.getHudComponents()) {
           if (components.containsKey(comp.getLabel())) {
             Map<String, Object> pos = (Map<String, Object>) components.get(comp.getLabel());
             if (pos.containsKey("x")) {
-              comp.setX(((Long) pos.get("x")).intValue());
+              comp.setX(((Number) pos.get("x")).intValue());
             }
             if (pos.containsKey("y")) {
-              comp.setY(((Long) pos.get("y")).intValue());
+              comp.setY(((Number) pos.get("y")).intValue());
             }
           }
         }
@@ -327,10 +301,6 @@ public class LarpConfig {
                 + ")");
     if (value instanceof Enum) {
       settings.put(key, ((Enum<?>) value).name());
-    } else if (value instanceof Float) {
-      settings.put(key, ((Float) value).doubleValue());
-    } else if (value instanceof Integer) {
-      settings.put(key, ((Integer) value).longValue());
     } else {
       settings.put(key, value);
     }
@@ -350,19 +320,15 @@ public class LarpConfig {
                   + ")");
       if (childValue instanceof Enum) {
         settings.put(childKey, ((Enum<?>) childValue).name());
-      } else if (childValue instanceof Float) {
-        settings.put(childKey, ((Float) childValue).doubleValue());
-      } else if (childValue instanceof Integer) {
-        settings.put(childKey, ((Integer) childValue).longValue());
       } else {
         settings.put(childKey, childValue);
       }
     }
   }
 
-  /** Saves a single module's configuration to its TOML file. */
+  /** Saves a single module's configuration to its JSON file. */
   public void saveModule(Module module) {
-    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
+    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".json";
     File file = configDir.resolve(fileName).toFile();
     DebugLogger.get()
         .logSystem("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
@@ -403,8 +369,8 @@ public class LarpConfig {
         Map<String, Object> components = new HashMap<>();
         for (HudComponent comp : hud.getHudComponents()) {
           Map<String, Object> pos = new HashMap<>();
-          pos.put("x", (long) comp.getX());
-          pos.put("y", (long) comp.getY());
+          pos.put("x", comp.getX());
+          pos.put("y", comp.getY());
           components.put(comp.getLabel(), pos);
         }
         if (!components.isEmpty()) {
@@ -413,8 +379,8 @@ public class LarpConfig {
         }
       }
 
-      DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());
-      tomlWriter.write(data, file);
+      DebugLogger.get().logSystem("Config", "  writing JSON to " + file.getAbsolutePath());
+      Files.writeString(file.toPath(), gson.toJson(data));
       DebugLogger.get().logSystem("Config", "  write SUCCESS for " + module.getLabel());
     } catch (Exception e) {
       System.err.println(

@@ -123,7 +123,7 @@ The built jar lands in `build/libs/`. Drop it in your `.minecraft/mods` folder a
 
 ## Configuration
 
-Settings persist to a Gson JSON config (`friends.json` lives alongside the client config).
+Settings persist per-module as Gson JSON in `.minecraft/config/larp/` (`friends.json` lives alongside the client config).
 
 ## Credits
 
