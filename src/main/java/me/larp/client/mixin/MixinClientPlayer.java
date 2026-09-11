@@ -41,9 +41,17 @@ public class MixinClientPlayer {
   @Inject(method = "isSlowDueToUsingItem", at = @At("HEAD"), cancellable = true)
   private void onIsSlowDueToUsingItem(CallbackInfoReturnable<Boolean> info) {
     Module module = Larp.getInstance().getModuleManager().getModule(NoSlow.class);
-    if (module instanceof ToggleableModule toggle && toggle.isRunning()) {
-      info.setReturnValue(false);
+    if (!(module instanceof ToggleableModule toggle && toggle.isRunning())) return;
+    if (module instanceof NoSlow noSlow
+        && noSlow.isFoodOnly()
+        && Minecraft.getInstance().player != null) {
+      var held = Minecraft.getInstance().player.getUseItem();
+      if (held.isEmpty()
+          || held.get(net.minecraft.core.component.DataComponents.FOOD) == null) {
+        return;
+      }
     }
+    info.setReturnValue(false);
   }
 
   private void dispatchMotionUpdate(Stage stage) {

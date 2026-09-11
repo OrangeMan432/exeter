@@ -59,6 +59,7 @@ import me.larp.client.module.impl.toggle.misc.VisualRange;
 import me.larp.client.module.impl.toggle.movement.ElytraFly;
 import me.larp.client.module.impl.toggle.movement.FakeLag;
 import me.larp.client.module.impl.toggle.movement.FastFall;
+import me.larp.client.module.impl.toggle.movement.Goto;
 import me.larp.client.module.impl.toggle.movement.HoleSnap;
 import me.larp.client.module.impl.toggle.movement.Jesus;
 import me.larp.client.module.impl.toggle.movement.LongJump;
@@ -94,6 +95,7 @@ import me.larp.client.module.impl.toggle.render.LogoutSpots;
 import me.larp.client.module.impl.toggle.world.AutoMine;
 import me.larp.client.module.impl.toggle.world.AutoShulker;
 import me.larp.client.module.impl.toggle.world.InstaMine;
+import me.larp.client.module.impl.toggle.world.Lavacast;
 import me.larp.client.module.impl.toggle.world.SpeedMine;
 import org.lwjgl.glfw.GLFW;
 
@@ -171,10 +173,12 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoShulker());
     register(new AutoMine());
     register(new InstaMine());
+    register(new Lavacast());
     register(new SpeedMine());
     register(new Velocity());
     register(new FakeLag());
     register(new FastFall());
+    register(new Goto());
     register(new HoleSnap());
     register(new Jesus());
     register(new LongJump());
