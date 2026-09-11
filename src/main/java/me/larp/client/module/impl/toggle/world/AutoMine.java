@@ -45,6 +45,16 @@ public class AutoMine extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
 
+  private BlockPos cached;
+  private int tickCounter;
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    cached = null;
+    tickCounter = 0;
+  }
+
   public AutoMine() {
     super("AutoMine", new String[] {"automine", "auto-mine"}, 0x0000FF, ModuleType.WORLD);
     setDescription("Mines ores around you automatically.");
@@ -63,7 +73,13 @@ public class AutoMine extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
 
-    BlockPos target = findOre();
+    // 1300-block ore scan runs every 5 ticks; mining the cached target every tick.
+    if (tickCounter++ % 5 == 0
+        || cached == null
+        || !ORES.contains(minecraft.level.getBlockState(cached).getBlock())) {
+      cached = findOre();
+    }
+    BlockPos target = cached;
     if (target == null) return;
     swapToBestTool(minecraft.level.getBlockState(target));
 

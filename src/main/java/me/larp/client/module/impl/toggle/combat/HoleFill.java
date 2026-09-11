@@ -37,6 +37,16 @@ public class HoleFill extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> autoDisable = new Property<Boolean>(false, "Auto Disable");
 
+  private List<BlockPos> cached = new ArrayList<>();
+  private int tickCounter;
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    cached = new ArrayList<>();
+    tickCounter = 0;
+  }
+
   public HoleFill() {
     super("HoleFill", new String[] {"holefill", "hole-fill"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Fills holes near enemies with obsidian.");
@@ -66,32 +76,38 @@ public class HoleFill extends ToggleableModule {
     int obbySlot = PlayerUtil.findInHotbar(HoleFill::isObsidian);
     if (obbySlot == -1) return;
 
-    List<BlockPos> fills = new ArrayList<>();
-    BlockPos origin = minecraft.player.blockPosition();
-    int r = (int) Math.ceil(placeRange.getValue()) + 1;
-    for (int x = -r; x <= r; x++) {
-      for (int y = -2; y <= 1; y++) {
-        for (int z = -r; z <= r; z++) {
-          BlockPos pos = origin.offset(x, y, z);
-          if (!isHole(pos)) continue;
-          if (!PlayerUtil.inRange(pos, placeRange.getValue())) continue;
-          if (proximity.getValue() && !nearEnemy(pos)) continue;
-          fills.add(pos);
+    // Scan every 5 ticks; place from cache every tick. Prune filled slots first.
+    cached.removeIf(pos -> !PlayerUtil.isAirOrReplaceable(pos));
+    if (tickCounter++ % 5 == 0 || cached.isEmpty()) {
+      List<BlockPos> fills = new ArrayList<>();
+      BlockPos origin = minecraft.player.blockPosition();
+      int r = (int) Math.ceil(placeRange.getValue()) + 1;
+      for (int x = -r; x <= r; x++) {
+        for (int y = -2; y <= 1; y++) {
+          for (int z = -r; z <= r; z++) {
+            BlockPos pos = origin.offset(x, y, z);
+            if (!isHole(pos)) continue;
+            if (!PlayerUtil.inRange(pos, placeRange.getValue())) continue;
+            if (proximity.getValue() && !nearEnemy(pos)) continue;
+            fills.add(pos);
+          }
         }
       }
+      fills.sort(Comparator.comparingDouble(p -> p.distSqr(origin)));
+      cached = fills;
     }
 
-    if (fills.isEmpty()) {
+    if (cached.isEmpty()) {
       if (autoDisable.getValue()) {
         setRunning(false);
       }
       return;
     }
-    fills.sort(Comparator.comparingDouble(p -> p.distSqr(origin)));
 
     int placed = 0;
-    for (BlockPos pos : fills) {
+    for (BlockPos pos : cached) {
       if (placed >= blocksPerTick.getValue()) break;
+      if (!PlayerUtil.isAirOrReplaceable(pos)) continue;
       placeObby(pos, obbySlot);
       placed++;
     }

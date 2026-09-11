@@ -17,6 +17,16 @@ public class HoleSnap extends ToggleableModule {
   private final NumberProperty<Double> snap = new NumberProperty<Double>(0.25, 0.05, 1.0, "Snap");
   private final Property<Boolean> autoDisable = new Property<Boolean>(true, "Auto Disable");
 
+  private BlockPos cachedHole;
+  private int tickCounter;
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    cachedHole = null;
+    tickCounter = 0;
+  }
+
   public HoleSnap() {
     super("HoleSnap", new String[] {"holesnap", "hole-snap"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Pulls you into the nearest safe hole.");
@@ -35,7 +45,11 @@ public class HoleSnap extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null) return;
     if (minecraft.player.isDeadOrDying()) return;
 
-    BlockPos hole = findHole();
+    // The 500-block scan runs every 5 ticks; steering toward cache runs every tick.
+    if (tickCounter++ % 5 == 0 || cachedHole == null) {
+      cachedHole = findHole();
+    }
+    BlockPos hole = cachedHole;
     if (hole == null) return;
 
     double cx = hole.getX() + 0.5;

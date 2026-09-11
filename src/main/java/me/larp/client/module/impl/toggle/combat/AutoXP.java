@@ -18,13 +18,14 @@ public class AutoXP extends ToggleableModule {
   private final NumberProperty<Integer> delay = new NumberProperty<Integer>(2, 0, 20, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
+  private final Property<Boolean> mendOnly = new Property<Boolean>(true, "Mend Only");
 
   private int tickCounter;
 
   public AutoXP() {
     super("AutoXP", new String[] {"autoxp", "auto-xp"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Throws XP bottles to mend gear.");
-    offerProperties(delay, rotate, autoSwitch);
+    offerProperties(delay, rotate, autoSwitch, mendOnly);
     this.listeners.add(
         new Listener<TickEvent>("autoxp_tick") {
           @Override
@@ -44,6 +45,7 @@ public class AutoXP extends ToggleableModule {
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
+    if (mendOnly.getValue() && !needsMending()) return;
     if (tickCounter++ < delay.getValue()) return;
     tickCounter = 0;
 
@@ -76,5 +78,21 @@ public class AutoXP extends ToggleableModule {
     if (needSwitch) {
       PlayerUtil.swapBack();
     }
+  }
+
+  /** Logic gate: only burn bottles when armor or held item is damaged. */
+  private boolean needsMending() {
+    for (net.minecraft.world.entity.EquipmentSlot slot :
+        new net.minecraft.world.entity.EquipmentSlot[] {
+          net.minecraft.world.entity.EquipmentSlot.HEAD,
+          net.minecraft.world.entity.EquipmentSlot.CHEST,
+          net.minecraft.world.entity.EquipmentSlot.LEGS,
+          net.minecraft.world.entity.EquipmentSlot.FEET
+        }) {
+      ItemStack armor = minecraft.player.getItemBySlot(slot);
+      if (!armor.isEmpty() && armor.getDamageValue() > 0) return true;
+    }
+    ItemStack held = minecraft.player.getMainHandItem();
+    return !held.isEmpty() && held.getDamageValue() > 0;
   }
 }

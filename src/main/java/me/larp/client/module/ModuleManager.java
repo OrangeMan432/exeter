@@ -23,6 +23,7 @@ import me.larp.client.module.impl.toggle.combat.AutoXP;
 import me.larp.client.module.impl.toggle.combat.BedAura;
 import me.larp.client.module.impl.toggle.combat.BlockLag;
 import me.larp.client.module.impl.toggle.combat.CevBreaker;
+import me.larp.client.module.impl.toggle.combat.CityMiner;
 import me.larp.client.module.impl.toggle.combat.Criticals;
 import me.larp.client.module.impl.toggle.combat.CrystalAura;
 import me.larp.client.module.impl.toggle.combat.HoleFill;
@@ -120,6 +121,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new SelfBed());
     register(new BedAura());
     register(new CevBreaker());
+    register(new CityMiner());
     register(new Speed());
     register(new PistonPush());
     register(new PistonCrystal());

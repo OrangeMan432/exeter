@@ -1,6 +1,5 @@
 package me.larp.client.module.impl.toggle.combat;
 
-import java.util.Comparator;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
@@ -140,27 +139,29 @@ public class KillAura extends ToggleableModule {
   private LivingEntity findTarget() {
     double rangeSq = range.getValue() * range.getValue();
     double wallsSq = wallsRange.getValue() * wallsRange.getValue();
-    return java.util.stream.StreamSupport.stream(
-            minecraft.level.entitiesForRendering().spliterator(), false)
-        .filter(e -> e instanceof LivingEntity)
-        .filter(e -> e != minecraft.player)
-        .filter(Entity::isAlive)
-        .filter(
-            e -> {
-              if (e instanceof Player) return targetPlayers.getValue();
-              if (e instanceof Enemy) return targetHostiles.getValue();
-              return false;
-            })
-        .filter(e -> minecraft.player.distanceToSqr(e) <= rangeSq)
-        .filter(
-            e -> {
-              // Through walls only at reduced walls-range (Meteor-pattern).
-              if (minecraft.player.hasLineOfSight(e)) return true;
-              return minecraft.player.distanceToSqr(e) <= wallsSq;
-            })
-        .min(Comparator.comparingDouble(minecraft.player::distanceTo))
-        .map(e -> (LivingEntity) e)
-        .orElse(null);
+    // Hand-rolled loop: the stream + comparator version allocated per tick.
+    LivingEntity best = null;
+    double bestDist = Double.MAX_VALUE;
+    for (Entity e : minecraft.level.entitiesForRendering()) {
+      if (!(e instanceof LivingEntity)) continue;
+      if (e == minecraft.player || !e.isAlive()) continue;
+      if (e instanceof Player) {
+        if (!targetPlayers.getValue()) continue;
+      } else if (e instanceof Enemy) {
+        if (!targetHostiles.getValue()) continue;
+      } else {
+        continue;
+      }
+      double distSq = minecraft.player.distanceToSqr(e);
+      if (distSq > rangeSq) continue;
+      // Through walls only at reduced walls-range (Meteor-pattern).
+      if (!minecraft.player.hasLineOfSight(e) && distSq > wallsSq) continue;
+      if (distSq < bestDist) {
+        bestDist = distSq;
+        best = (LivingEntity) e;
+      }
+    }
+    return best;
   }
 
   private boolean isSwordHeld() {

@@ -1,8 +1,12 @@
 package me.larp.client.module.impl.toggle.render;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import me.larp.api.event.Listener;
+import me.larp.api.event.Stage;
 import me.larp.client.events.RenderWorldEvent;
+import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
 import me.larp.client.properties.NumberProperty;
@@ -29,6 +33,12 @@ public class StorageESP extends ToggleableModule {
   private final Property<Boolean> enderChests = new Property<Boolean>(true, "Ender Chests");
   private final Property<Boolean> others = new Property<Boolean>(false, "Others");
 
+  private record BoxEntry(BlockPos pos, int color) {}
+
+  // Chunk scans every frame stall the render thread: refresh on tick, draw cached.
+  private volatile List<BoxEntry> cached = new ArrayList<>();
+  private int tickCounter;
+
   public StorageESP() {
     super("StorageESP", new String[] {"storageesp", "chestesp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights storage containers.");
@@ -40,10 +50,34 @@ public class StorageESP extends ToggleableModule {
             StorageESP.this.onRender(event);
           }
         });
+    this.listeners.add(
+        new Listener<TickEvent>("storageesp_tick") {
+          @Override
+          public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
+            if (minecraft.level == null || minecraft.player == null) return;
+            if (tickCounter++ < 20) return;
+            tickCounter = 0;
+            cached = scan();
+          }
+        });
   }
 
   private void onRender(RenderWorldEvent event) {
     if (minecraft.level == null || minecraft.player == null) return;
+    for (BoxEntry box : cached) {
+      Render3D.drawBoxOutline(
+          event.getSubmitNodeStorage(),
+          event.getCamera(),
+          event.getMatrixStack(),
+          new AABB(box.pos()),
+          box.color(),
+          lineWidth.getValue().floatValue());
+    }
+  }
+
+  private List<BoxEntry> scan() {
+    List<BoxEntry> out = new ArrayList<>();
     BlockPos origin = minecraft.player.blockPosition();
     int chunkR = (int) Math.ceil(range.getValue() / 16.0) + 1;
     int baseCx = origin.getX() >> 4;
@@ -56,16 +90,11 @@ public class StorageESP extends ToggleableModule {
           if (!inRange(pos)) continue;
           int color = colorFor(entry.getValue());
           if (color == 0) continue;
-          Render3D.drawBoxOutline(
-              event.getSubmitNodeStorage(),
-              event.getCamera(),
-              event.getMatrixStack(),
-              new AABB(pos),
-              color,
-              lineWidth.getValue().floatValue());
+          out.add(new BoxEntry(pos.immutable(), color));
         }
       }
     }
+    return out;
   }
 
   private int colorFor(BlockEntity be) {

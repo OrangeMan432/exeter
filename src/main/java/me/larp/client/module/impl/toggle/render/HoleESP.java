@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import me.larp.api.event.Listener;
+import me.larp.api.event.Stage;
 import me.larp.client.events.RenderWorldEvent;
+import me.larp.client.events.TickEvent;
 import me.larp.client.module.ModuleType;
 import me.larp.client.module.ToggleableModule;
 import me.larp.client.properties.NumberProperty;
@@ -22,6 +24,10 @@ public class HoleESP extends ToggleableModule {
   private final NumberProperty<Integer> maxHoles =
       new NumberProperty<Integer>(16, 1, 64, "Max Holes");
 
+  // Scanned on tick interval, drawn every frame: scanning per frame tanks fps.
+  private volatile List<BlockPos> cached = new ArrayList<>();
+  private int tickCounter;
+
   public HoleESP() {
     super("HoleESP", new String[] {"holeesp", "hole-esp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights safe holes around you.");
@@ -33,12 +39,22 @@ public class HoleESP extends ToggleableModule {
             HoleESP.this.onRender(event);
           }
         });
+    this.listeners.add(
+        new Listener<TickEvent>("holeesp_tick") {
+          @Override
+          public void call(TickEvent event) {
+            if (event.getStage() != Stage.PRE) return;
+            if (minecraft.level == null || minecraft.player == null) return;
+            if (tickCounter++ < 10) return;
+            tickCounter = 0;
+            cached = findHoles();
+          }
+        });
   }
 
   private void onRender(RenderWorldEvent event) {
     if (minecraft.level == null || minecraft.player == null) return;
-    List<BlockPos> holes = findHoles();
-    for (BlockPos pos : holes) {
+    for (BlockPos pos : cached) {
       Render3D.drawBoxOutline(
           event.getSubmitNodeStorage(),
           event.getCamera(),
@@ -58,11 +74,12 @@ public class HoleESP extends ToggleableModule {
         for (int z = -r; z <= r; z++) {
           if (out.size() >= maxHoles.getValue()) break;
           BlockPos pos = origin.offset(x, y, z);
-          if (!isHole(pos)) continue;
+          // Cheap range math first: isHole costs 6 blockstate lookups.
           double dx = pos.getX() + 0.5 - minecraft.player.getX();
           double dy = pos.getY() + 0.5 - minecraft.player.getY();
           double dz = pos.getZ() + 0.5 - minecraft.player.getZ();
           if (dx * dx + dy * dy + dz * dz > range.getValue() * range.getValue()) continue;
+          if (!isHole(pos)) continue;
           out.add(pos);
         }
       }

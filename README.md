@@ -38,11 +38,12 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `AutoArmor` | Shoreline-pattern armor manager for 26.2 component armor. Blast-priority scoring, durability gate, binding skip, elytra priority. |
 | `BedAura` | Automatically places and breaks beds for combat. BlackOut-style damage gates (MinDamage/MaxSelf), rotate, auto-switch, place/break delays. |
 | `CevBreaker` | Lemon-pattern head-cover miner with damage-scored crystal seating. |
+| `CityMiner` | Logic-based surround breaker: sticks to one block, pickaxe swap, packet mine. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
 | `AutoEat` | Eats food when hungry, gapples first when low on HP. 6b6t-pattern saturation scoring. |
 | `AutoPot` | Automatically throws healing, swiftness, and debuff splash potions. Friend-aware, packet cleanup on death. |
-| `AutoXP` | Throws XP bottles looking down for mending. |
+| `AutoXP` | Throws XP bottles looking down for mending. Mend-only logic gate. |
 | `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/LarpClient/AutoGear.json`. |
 | `AutoCart` | Minecart-based combat automation. |
 | `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
