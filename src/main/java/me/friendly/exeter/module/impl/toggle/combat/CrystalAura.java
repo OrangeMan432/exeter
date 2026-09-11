@@ -107,6 +107,16 @@ public class CrystalAura extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null || minecraft.gameMode == null) return;
     if (minecraft.player.isDeadOrDying()) return;
     tickCounter++;
+    // Drop stats for crystals that no longer exist.
+    if (tickCounter % 100 == 0 && !crystalStats.isEmpty()) {
+      java.util.Set<Integer> alive = new java.util.HashSet<>();
+      for (Entity entity : minecraft.level.entitiesForRendering()) {
+        if (entity instanceof EndCrystal) {
+          alive.add(entity.getId());
+        }
+      }
+      crystalStats.keySet().retainAll(alive);
+    }
     boolean eating = pauseEat.getValue() && minecraft.player.isUsingItem();
 
     // Break first: crystals detonate the same tick they are attacked.

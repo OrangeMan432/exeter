@@ -138,7 +138,9 @@ public class KillAura extends ToggleableModule {
   private LivingEntity findTarget() {
     double rangeSq = range.getValue() * range.getValue();
     double wallsSq = wallsRange.getValue() * wallsRange.getValue();
-    return minecraft.level.players().stream()
+    return java.util.stream.StreamSupport.stream(
+            minecraft.level.entitiesForRendering().spliterator(), false)
+        .filter(e -> e instanceof LivingEntity)
         .filter(e -> e != minecraft.player)
         .filter(Entity::isAlive)
         .filter(

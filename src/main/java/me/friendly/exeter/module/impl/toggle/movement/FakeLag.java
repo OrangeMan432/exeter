@@ -1,7 +1,9 @@
 package me.friendly.exeter.module.impl.toggle.movement;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.PacketEvent;
@@ -24,6 +26,7 @@ public class FakeLag extends ToggleableModule {
       new NumberProperty<Integer>(40, 10, 200, "Flush Delay");
 
   private final List<Packet<?>> held = new ArrayList<>();
+  private final Set<Packet<?>> own = new HashSet<>();
   private int tickCounter;
 
   public FakeLag() {
@@ -51,6 +54,7 @@ public class FakeLag extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     held.clear();
+    own.clear();
     tickCounter = 0;
   }
 
@@ -71,6 +75,8 @@ public class FakeLag extends ToggleableModule {
 
   private void onPacket(PacketEvent event) {
     if (!(event.getPacket() instanceof ServerboundMovePlayerPacket)) return;
+    // Own flush sends must pass through, or nothing ever leaves.
+    if (own.remove(event.getPacket())) return;
     if (minecraft.player == null) return;
     if (held.size() >= packets.getValue()) {
       flush();
@@ -86,6 +92,7 @@ public class FakeLag extends ToggleableModule {
       return;
     }
     for (Packet<?> packet : held) {
+      own.add(packet);
       minecraft.getConnection().send(packet);
     }
     held.clear();

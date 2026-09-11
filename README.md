@@ -1,6 +1,6 @@
-# Skid Client (Minecraft 26.2 — Fabric)
+# Larp Client (Minecraft 26.2 — Fabric)
 
-Skid Client is an anarchy-oriented Minecraft client for **Minecraft 26.2 on Fabric**. It is a
+Larp Client is an anarchy-oriented Minecraft client for **Minecraft 26.2 on Fabric**. It is a
 from-scratch continuation of the Exeter client (`evelyn-gosselin/Exeter-1.12.2-fork`),
 rebuilt against the modern Fabric toolchain so it can finally hang with the 1.12.2 clients on
 today's anarchy servers. PvP logic follows Future-style patterns, movement follows
@@ -39,12 +39,16 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `CevBreaker` | Lemon-pattern head-cover miner with damage-scored crystal seating. |
 | `SelfBed` | Places and uses beds at your position for self-combat. |
 | `AutoTotem` | Shoreline-pattern offhand manager. Absorption-aware health, fall-lethal fast-path, gapple while holding use on a sword, live totem count tag. |
-| `AutoEat` | Eats food when hungry, gapples first when low on HP. |
+| `AutoEat` | Eats food when hungry, gapples first when low on HP. 6b6t-pattern saturation scoring. |
 | `AutoPot` | Automatically throws healing, swiftness, and debuff splash potions. Friend-aware, packet cleanup on death. |
 | `AutoXP` | Throws XP bottles looking down for mending. |
-| `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/SkidClient/AutoGear.json`. |
+| `AutoGear` | Kit sorter: equips saved gear sets from chests/shulkers. See `.minecraft/LarpClient/AutoGear.json`. |
 | `AutoCart` | Minecart-based combat automation. |
 | `PistonPush` | Places pistons + redstone to push players. Clicks solid neighbor faces, guarded slot swapping. |
+| `PistonCrystal` | BlackOut-pattern staged piston crystal pusher. |
+| `HolePush` | Lemon-pattern piston shove into nearby holes. |
+| `TNTAura` | Lemon-pattern TNT placement with flint-and-steel ignition. |
+| `SelfProtect` | Lemon-pattern Surround auto-run while enemies approach. |
 | `BlockLag` | Shoreline-pattern burrow: rubberbands you inside obsidian. |
 | `Criticals` | Shoreline packet patterns (PACKET chain + GRIM mode) on 26.2 attack packets. |
 
@@ -71,6 +75,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
 | `NoSlow` | Removes eating/drinking slowdown via LocalPlayer mixin. |
+| `PacketFly` | BlackOut-addon-pattern packet flight with bounds spoof and teleport confirm. |
 | `HoleSnap` | Anarchy staple: pulls you into the nearest safe hole and centers you. |
 | `TargetStrafe` | Orbits targets at range with radial correction. |
 | `FakeLag` | Chokes movement packets then flushes for lag teleportation. |
@@ -86,6 +91,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | --- | --- |
 | `AutoShulker` | Automatically places and opens shulker boxes. Container blacklist honored, player-following target range. |
 | `InstaMine` | Packet mine for instant soft-block breaks. |
+| `AutoMine` | Auto-breaks ores in range with tool swap. |
 | `SpeedMine` | Lemon-pattern targeted mining with pickaxe swap. |
 
 ### Render
@@ -94,6 +100,9 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | --- | --- |
 | `Hud`, `ClickGui`, `TabGui`, `Colors`, `HUDEditor`, `EatTimer` | Client UI (Exeter). |
 | `HoleESP` | Nicotine-pattern 3D hole outlines on the 26.2 render pipeline. |
+| `Tracers` | Crosshair lines to players. |
+| `StorageESP` | Boxes chests, shulkers, ender chests, barrels. |
+| `Nametags` | Floating health + distance tags. |
 
 ## Controls
 
@@ -124,7 +133,8 @@ Settings persist to a Gson JSON config (`friends.json` lives alongside the clien
 - **Nicotine** (`tranarchy/nicotine`, GPL-3.0) — 26.x 3D render pipeline reference.
 - **6b6t AnarchyClient** (`6b6t/AnarchyClient`, MIT) — Parkour/SafeWalk patterns.
 - **Combatant** (`pivosos2007/combatant-client`, GPL-3.0) — 26.2 ElytraFly modes reference.
-- **Lemon Client** (`ov-4/lemon-client`) — CevBreaker/SpeedMine patterns, ShulkerDupe logic.
+- **Lemon Client** (`ov-4/lemon-client`) — CevBreaker/SpeedMine/PistonCrystal/TNTAura patterns, ShulkerDupe logic.
+- **BlackOut Meteor addon** (`pierogiee/BlackOut`) — PacketFly pattern.
 
 ## Disclaimer
 

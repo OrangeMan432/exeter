@@ -120,11 +120,17 @@ public class Surround extends ToggleableModule {
             (int) Math.floor(packet.getZ()));
     int obbySlot = PlayerUtil.findInHotbar(Surround::isObsidian);
     if (obbySlot == -1) return;
-    for (BlockPos pos : surround) {
-      if (pos.distSqr(boom) <= 36 && PlayerUtil.isAirOrReplaceable(pos)) {
-        attackPlace(pos, obbySlot);
-      }
-    }
+    // Inbound packets arrive on the netty thread: touch the game on the client thread.
+    List<BlockPos> targets = new ArrayList<>(surround);
+    minecraft.execute(
+        () -> {
+          if (minecraft.player == null || minecraft.gameMode == null) return;
+          for (BlockPos pos : targets) {
+            if (pos.distSqr(boom) <= 36 && PlayerUtil.isAirOrReplaceable(pos)) {
+              attackPlace(pos, obbySlot);
+            }
+          }
+        });
   }
 
   private List<BlockPos> collectPositions() {

@@ -36,17 +36,23 @@ public class Velocity extends ToggleableModule {
               return;
             }
             if (h >= 1.0 && v >= 1.0) return;
-            // Partial take: cancel the server velocity, apply our scaled share.
+            // Partial take: cancel the server velocity, apply our scaled share
+            // on the client thread (inbound packets arrive on netty).
             event.setCanceled(true);
             Vec3 motion = packet.movement();
-            double x = motion.x * h;
-            double y = motion.y * v;
-            double z = motion.z * h;
-            minecraft.player.setDeltaMovement(
-                minecraft.player.getDeltaMovement().add(x, y, z));
-            if (jumpReset.getValue() && minecraft.player.onGround()) {
-              minecraft.player.jumpFromGround();
-            }
+            boolean jump = jumpReset.getValue() && minecraft.player.onGround();
+            minecraft.execute(
+                () -> {
+                  if (minecraft.player == null) return;
+                  double x = motion.x * h;
+                  double y = motion.y * v;
+                  double z = motion.z * h;
+                  minecraft.player.setDeltaMovement(
+                      minecraft.player.getDeltaMovement().add(x, y, z));
+                  if (jump) {
+                    minecraft.player.jumpFromGround();
+                  }
+                });
           }
 
           if (event.getPacket() instanceof ClientboundExplodePacket && explosions.getValue()) {

@@ -18,6 +18,7 @@ public class PingSpoof extends ToggleableModule {
 
   private Packet<?> held;
   private long heldAt;
+  private boolean flushing;
 
   public PingSpoof() {
     super("PingSpoof", new String[] {"pingspoof", "ping-spoof"}, 0x00FFFF,
@@ -56,6 +57,8 @@ public class PingSpoof extends ToggleableModule {
 
   private void onPacket(PacketEvent event) {
     if (!(event.getPacket() instanceof ServerboundKeepAlivePacket)) return;
+    // Own flush resend must pass through, or the keepalive never leaves.
+    if (flushing) return;
     event.setCanceled(true);
     // Keep only the latest: older keepalives are superseded.
     held = event.getPacket();
@@ -64,7 +67,9 @@ public class PingSpoof extends ToggleableModule {
 
   private void flush() {
     if (held != null && minecraft.getConnection() != null) {
+      flushing = true;
       minecraft.getConnection().send(held);
+      flushing = false;
     }
     held = null;
   }

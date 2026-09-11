@@ -12,14 +12,15 @@ import net.minecraft.network.protocol.status.ServerStatus;
 
 public class DiscordRPC extends ToggleableModule {
 
-  private static final long APP_ID = 1543616154747015218L;
+  private static final long APP_ID = 1468971656407027888L;
 
   private RichPresence presence;
   private boolean started;
+  private int tickCounter;
 
   public DiscordRPC() {
     super("DiscordRPC", new String[] {"discordrpc", "rpc"}, 0x5865F2, ModuleType.CLIENT);
-    setDescription("Shows Exeter activity on your Discord rich presence.");
+    setDescription("Shows Larp Client activity on your Discord rich presence.");
 
     this.listeners.add(
         new Listener<TickEvent>("discord_rpc_tick") {
@@ -35,20 +36,22 @@ public class DiscordRPC extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     started = false;
+    tickCounter = 0;
     presence = new RichPresence();
 
     DiscordIPC.setOnError(
         (code, message) -> {
-          System.err.println("[Exeter] Discord IPC error " + code + ": " + message);
+          System.err.println("[Larp Client] Discord IPC error " + code + ": " + message);
         });
 
     if (!DiscordIPC.start(
         APP_ID,
         () -> {
           started = true;
+          tickCounter = 0;
           updatePresence();
         })) {
-      System.err.println("[Exeter] Failed to connect to Discord");
+      System.err.println("[Larp Client] Failed to connect to Discord");
     }
   }
 
@@ -62,14 +65,16 @@ public class DiscordRPC extends ToggleableModule {
 
   private void onTick() {
     if (!started) return;
+    // Discord rate-limits activity updates: refresh every 5 seconds, not every tick.
+    if (tickCounter++ < 100) return;
+    tickCounter = 0;
     updatePresence();
   }
 
   private void updatePresence() {
     if (presence == null || !DiscordIPC.isConnected()) return;
 
-    presence.setDetails("Playing on Exeter");
-    presence.setSmallImage("exeter", "Exeter Client");
+    presence.setDetails("Playing Larp Client");
 
     ServerData server = minecraft.getCurrentServer();
     if (server != null) {

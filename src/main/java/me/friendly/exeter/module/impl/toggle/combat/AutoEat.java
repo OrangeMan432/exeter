@@ -102,13 +102,20 @@ public class AutoEat extends ToggleableModule {
   }
 
   private int findFood() {
+    // 6b6t-pattern SmartEat: highest saturation wins, nutrition breaks ties.
+    int best = -1;
+    double bestScore = -1.0;
     for (int i = 0; i < 9; i++) {
       ItemStack stack = minecraft.player.getInventory().getItem(i);
-      if (!stack.isEmpty()
-          && stack.get(net.minecraft.core.component.DataComponents.FOOD) != null) {
-        return i;
+      if (stack.isEmpty()) continue;
+      var food = stack.get(net.minecraft.core.component.DataComponents.FOOD);
+      if (food == null) continue;
+      double score = food.saturation() * 2.0 + food.nutrition();
+      if (score > bestScore) {
+        bestScore = score;
+        best = i;
       }
     }
-    return -1;
+    return best;
   }
 }

@@ -348,7 +348,7 @@ public class AutoGear extends ToggleableModule {
 
   public static File getFile() {
     return new File(
-        net.minecraft.client.Minecraft.getInstance().gameDirectory, "SkidClient/AutoGear.json");
+        net.minecraft.client.Minecraft.getInstance().gameDirectory, "LarpClient/AutoGear.json");
   }
 
   public static JsonObject readJson() {
