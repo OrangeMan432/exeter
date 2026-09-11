@@ -60,7 +60,7 @@ if (statusOutput != null && !statusOutput.trim().isEmpty()) {
 compileJava {
     // from sn0w
     String contents = ""
-    File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'
+    File update = file 'src/main/java/me/larp/client/core/Larp.java'
     contents = update.getText( 'UTF-8' )
     contents = contents.replaceAll( 'HASH = "(.*?)"', 'HASH = "' + hash + '"' )
     contents = contents.replaceAll( 'BUILD = "(.*?)"', 'BUILD = "' + build + '"' )

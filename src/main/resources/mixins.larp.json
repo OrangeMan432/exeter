@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "me.larp.client.mixin",
+  "refmap": "mixins.larp-client.refmap.json",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "MixinNetworkManager",
+    "MixinGuiIngame",
+    "MixinKeyboardHandler",
+    "MixinClientPlayer",
+    "MixinLevelRenderer"
+  ]
+}

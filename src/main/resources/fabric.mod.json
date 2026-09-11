@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "exeter",
+  "id": "larp-client",
   "version": "${version}",
   "name": "Larp Client",
   "description": "Larp Client - an anarchy-oriented Minecraft client.",
@@ -13,11 +13,11 @@
   "environment": "client",
   "entrypoints": {
     "main": [
-      "me.friendly.exeter.ExeterInitializer"
+      "me.larp.client.LarpInitializer"
     ]
   },
   "mixins": [
-    "mixins.exeter.json"
+    "mixins.larp.json"
   ],
   "depends": {
     "fabricloader": ">=0.15.0",

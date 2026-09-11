@@ -1,0 +1,31 @@
+package me.larp.client.events.unused;
+
+import me.larp.api.event.Event;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+
+public class BlockBreakEvent extends Event {
+  private BlockPos blockPos;
+  private Direction enumFacing;
+
+  public BlockBreakEvent(BlockPos blockPos, Direction enumFacing) {
+    this.blockPos = blockPos;
+    this.enumFacing = enumFacing;
+  }
+
+  public BlockPos getBlockPos() {
+    return this.blockPos;
+  }
+
+  public void setBlockPos(BlockPos blockPos) {
+    this.blockPos = blockPos;
+  }
+
+  public Direction getEnumFacing() {
+    return this.enumFacing;
+  }
+
+  public void setEnumFacing(Direction enumFacing) {
+    this.enumFacing = enumFacing;
+  }
+}

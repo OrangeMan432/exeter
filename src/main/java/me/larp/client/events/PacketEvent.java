@@ -1,0 +1,20 @@
+package me.larp.client.events;
+
+import me.larp.api.event.Event;
+import net.minecraft.network.protocol.Packet;
+
+public class PacketEvent extends Event {
+  private Packet packet;
+
+  public PacketEvent(Packet packet) {
+    this.packet = packet;
+  }
+
+  public Packet getPacket() {
+    return this.packet;
+  }
+
+  public void setPacket(Packet packet) {
+    this.packet = packet;
+  }
+}

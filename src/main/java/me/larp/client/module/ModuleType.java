@@ -1,0 +1,20 @@
+package me.larp.client.module;
+
+public enum ModuleType {
+  CLIENT("Client"),
+  COMBAT("Combat"),
+  MISCELLANEOUS("Miscellaneous"),
+  MOVEMENT("Movement"),
+  RENDER("Render"),
+  WORLD("World");
+
+  private final String label;
+
+  private ModuleType(String label) {
+    this.label = label;
+  }
+
+  public String getLabel() {
+    return this.label;
+  }
+}

@@ -1,8 +1,8 @@
-# AGENTS.md — Skid Client (Exeter fork)
+# AGENTS.md — Larp Client
 
 Fabric 26.2 Minecraft client mod. Branch `skid` tracks `origin/skid` on
-`orangeman432/exeter`. Display name is "Skid Client"; packages stay
-`me.friendly.exeter` (do not rename packages).
+`orangeman432/exeter`. Display name is "Larp Client"; root package is
+`me.larp.client`.
 
 ## Build
 
@@ -16,8 +16,8 @@ Fabric 26.2 Minecraft client mod. Branch `skid` tracks `origin/skid` on
 - First build needs network (mappings + Fabric deps). Incremental builds take
   ~10s; `clean` forces slow loom re-resolves, avoid it unless necessary.
 - `compileJava` rewrites `HASH`/`BUILD`/`DIRTY` inside
-  `src/main/java/me/friendly/exeter/core/Exeter.java` on every compile. A dirty
-  `Exeter.java` after building is expected, not a mistake.
+  `src/main/java/me/larp/client/core/Larp.java` on every compile. A dirty
+  `Larp.java` after building is expected, not a mistake.
 - CI (`.github/workflows/gradle.yml`) is stale (JDK 11, `main` branch). Do not
   trust it; verify locally.
 - `format` task exists (google-java-format, downloads its own jar on first run).
@@ -43,7 +43,7 @@ Fabric 26.2 Minecraft client mod. Branch `skid` tracks `origin/skid` on
 
 ## Mixins
 
-- Registered in `src/main/resources/mixins.exeter.json`. Existing:
+- Registered in `src/main/resources/mixins.larp.json`. Existing:
   `MixinClientPlayer` (tick/motion events, NoSlow), `MixinLevelRenderer`
   (dispatches `RenderWorldEvent` after translucent features),
   `MixinNetworkManager`, `MixinGuiIngame`, `MixinKeyboardHandler`.
