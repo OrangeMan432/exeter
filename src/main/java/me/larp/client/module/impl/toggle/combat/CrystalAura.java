@@ -49,6 +49,8 @@ public class CrystalAura extends ToggleableModule {
       new NumberProperty<Double>(10.0, 0.0, 20.0, "Max Self");
   private final NumberProperty<Integer> burst =
       new NumberProperty<Integer>(1, 1, 5, "Burst Packets");
+  private final NumberProperty<Integer> maxBreaks =
+      new NumberProperty<Integer>(1, 1, 5, "Max Breaks");
   private final NumberProperty<Integer> existedTicks =
       new NumberProperty<Integer>(0, 0, 20, "Exist Ticks");
   private final NumberProperty<Integer> maxAttacks =
@@ -81,6 +83,7 @@ public class CrystalAura extends ToggleableModule {
         minDamage,
         maxSelf,
         burst,
+        maxBreaks,
         existedTicks,
         maxAttacks,
         setDead,
@@ -125,13 +128,14 @@ public class CrystalAura extends ToggleableModule {
 
     // Break first: crystals detonate the same tick they are attacked.
     // Scored by damage to the current target, not raw distance.
+    // No early return: placing happens in the SAME tick for lethal DPS.
     if (!eating && tickCounter - lastBreakTick >= breakDelay.getValue()) {
-      EndCrystal crystal = findCrystal(target);
-      if (crystal != null) {
+      for (int i = 0; i < maxBreaks.getValue(); i++) {
+        EndCrystal crystal = findCrystal(target);
+        if (crystal == null) break;
         attackCrystal(crystal);
-        lastBreakTick = tickCounter;
-        return;
       }
+      lastBreakTick = tickCounter;
     }
 
     if (eating) return;

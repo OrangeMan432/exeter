@@ -26,8 +26,8 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 
 | Module | Notes |
 | --- | --- |
-| `KillAura` | Attacks players/hostiles in range. Weapon auto-switch, rotate, cooldown (full-charge or Future-style spam at 0), walls-range, AntiWeakness sword swap. |
-| `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path, obby support placements, burst packets, existence validation, despawn sim. |
+| `KillAura` | Multi-target attacks with weapon auto-switch, rotate, cooldown, walls-range, AntiWeakness, shield-break axes, friend skip, Closest/Lowest-Health priority. |
+| `CrystalAura` | BlackOut-ported damage engine: per-spot target/self damage with exposure raycasts, armor, toughness, resistance, blast protection. MinDamage/MaxSelf gates, lethal fast-path, obby support placements, burst packets, multi-break, same-tick place+break, existence validation, despawn sim, friend skip. |
 | `AnchorAura` | BlackOut-pattern anchor engine: place, charge, detonate with MinPlace/MaxSelf/MinExplode gates. |
 | `AntiRegear` | Lemon-pattern shulker and ender chest breaker. |
 | `Surround` | Shoreline-pattern obsidian feet trap plus Lemon support blocks, Anti CEV head cover, and pause on eat. Center on enable, attacks blocking crystals, off-center extend, jump-disable, instant re-place on explosion sound. |

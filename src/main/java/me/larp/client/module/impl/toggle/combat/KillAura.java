@@ -1,5 +1,7 @@
 package me.larp.client.module.impl.toggle.combat;
 
+import java.util.ArrayList;
+import java.util.List;
 import me.larp.api.event.Listener;
 import me.larp.api.event.Stage;
 import me.larp.client.events.TickEvent;
@@ -41,6 +43,8 @@ public class KillAura extends ToggleableModule {
       new Property<Boolean>(true, "Anti Weakness");
   private final EnumProperty<Priority> priority =
       new EnumProperty<Priority>(Priority.CLOSEST, "Priority");
+  private final NumberProperty<Integer> multi =
+      new NumberProperty<Integer>(1, 1, 5, "Multi");
 
   private int tickCounter = -100;
 
@@ -59,7 +63,8 @@ public class KillAura extends ToggleableModule {
         autoSwitch,
         onlyWeapon,
         antiWeakness,
-        priority);
+        priority,
+        multi);
     this.listeners.add(
         new Listener<TickEvent>("killaura_tick") {
           @Override
@@ -82,14 +87,14 @@ public class KillAura extends ToggleableModule {
     tickCounter++;
     if (tickCounter < delay.getValue()) return;
 
-    LivingEntity target = findTarget();
-    if (target == null) return;
+    List<LivingEntity> targets = findTargets(multi.getValue());
+    if (targets.isEmpty()) return;
     // Meteor-pattern: full-charge hits only (0 = Future-style spam).
     if (minecraft.player.getAttackStrengthScale(0.0F) < cooldown.getValue().floatValue()) return;
 
     // Shield-break: axes disable blocking targets, so prefer one when raised.
-    int weaponSlot =
-        target.isBlocking() ? findAxeSlot() : findWeaponSlot();
+    LivingEntity first = targets.get(0);
+    int weaponSlot = first.isBlocking() ? findAxeSlot() : findWeaponSlot();
     if (weaponSlot == -1) {
       weaponSlot = findWeaponSlot();
     }
@@ -102,7 +107,7 @@ public class KillAura extends ToggleableModule {
           weaponSlot != minecraft.player.getInventory().getSelectedSlot() || !isSwordHeld();
       if (needSword) {
         PlayerUtil.swapTo(weaponSlot);
-        minecraft.gameMode.attack(minecraft.player, target);
+        minecraft.gameMode.attack(minecraft.player, first);
         if (swingHand.getValue()) {
           minecraft.player.swing(InteractionHand.MAIN_HAND);
         }
@@ -121,20 +126,21 @@ public class KillAura extends ToggleableModule {
 
     float yaw = minecraft.player.getYRot();
     float pitch = minecraft.player.getXRot();
-    if (rotate.getValue()) {
-      double dx = target.getX() - minecraft.player.getX();
-      double dy =
-          (target.getY() + target.getBbHeight() * 0.5)
-              - (minecraft.player.getY() + minecraft.player.getEyeHeight());
-      double dz = target.getZ() - minecraft.player.getZ();
-      double dist = Math.sqrt(dx * dx + dz * dz);
-      minecraft.player.setYRot((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
-      minecraft.player.setXRot((float) (-Math.toDegrees(Math.atan2(dy, dist))));
-    }
-
-    minecraft.gameMode.attack(minecraft.player, target);
-    if (swingHand.getValue()) {
-      minecraft.player.swing(InteractionHand.MAIN_HAND);
+    for (LivingEntity target : targets) {
+      if (rotate.getValue()) {
+        double dx = target.getX() - minecraft.player.getX();
+        double dy =
+            (target.getY() + target.getBbHeight() * 0.5)
+                - (minecraft.player.getY() + minecraft.player.getEyeHeight());
+        double dz = target.getZ() - minecraft.player.getZ();
+        double dist = Math.sqrt(dx * dx + dz * dz);
+        minecraft.player.setYRot((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
+        minecraft.player.setXRot((float) (-Math.toDegrees(Math.atan2(dy, dist))));
+      }
+      minecraft.gameMode.attack(minecraft.player, target);
+      if (swingHand.getValue()) {
+        minecraft.player.swing(InteractionHand.MAIN_HAND);
+      }
     }
 
     if (rotate.getValue()) {
@@ -147,11 +153,17 @@ public class KillAura extends ToggleableModule {
   }
 
   private LivingEntity findTarget() {
+    List<LivingEntity> found = findTargets(1);
+    return found.isEmpty() ? null : found.get(0);
+  }
+
+  /** Collects up to max targets by priority score, cheapest first. */
+  private List<LivingEntity> findTargets(int max) {
     double rangeSq = range.getValue() * range.getValue();
     double wallsSq = wallsRange.getValue() * wallsRange.getValue();
-    // Hand-rolled loop: the stream + comparator version allocated per tick.
-    LivingEntity best = null;
-    double bestScore = Double.MAX_VALUE;
+    // Insertion-kept top-max list: no full sort, no stream garbage.
+    List<LivingEntity> top = new ArrayList<>();
+    List<Double> scores = new ArrayList<>();
     for (Entity e : minecraft.level.entitiesForRendering()) {
       if (!(e instanceof LivingEntity)) continue;
       if (e == minecraft.player || !e.isAlive()) continue;
@@ -174,12 +186,18 @@ public class KillAura extends ToggleableModule {
           priority.getValue() == Priority.LOWEST_HEALTH
               ? ((LivingEntity) e).getHealth() + ((LivingEntity) e).getAbsorptionAmount()
               : distSq;
-      if (score < bestScore) {
-        bestScore = score;
-        best = (LivingEntity) e;
+      int at = 0;
+      while (at < scores.size() && scores.get(at) <= score) at++;
+      if (at < max) {
+        top.add(at, (LivingEntity) e);
+        scores.add(at, score);
+        if (top.size() > max) {
+          top.remove(top.size() - 1);
+          scores.remove(scores.size() - 1);
+        }
       }
     }
-    return best;
+    return top;
   }
 
   private boolean isSwordHeld() {
