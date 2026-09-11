@@ -3,14 +3,12 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import me.friendly.api.minecraft.render.font.FontUtil;
-import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 
-public final class PotionsHud extends HudModule {
+public final class PotionsHud extends ListHudModule {
 
   public PotionsHud() {
     super("Potions", new String[] {"potions", "pots", "p"}, Corner.BOTTOM_LEFT);
@@ -24,37 +22,22 @@ public final class PotionsHud extends HudModule {
   }
 
   @Override
-  public int getHeight() {
-    if (minecraft.player == null) return 9;
+  protected List<TextEntry> getEntries() {
+    List<TextEntry> entries = new ArrayList<>();
+    if (minecraft.player == null) return entries;
     Collection<MobEffectInstance> effects = minecraft.player.getActiveEffects();
-    if (effects == null || effects.isEmpty()) return 0;
-    return effects.size() * 9;
-  }
-
-  @Override
-  public void render(int scaledWidth, int scaledHeight) {
-    try {
-      Collection<MobEffectInstance> effects = minecraft.player.getActiveEffects();
-      if (effects == null || effects.isEmpty()) return;
-      float tickRate = minecraft.level.tickRateManager().tickrate();
-      List<MobEffectInstance> sortedEffects = new ArrayList<>(effects);
-      boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-      boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
-      int py = top ? getY() : getY() + getHeight() - 9;
-      for (MobEffectInstance effect : sortedEffects) {
-        if (effect == null) continue;
-        MobEffect mobEffect = effect.getEffect().value();
-        if (mobEffect == null) continue;
-        String name = net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
-        String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
-        String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
-        int lw = FontUtil.getStringWidth(text);
-        int px = right ? getX() + getWidth() - lw : getX();
-        RenderMethods.guiGraphics.text(minecraft.font, text, px, py, 0xFF000000 | mobEffect.getColor(), true);
-        py += top ? 9 : -9;
-      }
-    } catch (Exception e) {
-      System.out.println("[PotionsHud] render error: " + e.getMessage());
+    if (effects == null || effects.isEmpty()) return entries;
+    float tickRate = minecraft.level.tickRateManager().tickrate();
+    for (MobEffectInstance effect : effects) {
+      if (effect == null) continue;
+      MobEffect mobEffect = effect.getEffect().value();
+      if (mobEffect == null) continue;
+      String name =
+          net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
+      String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
+      String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
+      entries.add(new TextEntry(text, 0xFF000000 | mobEffect.getColor()));
     }
+    return entries;
   }
 }

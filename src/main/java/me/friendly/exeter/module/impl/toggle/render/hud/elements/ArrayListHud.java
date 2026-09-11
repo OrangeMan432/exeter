@@ -3,15 +3,13 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.EnumProperty;
 
-public final class ArrayListHud extends HudModule {
+public final class ArrayListHud extends ListHudModule {
 
   public enum Organize {
     ABC,
@@ -36,61 +34,30 @@ public final class ArrayListHud extends HudModule {
   }
 
   @Override
-  public int getWidth() {
-    int max = 0;
-    for (String line : getLines()) {
-      int w = FontUtil.getStringWidth(line);
-      if (w > max) max = w;
-    }
-    return max;
-  }
-
-  @Override
-  public int getHeight() {
-    return getLines().size() * 9;
-  }
-
-  @Override
-  public void render(int scaledWidth, int scaledHeight) {
+  protected List<TextEntry> getEntries() {
     List<Module> modules =
         new ArrayList<>(Exeter.getInstance().getModuleManager().getRegistry());
-
-    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
 
     Comparator<Module> cmp;
     if (organize.getValue() == Organize.ABC) {
       cmp = Comparator.comparing(Module::getLabel);
     } else {
       cmp = Comparator.comparingInt(
-              (Module m) -> FontUtil.getStringWidth(getTag(m.getLabel())))
+              (Module m) -> me.friendly.api.minecraft.render.font.FontUtil.getStringWidth(
+                  getTag(m.getLabel())))
           .reversed();
     }
     modules.sort(cmp);
 
-    int py = top ? getY() : getY() + getHeight() - 9;
+    List<TextEntry> entries = new ArrayList<>();
     for (Module module : modules) {
       if (!(module instanceof ToggleableModule tm)) continue;
       if (!tm.isRunning() || !tm.isDrawn()) continue;
       if (tm.getModuleType() == ModuleType.HUD) continue;
       int color = tm.getColor() | 0xFF000000;
-      String label = getTag(tm.getLabel());
-      int lw = FontUtil.getStringWidth(label);
-      int px = right ? getX() + getWidth() - lw : getX();
-      FontUtil.drawString(label, px, py, color);
-      py += top ? 9 : -9;
+      entries.add(new TextEntry(getTag(tm.getLabel()), color));
     }
-  }
-
-  private List<String> getLines() {
-    List<String> lines = new ArrayList<>();
-    for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      if (module instanceof ToggleableModule tm && tm.isRunning() && tm.isDrawn()
-          && tm.getModuleType() != ModuleType.HUD) {
-        lines.add(getTag(tm.getLabel()));
-      }
-    }
-    return lines;
+    return entries;
   }
 
   private String getTag(String tag) {
