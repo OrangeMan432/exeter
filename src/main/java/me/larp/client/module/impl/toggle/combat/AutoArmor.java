@@ -37,13 +37,24 @@ public class AutoArmor extends ToggleableModule {
       new EnumProperty<Priority>(Priority.BLAST, "Priority");
   private final NumberProperty<Double> minDurability =
       new NumberProperty<Double>(0.0, 0.0, 0.2, "Min Durability");
+  // Lemon-pattern per-slot thresholds: each piece swaps below its own floor.
+  private final NumberProperty<Double> helmetMin =
+      new NumberProperty<Double>(0.06, 0.0, 1.0, "Helmet Min");
+  private final NumberProperty<Double> chestMin =
+      new NumberProperty<Double>(0.07, 0.0, 1.0, "Chest Min");
+  private final NumberProperty<Double> legsMin =
+      new NumberProperty<Double>(0.08, 0.0, 1.0, "Legs Min");
+  private final NumberProperty<Double> bootsMin =
+      new NumberProperty<Double>(0.09, 0.0, 1.0, "Boots Min");
   private final Property<Boolean> elytraPriority = new Property<Boolean>(true, "Elytra Priority");
   private final Property<Boolean> noBinding = new Property<Boolean>(true, "No Binding");
 
   public AutoArmor() {
     super("AutoArmor", new String[] {"autoarmor", "auto-armor"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Replaces broken armor with the best blast-prot pieces.");
-    offerProperties(priority, minDurability, elytraPriority, noBinding);
+    offerProperties(
+        priority, minDurability, helmetMin, chestMin, legsMin, bootsMin, elytraPriority,
+        noBinding);
     this.listeners.add(
         new Listener<TickEvent>("autoarmor_tick") {
           @Override
@@ -74,7 +85,7 @@ public class AutoArmor extends ToggleableModule {
           && worn.getItem() == Items.ELYTRA) {
         continue;
       }
-      if (!worn.isEmpty() && durability(worn) >= minDurability.getValue()) {
+      if (!worn.isEmpty() && durability(worn) >= slotFloor(slot)) {
         continue;
       }
       int best = findBest(slot, blast, prot, binding);
@@ -102,8 +113,7 @@ public class AutoArmor extends ToggleableModule {
       var equippable = stack.get(DataComponents.EQUIPPABLE);
       if (equippable == null || equippable.slot() != slot) continue;
       if (noBinding.getValue() && binding != null && level(stack, binding) > 0) continue;
-      if (durability(stack) < minDurability.getValue()) continue;
-      candidates.add(new int[] {i, score(stack, blast, prot)});
+      if (durability(stack) < minDurability.getValue()) continue;      candidates.add(new int[] {i, score(stack, blast, prot)});
     }
     return candidates.stream().max(Comparator.comparingInt(a -> a[1])).map(a -> a[0]).orElse(-1);
   }
@@ -136,6 +146,22 @@ public class AutoArmor extends ToggleableModule {
     return (stack.getMaxDamage() - stack.getDamageValue()) / (double) stack.getMaxDamage();
   }
 
+  /** Lemon-pattern per-slot floor: global minimum, raised by the slot setting. */
+  private double slotFloor(EquipmentSlot slot) {
+    double floor = minDurability.getValue();
+    switch (slot) {
+      case HEAD:
+        return Math.max(floor, helmetMin.getValue());
+      case CHEST:
+        return Math.max(floor, chestMin.getValue());
+      case LEGS:
+        return Math.max(floor, legsMin.getValue());
+      case FEET:
+        return Math.max(floor, bootsMin.getValue());
+      default:
+        return floor;
+    }
+  }
   private Holder<Enchantment> resolve(net.minecraft.resources.ResourceKey<Enchantment> key) {
     try {
       return minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
