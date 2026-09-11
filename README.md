@@ -66,7 +66,7 @@ Registered in `ModuleManager`. Categories: Combat, Miscellaneous, Movement, Rend
 | `Sprint` | Auto-sprint with omnidirectional mode. |
 | `Step` | Step height via the `STEP_HEIGHT` attribute. |
 | `Velocity` | Scales knockback by Horizontal/Vertical percent with optional explosion cancel and jump reset. |
-| `ElytraFly` | Boosted elytra flight with pitch steering and auto takeoff. |
+| `ElytraFly` | Combatant-pattern engine: Boost, Static, Vanilla, Firework modes with elytra gating. |
 | `LongJump` | Shoreline NORMAL-mode staged longjump. |
 | `NoFall` | Resets fall distance to prevent fall damage. |
 | `NoSlow` | Removes eating/drinking slowdown via LocalPlayer mixin. |
@@ -121,6 +121,7 @@ Settings persist to a Gson JSON config (`friends.json` lives alongside the clien
 - **Meteor** (open source) — aura cross-check (walls-range, cooldown).
 - **Nicotine** (`tranarchy/nicotine`, GPL-3.0) — 26.x 3D render pipeline reference.
 - **6b6t AnarchyClient** (`6b6t/AnarchyClient`, MIT) — Parkour/SafeWalk patterns.
+- **Combatant** (`pivosos2007/combatant-client`, GPL-3.0) — 26.2 ElytraFly modes reference.
 
 ## Disclaimer
 
