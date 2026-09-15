@@ -122,7 +122,7 @@ public abstract class HudModule extends ToggleableModule {
         m.y = top ? baseY : baseY - h;
         m.positioned = true;
 
-        baseY = top ? baseY + h + gap : baseY - h - gap;
+        baseY = top ? baseY + h + (h > 0 ? gap : 0) : baseY - h - (h > 0 ? gap : 0);
       }
     }
   }
@@ -158,7 +158,7 @@ public abstract class HudModule extends ToggleableModule {
         m.y = top ? baseY : baseY - h;
         m.positioned = true;
 
-        baseY = top ? baseY + h + gap : baseY - h - gap;
+        baseY = top ? baseY + h + (h > 0 ? gap : 0) : baseY - h - (h > 0 ? gap : 0);
       }
     }
   }

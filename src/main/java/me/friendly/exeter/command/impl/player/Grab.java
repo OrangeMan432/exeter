@@ -8,6 +8,9 @@ import me.friendly.exeter.command.Command;
 public final class Grab extends Command {
   public Grab() {
     super(new String[] {"grab", "grabip", "grabcoords"}, new Argument("ip|coords"));
+    setDescription("Grab server info");
+    addSubCommand("ip", "", "copy server IP");
+    addSubCommand("coords", "", "copy coordinates");
   }
 
   @Override

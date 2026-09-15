@@ -6,6 +6,7 @@ import me.friendly.exeter.command.Command;
 public final class HClip extends Command {
   public HClip() {
     super(new String[] {"hclip", "hc", "h"}, new Argument("blocks"));
+    setDescription("Horizontally clip through blocks");
   }
 
   @Override

@@ -17,6 +17,11 @@ public class Debug extends ToggleableModule {
 
   private final Property<Boolean> logToFile = new Property<Boolean>(false, "Log To File");
   private final Property<Boolean> logToChat = new Property<Boolean>(false, "Log To Chat");
+  private final Property<Boolean> logToNotifications =
+      new Property<Boolean>(false, "Log To Notifications");
+  private final Property<Boolean> showInfo = new Property<Boolean>(true, "Show Info");
+  private final Property<Boolean> showWarn = new Property<Boolean>(true, "Show Warnings");
+  private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
   private final PopupProperty modulesPopup;
 
   private final Map<String, Boolean> moduleToggles = new LinkedHashMap<>();
@@ -26,7 +31,8 @@ public class Debug extends ToggleableModule {
     super("Debug", new String[] {"debug"}, 0x00FF00, ModuleType.CLIENT);
     setDescription("Per-module debug logging to file and chat.");
     this.modulesPopup = new PopupProperty("Modules", this::openModulesPopup);
-    offerProperties(logToFile, logToChat, modulesPopup);
+    offerProperties(
+        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, modulesPopup);
   }
 
   public void initModuleToggles(Iterable<Module> modules) {
@@ -93,6 +99,10 @@ public class Debug extends ToggleableModule {
     logger.setEnabled(this.isRunning());
     logger.setLogToFile(logToFile.getValue());
     logger.setLogToChat(logToChat.getValue());
+    logger.setLogToNotifications(logToNotifications.getValue());
+    logger.setShowInfo(showInfo.getValue());
+    logger.setShowWarn(showWarn.getValue());
+    logger.setShowError(showError.getValue());
 
     for (Map.Entry<String, Boolean> entry : moduleToggles.entrySet()) {
       logger.setModuleEnabled(entry.getKey(), entry.getValue());
@@ -105,6 +115,10 @@ public class Debug extends ToggleableModule {
 
   public Property<Boolean> getLogToChat() {
     return logToChat;
+  }
+
+  public Property<Boolean> getLogToNotifications() {
+    return logToNotifications;
   }
 
   public Map<String, Boolean> getModuleToggles() {

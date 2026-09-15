@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFW;
 public final class Bind extends Command {
   public Bind() {
     super(new String[] {"bind"}, new Argument("module"), new Argument("key"));
+    setDescription("Bind a module to a key");
   }
 
   @Override

@@ -13,7 +13,7 @@ public final class CoordsHud extends HudModule {
 
   @Override
   public int getWidth() {
-    String text = String.format("\u00a7f%s, %s, %s \u00a77XYZ", 0, 0, 0);
+    String text = String.format("\u00a77XYZ: \u00a7f%s, %s, %s", 0, 0, 0);
     return FontUtil.getStringWidth(text);
   }
 
@@ -26,7 +26,7 @@ public final class CoordsHud extends HudModule {
   public void render(int scaledWidth, int scaledHeight) {
     String text =
         String.format(
-            "\u00a7f%s, %s, %s \u00a77XYZ",
+            "\u00a77XYZ: \u00a7f%s, %s, %s",
             (int) minecraft.player.getX(),
             (int) minecraft.player.getY(),
             (int) minecraft.player.getZ());

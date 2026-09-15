@@ -14,12 +14,22 @@ import net.fabricmc.loader.api.FabricLoader;
  * Messages are routed to file, chat, or both based on the Debug module's settings.
  */
 public final class DebugLogger {
+  public enum Level {
+    INFO,
+    WARN,
+    ERROR
+  }
+
   private static DebugLogger instance;
   private final File logFile;
   private final Map<String, Boolean> moduleEnabled = new ConcurrentHashMap<>();
   private volatile boolean logToFile = false;
   private volatile boolean logToChat = false;
+  private volatile boolean logToNotifications = false;
   private volatile boolean enabled = false;
+  private volatile boolean showInfo = true;
+  private volatile boolean showWarn = true;
+  private volatile boolean showError = true;
   private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
   private DebugLogger() {
@@ -59,6 +69,34 @@ public final class DebugLogger {
     return logToChat;
   }
 
+  public void setLogToNotifications(boolean logToNotifications) {
+    this.logToNotifications = logToNotifications;
+  }
+
+  public boolean isLogToNotifications() {
+    return logToNotifications;
+  }
+
+  public void setShowInfo(boolean v) {
+    showInfo = v;
+  }
+
+  public void setShowWarn(boolean v) {
+    showWarn = v;
+  }
+
+  public void setShowError(boolean v) {
+    showError = v;
+  }
+
+  public boolean isLevelEnabled(Level level) {
+    return switch (level) {
+      case INFO -> showInfo;
+      case WARN -> showWarn;
+      case ERROR -> showError;
+    };
+  }
+
   public void setModuleEnabled(String moduleName, boolean enabled) {
     moduleEnabled.put(moduleName, enabled);
   }
@@ -75,11 +113,21 @@ public final class DebugLogger {
    * @param message the debug message
    */
   public void log(String module, String message) {
+    log(module, Level.INFO, message);
+  }
+
+  public void log(String module, Level level, String message) {
     if (!enabled) return;
     if (!isModuleEnabled(module)) return;
+    if (!isLevelEnabled(level)) return;
 
+    String prefix = switch (level) {
+      case INFO -> "";
+      case WARN -> "[WARNING] ";
+      case ERROR -> "[ERROR] ";
+    };
     String timestamp = LocalDateTime.now().format(timeFmt);
-    String formatted = "[" + timestamp + "] [" + module + "] " + message;
+    String formatted = "[" + timestamp + "] [" + module + "] " + prefix + message;
 
     if (logToFile) {
       writeToFile(formatted);
@@ -87,6 +135,15 @@ public final class DebugLogger {
 
     if (logToChat) {
       sendToChat(formatted);
+    }
+
+    if (logToNotifications) {
+      String icon = switch (level) {
+        case INFO -> "info";
+        case WARN -> "warning";
+        case ERROR -> "error";
+      };
+      sendToNotifications("[" + module + "] " + prefix + message, icon);
     }
   }
 
@@ -110,6 +167,10 @@ public final class DebugLogger {
     if (logToChat) {
       sendToChat(formatted);
     }
+
+    if (logToNotifications) {
+      sendToNotifications("[" + tag + "] " + message);
+    }
   }
 
   /**
@@ -131,6 +192,10 @@ public final class DebugLogger {
 
     if (logToChat) {
       sendToChat(formatted);
+    }
+
+    if (logToNotifications) {
+      sendToNotifications("[" + tag + "] " + message);
     }
   }
 
@@ -162,5 +227,15 @@ public final class DebugLogger {
     } catch (Exception e) {
       // player not available, ignore
     }
+  }
+
+  private void sendToNotifications(String message, String icon) {
+    try {
+      me.friendly.exeter.util.NotificationManager.push(message, icon);
+    } catch (Exception ignored) {}
+  }
+
+  private void sendToNotifications(String message) {
+    sendToNotifications(message, "info");
   }
 }

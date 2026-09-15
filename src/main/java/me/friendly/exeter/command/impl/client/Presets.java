@@ -10,6 +10,7 @@ import me.friendly.exeter.presets.Preset;
 public final class Presets extends Command {
   public Presets() {
     super(new String[] {"preset", "presets"}, new Argument("module"), new Argument("preset"));
+    setDescription("Load module presets");
   }
 
   @Override

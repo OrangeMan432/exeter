@@ -11,6 +11,7 @@ import me.friendly.exeter.module.ToggleableModule;
 public final class Modules extends Command {
   public Modules() {
     super(new String[] {"modules", "mods", "ms", "ml", "lm"}, new Argument[0]);
+    setDescription("List enabled modules");
   }
 
   @Override

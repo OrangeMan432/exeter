@@ -7,6 +7,7 @@ import me.friendly.exeter.core.Exeter;
 public final class Runtime extends Command {
   public Runtime() {
     super(new String[] {"runtime", "time"}, new Argument("format"));
+    setDescription("Show playtime");
   }
 
   @Override

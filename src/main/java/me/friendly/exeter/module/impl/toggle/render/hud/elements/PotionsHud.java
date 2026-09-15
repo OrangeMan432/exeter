@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -18,7 +19,15 @@ public final class PotionsHud extends ListHudModule {
 
   @Override
   public int getWidth() {
+    if (getEntries().isEmpty() && isInEditor()) {
+      return FontUtil.getStringWidth(getDummyEntries().get(0).text());
+    }
     return 100;
+  }
+
+  @Override
+  protected List<TextEntry> getDummyEntries() {
+    return List.of(new TextEntry("Speed II (01:23)", 0xFF7CAFC6));
   }
 
   @Override

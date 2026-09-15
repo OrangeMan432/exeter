@@ -16,6 +16,7 @@ public class DiscordRPC extends ToggleableModule {
 
   private RichPresence presence;
   private boolean started;
+  private long lastUpdateMs;
 
   public DiscordRPC() {
     super("DiscordRPC", new String[] {"discordrpc", "rpc"}, 0x5865F2, ModuleType.CLIENT);
@@ -62,6 +63,9 @@ public class DiscordRPC extends ToggleableModule {
 
   private void onTick() {
     if (!started) return;
+    long now = System.currentTimeMillis();
+    if (now - lastUpdateMs < 200) return;
+    lastUpdateMs = now;
     updatePresence();
   }
 

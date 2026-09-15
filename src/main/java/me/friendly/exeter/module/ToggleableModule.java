@@ -7,6 +7,7 @@ import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.keybind.Keybind;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.NotificationManager;
 
 /** A Module implementation of Toggleable. */
 public class ToggleableModule extends Module implements Toggleable {
@@ -75,11 +76,19 @@ public class ToggleableModule extends Module implements Toggleable {
 
   @Override
   public void setRunning(boolean running) {
+    boolean wasRunning = this.running;
     this.running = running;
     if (this.isRunning()) {
       this.onEnable();
     } else {
       this.onDisable();
+    }
+    if (wasRunning != running) {
+      String text = getLabel() + (running ? " enabled" : " disabled");
+      String icon = running ? "tick" : "cross";
+      try {
+        NotificationManager.push(text, icon);
+      } catch (Exception ignored) {}
     }
   }
 
