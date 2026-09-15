@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.exeter.properties.PopupProperty;
 
 public class PopupButton extends Button {
@@ -12,7 +13,7 @@ public class PopupButton extends Button {
 
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT && this.isHovering(mouseX, mouseY)) {
       this.property.getOpenAction().run();
     }
   }

@@ -146,6 +146,27 @@ public class ExeterConfig {
 
         if (moduleData.containsKey("keybind")) {
           int keybind = ((Number) moduleData.get("keybind")).intValue();
+          // Pre-26.3 configs store GLFW keycodes; migrate to SDL codes once.
+          Object marker = moduleData.get("keycodes");
+          if (marker == null) {
+            for (Map.Entry<String, Object> e : moduleData.entrySet()) {
+              String k = e.getKey();
+              if (k.startsWith("\"") && k.endsWith("\"")) {
+                k = k.substring(1, k.length() - 1);
+              }
+              if (k.equals("keycodes")) {
+                marker = e.getValue();
+                break;
+              }
+            }
+          }
+          if (!"sdl".equals(String.valueOf(marker))) {
+            int migrated =
+                me.friendly.exeter.keybind.Keybind.migrateLegacyGlfwKey(keybind);
+            DebugLogger.get()
+                .logSystem("Config", "  migrating legacy keybind " + keybind + " -> " + migrated);
+            keybind = migrated;
+          }
           var kb =
               Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
           if (kb != null) {
@@ -375,6 +396,7 @@ public class ExeterConfig {
         var keybind =
             Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
         moduleData.put("keybind", (long) (keybind != null ? keybind.getKey() : 0));
+        moduleData.put("keycodes", "sdl");
         data.put("module", moduleData);
         DebugLogger.get().logSystem("Config", "  module.enabled = " + toggleable.isRunning());
         DebugLogger.get()

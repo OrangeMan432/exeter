@@ -16,7 +16,7 @@ import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -329,11 +329,10 @@ public class AutoShulker extends ToggleableModule {
     }
 
     if (placeSwing.getValue()) {
-      if (packetSwing.getValue()) {
-        minecraft.getConnection().send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
-      } else {
-        minecraft.player.swing(InteractionHand.MAIN_HAND);
-      }
+      minecraft.player.swing(
+          InteractionHand.MAIN_HAND,
+          minecraft.player.getMainHandItem().getAttackAnimation(),
+          false);
     }
 
     NotificationManager.push("Placed shulker at " + blockAim.pos.toShortString(), "shulker_box");

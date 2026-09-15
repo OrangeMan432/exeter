@@ -5,7 +5,7 @@ import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 
 public class SearchSelectPopup {
@@ -238,14 +238,14 @@ public class SearchSelectPopup {
       return false;
     }
 
-    if (inSearchBar && mouseButton == 0) {
+    if (inSearchBar && mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       focused = true;
       return true;
     }
 
     focused = false;
 
-    if (mouseButton == 0) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       int selectAllX = popupX + 4;
       int selectAllY = popupY + popupH - BUTTON_AREA_H;
       if (mouseX >= selectAllX
@@ -313,7 +313,7 @@ public class SearchSelectPopup {
       }
     }
 
-    if (mouseButton == 1) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT) {
       int doneX = popupX + popupW - 59;
       int doneY = popupY + popupH - BUTTON_AREA_H;
       if (mouseX >= doneX
@@ -357,11 +357,11 @@ public class SearchSelectPopup {
   }
 
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-    if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+    if (keyCode == InputConstants.KEY_ESCAPE) {
       onCancel.run();
       return true;
     }
-    if (keyCode == GLFW.GLFW_KEY_BACKSPACE && focused) {
+    if (keyCode == InputConstants.KEY_BACKSPACE && focused) {
       if (!search.isEmpty()) {
         search = search.substring(0, search.length() - 1);
       }

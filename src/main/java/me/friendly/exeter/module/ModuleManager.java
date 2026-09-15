@@ -39,7 +39,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 /** Manages {@link Module}s for Exeter. */
 public final class ModuleManager extends ListRegistry<Module> {
@@ -93,7 +93,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     Exeter.getInstance()
         .getKeybindManager()
         .getKeybindByLabel("ClickGui")
-        .setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        .setKey(InputConstants.KEY_RSHIFT);
 
     new Config("module_configurations") {
 

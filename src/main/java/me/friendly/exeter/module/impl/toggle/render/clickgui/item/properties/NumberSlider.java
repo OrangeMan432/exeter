@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
@@ -8,7 +9,6 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.properties.NumberProperty;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 
 public class NumberSlider extends Item {
   private NumberProperty numberProperty;
@@ -52,7 +52,7 @@ public class NumberSlider extends Item {
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     super.mouseClicked(mouseX, mouseY, mouseButton);
-    if (isHovering(mouseX, mouseY) && mouseButton == 0) {
+    if (isHovering(mouseX, mouseY) && mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       setSettingFromX(mouseX);
     }
   }
@@ -78,9 +78,7 @@ public class NumberSlider extends Item {
 
   private void dragSetting(int mouseX, int mouseY) {
     if (isHovering(mouseX, mouseY)
-        && GLFW.glfwGetMouseButton(
-                Minecraft.getInstance().getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            == GLFW.GLFW_PRESS) {
+        && Minecraft.getInstance().mouseHandler.isLeftPressed()) {
       setSettingFromX(mouseX);
     }
   }

@@ -9,8 +9,8 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.render.tabgui.GuiTabHandler;
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.exeter.properties.EnumProperty;
-import org.lwjgl.glfw.GLFW;
 
 public final class TabGui extends ToggleableModule {
   private GuiTabHandler guiTabHandler;
@@ -42,7 +42,7 @@ public final class TabGui extends ToggleableModule {
             if (event.getType() == InputEvent.Type.KEYBOARD_KEY_PRESS) {
               TabGui.this.guiTabHandler.ensureTabsPopulated();
               switch (event.getKey()) {
-                case GLFW.GLFW_KEY_UP:
+                case InputConstants.KEY_UP:
                   {
                     if (!((TabGui) TabGui.this).guiTabHandler.visible) break;
                     if (((TabGui) TabGui.this).guiTabHandler.mainMenu) {
@@ -75,7 +75,7 @@ public final class TabGui extends ToggleableModule {
                     ((TabGui) TabGui.this).guiTabHandler.transition = 11;
                     break;
                   }
-                case GLFW.GLFW_KEY_DOWN:
+                case InputConstants.KEY_DOWN:
                   {
                     if (!((TabGui) TabGui.this).guiTabHandler.visible) break;
                     if (((TabGui) TabGui.this).guiTabHandler.mainMenu) {
@@ -108,13 +108,13 @@ public final class TabGui extends ToggleableModule {
                     ((TabGui) TabGui.this).guiTabHandler.transition = -11;
                     break;
                   }
-                case GLFW.GLFW_KEY_LEFT:
+                case InputConstants.KEY_LEFT:
                   {
                     if (((TabGui) TabGui.this).guiTabHandler.mainMenu) break;
                     ((TabGui) TabGui.this).guiTabHandler.mainMenu = true;
                     break;
                   }
-                case GLFW.GLFW_KEY_RIGHT:
+                case InputConstants.KEY_RIGHT:
                   {
                     if (((TabGui) TabGui.this).guiTabHandler.mainMenu) {
                       ((TabGui) TabGui.this).guiTabHandler.mainMenu = false;
@@ -136,7 +136,7 @@ public final class TabGui extends ToggleableModule {
                         .toggle();
                     break;
                   }
-                case GLFW.GLFW_KEY_ENTER:
+                case InputConstants.KEY_RETURN:
                   {
                     if (((TabGui) TabGui.this).guiTabHandler.mainMenu
                         || !((TabGui) TabGui.this).guiTabHandler.visible) break;

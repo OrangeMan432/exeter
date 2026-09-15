@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.awt.*;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
@@ -63,7 +64,7 @@ public class Button extends Item implements Labeled {
 
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT && this.isHovering(mouseX, mouseY)) {
       this.state = !this.state;
       this.toggle();
       //

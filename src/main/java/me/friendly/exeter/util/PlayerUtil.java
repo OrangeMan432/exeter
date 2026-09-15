@@ -6,11 +6,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -96,7 +96,7 @@ public class PlayerUtil {
 
   public static void swingHand() {
     if (mc.player == null) return;
-    mc.player.connection.send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+    mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
   }
 
   public static double getYaw(BlockPos pos) {
@@ -145,7 +145,7 @@ public class PlayerUtil {
     mc.player.connection.send(
         new ServerboundPlayerActionPacket(
             ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, face));
-    mc.player.connection.send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+    mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
     mc.player.connection.send(
         new ServerboundPlayerActionPacket(
             ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, face));

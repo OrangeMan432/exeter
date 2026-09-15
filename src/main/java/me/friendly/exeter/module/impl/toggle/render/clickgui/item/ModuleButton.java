@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
@@ -187,7 +188,7 @@ public class ModuleButton extends Button {
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     super.mouseClicked(mouseX, mouseY, mouseButton);
     if (!this.topLevelItems.isEmpty()) {
-      if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
+      if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT && this.isHovering(mouseX, mouseY)) {
         this.subOpen = !this.subOpen;
         this.gearAnimTimer = 0;
         if (this.subOpen) {

@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.awt.*;
 import java.io.InputStream;
@@ -148,7 +149,7 @@ public abstract class Panel implements Labeled {
   }
 
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT && this.isHovering(mouseX, mouseY)) {
       this.x2 = this.x - mouseX;
       this.y2 = this.y - mouseY;
       ClickGui.getClickGui()
@@ -162,7 +163,7 @@ public abstract class Panel implements Labeled {
       this.drag = true;
       return;
     }
-    if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT && this.isHovering(mouseX, mouseY)) {
       this.open = !this.open;
       //
       // Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
@@ -179,7 +180,7 @@ public abstract class Panel implements Labeled {
   }
 
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    if (releaseButton == 0) {
+    if (releaseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       this.drag = false;
     }
     if (!this.open) {

@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
@@ -41,9 +42,9 @@ public class EnumButton extends Button {
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     super.mouseClicked(mouseX, mouseY, mouseButton);
     if (this.isHovering(mouseX, mouseY)) {
-      if (mouseButton == 0) {
+      if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
         this.property.increment();
-      } else if (mouseButton == 1) {
+      } else if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT) {
         this.property.decrement();
       }
     }
