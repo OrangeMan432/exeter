@@ -27,7 +27,7 @@ import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
-import me.friendly.exeter.module.impl.toggle.render.TabGui;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
