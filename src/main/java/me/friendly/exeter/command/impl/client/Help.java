@@ -7,7 +7,7 @@ import me.friendly.exeter.core.Exeter;
 
 public final class Help extends Command {
   public Help() {
-    super(new String[] {"help", "halp", "autism", "how"}, new Argument("command"));
+    super(new String[] {"help", "halp", "how"}, new Argument("command"));
     setDescription("Show help");
   }
 
