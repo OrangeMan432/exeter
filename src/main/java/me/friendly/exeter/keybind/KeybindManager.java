@@ -18,6 +18,8 @@ public final class KeybindManager extends ListRegistry<Keybind> {
               @Override
               public void call(InputEvent event) {
                 if (event.getType() == InputEvent.Type.KEYBOARD_KEY_PRESS) {
+                  var mc = net.minecraft.client.Minecraft.getInstance();
+                  if (mc.gui != null && mc.gui.screen() != null) return;
                   KeybindManager.this.registry.forEach(
                       keybind -> {
                         if (keybind.getKey() != 0 && keybind.getKey() == event.getKey()) {

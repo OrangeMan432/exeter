@@ -42,10 +42,7 @@ def getHash() {
 String hash = getHash()
 
 def getBuild() {
-    String tag = git("tag")
-    if (tag != null && tag.contains("\n")) {
-        tag = tag.split("\n")[0]
-    }
+    String tag = git("describe", "--tags", "--abbrev=0")
     String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
     return "${tag ?: 'unknown'}+${commitSinceTag ?: '0'}"
 }

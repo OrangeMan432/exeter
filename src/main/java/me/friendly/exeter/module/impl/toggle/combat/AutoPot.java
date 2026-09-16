@@ -384,7 +384,7 @@ public class AutoPot extends ToggleableModule {
 
   private void onPacket(PacketEvent event) {
     if (event.getPacket() instanceof ClientboundRemoveEntitiesPacket packet) {
-      for (int id : packet.getEntityIds()) {
+      for (int id : packet.entityIds()) {
         weaknessTime.remove(id);
         jumpBoostTime.remove(id);
         poisonTime.remove(id);

@@ -7,10 +7,30 @@ public abstract class Command {
   private final String[] aliases;
   private final Argument[] arguments;
   protected Minecraft minecraft = Minecraft.getInstance();
+  private String description = "";
+  private final java.util.List<SubCommand> subCommands = new java.util.ArrayList<>();
+
+  public record SubCommand(String name, String args, String description) {}
 
   public Command(String[] aliases, Argument... arguments) {
     this.aliases = aliases;
     this.arguments = arguments;
+  }
+
+  protected void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  protected void addSubCommand(String name, String args, String description) {
+    subCommands.add(new SubCommand(name, args, description));
+  }
+
+  public java.util.List<SubCommand> getSubCommands() {
+    return java.util.Collections.unmodifiableList(subCommands);
   }
 
   /**

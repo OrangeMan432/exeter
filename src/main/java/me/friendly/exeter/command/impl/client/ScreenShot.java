@@ -23,6 +23,7 @@ public final class ScreenShot extends Command {
 
   public ScreenShot() {
     super(new String[] {"screenshot"}, new Argument[0]);
+    setDescription("Take a screenshot");
   }
 
   @Override

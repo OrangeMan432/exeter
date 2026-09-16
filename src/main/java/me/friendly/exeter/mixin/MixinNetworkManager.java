@@ -20,7 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = Connection.class)
 public class MixinNetworkManager {
 
-  @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
+  @Inject(
+      method =
+          "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V",
+      at = @At("HEAD"),
+      cancellable = true)
   public void onPacketSend(
       Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
     PacketEvent packetSendEvent = new PacketEvent(packet);

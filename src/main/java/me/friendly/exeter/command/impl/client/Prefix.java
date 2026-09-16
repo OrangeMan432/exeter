@@ -7,6 +7,7 @@ import me.friendly.exeter.core.Exeter;
 public final class Prefix extends Command {
   public Prefix() {
     super(new String[] {"prefix"}, new Argument("character"));
+    setDescription("Change command prefix");
   }
 
   @Override

@@ -5,8 +5,10 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.NotificationManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -76,6 +78,7 @@ public class AutoCart extends ToggleableModule {
     lightStage = 0;
     doneMessageSent = false;
     swapPending = false;
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
   @Override
@@ -92,12 +95,16 @@ public class AutoCart extends ToggleableModule {
     }
 
     if (isLighting) {
+      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "lighting phase stage=" + lightStage);
       tickLighting();
       return;
     }
 
     Player newTarget = findTarget();
     if (newTarget == null) {
+      if (target != null)
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "lost target, clearing " + targetPos);
       target = null;
       targetPos = null;
       return;
@@ -106,6 +113,12 @@ public class AutoCart extends ToggleableModule {
     BlockPos newTargetPos = newTarget.blockPosition();
 
     if (target == null || target != newTarget || !newTargetPos.equals(targetPos)) {
+      DebugLogger.get()
+          .log(
+              getLabel(),
+              DebugLogger.Level.INFO,
+              "new target " + newTarget.getName().getString() + " at " + newTargetPos);
+      NotificationManager.push("AutoCart target " + newTarget.getName().getString(), "compass");
       target = newTarget;
       targetPos = newTargetPos;
       cartsPlaced = 0;
@@ -116,11 +129,18 @@ public class AutoCart extends ToggleableModule {
       cartsPlaced = 0;
       doneMessageSent = false;
 
-      if (!hasTntCarts()) return;
+      if (!hasTntCarts()) {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no TNT carts available");
+        return;
+      }
 
       int railSlot = PlayerUtil.findInHotbar(stack -> stack.is(Items.RAIL));
       if (railSlot != -1) {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "placing rail at " + targetPos);
+        NotificationManager.push("Placing rail at " + targetPos.toShortString(), "rail");
         placeBlock(targetPos, railSlot, rotateRail.getValue());
+      } else {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no rail in hotbar for " + targetPos);
       }
       return;
     }
@@ -128,6 +148,14 @@ public class AutoCart extends ToggleableModule {
     if (cartsPlaced < tntCarts.getValue()) {
       int tntCartSlot = findTntCart();
       if (tntCartSlot != -1) {
+        if (cartsPlaced == 0) {
+          NotificationManager.push("Placing carts at " + targetPos.toShortString(), "tnt_minecart");
+        }
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.INFO,
+                "placing carts " + cartsPlaced + "/" + tntCarts.getValue() + " at " + targetPos);
         PlayerUtil.swapTo(tntCartSlot);
 
         float yaw = minecraft.player.getYRot();
@@ -150,6 +178,12 @@ public class AutoCart extends ToggleableModule {
         }
 
         swapPending = true;
+      } else {
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "out of carts at " + cartsPlaced + ", proceeding to detonate");
+        NotificationManager.push("Out of carts, detonating", "tnt");
+        // force finish so placed carts can detonate via mining/lighting
+        cartsPlaced = tntCarts.getValue();
       }
       return;
     }
@@ -157,12 +191,19 @@ public class AutoCart extends ToggleableModule {
     PlayerUtil.swapBack();
 
     if (instaLight.getValue()) {
+      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "entering instaLight break at " + targetPos);
+      NotificationManager.push("AutoCart lighting", "flint_and_steel");
       isLighting = true;
       breakTimer = 0;
       lightStage = 0;
       return;
     }
 
+    if (!doneMessageSent) {
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "done " + cartsPlaced + " carts at " + targetPos);
+      NotificationManager.push("AutoCart done " + cartsPlaced + " carts", "tnt_minecart");
+    }
     doneMessageSent = true;
   }
 
@@ -248,6 +289,7 @@ public class AutoCart extends ToggleableModule {
           PlayerUtil.findInHotbar(
               stack -> stack.isCorrectToolForDrops(Blocks.STONE.defaultBlockState()));
       if (pickaxeSlot == -1) {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no pickaxe for lighting abort");
         isLighting = false;
         cartsPlaced = 0;
         return;
@@ -256,6 +298,7 @@ public class AutoCart extends ToggleableModule {
       PlayerUtil.swapTo(pickaxeSlot);
 
       if (minecraft.level.getBlockState(targetPos).getBlock() != Blocks.AIR) {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "breaking rail at " + targetPos);
         float yaw = minecraft.player.getYRot();
         float pitch = minecraft.player.getXRot();
         PlayerUtil.setRotation(PlayerUtil.getYaw(targetPos), PlayerUtil.getPitch(targetPos));
@@ -267,6 +310,7 @@ public class AutoCart extends ToggleableModule {
       swapPending = true;
 
       breakTimer = breakDelay.getValue();
+      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "rail broken, waiting " + breakTimer);
       lightStage = 1;
     } else if (lightStage == 1) {
       if (breakTimer > 0) {
@@ -276,6 +320,7 @@ public class AutoCart extends ToggleableModule {
 
       int flintSlot = PlayerUtil.findInHotbar(stack -> stack.is(Items.FLINT_AND_STEEL));
       if (flintSlot != -1) {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "lighting at " + targetPos.below());
         PlayerUtil.swapTo(flintSlot);
 
         BlockHitResult hit =
@@ -284,6 +329,8 @@ public class AutoCart extends ToggleableModule {
         PlayerUtil.swingHand();
 
         swapPending = true;
+      } else {
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no flint and steel for lighting");
       }
 
       isLighting = false;

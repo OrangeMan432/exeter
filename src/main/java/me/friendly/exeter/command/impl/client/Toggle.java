@@ -10,6 +10,7 @@ import me.friendly.exeter.module.ToggleableModule;
 public final class Toggle extends Command {
   public Toggle() {
     super(new String[] {"toggle", "t"}, new Argument("module"));
+    setDescription("Toggle a module");
   }
 
   @Override

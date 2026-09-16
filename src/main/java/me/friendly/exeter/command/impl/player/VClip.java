@@ -6,6 +6,7 @@ import me.friendly.exeter.command.Command;
 public final class VClip extends Command {
   public VClip() {
     super(new String[] {"vclip", "vc", "v"}, new Argument("blocks"));
+    setDescription("Vertically clip through blocks");
   }
 
   @Override

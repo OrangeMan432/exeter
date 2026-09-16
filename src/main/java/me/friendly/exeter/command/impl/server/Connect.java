@@ -9,16 +9,23 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 public final class Connect extends Command {
   public Connect() {
     super(new String[] {"connect", "c"}, new Argument("ip"));
+    setDescription("Connect to a server");
   }
 
   @Override
   public String dispatch() {
-    ServerData serverData =
-        new ServerData("", this.getArgument("ip").getValue(), ServerData.Type.OTHER);
-    this.minecraft.disconnect(null, false);
-    this.minecraft.setLevel(null);
-    ConnectScreen.startConnecting(
-        null, this.minecraft, ServerAddress.parseString(serverData.ip), serverData, false, null);
-    return "Connecting...";
+    String ip = this.getArgument("ip").getValue();
+    ServerData serverData = new ServerData("", ip, ServerData.Type.OTHER);
+    ServerAddress address = ServerAddress.parseString(ip);
+    // must run on client thread; PacketEvent may be on netty thread
+    this.minecraft.execute(
+        () -> {
+          try {
+            ConnectScreen.startConnecting(null, this.minecraft, address, serverData, false, null);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+    return "Connecting to &e" + ip + "&7...";
   }
 }

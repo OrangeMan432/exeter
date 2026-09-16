@@ -8,8 +8,10 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.NotificationManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -64,20 +66,47 @@ public class PistonPush extends ToggleableModule {
     if (pistonSlot == -1) {
       pistonSlot = findBlock(Blocks.STICKY_PISTON);
     }
-    if (pistonSlot == -1) return;
+    if (pistonSlot == -1) {
+      if (debug.getValue())
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no piston in hotbar");
+      return;
+    }
 
     int redstoneSlot = findBlock(Blocks.REDSTONE_BLOCK);
     if (redstoneSlot == -1) {
       redstoneSlot = findBlock(Blocks.REDSTONE_TORCH);
     }
-    if (redstoneSlot == -1) return;
+    if (redstoneSlot == -1) {
+      if (debug.getValue())
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no redstone in hotbar");
+      return;
+    }
 
     target = findTarget();
-    if (target == null) return;
+    if (target == null) {
+      if (debug.getValue())
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "no target in range");
+      return;
+    }
 
     PistonPos pos = findPistonPos(target);
-    if (pos == null) return;
+    if (pos == null) {
+      if (debug.getValue())
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "no valid piston position for " + target.getName().getString());
+      return;
+    }
 
+    DebugLogger.get()
+        .log(
+            getLabel(),
+            DebugLogger.Level.INFO,
+            "placing piston " + pos.pistonPos + " -> redstone " + pos.redstonePos + " facing " + pos.facing);
+    NotificationManager.push(
+        "PistonPush " + target.getName().getString() + " " + pos.facing, "piston");
     placePiston(pos, pistonSlot, redstoneSlot);
     lastPlaceTick = tickCounter;
   }
@@ -91,6 +120,9 @@ public class PistonPush extends ToggleableModule {
       PlayerUtil.setRotation(pistonYaw, 0f);
     }
 
+    DebugLogger.get()
+        .log(getLabel(), DebugLogger.Level.INFO, "placing piston at " + pos.pistonPos);
+    NotificationManager.push("Placing piston at " + pos.pistonPos.toShortString(), "piston");
     PlayerUtil.swapTo(pistonSlot);
     PlayerUtil.useItemOn(pos.pistonPos, Direction.UP);
     if (swingHand.getValue()) PlayerUtil.swingHand();
@@ -101,6 +133,9 @@ public class PistonPush extends ToggleableModule {
           PlayerUtil.getYaw(pos.redstonePos), PlayerUtil.getPitch(pos.redstonePos));
     }
 
+    DebugLogger.get()
+        .log(getLabel(), DebugLogger.Level.INFO, "placing redstone at " + pos.redstonePos);
+    NotificationManager.push("Placing redstone at " + pos.redstonePos.toShortString(), "redstone_block");
     PlayerUtil.swapTo(redstoneSlot);
     PlayerUtil.useItemOn(pos.redstonePos, Direction.UP);
     if (swingHand.getValue()) PlayerUtil.swingHand();
@@ -109,6 +144,7 @@ public class PistonPush extends ToggleableModule {
     if (rotate.getValue()) {
       PlayerUtil.restoreRotation(yaw, pitch);
     }
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "piston push complete");
   }
 
   private float getYawForDirection(Direction facing) {

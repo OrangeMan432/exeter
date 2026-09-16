@@ -29,8 +29,8 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
-  public static final String HASH = "b8e10f12f1901ba1";
-  public static final String BUILD = "b25+15";
+  public static final String HASH = "1b99a7f0e0cfbf26";
+  public static final String BUILD = "b26+19";
   public static final boolean DIRTY = false;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
@@ -51,8 +51,7 @@ public final class Exeter {
 
     // In exeter 1.8, the config file is named clarinet for whatever reason. I changed that to be
     // exeter
-    this.directory = new File(System.getProperty("user.home"), "exeter");
-    //        this.directory = new File(System.getProperty("user.home"), "clarinet");
+    this.directory = new File("config/exeter");
 
     if (!this.directory.exists()) {
       Logger.getLogger()
@@ -69,7 +68,6 @@ public final class Exeter {
     this.moduleManager = new ModuleManager();
     //        this.accountManager = new AccountManager();
     this.pluginManager = new PluginManager();
-    this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
     try {
       this.pluginManager.onLoad();
       System.out.println("Plugin manager started.");
@@ -77,6 +75,8 @@ public final class Exeter {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    me.friendly.exeter.util.TotemPopTracker.getInstance();
+    this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread("Shutdown Hook Thread") {

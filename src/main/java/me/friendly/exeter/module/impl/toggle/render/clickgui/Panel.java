@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.awt.*;
 import java.io.InputStream;
@@ -131,12 +132,21 @@ public abstract class Panel implements Labeled {
     if (this.open) {
       int y = this.getY() + this.getHeight() - 3;
       for (Item item : getItems()) {
+        if (!matchesSearch(item)) continue;
         item.setLocation((float) this.x + 2.0f, (float) y);
         item.setWidth(this.getWidth() - 4);
         item.drawScreen(mouseX, mouseY, partialTicks);
         y += item.getHeight() + 1;
       }
     }
+  }
+
+  public boolean matchesSearch(Item item) {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
+    if (guiMod != null && !guiMod.searchEnabled.getValue()) return true;
+    String query = ClickGui.getClickGui().getSearch();
+    if (query == null || query.isEmpty()) return true;
+    return item.getLabel().toLowerCase().contains(query);
   }
 
   private void drag(int mouseX, int mouseY) {
@@ -148,7 +158,7 @@ public abstract class Panel implements Labeled {
   }
 
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT && this.isHovering(mouseX, mouseY)) {
       this.x2 = this.x - mouseX;
       this.y2 = this.y - mouseY;
       ClickGui.getClickGui()
@@ -162,7 +172,7 @@ public abstract class Panel implements Labeled {
       this.drag = true;
       return;
     }
-    if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
+    if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT && this.isHovering(mouseX, mouseY)) {
       this.open = !this.open;
       //
       // Minecraft.getInstance().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(new ResourceLocation("random.click"), 1.0f));
@@ -171,7 +181,9 @@ public abstract class Panel implements Labeled {
     if (!this.open) {
       return;
     }
-    this.getItems().forEach(item -> item.mouseClicked(mouseX, mouseY, mouseButton));
+    this.getItems().stream()
+        .filter(this::matchesSearch)
+        .forEach(item -> item.mouseClicked(mouseX, mouseY, mouseButton));
   }
 
   public void addButton(Button button) {
@@ -179,13 +191,15 @@ public abstract class Panel implements Labeled {
   }
 
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    if (releaseButton == 0) {
+    if (releaseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       this.drag = false;
     }
     if (!this.open) {
       return;
     }
-    this.getItems().forEach(item -> item.mouseReleased(mouseX, mouseY, releaseButton));
+    this.getItems().stream()
+        .filter(this::matchesSearch)
+        .forEach(item -> item.mouseReleased(mouseX, mouseY, releaseButton));
   }
 
   @Override
@@ -221,6 +235,28 @@ public abstract class Panel implements Labeled {
     return this.items;
   }
 
+  public boolean containsMouse(int mouseX, int mouseY) {
+    return mouseX >= this.getX()
+        && mouseX <= this.getX() + this.getWidth()
+        && mouseY >= this.getY()
+        && mouseY <= this.getY() + this.getHeight() + (this.open ? this.getTotalItemHeight() : 0);
+  }
+
+  public void scroll(int delta) {
+    int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    int totalH = this.getTotalItemHeight() + this.height;
+    int minY = this.height - totalH;
+    int maxY = screenH - this.height;
+    int newY = this.y + delta;
+    if (newY < minY) {
+      newY = minY;
+    }
+    if (newY > maxY) {
+      newY = maxY;
+    }
+    this.y = newY;
+  }
+
   private boolean isHovering(int mouseX, int mouseY) {
     return mouseX >= this.getX()
         && mouseX <= this.getX() + this.getWidth()
@@ -244,6 +280,7 @@ public abstract class Panel implements Labeled {
   private int getTotalItemHeight() {
     int height = 0;
     for (Item item : getItems()) {
+      if (!matchesSearch(item)) continue;
       height += item.getHeight() + 1;
     }
     return height;

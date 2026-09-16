@@ -124,11 +124,15 @@ public class AutoGear extends ToggleableModule {
 
     AbstractContainerMenu menu = minecraft.player.containerMenu;
     if (menu instanceof ChestMenu || menu instanceof ShulkerBoxMenu) {
-      boolean chest = menu instanceof ChestMenu;
-      boolean isEnderChest =
-          chest && ((ChestMenu) menu).getContainer() instanceof PlayerEnderChestContainer;
-      if ((!chest || (!enderChest.getValue() && isEnderChest))
-          && !(menu instanceof ShulkerBoxMenu)) {
+      boolean isEnderChest = false;
+      if (menu instanceof ChestMenu chestMenu) {
+        var container = chestMenu.getContainer();
+        isEnderChest =
+            container == minecraft.player.getEnderChestInventory()
+                || container instanceof PlayerEnderChestContainer;
+      }
+      if (isEnderChest && !enderChest.getValue()) {
+        // must never move items out of ender chest when disabled
         openedBefore = false;
       } else {
         sortInventoryAlgo(menu);
@@ -339,11 +343,31 @@ public class AutoGear extends ToggleableModule {
     return output;
   }
 
+  private static String holderName(net.minecraft.core.Holder<net.minecraft.world.item.alchemy.Potion> h) {
+    return h.getRegisteredName();
+  }
+
   public static String getItemKey(ItemStack item) {
     if (item.isEmpty()) {
       return "minecraft:air0";
     }
-    return BuiltInRegistries.ITEM.getKey(item.getItem()).toString() + item.getDamageValue();
+    String base = BuiltInRegistries.ITEM.getKey(item.getItem()).toString() + item.getDamageValue();
+    // include potion type so speed vs instant_health are distinct
+    try {
+      var contents = item.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
+      if (contents != null) {
+        String potionId = contents.potion().map(AutoGear::holderName).orElse("");
+        if (!potionId.isEmpty()) base += "#" + potionId;
+        if (!contents.customEffects().isEmpty()) {
+          StringBuilder eff = new StringBuilder();
+          for (var e : contents.customEffects()) {
+            eff.append(e.getEffect().value().getDescriptionId()).append(":").append(e.getAmplifier()).append(";");
+          }
+          base += "[" + eff + "]";
+        }
+      }
+    } catch (Exception ignored) {}
+    return base;
   }
 
   public static File getFile() {

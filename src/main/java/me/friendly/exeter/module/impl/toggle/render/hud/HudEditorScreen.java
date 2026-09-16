@@ -1,19 +1,28 @@
 package me.friendly.exeter.module.impl.toggle.render.hud;
 
-import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.module.ModuleType;
+import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public final class HudEditorScreen extends Screen {
   private static HudEditorScreen instance;
-  private final List<HudComponent> components = new ArrayList<>();
-  private HudComponent dragging;
+
+  private HudModule dragging;
   private int dragOffX;
   private int dragOffY;
+
+  private Panel hudPanel;
 
   public HudEditorScreen() {
     super(Component.literal("HUD Editor"));
@@ -26,9 +35,25 @@ public final class HudEditorScreen extends Screen {
     return instance;
   }
 
-  public void setComponents(List<HudComponent> comps) {
-    components.clear();
-    components.addAll(comps);
+  private void ensurePanel() {
+    if (hudPanel != null) return;
+
+    hudPanel =
+        new Panel("HUD", 50, 50, true) {
+          @Override
+          public void setupItems() {
+            Exeter.getInstance()
+                .getModuleManager()
+                .getRegistry()
+                .forEach(
+                    module -> {
+                      if (module instanceof ToggleableModule toggleable
+                          && toggleable.getModuleType() == ModuleType.HUD) {
+                        this.addButton(new ModuleButton(toggleable));
+                      }
+                    });
+          }
+        };
   }
 
   @Override
@@ -40,30 +65,37 @@ public final class HudEditorScreen extends Screen {
     int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
-    for (HudComponent comp : components) {
-      if (!comp.isVisible()) continue;
+    ensurePanel();
 
-      int cx = comp.getX();
-      int cy = comp.getY();
-      int cw = comp.getWidth();
-      int ch = comp.getHeight();
+    drawHudModules(mouseX, mouseY, scaledWidth, scaledHeight);
+    drawSnapGuides(scaledWidth, scaledHeight);
 
-      RenderMethods.drawRect(cx - 1, cy - 1, cx + cw + 1, cy + ch + 1, 0x80FFFFFF);
-      RenderMethods.drawRect(cx, cy, cx + cw, cy + ch, 0x44000000);
-
-      RenderMethods.guiGraphics.text(
-          Minecraft.getInstance().font, comp.getLabel(), cx + 2, cy + 2, 0xFFFFFFFF);
-
-      boolean hovered = mouseX >= cx && mouseX <= cx + cw && mouseY >= cy && mouseY <= cy + ch;
-      if (hovered) {
-        RenderMethods.drawRect(cx, cy, cx + cw, cy + ch, 0x30FFFFFF);
-      }
-    }
-
-    renderSnapGuides(scaledWidth, scaledHeight);
+    hudPanel.drawScreen(mouseX, mouseY, partialTicks);
   }
 
-  private void renderSnapGuides(int scaledWidth, int scaledHeight) {
+  private void drawHudModules(int mouseX, int mouseY, int scaledWidth, int scaledHeight) {
+    List<HudModule> modules = HudModule.getActive();
+
+    for (HudModule m : modules) {
+      int mx = m.getX();
+      int my = m.getY();
+      int mw = m.getWidth();
+      int mh = m.getHeight();
+
+      RenderMethods.drawRect(mx - 1, my - 1, mx + mw + 1, my + mh + 1, 0x80FFFFFF);
+      RenderMethods.drawRect(mx, my, mx + mw, my + mh, 0x44000000);
+
+      RenderMethods.guiGraphics.text(
+          Minecraft.getInstance().font, m.getLabel(), mx + 2, my + 2, 0xFFFFFFFF);
+
+      boolean hovered = mouseX >= mx && mouseX <= mx + mw && mouseY >= my && mouseY <= my + mh;
+      if (hovered) {
+        RenderMethods.drawRect(mx, my, mx + mw, my + mh, 0x30FFFFFF);
+      }
+    }
+  }
+
+  private void drawSnapGuides(int scaledWidth, int scaledHeight) {
     int snapMargin = 5;
     int half = scaledWidth / 2;
 
@@ -75,22 +107,29 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
-  public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean bool) {
+  public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
     int mouseX = (int) event.x();
     int mouseY = (int) event.y();
+    int button = event.button();
 
-    for (int i = components.size() - 1; i >= 0; i--) {
-      HudComponent comp = components.get(i);
-      if (!comp.isVisible()) continue;
-      int cx = comp.getX();
-      int cy = comp.getY();
-      int cw = comp.getWidth();
-      int ch = comp.getHeight();
+    ensurePanel();
+    hudPanel.mouseClicked(mouseX, mouseY, button);
 
-      if (mouseX >= cx && mouseX <= cx + cw && mouseY >= cy && mouseY <= cy + ch) {
-        dragging = comp;
-        dragOffX = mouseX - cx;
-        dragOffY = mouseY - cy;
+    int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+    int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
+
+    List<HudModule> modules = HudModule.getActive();
+    for (int i = modules.size() - 1; i >= 0; i--) {
+      HudModule m = modules.get(i);
+      int mx = m.getX();
+      int my = m.getY();
+      int mw = m.getWidth();
+      int mh = m.getHeight();
+      if (mouseX >= mx && mouseX <= mx + mw && mouseY >= my && mouseY <= my + mh) {
+        dragging = m;
+        dragOffX = mouseX - mx;
+        dragOffY = mouseY - my;
         break;
       }
     }
@@ -98,49 +137,20 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
-  public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
-    if (dragging != null) {
-      int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-      int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+  public boolean mouseReleased(MouseButtonEvent event) {
+    ensurePanel();
+    hudPanel.mouseReleased((int) event.x(), (int) event.y(), event.button());
 
+    if (dragging != null) {
       if (!Minecraft.getInstance().hasShiftDown()) {
-        int sx = dragging.getSnapX(scaledWidth, scaledHeight);
-        int sy = dragging.getSnapY(scaledWidth, scaledHeight);
-        dragging.setX(sx);
-        dragging.setY(sy);
-        applyStacking(dragging, scaledWidth, scaledHeight);
+        snapToNearest(dragging);
+        int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
       }
       dragging = null;
     }
     return super.mouseReleased(event);
-  }
-
-  private void applyStacking(HudComponent comp, int sw, int sh) {
-    int snapMargin = 5;
-    int gap = 2;
-    int sx = comp.getX();
-    int sy = comp.getY();
-    int ch = comp.getHeight();
-
-    boolean top = sy == snapMargin;
-    boolean bottom = !top && sy == sh - ch - snapMargin;
-    if (!top && !bottom) return;
-
-    int totalOffset = 0;
-    for (HudComponent other : components) {
-      if (other == comp || !other.isVisible()) continue;
-      if (other.getSnapX(sw, sh) != sx) continue;
-      int otherSy = other.getSnapY(sw, sh);
-      boolean otherTop = otherSy == snapMargin;
-      boolean otherBottom = !otherTop;
-      if (top && !otherTop) continue;
-      if (bottom && !otherBottom) continue;
-      totalOffset += other.getHeight() + gap;
-    }
-
-    if (totalOffset > 0) {
-      comp.setY(top ? sy + totalOffset : sy - totalOffset);
-    }
   }
 
   @Override
@@ -154,10 +164,37 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
+  public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollDelta) {
+    ensurePanel();
+    if (hudPanel.containsMouse((int) mouseX, (int) mouseY)) {
+      hudPanel.scroll((int) (scrollDelta * 12));
+      return true;
+    }
+    return super.mouseScrolled(mouseX, mouseY, scrollX, scrollDelta);
+  }
+
+  @Override
   public boolean isPauseScreen() {
     return false;
   }
 
   @Override
   public void init() {}
+
+  private void snapToNearest(HudModule m) {
+    int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+    int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+
+    int centerX = scaledWidth / 2;
+    int centerY = scaledHeight / 2;
+    boolean right = m.getX() + m.getWidth() / 2 > centerX;
+    boolean bottom = m.getY() + m.getHeight() / 2 > centerY;
+
+    HudModule.Corner bestCorner;
+    if (right && bottom) bestCorner = HudModule.Corner.BOTTOM_RIGHT;
+    else if (right) bestCorner = HudModule.Corner.TOP_RIGHT;
+    else if (bottom) bestCorner = HudModule.Corner.BOTTOM_LEFT;
+    else bestCorner = HudModule.Corner.TOP_LEFT;
+    m.setCorner(bestCorner);
+  }
 }

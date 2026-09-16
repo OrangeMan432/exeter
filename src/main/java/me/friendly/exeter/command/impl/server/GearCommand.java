@@ -14,6 +14,12 @@ import net.minecraft.world.item.ItemStack;
 public class GearCommand extends Command {
   public GearCommand() {
     super(new String[] {"gear", "kit"}, new Argument("sub"), new Argument("name"));
+    setDescription("Manage AutoGear kits");
+    addSubCommand("save", "[name]", "save current inventory as kit");
+    addSubCommand("set", "[name]", "load and activate kit");
+    addSubCommand("del", "[name]", "delete kit");
+    addSubCommand("delete", "[name]", "alias for del");
+    addSubCommand("list", "", "list saved kits");
   }
 
   @Override

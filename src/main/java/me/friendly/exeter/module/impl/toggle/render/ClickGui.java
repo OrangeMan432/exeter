@@ -11,9 +11,20 @@ public final class ClickGui extends ToggleableModule {
     TEXT
   }
 
+  public enum PanelAlignment {
+    CENTERED,
+    TOP_LEFT
+  }
+
+  public enum DescriptionMode {
+    HOVER,
+    PANEL
+  }
+
   public final Property<Boolean> showBackground = new Property<Boolean>(true, "Background", "bg");
   public final Property<Boolean> showDescriptions =
-      new Property<Boolean>(true, "Descriptions", "desc");
+      new Property<Boolean>(true, "Descriptions", "desc")
+          .addChild(new EnumProperty<DescriptionMode>(DescriptionMode.HOVER, "Mode", "mode"));
   public final Property<Boolean> showArrow = new Property<Boolean>(true, "Arrow", "arrow");
   public final Property<Boolean> showModuleCount =
       new Property<Boolean>(false, "Module Count", "modcount");
@@ -21,12 +32,17 @@ public final class ClickGui extends ToggleableModule {
   public final Property<Boolean> showGear =
       new Property<Boolean>(true, "Gear", "gear")
           .addChild(new EnumProperty<GearMode>(GearMode.IMAGE, "Mode", "mode"));
+  public final EnumProperty<PanelAlignment> panelAlignment =
+      new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
+  public final Property<Boolean> searchEnabled =
+      new Property<Boolean>(true, "Search", "search");
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
     offerProperties(
-        showBackground, showDescriptions, showGear, showArrow, showModuleCount, showGradient);
+        showBackground, showDescriptions, showGear, showArrow, showModuleCount, showGradient,
+        panelAlignment, searchEnabled);
   }
 
   public GearMode getGearMode() {
@@ -36,6 +52,15 @@ public final class ClickGui extends ToggleableModule {
       return (GearMode) modeProp.getValue();
     }
     return GearMode.IMAGE;
+  }
+
+  public DescriptionMode getDescriptionMode() {
+    if (!showDescriptions.getValue()) return null;
+    Property<?> modeProp = showDescriptions.getChildren().get(0);
+    if (modeProp instanceof EnumProperty) {
+      return (DescriptionMode) modeProp.getValue();
+    }
+    return DescriptionMode.HOVER;
   }
 
   public void onArrowToggled() {

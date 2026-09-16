@@ -38,30 +38,24 @@ public class TestModule extends ToggleableModule {
   private void onTick() {
     if (testInfo.getValue()) {
       testInfo.setValue(false);
-      sendTestChat("This is an info-level test message.");
-      DebugLogger.get().log("TestModule", "This is an info-level test message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "This is an info-level test message.");
     }
 
     if (testWarning.getValue()) {
       testWarning.setValue(false);
-      sendTestChat("\u00a7e[WARNING] This is a warning test message.");
-      DebugLogger.get().log("TestModule", "[WARNING] This is a warning test message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.WARN, "This is a warning test message.");
     }
 
     if (testError.getValue()) {
       testError.setValue(false);
-      sendTestChat("\u00a7c[ERROR] This is an error test message.");
-      DebugLogger.get().log("TestModule", "[ERROR] This is an error test message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.ERROR, "This is an error test message.");
     }
 
     if (testMultiLine.getValue()) {
       testMultiLine.setValue(false);
-      sendTestChat("Line 1 of multi-line message.");
-      sendTestChat("Line 2 of multi-line message.");
-      sendTestChat("Line 3 of multi-line message.");
-      DebugLogger.get().log("TestModule", "Line 1 of multi-line message.");
-      DebugLogger.get().log("TestModule", "Line 2 of multi-line message.");
-      DebugLogger.get().log("TestModule", "Line 3 of multi-line message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "Line 1 of multi-line message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "Line 2 of multi-line message.");
+      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "Line 3 of multi-line message.");
     }
 
     if (testAllModules.getValue()) {
@@ -70,29 +64,14 @@ public class TestModule extends ToggleableModule {
           new String[] {
             "AutoCart", "BedAura", "AutoPot", "Speed", "Velocity", "SelfBed", "Config"
           }) {
-        sendTestChat("Ping from TestModule for " + label);
-        DebugLogger.get().log(label, "Ping from TestModule for " + label);
+        DebugLogger.get().log(label, DebugLogger.Level.INFO, "Ping from TestModule for " + label);
       }
     }
 
     if (clearLog.getValue()) {
       clearLog.setValue(false);
       DebugLogger.get().clearLog();
-      sendTestChat("Log file cleared.");
-      DebugLogger.get().log("TestModule", "Log file cleared.");
-    }
-  }
-
-  private static void sendTestChat(String message) {
-    try {
-      net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-      if (mc.player != null) {
-        mc.player.sendSystemMessage(
-            net.minecraft.network.chat.Component.literal(
-                "\u00a77[\u00a76Exeter Test\u00a77] \u00a7f" + message));
-      }
-    } catch (Exception e) {
-      // player not available
+      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "Log file cleared.");
     }
   }
 }

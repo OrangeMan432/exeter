@@ -10,6 +10,7 @@ public final class Friends {
   public static final class Remove extends Command {
     public Remove() {
       super(new String[] {"remove", "rem"}, new Argument("username/alias"));
+      setDescription("Remove a friend");
     }
 
     @Override
@@ -28,6 +29,7 @@ public final class Friends {
   public static final class Add extends Command {
     public Add() {
       super(new String[] {"add", "a"}, new Argument("username"), new Argument("alias"));
+      setDescription("Add a friend");
     }
 
     @Override

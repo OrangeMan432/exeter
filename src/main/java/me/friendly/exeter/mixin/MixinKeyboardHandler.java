@@ -15,6 +15,8 @@ public class MixinKeyboardHandler {
   @Inject(method = "keyPress", at = @At("HEAD"))
   private void onKeyPress(long window, int action, KeyEvent event, CallbackInfo ci) {
     if (action == 1 && Exeter.getInstance() != null) {
+      var mc = net.minecraft.client.Minecraft.getInstance();
+      if (mc.gui != null && mc.gui.screen() != null) return;
       Exeter.getInstance()
           .getEventManager()
           .dispatch(new InputEvent(InputEvent.Type.KEYBOARD_KEY_PRESS, event.key()));
