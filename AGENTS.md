@@ -1,0 +1,1 @@
+Once a task is complete, request permission from the user to test the client using `./gradlew runClient`. After the user tests the client, confirm that everything worked properly. If everything functioned as expected, commit the changes and request to push the changes to the remote git repository. Never run the client or push changes without asking the user first.
