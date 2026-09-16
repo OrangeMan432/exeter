@@ -1,8 +1,8 @@
 package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
+import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
@@ -28,8 +28,8 @@ public final class ArmorHud extends HudModule {
   public void render(int scaledWidth, int scaledHeight) {
     int x = getX();
     int y = getY();
-    GuiRenderState state = new GuiRenderState();
-    GuiGraphicsExtractor localGui = new GuiGraphicsExtractor(minecraft, state, scaledWidth, scaledHeight);
+    GuiGraphicsExtractor gui = RenderMethods.guiGraphics;
+    if (gui == null || minecraft.player == null) return;
     for (int index = 3; index >= 0; --index) {
       EquipmentSlot slot =
           index == 3
@@ -39,8 +39,8 @@ public final class ArmorHud extends HudModule {
                   : (index == 1 ? EquipmentSlot.LEGS : EquipmentSlot.FEET));
       ItemStack stack = minecraft.player.getItemBySlot(slot);
       if (stack == null || stack.isEmpty()) continue;
-      localGui.item(stack, x, y);
-      localGui.itemDecorations(minecraft.font, stack, x, y);
+      gui.item(stack, x, y);
+      gui.itemDecorations(minecraft.font, stack, x, y);
       x += 18;
     }
   }
