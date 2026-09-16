@@ -132,12 +132,21 @@ public abstract class Panel implements Labeled {
     if (this.open) {
       int y = this.getY() + this.getHeight() - 3;
       for (Item item : getItems()) {
+        if (!matchesSearch(item)) continue;
         item.setLocation((float) this.x + 2.0f, (float) y);
         item.setWidth(this.getWidth() - 4);
         item.drawScreen(mouseX, mouseY, partialTicks);
         y += item.getHeight() + 1;
       }
     }
+  }
+
+  public boolean matchesSearch(Item item) {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
+    if (guiMod != null && !guiMod.searchEnabled.getValue()) return true;
+    String query = ClickGui.getClickGui().getSearch();
+    if (query == null || query.isEmpty()) return true;
+    return item.getLabel().toLowerCase().contains(query);
   }
 
   private void drag(int mouseX, int mouseY) {
@@ -172,7 +181,9 @@ public abstract class Panel implements Labeled {
     if (!this.open) {
       return;
     }
-    this.getItems().forEach(item -> item.mouseClicked(mouseX, mouseY, mouseButton));
+    this.getItems().stream()
+        .filter(this::matchesSearch)
+        .forEach(item -> item.mouseClicked(mouseX, mouseY, mouseButton));
   }
 
   public void addButton(Button button) {
@@ -186,7 +197,9 @@ public abstract class Panel implements Labeled {
     if (!this.open) {
       return;
     }
-    this.getItems().forEach(item -> item.mouseReleased(mouseX, mouseY, releaseButton));
+    this.getItems().stream()
+        .filter(this::matchesSearch)
+        .forEach(item -> item.mouseReleased(mouseX, mouseY, releaseButton));
   }
 
   @Override
@@ -267,6 +280,7 @@ public abstract class Panel implements Labeled {
   private int getTotalItemHeight() {
     int height = 0;
     for (Item item : getItems()) {
+      if (!matchesSearch(item)) continue;
       height += item.getHeight() + 1;
     }
     return height;

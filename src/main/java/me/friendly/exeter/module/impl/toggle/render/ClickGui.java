@@ -34,13 +34,15 @@ public final class ClickGui extends ToggleableModule {
           .addChild(new EnumProperty<GearMode>(GearMode.IMAGE, "Mode", "mode"));
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
+  public final Property<Boolean> searchEnabled =
+      new Property<Boolean>(true, "Search", "search");
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
     offerProperties(
         showBackground, showDescriptions, showGear, showArrow, showModuleCount, showGradient,
-        panelAlignment);
+        panelAlignment, searchEnabled);
   }
 
   public GearMode getGearMode() {

@@ -15,11 +15,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public final class ClickGui extends Screen {
   private static ClickGui clickGui;
   private final ArrayList<Panel> panels = new ArrayList();
   private SearchSelectPopup popup;
+  private String search = "";
 
   public ClickGui() {
     super(Component.literal("ClickGui"));
@@ -140,12 +142,20 @@ public final class ClickGui extends Screen {
     }
     this.panels.forEach(panel -> panel.drawScreen(mouseX, mouseY, partialTicks));
 
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod2 = getClickGuiModule();
+    boolean searchEnabled = guiMod2 == null || guiMod2.searchEnabled.getValue();
+    if (searchEnabled && !search.isEmpty()) {
+      int queryWidth = FontUtil.getStringWidth(search);
+      int sx = this.width / 2 - queryWidth / 2;
+      FontUtil.drawString(search, sx, 15, 0xFFFFFFFF);
+    }
+
     if (showDesc) {
       String hoveredDesc = null;
       for (Panel panel : this.panels) {
         if (!panel.getOpen()) continue;
         for (var item : panel.getItems()) {
-          if (item instanceof ModuleButton moduleButton) {
+          if (item instanceof ModuleButton moduleButton && panel.matchesSearch(item)) {
             float ix = item.getX();
             float iy = item.getY();
             int iw = item.getWidth();
@@ -275,6 +285,35 @@ public final class ClickGui extends Screen {
         return true;
       }
     }
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModKey = getClickGuiModule();
+    boolean searchOn = guiModKey == null || guiModKey.searchEnabled.getValue();
+    int key = event.key();
+    if (searchOn && key == InputConstants.KEY_BACKSPACE && !search.isEmpty()) {
+      search = search.substring(0, search.length() - 1);
+      return true;
+    }
+    if (searchOn && key == InputConstants.KEY_ESCAPE && !search.isEmpty()) {
+      search = "";
+      return true;
+    }
+    if (searchOn && popup == null && search.length() < 24) {
+      if (key >= InputConstants.KEY_A && key <= InputConstants.KEY_Z) {
+        search += (char) ('a' + key - InputConstants.KEY_A);
+        return true;
+      }
+      if (key >= InputConstants.KEY_1 && key <= InputConstants.KEY_9) {
+        search += (char) ('1' + key - InputConstants.KEY_1);
+        return true;
+      }
+      if (key == InputConstants.KEY_0) {
+        search += '0';
+        return true;
+      }
+      if (key == InputConstants.KEY_SPACE) {
+        search += " ";
+        return true;
+      }
+    }
     return super.keyPressed(event);
   }
 
@@ -296,5 +335,9 @@ public final class ClickGui extends Screen {
 
   public final ArrayList<Panel> getPanels() {
     return this.panels;
+  }
+
+  public String getSearch() {
+    return this.search;
   }
 }
