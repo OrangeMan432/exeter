@@ -368,17 +368,14 @@ public class SearchSelectPopup {
       updateFiltered();
       return true;
     }
-    return true;
-  }
-
-  public boolean charTyped(char c, int modifiers) {
-    if (!focused) return false;
-    if (c >= 32 && c < 127) {
-      search += c;
-      updateFiltered();
-      return true;
+    if (focused && search.length() < 24) {
+      if (scanCode >= 32 && scanCode < 127) {
+        search += (char) scanCode;
+        updateFiltered();
+        return true;
+      }
     }
-    return false;
+    return true;
   }
 
   private void updateFiltered() {
