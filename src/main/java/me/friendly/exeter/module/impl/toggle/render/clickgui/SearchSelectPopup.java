@@ -26,7 +26,7 @@ public class SearchSelectPopup {
 
   private String search = "";
   private int scroll = 0;
-  private boolean focused = false;
+  private boolean focused = true;
   private long lastCursorBlink = System.currentTimeMillis();
   private boolean cursorVisible = true;
 
