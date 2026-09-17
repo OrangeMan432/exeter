@@ -24,8 +24,10 @@ import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
+import me.friendly.exeter.module.impl.toggle.render.BlockEsp;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
+import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
@@ -82,6 +84,8 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new DirectionHud());
     register(new TextRadarHud());
     register(new NotificationHud());
+    register(new BlockEsp());
+    register(new EntityEsp());
 
     for (Module m : registry) {
       if (m instanceof Debug debug) {

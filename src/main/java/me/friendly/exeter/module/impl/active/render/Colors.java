@@ -40,11 +40,17 @@ public final class Colors extends Module {
   private final NumberProperty<Float> rainbowHue =
       new NumberProperty<>(
           4f, 0f, 10f, "RainbowHue", "RainbowHueSpeed2", "RainbowSped2", "RrainbowSpeed2");
+  private static final NumberProperty<Float> espFillAlpha =
+      new NumberProperty<>(60f, 0f, 255f, "ESP Fill Alpha", "FillAlpha");
+  private static final NumberProperty<Float> espOutlineAlpha =
+      new NumberProperty<>(255f, 0f, 255f, "ESP Outline Alpha", "OutlineAlpha");
 
   public Colors() {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
-    offerProperties(hue, saturation, lightness, hudRainbow, rainbowSpeed, rainbowHue);
+    offerProperties(
+        hue, saturation, lightness, hudRainbow, rainbowSpeed, rainbowHue,
+        espFillAlpha, espOutlineAlpha);
   }
 
   public static int getClientColorCustomAlpha(int alpha) {
@@ -83,5 +89,21 @@ public final class Colors extends Module {
     return Color.getHSBColor(
             hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f)
         .getRGB();
+  }
+
+  public static int getEspFillAlpha() {
+    return Math.round(espFillAlpha.getValue());
+  }
+
+  public static int getEspOutlineAlpha() {
+    return Math.round(espOutlineAlpha.getValue());
+  }
+
+  public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {
+    Color base =
+        new Color(
+            Color.HSBtoRGB(
+                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f));
+    return setAlpha(base, fillAlpha).getRGB();
   }
 }

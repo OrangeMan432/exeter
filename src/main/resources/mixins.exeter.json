@@ -8,6 +8,7 @@
       "MixinNetworkManager",
       "MixinGuiIngame",
       "MixinKeyboardHandler",
-      "MixinClientPlayer"
+      "MixinClientPlayer",
+      "MixinLevelRenderer"
   ]
 }

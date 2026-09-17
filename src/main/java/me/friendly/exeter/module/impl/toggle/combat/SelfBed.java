@@ -54,6 +54,8 @@ public class SelfBed extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null || minecraft.player.isDeadOrDying())
       return;
 
+    if (!minecraft.player.isSprinting() || minecraft.player.onGround()) return;
+
     tickCounter++;
 
     int slot = PlayerUtil.findBed();
