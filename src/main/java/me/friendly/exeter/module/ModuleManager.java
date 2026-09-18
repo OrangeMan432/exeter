@@ -18,6 +18,7 @@ import me.friendly.exeter.module.impl.toggle.combat.PistonPush;
 import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
+import me.friendly.exeter.module.impl.toggle.movement.FastFall;
 import me.friendly.exeter.module.impl.toggle.movement.NoBedStep;
 import me.friendly.exeter.module.impl.toggle.movement.NoFall;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
@@ -67,6 +68,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoPot());
     register(new AutoShulker());
     register(new Velocity());
+    register(new FastFall());
     register(new NoBedStep());
     register(new NoFall());
     register(new Step());
