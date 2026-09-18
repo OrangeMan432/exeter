@@ -383,12 +383,7 @@ public class SearchSelectPopup {
     if (search.isEmpty()) {
       filtered.addAll(items);
     } else {
-      String lower = search.toLowerCase();
-      for (ToggleItem item : items) {
-        if (item.getLabel().toLowerCase().contains(lower)) {
-          filtered.add(item);
-        }
-      }
+      filtered.addAll(FuzzySearch.filter(items, search, ToggleItem::getLabel));
     }
     scroll = 0;
   }
