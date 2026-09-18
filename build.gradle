@@ -43,7 +43,7 @@ def getHash() {
 def getBuild() {
     String tag = git("describe", "--tags", "--abbrev=0")
     String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
-    return "${tag ?: 'unknown'}+${commitSinceTag ?: '0'}"
+    return "${tag ?: 'unknown'}-mc${project.minecraft_version}+${commitSinceTag ?: '0'}"
 }
 
 def generatedSourcesDir = file("${buildDir}/generated/sources/me.friendly.exeter")
