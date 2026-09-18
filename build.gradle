@@ -39,19 +39,11 @@ def getHash() {
     def refHead = new File(gitFolder + head[1].trim())
     refHead.text.trim().take takeFromHash
 }
-String hash = getHash()
 
 def getBuild() {
     String tag = git("describe", "--tags", "--abbrev=0")
     String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
     return "${tag ?: 'unknown'}+${commitSinceTag ?: '0'}"
-}
-String build = getBuild()
-
-boolean isDirty = false
-def statusOutput = git("status", "--porcelain")
-if (statusOutput != null && !statusOutput.trim().isEmpty()) {
-    isDirty = true
 }
 
 def generatedSourcesDir = file("${buildDir}/generated/sources/me.friendly.exeter")
@@ -62,9 +54,15 @@ sourceSets.main {
 
 task generateBuildInfo {
     description = 'Generates BuildInfo.java with git commit info'
-    outputs.dir generatedSourcesDir
+    outputs.upToDateWhen { false }
 
     doLast {
+        def hashVal = getHash()
+        def buildVal = getBuild()
+
+        def statusOut = git("status", "--porcelain")
+        def dirty = statusOut != null && !statusOut.trim().isEmpty()
+
         def pkg = new File(generatedSourcesDir, "me/friendly/exeter")
         pkg.mkdirs()
         def out = new File(pkg, "BuildInfo.java")
@@ -72,9 +70,9 @@ task generateBuildInfo {
 package me.friendly.exeter;
 
 public final class BuildInfo {
-    public static final String HASH = "${hash}";
-    public static final String BUILD = "${build}";
-    public static final boolean DIRTY = ${isDirty};
+    public static final String HASH = "${hashVal}";
+    public static final String BUILD = "${buildVal}";
+    public static final boolean DIRTY = ${dirty};
 
     private BuildInfo() {}
 }
