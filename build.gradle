@@ -54,16 +54,35 @@ if (statusOutput != null && !statusOutput.trim().isEmpty()) {
     isDirty = true
 }
 
-compileJava {
-    // from sn0w
-    String contents = ""
-    File update = file 'src/main/java/me/friendly/exeter/core/Exeter.java'
-    contents = update.getText( 'UTF-8' )
-    contents = contents.replaceAll( 'HASH = "(.*?)"', 'HASH = "' + hash + '"' )
-    contents = contents.replaceAll( 'BUILD = "(.*?)"', 'BUILD = "' + build + '"' )
-    contents = contents.replaceAll( 'DIRTY = (.*?)$', 'DIRTY = ' + isDirty )
-    update.write( contents, 'UTF-8' )
+def generatedSourcesDir = file("${buildDir}/generated/sources/me.friendly.exeter")
+
+sourceSets.main {
+    java.srcDir generatedSourcesDir
 }
+
+task generateBuildInfo {
+    description = 'Generates BuildInfo.java with git commit info'
+    outputs.dir generatedSourcesDir
+
+    doLast {
+        def pkg = new File(generatedSourcesDir, "me/friendly/exeter")
+        pkg.mkdirs()
+        def out = new File(pkg, "BuildInfo.java")
+        out.text = """\
+package me.friendly.exeter;
+
+public final class BuildInfo {
+    public static final String HASH = "${hash}";
+    public static final String BUILD = "${build}";
+    public static final boolean DIRTY = ${isDirty};
+
+    private BuildInfo() {}
+}
+"""
+    }
+}
+
+compileJava.dependsOn generateBuildInfo
 
 repositories {
     mavenCentral()

@@ -2,6 +2,7 @@ package me.friendly.exeter.core;
 
 import java.io.*;
 import java.io.File;
+import me.friendly.exeter.BuildInfo;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
@@ -29,9 +30,9 @@ import me.friendly.exeter.plugin.PluginManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
-  public static final String HASH = "466b4189d85054ab";
-  public static final String BUILD = "b26+21";
-  public static final boolean DIRTY = false;
+  public static final String HASH = BuildInfo.HASH;
+  public static final String BUILD = BuildInfo.BUILD;
+  public static final boolean DIRTY = BuildInfo.DIRTY;
   public final long startTime = System.nanoTime() / 1000000L;
   private BasicEventManager eventManager;
   private KeybindManager keybindManager;
