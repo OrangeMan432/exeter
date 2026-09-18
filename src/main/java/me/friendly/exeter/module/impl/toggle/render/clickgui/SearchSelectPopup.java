@@ -26,7 +26,7 @@ public class SearchSelectPopup {
 
   private String search = "";
   private int scroll = 0;
-  private boolean focused = false;
+  private boolean focused = true;
   private long lastCursorBlink = System.currentTimeMillis();
   private boolean cursorVisible = true;
 
@@ -368,17 +368,14 @@ public class SearchSelectPopup {
       updateFiltered();
       return true;
     }
-    return true;
-  }
-
-  public boolean charTyped(char c, int modifiers) {
-    if (!focused) return false;
-    if (c >= 32 && c < 127) {
-      search += c;
-      updateFiltered();
-      return true;
+    if (focused && search.length() < 24) {
+      if (scanCode >= 32 && scanCode < 127) {
+        search += (char) scanCode;
+        updateFiltered();
+        return true;
+      }
     }
-    return false;
+    return true;
   }
 
   private void updateFiltered() {
@@ -386,12 +383,7 @@ public class SearchSelectPopup {
     if (search.isEmpty()) {
       filtered.addAll(items);
     } else {
-      String lower = search.toLowerCase();
-      for (ToggleItem item : items) {
-        if (item.getLabel().toLowerCase().contains(lower)) {
-          filtered.add(item);
-        }
-      }
+      filtered.addAll(FuzzySearch.filter(items, search, ToggleItem::getLabel));
     }
     scroll = 0;
   }

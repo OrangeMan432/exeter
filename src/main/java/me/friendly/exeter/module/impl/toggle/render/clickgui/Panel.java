@@ -146,7 +146,7 @@ public abstract class Panel implements Labeled {
     if (guiMod != null && !guiMod.searchEnabled.getValue()) return true;
     String query = ClickGui.getClickGui().getSearch();
     if (query == null || query.isEmpty()) return true;
-    return item.getLabel().toLowerCase().contains(query);
+    return FuzzySearch.score(query, item.getLabel()) >= 0;
   }
 
   private void drag(int mouseX, int mouseY) {

@@ -317,16 +317,7 @@ public final class ClickGui extends Screen {
     return super.keyPressed(event);
   }
 
-  @Override
-  public boolean charTyped(net.minecraft.client.input.CharacterEvent event) {
-    if (popup != null) {
-      char c = (char) event.codepoint();
-      if (popup.charTyped(c, 0)) {
-        return true;
-      }
-    }
-    return super.charTyped(event);
-  }
+
 
   @Override
   public boolean isPauseScreen() {

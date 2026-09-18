@@ -10,6 +10,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 public class BedAura extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
@@ -31,6 +33,14 @@ public class BedAura extends ToggleableModule {
   private final NumberProperty<Integer> breakDelay =
       new NumberProperty<Integer>(1, 0, 20, "Break Delay");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
+  private final Property<Boolean> anarchyServer = new Property<Boolean>(false, "5b5t", "5b5t");
+  private final Property<Boolean> showEsp = new Property<Boolean>(true, "Show ESP", "ESP");
+  private final Property<Boolean> useCustomAlpha =
+      new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
+  private final NumberProperty<Float> fillAlpha =
+      new NumberProperty<Float>(60f, 0f, 255f, "Fill Alpha", "FillAlpha");
+  private final NumberProperty<Float> outlineAlpha =
+      new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
 
   private int tickCounter;
   private int lastPlaceTick;
@@ -45,7 +55,8 @@ public class BedAura extends ToggleableModule {
     setDescription("Automatically places and breaks beds for combat.");
 
     this.offerProperties(
-        rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand);
+        rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand,
+        anarchyServer, showEsp, useCustomAlpha, fillAlpha, outlineAlpha);
 
     this.listeners.add(
         new Listener<TickEvent>("bed_aura_tick") {
@@ -148,6 +159,13 @@ public class BedAura extends ToggleableModule {
     if (needSwitch && switchBack.getValue()) {
       PlayerUtil.swapBack();
     }
+
+    if (showEsp.getValue()) {
+      int overrideFill = useCustomAlpha.getValue() ? Math.round(fillAlpha.getValue()) : -1;
+      int overrideOutline = useCustomAlpha.getValue() ? Math.round(outlineAlpha.getValue()) : -1;
+      EspRenderManager.getInstance().addBoxEsp(
+          new AABB(pos), 3.0f, true, true, overrideFill, overrideOutline);
+    }
   }
 
   private void useBed(BlockPos pos, int slot) {
@@ -199,7 +217,9 @@ public class BedAura extends ToggleableModule {
   }
 
   private boolean canPlaceBed(BlockPos pos) {
-    if (!PlayerUtil.isAirOrReplaceable(pos)) return false;
+    if (!anarchyServer.getValue()) {
+      if (!PlayerUtil.isAirOrReplaceable(pos)) return false;
+    }
 
     BlockPos supporting = pos.below();
     BlockState supportingState = minecraft.level.getBlockState(supporting);
@@ -208,7 +228,9 @@ public class BedAura extends ToggleableModule {
 
     Direction facing = minecraft.player.getDirection().getOpposite();
     BlockPos headPos = pos.relative(facing);
-    if (!PlayerUtil.isAirOrReplaceable(headPos)) return false;
+    if (!anarchyServer.getValue()) {
+      if (!PlayerUtil.isAirOrReplaceable(headPos)) return false;
+    }
 
     if (target != null) {
       double distToTarget = pos.distSqr(target.blockPosition());
