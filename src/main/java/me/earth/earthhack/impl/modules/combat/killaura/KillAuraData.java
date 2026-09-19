@@ -19,6 +19,7 @@ final class KillAuraData extends EntityTypeData<KillAura>
         register(module.wallRange,
                 "Range in which targets will be hit through walls.");
         register(module.swordOnly, "Only attacks if you hold a Sword or Axe.");
+        register(module.antiWeakness, "Swaps to a Sword while Weakened.");
         register(module.delay, "If on applies 1.9+ Delays to all weapons." +
                 " Otherwise applies the CPS Setting.");
         register(module.cps,

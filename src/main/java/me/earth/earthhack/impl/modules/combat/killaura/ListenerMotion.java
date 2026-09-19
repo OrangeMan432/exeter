@@ -19,6 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.init.Enchantments;
+import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemFood;
@@ -83,6 +84,16 @@ final class ListenerMotion extends ModuleListener<KillAura, MotionUpdateEvent>
         if (module.autoSwitch.getValue() != AuraSwitch.None)
         {
             module.slot = findSlot();
+        }
+
+        if (module.antiWeakness.getValue()
+            && mc.player.isPotionActive(MobEffects.WEAKNESS))
+        {
+            int sword = findSword();
+            if (sword != -1)
+            {
+                module.slot = sword;
+            }
         }
 
         boolean passed = passedDelay(module, module.slot);
@@ -372,6 +383,28 @@ final class ListenerMotion extends ModuleListener<KillAura, MotionUpdateEvent>
 
         return module.cps.getValue() >= 20
                 || module.timer.passed((long) (1000.0 / module.cps.getValue()));
+    }
+
+    private static int findSword()
+    {
+        int slot = -1;
+        int bestSharp = -1;
+        for (int i = 8; i > -1; i--)
+        {
+            ItemStack stack = mc.player.inventory.getStackInSlot(i);
+            if (stack.getItem() instanceof ItemSword)
+            {
+                int level = EnchantmentHelper.getEnchantmentLevel(
+                                        Enchantments.SHARPNESS, stack);
+                if (level > bestSharp)
+                {
+                    bestSharp = level;
+                    slot = i;
+                }
+            }
+        }
+
+        return slot;
     }
 
     private static int findSlot()
