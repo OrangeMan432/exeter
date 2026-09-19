@@ -13,13 +13,19 @@ chmod +x gradlew
 ```
 
 - Toolchain is Gradle 4.9 + ForgeGradle 2.3-SNAPSHOT, Forge
-  1.12.2-14.23.5.2768, MCP stable_39, Java 8 target.
-- This machine has only Java 21 (+25 cached) and no Gradle 4.9 distribution,
-  and FG 2.3-era repos include dead `jcenter()`. Do NOT claim a green build
-  without running it. If `gradlew` cannot resolve, say exactly what blocked
-  (java version, missing dist, dead repo) instead of pretending.
-- To unblock: install Java 8, let the wrapper fetch Gradle 4.9, replace
-  `jcenter()` if resolution fails. That toolchain fix is in-scope work.
+  1.12.2-14.23.5.2768, MCP stable_39, Java 8 target. Gradle 4.9 dist and
+  most FG artifacts are warm in ~/.gradle from a prior setup.
+- Temurin JDK 8 builds live in the opencode temp dir (8u504 + 8u312).
+- BUILD STATUS 2026-09-19: `./gradlew compileJava` runs ~2min with JDK 8
+  then FAILS IN BASE CODE, not in ports: ForgeGradle's generated
+  forgeBin jar has a malformed RuntimeInvisibleParameterAnnotations
+  attribute that javac rejects on both 8u504 and 8u312 (reproduced with a
+  5-line file). A clean tree fails identically. Suspect: current FG
+  2.3-SNAPSHOT vs the 2024 one upstream used. Do NOT claim green.
+- The `cabaletta:baritone-api:1.2` dep (impactdevelopment maven) was added
+  without a working build and is UNVERIFIED: confirm compile resolves it.
+- To unblock: pin an older FG 2.3 snapshot or repair the forgeBin
+  attribute (ASM strip), then verify. That toolchain fix is in-scope work.
 
 ## Adding / porting a module
 

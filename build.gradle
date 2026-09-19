@@ -75,6 +75,10 @@ repositories {
         name = 'jitpack.io'
         url  = 'https://jitpack.io'
     }
+    maven {
+        name = 'impactdevelopment'
+        url  = 'https://impactdevelopment.github.io/maven/'
+    }
 }
 
 dependencies {
@@ -95,6 +99,11 @@ dependencies {
 
     compile group: 'club.minnced', name: 'java-discord-rpc', version: '2.0.1'
     compile group: 'com.formdev', name: 'flatlaf', version: '1.5'
+
+    // Baritone integration (API only, not shaded: install the Baritone
+    // Forge 1.12.2 mod alongside Exeter, the module drives it).
+    // UNVERIFIED: added without a working local build, confirm compile.
+    compile 'cabaletta:baritone-api:1.2'
 }
 
 

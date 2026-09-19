@@ -72,6 +72,7 @@ import me.earth.earthhack.impl.modules.misc.autolog.AutoLog;
 import me.earth.earthhack.impl.modules.misc.autoreconnect.AutoReconnect;
 import me.earth.earthhack.impl.modules.misc.autoregear.AutoRegear;
 import me.earth.earthhack.impl.modules.misc.autorespawn.AutoRespawn;
+import me.earth.earthhack.impl.modules.misc.baritone.Baritone;
 import me.earth.earthhack.impl.modules.misc.buildheight.BuildHeight;
 import me.earth.earthhack.impl.modules.misc.chat.Chat;
 import me.earth.earthhack.impl.modules.misc.coords.Coords;
@@ -287,6 +288,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoLog());
         this.forceRegister(new AutoReconnect());
         this.forceRegister(new AutoRespawn());
+        this.forceRegister(new Baritone());
         this.forceRegister(new BuildHeight());
         this.forceRegister(new Chat());
         this.forceRegister(new Coords());
