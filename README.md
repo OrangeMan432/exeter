@@ -1,8 +1,8 @@
 > :warning: This is a continuation of 3arthqu4ke's now discontinued 3arthh4ck. Any new PingBypass 3arthqu4ke releases will be found [here](https://github.com/3arthqu4ke/PingBypass).
 
-# Exeter 1.12.2
+# Humza Client
 
-Forge 1.12.2 anarchy client. This branch (`1.12.2`) is a fresh tree:
+Forge 1.12.2 anarchy client. This branch (`humza-client`) is a fresh tree:
 EarthHack-continued as the base (MIT, LICENSE kept, full credit
 below) plus ~110 ported and original Exeter modules on top. No code
 from any other Exeter branch lives in this tree.
