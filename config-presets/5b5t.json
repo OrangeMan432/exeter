@@ -16,6 +16,13 @@
     "Instructions": false,
     "Confirm": true
   },
+  "FrameDupe": {
+    "Enabled": false,
+    "ShulkersOnly": true,
+    "Range": 5,
+    "Turns": 1,
+    "Ticks": 10
+  },
   "StashFinder": {
     "Enabled": true,
     "MinStorage": 5,
@@ -52,6 +59,168 @@
     "CensorCoords": false,
     "Sound": true
   },
+  "KillAura": {
+    "Enabled": false
+  },
+  "Trigger": {
+    "Enabled": false,
+    "AttackCheck": "CROSSHAIR",
+    "InvisibleCheck": true,
+    "TeamCheck": false,
+    "FriendCheck": true,
+    "WeaponCheck": true,
+    "CPS": 8.0,
+    "RandomSpeed": 2.0
+  },
+  "CrystalHit": {
+    "Enabled": false,
+    "Range": 4,
+    "Delay": 0,
+    "Swing": false,
+    "PacketBreak": false,
+    "AntiWeakness": false
+  },
+  "AntiCrystal": {
+    "Enabled": true,
+    "RangePlace": 5.9,
+    "EnemyRange": 12.0,
+    "DamageMin": 4.0,
+    "BiasDamage": 1.0,
+    "BlockPlace": "String",
+    "TickDelay": 5,
+    "BlocksPerTick": 4,
+    "OnlyIfEnemy": true,
+    "DamageCheck": true,
+    "SwitchBack": true
+  },
+  "CevBreaker": {
+    "Enabled": false,
+    "Mode": "Normal",
+    "Range": 6.0,
+    "ToggleAt": 8.0,
+    "EnemyRange": 6.0,
+    "Delay": 50,
+    "Cooldown": 100,
+    "Rotate": false,
+    "ReCheckCrystal": false,
+    "AirCheck": false,
+    "Smart-Sneak": true,
+    "Bypass": false
+  },
+  "PistonAura": {
+    "Enabled": false,
+    "MultiDirectional": false,
+    "Break": true,
+    "BreakDelay": 100,
+    "BreakRange": 4.5,
+    "BreakTrace": 3.0,
+    "PlaceRange": 4.5,
+    "PlaceTrace": 4.5,
+    "Cooldown": 500,
+    "Suicide": false
+  },
+  "Surround": {
+    "Enabled": false
+  },
+  "AutoTrap": {
+    "Enabled": false
+  },
+  "HoleFiller": {
+    "Enabled": false
+  },
+  "BedBomb": {
+    "Enabled": false
+  },
+  "AnvilAura": {
+    "Enabled": false
+  },
+  "AutoCity": {
+    "Enabled": false,
+    "Range": 6.0,
+    "AutoSwitch": true,
+    "AutoDisable": true
+  },
+  "SelfWeb": {
+    "Enabled": false,
+    "Delay": 50,
+    "BPT": 2,
+    "Packet": true,
+    "NoLag": true,
+    "JumpDisable": true,
+    "Swap": "NORMAL",
+    "Smart": false,
+    "Above": false
+  },
+  "WebTrap": {
+    "Enabled": false,
+    "TickDelay": 50,
+    "BPT": 1,
+    "Range": 10.0,
+    "AutoDisable": false,
+    "Feet": true,
+    "Face": false,
+    "Render": true
+  },
+  "Offhand": {
+    "Enabled": true
+  },
+  "Criticals": {
+    "Enabled": true
+  },
+  "Velocity": {
+    "Enabled": true
+  },
+  "HoleSnap": {
+    "Enabled": true,
+    "Range": 4.0,
+    "Pull": 0.3,
+    "StepDown": true
+  },
+  "AntiVoid": {
+    "Enabled": true,
+    "Height": 100
+  },
+  "NoFall": {
+    "Enabled": true
+  },
+  "Step": {
+    "Enabled": true
+  },
+  "ElytraFlight": {
+    "Enabled": false,
+    "Mode": "Wasp",
+    "H-Speed": 1.0,
+    "V-Speed": 1.0,
+    "AutoStart": false,
+    "InfiniteDurability": false,
+    "StopInWater": true,
+    "StopOnGround": false,
+    "AntiKick": true,
+    "Glide": 0.0001,
+    "NCP": false
+  },
+  "ElytraPlus": {
+    "Enabled": false,
+    "Mode": "Wasp",
+    "StopWater": true,
+    "StopLava": true,
+    "Horizontal": 1.0,
+    "Up": 1.0,
+    "Speed": 1.0,
+    "UpMultiplier": 1.0,
+    "Down": 1.0,
+    "SmartFall": true,
+    "FallSpeed": 0.01
+  },
+  "BoatFly": {
+    "Enabled": false
+  },
+  "LongJump": {
+    "Enabled": false
+  },
+  "Scaffold": {
+    "Enabled": false
+  },
   "ArmorWarner": {
     "Enabled": true,
     "Armor%": 20,
@@ -64,16 +233,6 @@
     "AutoSwitch": true,
     "AutoThrow": true,
     "AutoDisable": false
-  },
-  "FastExp": {
-    "Enabled": false,
-    "AutoThrow": true,
-    "AutoSwitch": true,
-    "AutoDisable": false
-  },
-  "AntiVoid": {
-    "Enabled": true,
-    "Height": 100
   },
   "AutoEat": {
     "Enabled": true
@@ -97,10 +256,10 @@
     "Range": 4,
     "Delay": 1.0
   },
-  "BoatFly": {
-    "Enabled": false
+  "Replenish": {
+    "Enabled": true
   },
-  "NoAFK": {
+  "Sorter": {
     "Enabled": true
   },
   "MCF": {
@@ -109,10 +268,68 @@
   "Tracker": {
     "Enabled": true
   },
+  "NoAFK": {
+    "Enabled": true
+  },
+  "AutoReconnect": {
+    "Enabled": true
+  },
   "NoKick": {
     "Enabled": true,
     "Slime": true,
     "Offhand": false
+  },
+  "CoordsHUD": {
+    "Enabled": true,
+    "Nether": true,
+    "X": 2,
+    "Y": 2
+  },
+  "Speedometer": {
+    "Enabled": true,
+    "X": 2,
+    "Y": 12
+  },
+  "TextRadar": {
+    "Enabled": true,
+    "Display": "All",
+    "SortUp": false,
+    "SortRight": false,
+    "Range": 100,
+    "X": 0,
+    "Y": 50
+  },
+  "CombatInfo": {
+    "Enabled": true,
+    "Range": 100.0,
+    "X": 2,
+    "Y": 60
+  },
+  "CityESP": {
+    "Enabled": true,
+    "Range": 8.0,
+    "Height": 1.0,
+    "Self": false
+  },
+  "StorageESP": {
+    "Enabled": true,
+    "Range": 64.0,
+    "Minecarts": true,
+    "ItemFrames": true,
+    "Height": 1.0
+  },
+  "BreakingESP": {
+    "Enabled": true,
+    "ShowSelf": true,
+    "Mode": "OUT",
+    "Box": true,
+    "Line": true,
+    "LineWidth": 1.0,
+    "Range": 20.0,
+    "ColorMode": "PROGRESS"
+  },
+  "HoleESP": {
+    "Enabled": true
   },
   "AutoGG": {
     "Enabled": false,
@@ -127,5 +344,20 @@
   "Baritone": {
     "Enabled": false,
     "PauseOnDisable": true
+  },
+  "Blink": {
+    "Enabled": false
+  },
+  "Freecam": {
+    "Enabled": false
+  },
+  "NoRotate": {
+    "Enabled": false
+  },
+  "ReverseStep": {
+    "Enabled": false
+  },
+  "TickShift": {
+    "Enabled": false
   }
 }
