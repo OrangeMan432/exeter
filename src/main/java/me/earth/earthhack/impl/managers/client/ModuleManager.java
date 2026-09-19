@@ -79,6 +79,7 @@ import me.earth.earthhack.impl.modules.misc.autoreconnect.AutoReconnect;
 import me.earth.earthhack.impl.modules.misc.autoregear.AutoRegear;
 import me.earth.earthhack.impl.modules.misc.autoreply.AutoReply;
 import me.earth.earthhack.impl.modules.misc.autorespawn.AutoRespawn;
+import me.earth.earthhack.impl.modules.misc.autoshulkerdupe.AutoShulkerDupe;
 import me.earth.earthhack.impl.modules.misc.autosign.AutoSign;
 import me.earth.earthhack.impl.modules.misc.autotame.AutoTame;
 import me.earth.earthhack.impl.modules.misc.baritone.Baritone;
@@ -337,6 +338,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoRespawn());
         this.forceRegister(new AutoReply());
         this.forceRegister(new AutoSign());
+        this.forceRegister(new AutoShulkerDupe());
         this.forceRegister(new AutoTame());
         this.forceRegister(new Baritone());
         this.forceRegister(new BuildHeight());
