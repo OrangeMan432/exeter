@@ -121,7 +121,8 @@
   },
   "ChatSuffix": {
     "Enabled": false,
-    "2b2tSuffix": false
+    "Suffix": " | Humza Client",
+    "Fancy": false
   },
   "Baritone": {
     "Enabled": false,

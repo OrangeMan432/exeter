@@ -18,14 +18,43 @@ final class ListenerSend extends
         String message = event.getPacket().getMessage();
         if (message.startsWith("/")
             || message.startsWith("!")
-            || message.endsWith("| exeter")
-            || message.endsWith("| 2b2t"))
+            || message.endsWith(module.suffix.getValue()))
         {
             return;
         }
 
+        String text = module.fancy.getValue()
+            ? toFancy(message)
+            : message;
         event.setCancelled(true);
         mc.player.connection.sendPacket(new CPacketChatMessage(
-            message + (module.suffix2b.getValue() ? " | 2b2t" : " | exeter")));
+            text + module.suffix.getValue()));
+    }
+
+    private String toFancy(String message)
+    {
+        StringBuilder builder = new StringBuilder(message.length());
+        for (int i = 0; i < message.length(); i++)
+        {
+            char c = message.charAt(i);
+            if (c >= 'a' && c <= 'z')
+            {
+                builder.append((char) (c - 'a' + 0xFF41));
+            }
+            else if (c >= 'A' && c <= 'Z')
+            {
+                builder.append((char) (c - 'A' + 0xFF21));
+            }
+            else if (c >= '0' && c <= '9')
+            {
+                builder.append((char) (c - '0' + 0xFF10));
+            }
+            else
+            {
+                builder.append(c);
+            }
+        }
+
+        return builder.toString();
     }
 }
