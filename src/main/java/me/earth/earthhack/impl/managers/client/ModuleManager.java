@@ -71,6 +71,7 @@ import me.earth.earthhack.impl.modules.misc.antipackets.AntiPackets;
 import me.earth.earthhack.impl.modules.misc.antipotion.AntiPotion;
 import me.earth.earthhack.impl.modules.misc.antivanish.AntiVanish;
 import me.earth.earthhack.impl.modules.misc.autoeat.AutoEat;
+import me.earth.earthhack.impl.modules.misc.autodupe.AutoItemDupe;
 import me.earth.earthhack.impl.modules.misc.autofish.AutoFish;
 import me.earth.earthhack.impl.modules.misc.autolog.AutoLog;
 import me.earth.earthhack.impl.modules.misc.automount.AutoMount;
@@ -86,6 +87,7 @@ import me.earth.earthhack.impl.modules.misc.chat.Chat;
 import me.earth.earthhack.impl.modules.misc.chestswap.ChestSwap;
 import me.earth.earthhack.impl.modules.misc.coords.Coords;
 import me.earth.earthhack.impl.modules.misc.entitydesync.EntityDesync;
+import me.earth.earthhack.impl.modules.misc.entitymine.EntityMine;
 import me.earth.earthhack.impl.modules.misc.extratab.ExtraTab;
 import me.earth.earthhack.impl.modules.misc.fakepearl.FakePearl;
 import me.earth.earthhack.impl.modules.misc.ghastnotifier.GhastNotifier;
@@ -107,6 +109,7 @@ import me.earth.earthhack.impl.modules.misc.noswing.NoSwing;
 import me.earth.earthhack.impl.modules.misc.nuker.Nuker;
 import me.earth.earthhack.impl.modules.misc.packetcanceller.PacketCanceller;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
+import me.earth.earthhack.impl.modules.misc.peek.Peek;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
 import me.earth.earthhack.impl.modules.misc.pearlnotify.PearlNotify;
 import me.earth.earthhack.impl.modules.misc.pearlspoof.PearlSpoof;
@@ -326,6 +329,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AntiPotion());
         this.forceRegister(new AntiVanish());
         this.forceRegister(new AutoEat());
+        this.forceRegister(new AutoItemDupe());
         this.forceRegister(new AutoFish());
         this.forceRegister(new AutoLog());
         this.forceRegister(new AutoMount());
@@ -340,6 +344,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new ChestSwap());
         this.forceRegister(new Coords());
         this.forceRegister(new EntityDesync());
+        this.forceRegister(new EntityMine());
         // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
         this.forceRegister(new FakePearl());
@@ -385,6 +390,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoRegear());
         this.forceRegister(new PacketCanceller());
         this.forceRegister(new PacketDelay());
+        this.forceRegister(new Peek());
         this.forceRegister(new RPC());
 
         //movement
