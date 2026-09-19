@@ -1,4 +1,4 @@
-# Eclipse.
+# eclipse
 bin
 *.launch
 .settings
@@ -6,25 +6,27 @@ bin
 .classpath
 .project
 
-# .idea
+# idea
 out
 *.ipr
 *.iws
 *.iml
 .idea
 
-# Gradle.
+# gradle
 build
 .gradle
 
-# Other.
+# other
+/runtime/
 eclipse
 run
+*.bak
 
-# Forge.
+# Files from Forge MDK
 forge*changelog.txt
 
-*.DS_Store
-
-# Useless
-src/main/java/you/are/ratted/
+# version files
+/HeadlessMC/
+/logs/
+/plugins/
