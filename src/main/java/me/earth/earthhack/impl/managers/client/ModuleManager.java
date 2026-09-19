@@ -115,6 +115,7 @@ import me.earth.earthhack.impl.modules.movement.fastweb.FastWeb;
 import me.earth.earthhack.impl.modules.movement.flight.Flight;
 import me.earth.earthhack.impl.modules.movement.highjump.HighJump;
 import me.earth.earthhack.impl.modules.movement.holesnap.HoleSnap;
+import me.earth.earthhack.impl.modules.movement.holetp.HoleTP;
 import me.earth.earthhack.impl.modules.movement.icespeed.IceSpeed;
 import me.earth.earthhack.impl.modules.movement.jesus.Jesus;
 import me.earth.earthhack.impl.modules.movement.longjump.LongJump;
@@ -334,6 +335,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Flight());
         this.forceRegister(new HighJump());
         this.forceRegister(new HoleSnap());
+        this.forceRegister(new HoleTP());
         this.forceRegister(new ReverseStep());
         this.forceRegister(new IceSpeed());
         this.forceRegister(new Jesus());
