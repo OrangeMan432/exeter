@@ -71,6 +71,7 @@ import me.earth.earthhack.impl.modules.misc.autorespawn.AutoRespawn;
 import me.earth.earthhack.impl.modules.misc.buildheight.BuildHeight;
 import me.earth.earthhack.impl.modules.misc.chat.Chat;
 import me.earth.earthhack.impl.modules.misc.extratab.ExtraTab;
+import me.earth.earthhack.impl.modules.misc.fakepearl.FakePearl;
 import me.earth.earthhack.impl.modules.misc.logger.Logger;
 import me.earth.earthhack.impl.modules.misc.mcf.MCF;
 import me.earth.earthhack.impl.modules.misc.mobowner.MobOwner;
@@ -120,6 +121,7 @@ import me.earth.earthhack.impl.modules.movement.stairs.Stairs;
 import me.earth.earthhack.impl.modules.movement.step.Step;
 import me.earth.earthhack.impl.modules.movement.tickshift.TickShift;
 import me.earth.earthhack.impl.modules.movement.velocity.Velocity;
+import me.earth.earthhack.impl.modules.player.armorwarner.ArmorWarner;
 import me.earth.earthhack.impl.modules.player.automine.AutoMine;
 import me.earth.earthhack.impl.modules.player.autotool.AutoTool;
 import me.earth.earthhack.impl.modules.player.blink.Blink;
@@ -260,6 +262,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Chat());
         // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
+        this.forceRegister(new FakePearl());
         this.forceRegister(new Logger());
         this.forceRegister(new MCF());
         this.forceRegister(new MobOwner());
@@ -323,6 +326,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Velocity());
 
         //player
+        this.forceRegister(new ArmorWarner());
         this.forceRegister(new AutoMine());
         this.forceRegister(new AutoTool());
         this.forceRegister(new Blink());
