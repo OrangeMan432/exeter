@@ -90,6 +90,7 @@ import me.earth.earthhack.impl.modules.misc.portals.Portals;
 import me.earth.earthhack.impl.modules.misc.settingspoof.SettingSpoof;
 import me.earth.earthhack.impl.modules.misc.skinblink.SkinBlink;
 import me.earth.earthhack.impl.modules.misc.spammer.Spammer;
+import me.earth.earthhack.impl.modules.misc.stashfinder.StashFinder;
 import me.earth.earthhack.impl.modules.misc.tooltips.ToolTips;
 import me.earth.earthhack.impl.modules.misc.tpcoordlog.TPCoordLog;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
@@ -124,6 +125,7 @@ import me.earth.earthhack.impl.modules.movement.strafe.Strafe;
 import me.earth.earthhack.impl.modules.movement.tickshift.TickShift;
 import me.earth.earthhack.impl.modules.movement.velocity.Velocity;
 import me.earth.earthhack.impl.modules.player.armorwarner.ArmorWarner;
+import me.earth.earthhack.impl.modules.player.automend.AutoMend;
 import me.earth.earthhack.impl.modules.player.automine.AutoMine;
 import me.earth.earthhack.impl.modules.player.autotool.AutoTool;
 import me.earth.earthhack.impl.modules.player.blink.Blink;
@@ -287,6 +289,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new SettingSpoof());
         this.forceRegister(new SkinBlink());
         this.forceRegister(new Spammer());
+        this.forceRegister(new StashFinder());
         this.forceRegister(new ToolTips());
         this.forceRegister(new TPCoordLog());
         this.forceRegister(new TpsSync());
@@ -336,6 +339,7 @@ public class ModuleManager extends IterationRegister<Module>
 
         //player
         this.forceRegister(new ArmorWarner());
+        this.forceRegister(new AutoMend());
         this.forceRegister(new AutoMine());
         this.forceRegister(new AutoTool());
         this.forceRegister(new Blink());
