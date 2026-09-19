@@ -54,6 +54,7 @@ import me.earth.earthhack.impl.modules.combat.offhand.Offhand;
 import me.earth.earthhack.impl.modules.combat.pistonaura.PistonAura;
 import me.earth.earthhack.impl.modules.combat.quiver.Quiver;
 import me.earth.earthhack.impl.modules.combat.selftrap.SelfTrap;
+import me.earth.earthhack.impl.modules.combat.selfweb.SelfWeb;
 import me.earth.earthhack.impl.modules.combat.snowballer.Snowballer;
 import me.earth.earthhack.impl.modules.combat.surround.Surround;
 import me.earth.earthhack.impl.modules.combat.webaura.WebAura;
@@ -106,6 +107,7 @@ import me.earth.earthhack.impl.modules.movement.clip.Clip;
 import me.earth.earthhack.impl.modules.movement.elytraflight.ElytraFlight;
 import me.earth.earthhack.impl.modules.movement.entitycontrol.EntityControl;
 import me.earth.earthhack.impl.modules.movement.entityspeed.EntitySpeed;
+import me.earth.earthhack.impl.modules.movement.fastfall.FastFall;
 import me.earth.earthhack.impl.modules.movement.fastswim.FastSwim;
 import me.earth.earthhack.impl.modules.movement.flight.Flight;
 import me.earth.earthhack.impl.modules.movement.highjump.HighJump;
@@ -254,6 +256,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Surround());
         this.forceRegister(new Snowballer());
         this.forceRegister(new SelfTrap());
+        this.forceRegister(new SelfWeb());
         this.forceRegister(new WebAura());
 
         //misc
@@ -317,6 +320,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new ElytraFlight());
         this.forceRegister(new EntityControl());
         this.forceRegister(new EntitySpeed());
+        this.forceRegister(new FastFall());
         this.forceRegister(new FastSwim());
         this.forceRegister(new Flight());
         this.forceRegister(new HighJump());
