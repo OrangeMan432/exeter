@@ -88,9 +88,11 @@ import me.earth.earthhack.impl.modules.misc.settingspoof.SettingSpoof;
 import me.earth.earthhack.impl.modules.misc.skinblink.SkinBlink;
 import me.earth.earthhack.impl.modules.misc.spammer.Spammer;
 import me.earth.earthhack.impl.modules.misc.tooltips.ToolTips;
+import me.earth.earthhack.impl.modules.misc.tpcoordlog.TPCoordLog;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
 import me.earth.earthhack.impl.modules.movement.anchor.Anchor;
 import me.earth.earthhack.impl.modules.movement.antimove.NoMove;
+import me.earth.earthhack.impl.modules.movement.antivoid.AntiVoid;
 import me.earth.earthhack.impl.modules.movement.autosprint.AutoSprint;
 import me.earth.earthhack.impl.modules.movement.avoid.Avoid;
 import me.earth.earthhack.impl.modules.movement.blocklag.BlockLag;
@@ -272,6 +274,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new SkinBlink());
         this.forceRegister(new Spammer());
         this.forceRegister(new ToolTips());
+        this.forceRegister(new TPCoordLog());
         this.forceRegister(new TpsSync());
         this.forceRegister(new Tracker());
         this.forceRegister(new TrueDurability());
@@ -287,6 +290,7 @@ public class ModuleManager extends IterationRegister<Module>
 
         //movement
         this.forceRegister(new Anchor());
+        this.forceRegister(new AntiVoid());
         this.forceRegister(new AutoSprint());
         this.forceRegister(new Avoid());
         this.forceRegister(new BlockLag());
