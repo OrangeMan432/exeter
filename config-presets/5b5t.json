@@ -1,0 +1,130 @@
+{
+  "AutoItemDupe": {
+    "Enabled": true,
+    "Mode": "HELD",
+    "AutoRepeat": true,
+    "Delay": 5,
+    "Confirm": true,
+    "Instructions": false
+  },
+  "AutoShulkerDupe": {
+    "Enabled": false,
+    "HopperCheck": false,
+    "ItemCrafting": 60,
+    "MaxStackWait": 60,
+    "WaitPlace": 60,
+    "Instructions": false,
+    "Confirm": true
+  },
+  "StashFinder": {
+    "Enabled": true,
+    "MinStorage": 5,
+    "Notify": true,
+    "SaveToFile": true
+  },
+  "NewChunks": {
+    "Enabled": true
+  },
+  "TPCoordLog": {
+    "Enabled": true,
+    "SaveToFile": true
+  },
+  "PopNotify": {
+    "Enabled": true
+  },
+  "PearlNotify": {
+    "Enabled": true
+  },
+  "VisualRange": {
+    "Enabled": true,
+    "Leaving": true
+  },
+  "GlobalLocation": {
+    "Enabled": true,
+    "Thunder": true,
+    "Wither": false,
+    "EnderDragon": false,
+    "EndPortal": false
+  },
+  "GhastNotifier": {
+    "Enabled": true,
+    "Chat": true,
+    "CensorCoords": false,
+    "Sound": true
+  },
+  "ArmorWarner": {
+    "Enabled": true,
+    "Armor%": 20,
+    "Self": true,
+    "Friends": true
+  },
+  "AutoMend": {
+    "Enabled": true,
+    "Threshold%": 80,
+    "AutoSwitch": true,
+    "AutoThrow": true,
+    "AutoDisable": false
+  },
+  "FastExp": {
+    "Enabled": false,
+    "AutoThrow": true,
+    "AutoSwitch": true,
+    "AutoDisable": false
+  },
+  "AntiVoid": {
+    "Enabled": true,
+    "Height": 100
+  },
+  "AutoEat": {
+    "Enabled": true
+  },
+  "AutoRespawn": {
+    "Enabled": true
+  },
+  "AutoArmor": {
+    "Enabled": true
+  },
+  "AutoTool": {
+    "Enabled": true
+  },
+  "AutoMount": {
+    "Enabled": true,
+    "Boats": true,
+    "Horses": true,
+    "Donkeys": true,
+    "Pigs": true,
+    "Llamas": true,
+    "Range": 4,
+    "Delay": 1.0
+  },
+  "BoatFly": {
+    "Enabled": false
+  },
+  "NoAFK": {
+    "Enabled": true
+  },
+  "MCF": {
+    "Enabled": true
+  },
+  "Tracker": {
+    "Enabled": true
+  },
+  "NoKick": {
+    "Enabled": true,
+    "Slime": true,
+    "Offhand": false
+  },
+  "AutoGG": {
+    "Enabled": false,
+    "Own": false,
+    "Delay": 5
+  },
+  "ChatSuffix": {
+    "Enabled": false,
+    "2b2tSuffix": false
+  },
+  "Baritone": {
+    "Enabled": false,
+    "PauseOnDisable": true
+  }
+}
