@@ -82,6 +82,7 @@ import me.earth.earthhack.impl.modules.misc.nosoundlag.NoSoundLag;
 import me.earth.earthhack.impl.modules.misc.nuker.Nuker;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
+import me.earth.earthhack.impl.modules.misc.pearlnotify.PearlNotify;
 import me.earth.earthhack.impl.modules.misc.pingspoof.PingSpoof;
 import me.earth.earthhack.impl.modules.misc.popnotify.PopNotify;
 import me.earth.earthhack.impl.modules.misc.portals.Portals;
@@ -269,6 +270,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new NoSoundLag());
         this.forceRegister(new Nuker());
         this.forceRegister(new Packets());
+        this.forceRegister(new PearlNotify());
         this.forceRegister(new PingSpoof());
         this.forceRegister(new PopNotify());
         this.forceRegister(new Portals());
