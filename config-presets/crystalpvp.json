@@ -1,0 +1,280 @@
+{
+  "AutoCrystal": {
+    "Enabled": true
+  },
+  "KillAura": {
+    "Enabled": false
+  },
+  "Trigger": {
+    "Enabled": false,
+    "AttackCheck": "CROSSHAIR",
+    "InvisibleCheck": true,
+    "TeamCheck": false,
+    "FriendCheck": true,
+    "WeaponCheck": true,
+    "CPS": 8.0,
+    "RandomSpeed": 2.0
+  },
+  "CrystalHit": {
+    "Enabled": false,
+    "Range": 4,
+    "Delay": 0,
+    "Swing": false,
+    "PacketBreak": false,
+    "AntiWeakness": false
+  },
+  "AntiCrystal": {
+    "Enabled": true,
+    "RangePlace": 5.9,
+    "EnemyRange": 12.0,
+    "DamageMin": 4.0,
+    "BiasDamage": 1.0,
+    "BlockPlace": "String",
+    "TickDelay": 5,
+    "BlocksPerTick": 4,
+    "OnlyIfEnemy": true,
+    "DamageCheck": true,
+    "SwitchBack": true
+  },
+  "CevBreaker": {
+    "Enabled": false,
+    "Mode": "Normal",
+    "Range": 6.0,
+    "ToggleAt": 8.0,
+    "EnemyRange": 6.0,
+    "Delay": 50,
+    "Cooldown": 100,
+    "Rotate": false,
+    "ReCheckCrystal": false,
+    "AirCheck": false,
+    "Smart-Sneak": true,
+    "Bypass": false
+  },
+  "PistonAura": {
+    "Enabled": false,
+    "MultiDirectional": false,
+    "Break": true,
+    "BreakDelay": 100,
+    "BreakRange": 4.5,
+    "BreakTrace": 3.0,
+    "PlaceRange": 4.5,
+    "PlaceTrace": 4.5,
+    "Cooldown": 500,
+    "Suicide": false
+  },
+  "Surround": {
+    "Enabled": true
+  },
+  "AutoTrap": {
+    "Enabled": false
+  },
+  "HoleFiller": {
+    "Enabled": false
+  },
+  "BedBomb": {
+    "Enabled": false
+  },
+  "AnvilAura": {
+    "Enabled": false
+  },
+  "AutoCity": {
+    "Enabled": false,
+    "Range": 6.0,
+    "AutoSwitch": true,
+    "AutoDisable": true
+  },
+  "SelfWeb": {
+    "Enabled": false,
+    "Delay": 50,
+    "BPT": 2,
+    "Packet": true,
+    "NoLag": true,
+    "JumpDisable": true,
+    "Swap": "NORMAL",
+    "Smart": false,
+    "Above": false
+  },
+  "Offhand": {
+    "Enabled": true
+  },
+  "Criticals": {
+    "Enabled": true
+  },
+  "Velocity": {
+    "Enabled": true
+  },
+  "HoleSnap": {
+    "Enabled": true,
+    "Range": 4.0,
+    "Pull": 0.3,
+    "StepDown": true
+  },
+  "TargetStrafe": {
+    "Enabled": false,
+    "Range": 3.0,
+    "Speed": 0.3,
+    "Clockwise": true,
+    "Jump": false
+  },
+  "Confuse": {
+    "Enabled": false,
+    "SpinSpeed": 20.0
+  },
+  "AntiVoid": {
+    "Enabled": true,
+    "Height": 100
+  },
+  "NoFall": {
+    "Enabled": true
+  },
+  "Step": {
+    "Enabled": true
+  },
+  "Speed": {
+    "Enabled": false
+  },
+  "Strafe": {
+    "Enabled": false,
+    "Mode": "NCP",
+    "SetGround": true,
+    "Hop": true,
+    "Bhop": false,
+    "NoLag": false,
+    "Speed": 100,
+    "Speed1": 130,
+    "Speed2": 125,
+    "DFactor": 159,
+    "Accel": 2149,
+    "SpeedLimit": 35.0,
+    "SpeedLimit2": 60.0,
+    "YOffset": 400,
+    "Potion": false,
+    "Wait": true,
+    "HopWait": true,
+    "Stage": 2,
+    "SetPos": true,
+    "SetNull": false,
+    "GroundLimit": 138,
+    "GroundFactor": 13,
+    "SetStep": 1,
+    "NoGroundLag": true
+  },
+  "AutoMend": {
+    "Enabled": false,
+    "Threshold%": 80,
+    "AutoSwitch": true,
+    "AutoThrow": true,
+    "AutoDisable": false
+  },
+  "ArmorWarner": {
+    "Enabled": true,
+    "Armor%": 20,
+    "Self": true,
+    "Friends": true
+  },
+  "AutoEat": {
+    "Enabled": true
+  },
+  "AutoRespawn": {
+    "Enabled": true
+  },
+  "AutoArmor": {
+    "Enabled": true
+  },
+  "AutoTool": {
+    "Enabled": true
+  },
+  "MCF": {
+    "Enabled": true
+  },
+  "PopNotify": {
+    "Enabled": true
+  },
+  "KillEffects": {
+    "Enabled": true,
+    "Lightning": "NORMAL",
+    "KillSound": "OFF"
+  },
+  "CombatInfo": {
+    "Enabled": true,
+    "Range": 100.0,
+    "X": 2,
+    "Y": 60
+  },
+  "TextRadar": {
+    "Enabled": true,
+    "Display": "All",
+    "SortUp": false,
+    "SortRight": false,
+    "Range": 100,
+    "X": 0,
+    "Y": 50
+  },
+  "ArmourHUD": {
+    "Enabled": true,
+    "Durability": true,
+    "X": 2,
+    "Y": 100
+  },
+  "PotionEffects": {
+    "Enabled": true,
+    "X": 2,
+    "Y": 80
+  },
+  "CoordsHUD": {
+    "Enabled": true,
+    "Nether": true,
+    "X": 2,
+    "Y": 2
+  },
+  "Speedometer": {
+    "Enabled": true,
+    "X": 2,
+    "Y": 12
+  },
+  "CityESP": {
+    "Enabled": true,
+    "Range": 8.0,
+    "Height": 1.0,
+    "Self": false
+  },
+  "BreakingESP": {
+    "Enabled": true,
+    "ShowSelf": true,
+    "Mode": "OUT",
+    "Box": true,
+    "Line": true,
+    "LineWidth": 1.0,
+    "Range": 20.0,
+    "ColorMode": "PROGRESS"
+  },
+  "HoleESP": {
+    "Enabled": true
+  },
+  "StorageESP": {
+    "Enabled": false,
+    "Range": 64.0,
+    "Minecarts": true,
+    "ItemFrames": true,
+    "Height": 1.0
+  },
+  "AutoGG": {
+    "Enabled": true,
+    "Own": false,
+    "Delay": 5
+  },
+  "ChatSuffix": {
+    "Enabled": false,
+    "Suffix": " | Humza Client",
+    "Fancy": false
+  },
+  "NoAFK": {
+    "Enabled": false
+  },
+  "Blink": {
+    "Enabled": false
+  },
+  "Freecam": {
+    "Enabled": false
+  }
+}
