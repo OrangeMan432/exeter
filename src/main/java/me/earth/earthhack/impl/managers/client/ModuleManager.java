@@ -78,6 +78,7 @@ import me.earth.earthhack.impl.modules.misc.buildheight.BuildHeight;
 import me.earth.earthhack.impl.modules.misc.chat.Chat;
 import me.earth.earthhack.impl.modules.misc.chestswap.ChestSwap;
 import me.earth.earthhack.impl.modules.misc.coords.Coords;
+import me.earth.earthhack.impl.modules.misc.entitydesync.EntityDesync;
 import me.earth.earthhack.impl.modules.misc.extratab.ExtraTab;
 import me.earth.earthhack.impl.modules.misc.fakepearl.FakePearl;
 import me.earth.earthhack.impl.modules.misc.ghastnotifier.GhastNotifier;
@@ -310,6 +311,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Chat());
         this.forceRegister(new ChestSwap());
         this.forceRegister(new Coords());
+        this.forceRegister(new EntityDesync());
         // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
         this.forceRegister(new FakePearl());
