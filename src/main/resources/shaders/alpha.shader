@@ -14,7 +14,7 @@ void main(void) {
 uniform sampler2D sampler;
 
 void main(void) {
-    vec4 color = texture(sampler, gl_TexCoord[0].xy);
+    vec4 color = texture2D(sampler, gl_TexCoord[0].xy);
 
     if (color.a <= 0.1) {
         discard;

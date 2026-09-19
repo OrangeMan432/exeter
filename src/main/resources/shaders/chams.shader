@@ -121,7 +121,7 @@ float noiseLayers(in vec3 p) {
 
 void main() {
     // Screen coordinates.
-    vec2 uv = (gl_FragCoord - resolution.xy*.5) / resolution.y;
+    vec2 uv = (gl_FragCoord.xy - resolution.xy*.5) / resolution.y;
 
     // Shifting the central position around, just a little, to simulate a
     // moving camera, albeit a pretty lame one.
@@ -140,7 +140,7 @@ void main() {
     float c = noiseLayers(rd*2.);
 
     // Optional: Adding a bit of random noise for a subtle dust effect.
-    c = max(c + dot(hash33(rd)*2. - 1., vec3(.015)), 0.);
+    c = max(c + dot(hash33(rd)*2. - vec3(1.), vec3(.015)), 0.);
 
     // Coloring:
 
