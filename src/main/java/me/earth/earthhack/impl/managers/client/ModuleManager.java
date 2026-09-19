@@ -98,6 +98,7 @@ import me.earth.earthhack.impl.modules.misc.tpcoordlog.TPCoordLog;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
 import me.earth.earthhack.impl.modules.misc.visualrange.VisualRange;
 import me.earth.earthhack.impl.modules.movement.anchor.Anchor;
+import me.earth.earthhack.impl.modules.movement.antiglide.AntiGlide;
 import me.earth.earthhack.impl.modules.movement.antimove.NoMove;
 import me.earth.earthhack.impl.modules.movement.antivoid.AntiVoid;
 import me.earth.earthhack.impl.modules.movement.autosprint.AutoSprint;
@@ -110,6 +111,7 @@ import me.earth.earthhack.impl.modules.movement.entitycontrol.EntityControl;
 import me.earth.earthhack.impl.modules.movement.entityspeed.EntitySpeed;
 import me.earth.earthhack.impl.modules.movement.fastfall.FastFall;
 import me.earth.earthhack.impl.modules.movement.fastswim.FastSwim;
+import me.earth.earthhack.impl.modules.movement.fastweb.FastWeb;
 import me.earth.earthhack.impl.modules.movement.flight.Flight;
 import me.earth.earthhack.impl.modules.movement.highjump.HighJump;
 import me.earth.earthhack.impl.modules.movement.holesnap.HoleSnap;
@@ -140,6 +142,7 @@ import me.earth.earthhack.impl.modules.player.fakeplayer.FakePlayer;
 import me.earth.earthhack.impl.modules.player.fasteat.FastEat;
 import me.earth.earthhack.impl.modules.player.fastplace.FastPlace;
 import me.earth.earthhack.impl.modules.player.fastexp.FastExp;
+import me.earth.earthhack.impl.modules.player.flagdetect.FlagDetect;
 import me.earth.earthhack.impl.modules.player.freecam.Freecam;
 import me.earth.earthhack.impl.modules.player.liquids.LiquidInteract;
 import me.earth.earthhack.impl.modules.player.mcp.MiddleClickPearl;
@@ -315,6 +318,7 @@ public class ModuleManager extends IterationRegister<Module>
 
         //movement
         this.forceRegister(new Anchor());
+        this.forceRegister(new AntiGlide());
         this.forceRegister(new AntiVoid());
         this.forceRegister(new AutoSprint());
         this.forceRegister(new Avoid());
@@ -326,6 +330,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new EntitySpeed());
         this.forceRegister(new FastFall());
         this.forceRegister(new FastSwim());
+        this.forceRegister(new FastWeb());
         this.forceRegister(new Flight());
         this.forceRegister(new HighJump());
         this.forceRegister(new HoleSnap());
@@ -359,6 +364,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new FastPlace());
         this.forceRegister(new FastEat());
         this.forceRegister(new FastExp());
+        this.forceRegister(new FlagDetect());
         this.forceRegister(new Freecam());
         this.forceRegister(new LiquidInteract());
         this.forceRegister(new MiddleClickPearl());
