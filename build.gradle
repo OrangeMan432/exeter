@@ -100,9 +100,10 @@ dependencies {
     compile group: 'club.minnced', name: 'java-discord-rpc', version: '2.0.1'
     compile group: 'com.formdev', name: 'flatlaf', version: '1.5'
 
-    // Baritone integration (API only, not shaded: install the Baritone
-    // Forge 1.12.2 mod alongside Exeter, the module drives it).
-    deobfCompile 'cabaletta:baritone-api:1.2'
+    // Baritone integration (compile-only MCP dev variant, never shaded:
+    // install the Baritone Forge 1.12.2 mod alongside, it provides
+    // the runtime classes while this module only drives it).
+    compileOnly 'cabaletta:baritone-deobf-unoptimized-mcp-dev:1.2'
 }
 
 
