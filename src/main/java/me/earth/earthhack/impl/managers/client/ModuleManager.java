@@ -191,11 +191,13 @@ import me.earth.earthhack.impl.modules.player.tpssync.TpsSync;
 import me.earth.earthhack.impl.modules.player.truedurability.TrueDurability;
 import me.earth.earthhack.impl.modules.player.xcarry.XCarry;
 import me.earth.earthhack.impl.modules.render.ambience.Ambience;
+import me.earth.earthhack.impl.modules.render.armourhud.ArmourHUD;
 import me.earth.earthhack.impl.modules.render.blockhighlight.BlockHighlight;
 import me.earth.earthhack.impl.modules.render.breadcrumbs.BreadCrumbs;
 import me.earth.earthhack.impl.modules.render.breakingesp.BreakingESP;
 import me.earth.earthhack.impl.modules.render.chams.Chams;
 import me.earth.earthhack.impl.modules.render.cityesp.CityESP;
+import me.earth.earthhack.impl.modules.render.combatinfo.CombatInfo;
 import me.earth.earthhack.impl.modules.render.coordinates.Coordinates;
 import me.earth.earthhack.impl.modules.render.crosshair.CrossHair;
 import me.earth.earthhack.impl.modules.render.crystalchams.CrystalChams;
@@ -217,6 +219,7 @@ import me.earth.earthhack.impl.modules.render.norender.NoRender;
 import me.earth.earthhack.impl.modules.render.penis.Penis;
 import me.earth.earthhack.impl.modules.render.popchams.PopChams;
 import me.earth.earthhack.impl.modules.render.portal.PortalESP;
+import me.earth.earthhack.impl.modules.render.potioneffects.PotionEffects;
 import me.earth.earthhack.impl.modules.render.pvpresources.PvpResources;
 import me.earth.earthhack.impl.modules.render.rainbowenchant.RainbowEnchant;
 import me.earth.earthhack.impl.modules.render.ranges.Ranges;
@@ -495,6 +498,9 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Coordinates());
         this.forceRegister(new Speedometer());
         this.forceRegister(new Welcomer());
+        this.forceRegister(new ArmourHUD());
+        this.forceRegister(new CombatInfo());
+        this.forceRegister(new PotionEffects());
 
         this.forceRegister(new PingBypassModule());
 
