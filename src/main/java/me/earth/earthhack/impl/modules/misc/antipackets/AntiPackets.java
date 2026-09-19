@@ -145,7 +145,7 @@ public class AntiPackets extends Module
     private Iterable<BooleanSetting> sorted(Collection<BooleanSetting> settings)
     {
         return settings.stream()
-                       .sorted(Comparator.comparing(Setting::getName))
+                       .sorted(Comparator.comparing(s -> s.getName()))
                        .collect(Collectors.toList());
     }
 

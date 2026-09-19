@@ -15,7 +15,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-20190910.005614-43'
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
         classpath 'com.formdev:flatlaf:1.5'
@@ -102,8 +102,7 @@ dependencies {
 
     // Baritone integration (API only, not shaded: install the Baritone
     // Forge 1.12.2 mod alongside Exeter, the module drives it).
-    // UNVERIFIED: added without a working local build, confirm compile.
-    compile 'cabaletta:baritone-api:1.2'
+    deobfCompile 'cabaletta:baritone-api:1.2'
 }
 
 
