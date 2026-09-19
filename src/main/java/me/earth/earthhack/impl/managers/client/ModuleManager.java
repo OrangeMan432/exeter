@@ -133,6 +133,7 @@ import me.earth.earthhack.impl.modules.player.exptweaks.ExpTweaks;
 import me.earth.earthhack.impl.modules.player.fakeplayer.FakePlayer;
 import me.earth.earthhack.impl.modules.player.fasteat.FastEat;
 import me.earth.earthhack.impl.modules.player.fastplace.FastPlace;
+import me.earth.earthhack.impl.modules.player.fastexp.FastExp;
 import me.earth.earthhack.impl.modules.player.freecam.Freecam;
 import me.earth.earthhack.impl.modules.player.liquids.LiquidInteract;
 import me.earth.earthhack.impl.modules.player.mcp.MiddleClickPearl;
@@ -160,6 +161,7 @@ import me.earth.earthhack.impl.modules.player.xcarry.XCarry;
 import me.earth.earthhack.impl.modules.render.ambience.Ambience;
 import me.earth.earthhack.impl.modules.render.blockhighlight.BlockHighlight;
 import me.earth.earthhack.impl.modules.render.breadcrumbs.BreadCrumbs;
+import me.earth.earthhack.impl.modules.render.breakingesp.BreakingESP;
 import me.earth.earthhack.impl.modules.render.chams.Chams;
 import me.earth.earthhack.impl.modules.render.cityesp.CityESP;
 import me.earth.earthhack.impl.modules.render.crosshair.CrossHair;
@@ -343,6 +345,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new FakePlayer());
         this.forceRegister(new FastPlace());
         this.forceRegister(new FastEat());
+        this.forceRegister(new FastExp());
         this.forceRegister(new Freecam());
         this.forceRegister(new LiquidInteract());
         this.forceRegister(new MiddleClickPearl());
@@ -369,6 +372,7 @@ public class ModuleManager extends IterationRegister<Module>
         //render
         this.forceRegister(new BlockHighlight());
         this.forceRegister(new BreadCrumbs());
+        this.forceRegister(new BreakingESP());
         this.forceRegister(new Chams());
         this.forceRegister(new CityESP());
         this.forceRegister(new ESP());
