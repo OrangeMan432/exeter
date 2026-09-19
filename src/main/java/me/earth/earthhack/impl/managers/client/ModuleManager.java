@@ -35,6 +35,7 @@ import me.earth.earthhack.impl.modules.client.settings.SettingsModule;
 import me.earth.earthhack.impl.modules.client.tab.TabModule;
 import me.earth.earthhack.impl.modules.client.xcrash.XCrash;
 import me.earth.earthhack.impl.modules.combat.anticityboss.AntiCityBoss;
+import me.earth.earthhack.impl.modules.combat.anticrystal.AntiCrystal;
 import me.earth.earthhack.impl.modules.combat.antisurround.AntiSurround;
 import me.earth.earthhack.impl.modules.combat.antitrap.AntiTrap;
 import me.earth.earthhack.impl.modules.combat.anvilaura.AnvilAura;
@@ -301,6 +302,7 @@ public class ModuleManager extends IterationRegister<Module>
 
         //combat
         this.forceRegister(new AntiCityBoss());
+        this.forceRegister(new AntiCrystal());
         this.forceRegister(new AntiSurround());
         this.forceRegister(new AntiTrap());
         this.forceRegister(new Auto32k());
