@@ -93,6 +93,7 @@ import me.earth.earthhack.impl.modules.misc.spammer.Spammer;
 import me.earth.earthhack.impl.modules.misc.tooltips.ToolTips;
 import me.earth.earthhack.impl.modules.misc.tpcoordlog.TPCoordLog;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
+import me.earth.earthhack.impl.modules.misc.visualrange.VisualRange;
 import me.earth.earthhack.impl.modules.movement.anchor.Anchor;
 import me.earth.earthhack.impl.modules.movement.antimove.NoMove;
 import me.earth.earthhack.impl.modules.movement.antivoid.AntiVoid;
@@ -141,6 +142,7 @@ import me.earth.earthhack.impl.modules.player.nohunger.NoHunger;
 import me.earth.earthhack.impl.modules.player.noinventorydesync.InventorySync;
 import me.earth.earthhack.impl.modules.player.norotate.NoRotate;
 import me.earth.earthhack.impl.modules.player.pearlphase.PearlPhase;
+import me.earth.earthhack.impl.modules.player.portalgodmode.PortalGodMode;
 import me.earth.earthhack.impl.modules.player.raytrace.RayTrace;
 import me.earth.earthhack.impl.modules.player.reach.Reach;
 import me.earth.earthhack.impl.modules.player.replenish.Replenish;
@@ -285,6 +287,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new TpsSync());
         this.forceRegister(new Tracker());
         this.forceRegister(new TrueDurability());
+        this.forceRegister(new VisualRange());
 
         /*
         if (Environment.hasForge()) {
@@ -345,6 +348,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new NoHunger());
         this.forceRegister(new InventorySync());
         this.forceRegister(new NoRotate());
+        this.forceRegister(new PortalGodMode());
         this.forceRegister(new RayTrace());
         this.forceRegister(new Reach());
         this.forceRegister(new Replenish());
