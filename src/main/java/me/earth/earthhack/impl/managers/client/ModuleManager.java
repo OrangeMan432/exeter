@@ -52,7 +52,6 @@ import me.earth.earthhack.impl.modules.combat.burrow.Burrow;
 import me.earth.earthhack.impl.modules.combat.cevbreaker.CevBreaker;
 import me.earth.earthhack.impl.modules.combat.confuse.Confuse;
 import me.earth.earthhack.impl.modules.combat.criticals.Criticals;
-import me.earth.earthhack.impl.modules.combat.crystalaura.CrystalAura;
 import me.earth.earthhack.impl.modules.combat.holefiller.HoleFiller;
 import me.earth.earthhack.impl.modules.combat.killaura.KillAura;
 import me.earth.earthhack.impl.modules.combat.legswitch.LegSwitch;
@@ -318,7 +317,6 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new BowKiller());
         this.forceRegister(new Burrow());
         this.forceRegister(new Criticals());
-        this.forceRegister(new CrystalAura());
         this.forceRegister(new CevBreaker());
         this.forceRegister(new Confuse());
         this.forceRegister(new HoleFiller());
