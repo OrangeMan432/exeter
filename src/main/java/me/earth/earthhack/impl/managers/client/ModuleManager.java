@@ -72,6 +72,7 @@ import me.earth.earthhack.impl.modules.misc.autolog.AutoLog;
 import me.earth.earthhack.impl.modules.misc.autoreconnect.AutoReconnect;
 import me.earth.earthhack.impl.modules.misc.autoregear.AutoRegear;
 import me.earth.earthhack.impl.modules.misc.autorespawn.AutoRespawn;
+import me.earth.earthhack.impl.modules.misc.autosign.AutoSign;
 import me.earth.earthhack.impl.modules.misc.baritone.Baritone;
 import me.earth.earthhack.impl.modules.misc.buildheight.BuildHeight;
 import me.earth.earthhack.impl.modules.misc.chat.Chat;
@@ -83,12 +84,14 @@ import me.earth.earthhack.impl.modules.misc.killeffects.KillEffects;
 import me.earth.earthhack.impl.modules.misc.logger.Logger;
 import me.earth.earthhack.impl.modules.misc.mcf.MCF;
 import me.earth.earthhack.impl.modules.misc.mobowner.MobOwner;
+import me.earth.earthhack.impl.modules.misc.nameprotect.NameProtect;
 import me.earth.earthhack.impl.modules.misc.noafk.NoAFK;
 import me.earth.earthhack.impl.modules.misc.nohandshake.NoHandShake;
 import me.earth.earthhack.impl.modules.misc.nointeract.NoInteract;
 import me.earth.earthhack.impl.modules.misc.nointerp.NoInterp;
 import me.earth.earthhack.impl.modules.misc.nosoundlag.NoSoundLag;
 import me.earth.earthhack.impl.modules.misc.nuker.Nuker;
+import me.earth.earthhack.impl.modules.misc.packetcanceller.PacketCanceller;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
 import me.earth.earthhack.impl.modules.misc.pearlnotify.PearlNotify;
@@ -131,12 +134,14 @@ import me.earth.earthhack.impl.modules.movement.packetfly.PacketFly;
 import me.earth.earthhack.impl.modules.movement.phase.Phase;
 import me.earth.earthhack.impl.modules.movement.reversestep.ReverseStep;
 import me.earth.earthhack.impl.modules.movement.safewalk.SafeWalk;
+import me.earth.earthhack.impl.modules.movement.sneak.Sneak;
 import me.earth.earthhack.impl.modules.movement.speed.Speed;
 import me.earth.earthhack.impl.modules.movement.stairs.Stairs;
 import me.earth.earthhack.impl.modules.movement.step.Step;
 import me.earth.earthhack.impl.modules.movement.strafe.Strafe;
 import me.earth.earthhack.impl.modules.movement.tickshift.TickShift;
 import me.earth.earthhack.impl.modules.movement.velocity.Velocity;
+import me.earth.earthhack.impl.modules.movement.yaw.Yaw;
 import me.earth.earthhack.impl.modules.player.armorwarner.ArmorWarner;
 import me.earth.earthhack.impl.modules.player.automend.AutoMend;
 import me.earth.earthhack.impl.modules.player.automine.AutoMine;
@@ -288,6 +293,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoLog());
         this.forceRegister(new AutoReconnect());
         this.forceRegister(new AutoRespawn());
+        this.forceRegister(new AutoSign());
         this.forceRegister(new Baritone());
         this.forceRegister(new BuildHeight());
         this.forceRegister(new Chat());
@@ -300,6 +306,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Logger());
         this.forceRegister(new MCF());
         this.forceRegister(new MobOwner());
+        this.forceRegister(new NameProtect());
         this.forceRegister(new NoAFK());
         this.forceRegister(new NoHandShake());
         this.forceRegister(new NoInteract());
@@ -328,6 +335,7 @@ public class ModuleManager extends IterationRegister<Module>
         }
         */
         this.forceRegister(new AutoRegear());
+        this.forceRegister(new PacketCanceller());
         this.forceRegister(new PacketDelay());
         this.forceRegister(new RPC());
 
@@ -360,12 +368,14 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new PacketFly());
         this.forceRegister(new Phase());
         this.forceRegister(new SafeWalk());
+        this.forceRegister(new Sneak());
         this.forceRegister(new Speed());
         this.forceRegister(new Stairs());
         this.forceRegister(new Step());
         this.forceRegister(new Strafe());
         this.forceRegister(new TickShift());
         this.forceRegister(new Velocity());
+        this.forceRegister(new Yaw());
 
         //player
         this.forceRegister(new ArmorWarner());
