@@ -63,6 +63,7 @@ import me.earth.earthhack.impl.modules.combat.surround.Surround;
 import me.earth.earthhack.impl.modules.combat.webaura.WebAura;
 import me.earth.earthhack.impl.modules.combat.webtrap.WebTrap;
 import me.earth.earthhack.impl.modules.combat.targetstrafe.TargetStrafe;
+import me.earth.earthhack.impl.modules.combat.trigger.Trigger;
 import me.earth.earthhack.impl.modules.misc.announcer.Announcer;
 import me.earth.earthhack.impl.modules.misc.antiaim.AntiAim;
 import me.earth.earthhack.impl.modules.misc.antipackets.AntiPackets;
@@ -453,6 +454,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Suicide());
         this.forceRegister(new Swing());
         this.forceRegister(new Timer());
+        this.forceRegister(new Trigger());
         this.forceRegister(new XCarry());
         this.forceRegister(new PearlPhase());
 
