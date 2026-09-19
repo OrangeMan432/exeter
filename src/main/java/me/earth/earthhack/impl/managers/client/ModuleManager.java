@@ -115,6 +115,7 @@ import me.earth.earthhack.impl.modules.misc.noswing.NoSwing;
 import me.earth.earthhack.impl.modules.misc.nuker.Nuker;
 import me.earth.earthhack.impl.modules.misc.packetcanceller.PacketCanceller;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
+import me.earth.earthhack.impl.modules.misc.packetfilter.PacketFilter;
 import me.earth.earthhack.impl.modules.misc.packetlogger.PacketLogger;
 import me.earth.earthhack.impl.modules.misc.peek.Peek;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
@@ -405,6 +406,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoRegear());
         this.forceRegister(new PacketCanceller());
         this.forceRegister(new PacketDelay());
+        this.forceRegister(new PacketFilter());
         this.forceRegister(new PacketLogger());
         this.forceRegister(new Peek());
         this.forceRegister(new RPC());
