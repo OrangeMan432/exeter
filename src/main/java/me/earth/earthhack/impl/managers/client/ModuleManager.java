@@ -201,6 +201,7 @@ import me.earth.earthhack.impl.modules.render.voidesp.VoidESP;
 import me.earth.earthhack.impl.modules.render.waypoints.WayPoints;
 import me.earth.earthhack.impl.modules.render.weather.Weather;
 import me.earth.earthhack.impl.modules.render.xray.XRay;
+import me.earth.earthhack.impl.modules.render.zoom.Zoom;
 
 import java.util.ArrayList;
 
@@ -404,6 +405,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new CameraClip());
         this.forceRegister(new ViewModel());
         this.forceRegister(new XRay());
+        this.forceRegister(new Zoom());
         this.forceRegister(new CrystalScale());
         this.forceRegister(new Trails());
         this.forceRegister(new Trajectories());
