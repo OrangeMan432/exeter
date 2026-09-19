@@ -196,6 +196,7 @@ import me.earth.earthhack.impl.modules.render.breadcrumbs.BreadCrumbs;
 import me.earth.earthhack.impl.modules.render.breakingesp.BreakingESP;
 import me.earth.earthhack.impl.modules.render.chams.Chams;
 import me.earth.earthhack.impl.modules.render.cityesp.CityESP;
+import me.earth.earthhack.impl.modules.render.coordinates.Coordinates;
 import me.earth.earthhack.impl.modules.render.crosshair.CrossHair;
 import me.earth.earthhack.impl.modules.render.crystalchams.CrystalChams;
 import me.earth.earthhack.impl.modules.render.crystalscale.CrystalScale;
@@ -223,8 +224,10 @@ import me.earth.earthhack.impl.modules.render.search.Search;
 import me.earth.earthhack.impl.modules.render.skeleton.Skeleton;
 import me.earth.earthhack.impl.modules.render.smallshield.SmallShield;
 import me.earth.earthhack.impl.modules.render.sounds.Sounds;
+import me.earth.earthhack.impl.modules.render.speedometer.Speedometer;
 import me.earth.earthhack.impl.modules.render.storageesp.StorageESP;
 import me.earth.earthhack.impl.modules.render.targethud.TargetHud;
+import me.earth.earthhack.impl.modules.render.textradar.TextRadar;
 import me.earth.earthhack.impl.modules.render.tracers.Tracers;
 import me.earth.earthhack.impl.modules.render.trails.Trails;
 import me.earth.earthhack.impl.modules.render.trajectories.Trajectories;
@@ -233,6 +236,7 @@ import me.earth.earthhack.impl.modules.render.viewmodel.ViewModel;
 import me.earth.earthhack.impl.modules.render.voidesp.VoidESP;
 import me.earth.earthhack.impl.modules.render.waypoints.WayPoints;
 import me.earth.earthhack.impl.modules.render.weather.Weather;
+import me.earth.earthhack.impl.modules.render.welcomer.Welcomer;
 import me.earth.earthhack.impl.modules.render.xray.XRay;
 import me.earth.earthhack.impl.modules.render.zoom.Zoom;
 
@@ -487,6 +491,10 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new ItemChams());
         this.forceRegister(new Ambience());
         this.forceRegister(new TargetHud());
+        this.forceRegister(new TextRadar());
+        this.forceRegister(new Coordinates());
+        this.forceRegister(new Speedometer());
+        this.forceRegister(new Welcomer());
 
         this.forceRegister(new PingBypassModule());
 
