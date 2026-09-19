@@ -148,6 +148,7 @@ import me.earth.earthhack.impl.modules.movement.blocklag.BlockLag;
 import me.earth.earthhack.impl.modules.movement.boatfly.BoatFly;
 import me.earth.earthhack.impl.modules.movement.clip.Clip;
 import me.earth.earthhack.impl.modules.movement.elytraflight.ElytraFlight;
+import me.earth.earthhack.impl.modules.movement.elytraplus.ElytraPlus;
 import me.earth.earthhack.impl.modules.movement.entitycontrol.EntityControl;
 import me.earth.earthhack.impl.modules.movement.entityspeed.EntitySpeed;
 import me.earth.earthhack.impl.modules.movement.fastfall.FastFall;
@@ -432,6 +433,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new BoatFly());
         this.forceRegister(new Clip());
         this.forceRegister(new ElytraFlight());
+        this.forceRegister(new ElytraPlus());
         this.forceRegister(new EntityControl());
         this.forceRegister(new EntitySpeed());
         this.forceRegister(new FastFall());
