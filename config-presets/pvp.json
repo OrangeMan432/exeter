@@ -1,0 +1,140 @@
+{
+  "Trigger": {
+    "Enabled": false,
+    "AttackCheck": "CROSSHAIR",
+    "InvisibleCheck": true,
+    "TeamCheck": false,
+    "FriendCheck": true,
+    "WeaponCheck": true,
+    "CPS": 8.0,
+    "RandomSpeed": 2.0
+  },
+  "CrystalHit": {
+    "Enabled": false,
+    "Range": 4,
+    "Delay": 0,
+    "Swing": false,
+    "PacketBreak": false,
+    "AntiWeakness": false
+  },
+  "AntiCrystal": {
+    "Enabled": true,
+    "RangePlace": 5.9,
+    "EnemyRange": 12.0,
+    "DamageMin": 4.0,
+    "BiasDamage": 1.0,
+    "BlockPlace": "String",
+    "TickDelay": 5,
+    "BlocksPerTick": 4,
+    "OnlyIfEnemy": true,
+    "DamageCheck": true,
+    "SwitchBack": true
+  },
+  "AutoCity": {
+    "Enabled": false,
+    "Range": 6.0,
+    "AutoSwitch": true,
+    "AutoDisable": true
+  },
+  "AntiCityBoss": {
+    "Enabled": false,
+    "TrapCheck": false,
+    "Range": 6.0,
+    "BPT": 4
+  },
+  "SelfWeb": {
+    "Enabled": false,
+    "Delay": 50,
+    "BPT": 2,
+    "Packet": true,
+    "NoLag": true,
+    "JumpDisable": true,
+    "Swap": "NORMAL",
+    "Smart": false,
+    "Above": false
+  },
+  "WebTrap": {
+    "Enabled": false,
+    "TickDelay": 50,
+    "BPT": 1,
+    "Range": 10.0,
+    "AutoDisable": false,
+    "Feet": true,
+    "Face": false,
+    "Render": true
+  },
+  "HoleSnap": {
+    "Enabled": true,
+    "Range": 4.0,
+    "Pull": 0.3,
+    "StepDown": true
+  },
+  "AntiVoid": {
+    "Enabled": true,
+    "Height": 100
+  },
+  "Burrow": {
+    "Enabled": false,
+    "Rotate": false,
+    "RisePackets": 20,
+    "RiseHeight": 1337.0,
+    "AutoDisable": true
+  },
+  "AutoMend": {
+    "Enabled": true,
+    "Threshold%": 80,
+    "AutoSwitch": true,
+    "AutoThrow": true,
+    "AutoDisable": false
+  },
+  "ArmorWarner": {
+    "Enabled": true,
+    "Armor%": 20,
+    "Self": true,
+    "Friends": true
+  },
+  "PopNotify": {
+    "Enabled": true
+  },
+  "VisualRange": {
+    "Enabled": true,
+    "Leaving": true
+  },
+  "CombatInfo": {
+    "Enabled": true,
+    "Range": 100.0,
+    "X": 2,
+    "Y": 60
+  },
+  "CityESP": {
+    "Enabled": true,
+    "Range": 8.0,
+    "Height": 1.0,
+    "Self": false
+  },
+  "BreakingESP": {
+    "Enabled": true,
+    "ShowSelf": true,
+    "Mode": "OUT",
+    "Box": true,
+    "Line": true,
+    "LineWidth": 1.0,
+    "Range": 20.0,
+    "ColorMode": "PROGRESS"
+  },
+  "AutoEat": {
+    "Enabled": true
+  },
+  "AutoArmor": {
+    "Enabled": true
+  },
+  "AutoTool": {
+    "Enabled": true
+  },
+  "MCF": {
+    "Enabled": true
+  },
+  "NoAFK": {
+    "Enabled": true
+  }
+}

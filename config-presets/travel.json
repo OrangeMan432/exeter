@@ -1,0 +1,103 @@
+{
+  "BoatFly": {
+    "Enabled": false
+  },
+  "Glide": {
+    "Enabled": false
+  },
+  "Parkour": {
+    "Enabled": false
+  },
+  "HoleSnap": {
+    "Enabled": false,
+    "Range": 4.0,
+    "Pull": 0.3,
+    "StepDown": true
+  },
+  "AntiVoid": {
+    "Enabled": true,
+    "Height": 100
+  },
+  "FastFall": {
+    "Enabled": false,
+    "Mode": "All",
+    "FallSpeed": 1.0,
+    "Height": 4.0,
+    "NoLag": false
+  },
+  "StashFinder": {
+    "Enabled": true,
+    "MinStorage": 5,
+    "Notify": true,
+    "SaveToFile": true
+  },
+  "NewChunks": {
+    "Enabled": true
+  },
+  "CoordsHUD": {
+    "Enabled": true,
+    "Nether": true,
+    "X": 2,
+    "Y": 2
+  },
+  "Speedometer": {
+    "Enabled": true,
+    "X": 2,
+    "Y": 12
+  },
+  "Welcomer": {
+    "Enabled": true,
+    "Text": "Welcome ",
+    "X": 2,
+    "Y": 22
+  },
+  "Waypoints": {
+    "Enabled": true
+  },
+  "LogoutSpots": {
+    "Enabled": true
+  },
+  "Trajectories": {
+    "Enabled": true
+  },
+  "AutoEat": {
+    "Enabled": true
+  },
+  "AutoRespawn": {
+    "Enabled": true
+  },
+  "AutoMount": {
+    "Enabled": true,
+    "Boats": true,
+    "Horses": true,
+    "Donkeys": true,
+    "Pigs": true,
+    "Llamas": true,
+    "Range": 4,
+    "Delay": 1.0
+  },
+  "MCF": {
+    "Enabled": true
+  },
+  "Tracker": {
+    "Enabled": true
+  },
+  "VisualRange": {
+    "Enabled": true,
+    "Leaving": true
+  },
+  "TPCoordLog": {
+    "Enabled": true,
+    "SaveToFile": true
+  },
+  "NoAFK": {
+    "Enabled": true
+  },
+  "AutoReconnect": {
+    "Enabled": true
+  },
+  "Baritone": {
+    "Enabled": false,
+    "PauseOnDisable": true
+  }
+}
