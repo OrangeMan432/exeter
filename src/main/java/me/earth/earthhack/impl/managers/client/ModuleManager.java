@@ -47,6 +47,7 @@ import me.earth.earthhack.impl.modules.combat.blocker.Blocker;
 import me.earth.earthhack.impl.modules.combat.bowkill.BowKiller;
 import me.earth.earthhack.impl.modules.combat.bowspam.BowSpam;
 import me.earth.earthhack.impl.modules.combat.cevbreaker.CevBreaker;
+import me.earth.earthhack.impl.modules.combat.confuse.Confuse;
 import me.earth.earthhack.impl.modules.combat.criticals.Criticals;
 import me.earth.earthhack.impl.modules.combat.holefiller.HoleFiller;
 import me.earth.earthhack.impl.modules.combat.killaura.KillAura;
@@ -61,6 +62,7 @@ import me.earth.earthhack.impl.modules.combat.snowballer.Snowballer;
 import me.earth.earthhack.impl.modules.combat.surround.Surround;
 import me.earth.earthhack.impl.modules.combat.webaura.WebAura;
 import me.earth.earthhack.impl.modules.combat.webtrap.WebTrap;
+import me.earth.earthhack.impl.modules.combat.targetstrafe.TargetStrafe;
 import me.earth.earthhack.impl.modules.misc.announcer.Announcer;
 import me.earth.earthhack.impl.modules.misc.antiaim.AntiAim;
 import me.earth.earthhack.impl.modules.misc.antipackets.AntiPackets;
@@ -86,6 +88,7 @@ import me.earth.earthhack.impl.modules.misc.ghastnotifier.GhastNotifier;
 import me.earth.earthhack.impl.modules.misc.ghost.Ghost;
 import me.earth.earthhack.impl.modules.misc.globallocation.GlobalLocation;
 import me.earth.earthhack.impl.modules.misc.killeffects.KillEffects;
+import me.earth.earthhack.impl.modules.misc.kitdelete.KitDelete;
 import me.earth.earthhack.impl.modules.misc.logger.Logger;
 import me.earth.earthhack.impl.modules.misc.mcf.MCF;
 import me.earth.earthhack.impl.modules.misc.mobowner.MobOwner;
@@ -102,6 +105,7 @@ import me.earth.earthhack.impl.modules.misc.packetcanceller.PacketCanceller;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
 import me.earth.earthhack.impl.modules.misc.pearlnotify.PearlNotify;
+import me.earth.earthhack.impl.modules.misc.pearlspoof.PearlSpoof;
 import me.earth.earthhack.impl.modules.misc.pingspoof.PingSpoof;
 import me.earth.earthhack.impl.modules.misc.popnotify.PopNotify;
 import me.earth.earthhack.impl.modules.misc.portals.Portals;
@@ -291,6 +295,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new BowKiller());
         this.forceRegister(new Criticals());
         this.forceRegister(new CevBreaker());
+        this.forceRegister(new Confuse());
         this.forceRegister(new HoleFiller());
         this.forceRegister(new KillAura());
         this.forceRegister(new LegSwitch());
@@ -304,6 +309,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new SelfWeb());
         this.forceRegister(new WebAura());
         this.forceRegister(new WebTrap());
+        this.forceRegister(new TargetStrafe());
 
         //misc
         this.forceRegister(new Announcer());
@@ -331,6 +337,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Ghost());
         this.forceRegister(new GlobalLocation());
         this.forceRegister(new KillEffects());
+        this.forceRegister(new KitDelete());
         this.forceRegister(new Logger());
         this.forceRegister(new MCF());
         this.forceRegister(new MobOwner());
@@ -345,6 +352,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Nuker());
         this.forceRegister(new Packets());
         this.forceRegister(new PearlNotify());
+        this.forceRegister(new PearlSpoof());
         this.forceRegister(new PingSpoof());
         this.forceRegister(new PopNotify());
         this.forceRegister(new Portals());
