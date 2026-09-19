@@ -1,7 +1,7 @@
-# AGENTS.md — exeter `1.12.2` branch (EarthHack base)
+# AGENTS.md — Humza Client (`humza-client` branch, EarthHack base)
 
-Forge 1.12.2 Minecraft client mod. Branch `1.12.2` tracks `origin/1.12.2` on
-`OrangeMan432/exeter`. Base: 3arthh4ck-continued (MIT, LICENSE kept verbatim).
+Forge 1.12.2 Minecraft client mod. Branch `humza-client` tracks
+`origin/humza-client` on `OrangeMan432/exeter`. Base: 3arthh4ck-continued (MIT, LICENSE kept verbatim).
 Root package is `me.earth.earthhack`. Mio 0.6.9 full source is held as a
 **donor only** (same Forge 1.12 toolchain, direct ports), not as base.
 
