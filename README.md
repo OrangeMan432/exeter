@@ -1,18 +1,16 @@
 > :warning: This is a continuation of 3arthqu4ke's now discontinued 3arthh4ck. Any new PingBypass 3arthqu4ke releases will be found [here](https://github.com/3arthqu4ke/PingBypass).
 
-# 3arthh4ck
+# Exeter 1.12.2
 
-[![GitHub All Releases](https://img.shields.io/github/downloads/3arthh4ckDevelopment/3arthh4ck-Client/total.svg?color=g)](https://github.com/3arthh4ckDevelopment/3arthh4ck-Client/releases)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/3arthh4ckDevelopment/3arthh4ck-Client/gradle-publish.yml)
-![GitHub](https://img.shields.io/github/license/3arthh4ckDevelopment/3arthh4ck-Client?color=g)
-[![Lines of code](docs/loc.svg)]()
-[![](https://discordapp.com/api/guilds/1065633124366688298/widget.png?style=shield)](https://discord.gg/ByCCxHcX8U)
-<br>
-3arthh4ck is an open source Minecraft 1.12.2 utility mod for anarchy PvP. With the 1.7.0 release it also takes over the role
-of the now outdated PingBypass [Server](https://github.com/3arthqu4ke/PingBypass) and
-[Client](https://github.com/3arthqu4ke/PingBypass-Client). To install it just drop the jar into your forge mods folder.
-By default, any message prefixed with a `+` will be handled as command, e.g. `+bind clickgui RShift` to set the default gui key to the Right Shift.
-Because of bloat some of the most complicated Settings are hided by default. You can find those by using the Settings module.
+Forge 1.12.2 anarchy client. This branch (`1.12.2`) is a fresh tree:
+EarthHack-continued as the base (MIT, LICENSE kept, full credit
+below) plus ~110 ported and original Exeter modules on top. No code
+from any other Exeter branch lives in this tree.
+
+By default, any message prefixed with a `+` is a command, e.g.
+`+bind clickgui RShift`. Complex settings hide behind the Settings
+module. Configs are JSON in `<minecraft>/earthhack/modules/`, and a
+ready-made `config-presets/5b5t.json` ships in this repo.
 
 <details>
 <summary> Proxy/PingBypass </summary>
@@ -96,3 +94,26 @@ This is just what the docker container already automates.
 
 9.  You are now done with the server. Just follow the steps after 7. in the docker setup.
 </details>
+
+---
+
+## Exeter additions on this branch
+
+~110 modules ported or written fresh across combat, movement, misc,
+player and render, plus Baritone drive support (`+baritone goto`,
+needs the Baritone Forge jar alongside), a 5b5t dupe suite
+(AutoItemDupe, AutoShulkerDupe), a 5b5t JSON preset
+(`config-presets/5b5t.json` + `5B5T.md` guide), GameSense HUD
+overlays, and Future-pattern upgrades (Trigger, KillAura
+AntiWeakness). Every port keeps an origin note in its class docs.
+All of it ECJ-compile-verified (see AGENTS.md); the ForgeGradle
+`compileJava` task itself is broken in this environment (bad
+forgeBin attribute, clean tree fails identically).
+
+## Credits
+
+Base: 3arthh4ck-continued (MIT) by 3arthqu4ke and contributors.
+Donors: Mio 0.6.9, Phobos 1.9, Kami Blue, Future 2.9, GameSense,
+SalHack/creepy, Wurst+3, ToxicAven 5b-AutoDupes (Techale), GS++
+leak (AntiCrystal), or4acle method notes. Licenses and author
+headers kept wherever they existed.
