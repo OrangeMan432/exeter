@@ -58,6 +58,7 @@ import me.earth.earthhack.impl.modules.combat.selfweb.SelfWeb;
 import me.earth.earthhack.impl.modules.combat.snowballer.Snowballer;
 import me.earth.earthhack.impl.modules.combat.surround.Surround;
 import me.earth.earthhack.impl.modules.combat.webaura.WebAura;
+import me.earth.earthhack.impl.modules.combat.webtrap.WebTrap;
 import me.earth.earthhack.impl.modules.misc.announcer.Announcer;
 import me.earth.earthhack.impl.modules.misc.antiaim.AntiAim;
 import me.earth.earthhack.impl.modules.misc.antipackets.AntiPackets;
@@ -259,6 +260,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new SelfTrap());
         this.forceRegister(new SelfWeb());
         this.forceRegister(new WebAura());
+        this.forceRegister(new WebTrap());
 
         //misc
         this.forceRegister(new Announcer());
