@@ -53,6 +53,7 @@ import me.earth.earthhack.impl.modules.combat.cevbreaker.CevBreaker;
 import me.earth.earthhack.impl.modules.combat.confuse.Confuse;
 import me.earth.earthhack.impl.modules.combat.criticals.Criticals;
 import me.earth.earthhack.impl.modules.combat.crystalaura.CrystalAura;
+import me.earth.earthhack.impl.modules.combat.crystalhit.CrystalHit;
 import me.earth.earthhack.impl.modules.combat.holefiller.HoleFiller;
 import me.earth.earthhack.impl.modules.combat.killaura.KillAura;
 import me.earth.earthhack.impl.modules.combat.legswitch.LegSwitch;
@@ -97,6 +98,7 @@ import me.earth.earthhack.impl.modules.misc.entitydesync.EntityDesync;
 import me.earth.earthhack.impl.modules.misc.entitymine.EntityMine;
 import me.earth.earthhack.impl.modules.misc.extratab.ExtraTab;
 import me.earth.earthhack.impl.modules.misc.fakepearl.FakePearl;
+import me.earth.earthhack.impl.modules.misc.framedupe.FrameDupe;
 import me.earth.earthhack.impl.modules.misc.ghastfarmer.GhastFarmer;
 import me.earth.earthhack.impl.modules.misc.ghastnotifier.GhastNotifier;
 import me.earth.earthhack.impl.modules.misc.ghost.Ghost;
@@ -321,6 +323,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Burrow());
         this.forceRegister(new Criticals());
         this.forceRegister(new CrystalAura());
+        this.forceRegister(new CrystalHit());
         this.forceRegister(new CevBreaker());
         this.forceRegister(new Confuse());
         this.forceRegister(new HoleFiller());
@@ -368,6 +371,7 @@ public class ModuleManager extends IterationRegister<Module>
         // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
         this.forceRegister(new FakePearl());
+        this.forceRegister(new FrameDupe());
         this.forceRegister(new GhastFarmer());
         this.forceRegister(new GhastNotifier());
         this.forceRegister(new Ghost());
