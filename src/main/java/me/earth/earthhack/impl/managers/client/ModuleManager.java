@@ -74,6 +74,7 @@ import me.earth.earthhack.impl.modules.misc.antivanish.AntiVanish;
 import me.earth.earthhack.impl.modules.misc.autoeat.AutoEat;
 import me.earth.earthhack.impl.modules.misc.autodupe.AutoItemDupe;
 import me.earth.earthhack.impl.modules.misc.autofish.AutoFish;
+import me.earth.earthhack.impl.modules.misc.autogg.AutoGG;
 import me.earth.earthhack.impl.modules.misc.autolog.AutoLog;
 import me.earth.earthhack.impl.modules.misc.automount.AutoMount;
 import me.earth.earthhack.impl.modules.misc.autoreconnect.AutoReconnect;
@@ -86,12 +87,14 @@ import me.earth.earthhack.impl.modules.misc.autotame.AutoTame;
 import me.earth.earthhack.impl.modules.misc.baritone.Baritone;
 import me.earth.earthhack.impl.modules.misc.buildheight.BuildHeight;
 import me.earth.earthhack.impl.modules.misc.chat.Chat;
+import me.earth.earthhack.impl.modules.misc.chatsuffix.ChatSuffix;
 import me.earth.earthhack.impl.modules.misc.chestswap.ChestSwap;
 import me.earth.earthhack.impl.modules.misc.coords.Coords;
 import me.earth.earthhack.impl.modules.misc.entitydesync.EntityDesync;
 import me.earth.earthhack.impl.modules.misc.entitymine.EntityMine;
 import me.earth.earthhack.impl.modules.misc.extratab.ExtraTab;
 import me.earth.earthhack.impl.modules.misc.fakepearl.FakePearl;
+import me.earth.earthhack.impl.modules.misc.ghastfarmer.GhastFarmer;
 import me.earth.earthhack.impl.modules.misc.ghastnotifier.GhastNotifier;
 import me.earth.earthhack.impl.modules.misc.ghost.Ghost;
 import me.earth.earthhack.impl.modules.misc.globallocation.GlobalLocation;
@@ -335,6 +338,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoEat());
         this.forceRegister(new AutoItemDupe());
         this.forceRegister(new AutoFish());
+        this.forceRegister(new AutoGG());
         this.forceRegister(new AutoLog());
         this.forceRegister(new AutoMount());
         this.forceRegister(new AutoReconnect());
@@ -346,6 +350,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Baritone());
         this.forceRegister(new BuildHeight());
         this.forceRegister(new Chat());
+        this.forceRegister(new ChatSuffix());
         this.forceRegister(new ChestSwap());
         this.forceRegister(new Coords());
         this.forceRegister(new EntityDesync());
@@ -353,6 +358,7 @@ public class ModuleManager extends IterationRegister<Module>
         // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
         this.forceRegister(new FakePearl());
+        this.forceRegister(new GhastFarmer());
         this.forceRegister(new GhastNotifier());
         this.forceRegister(new Ghost());
         this.forceRegister(new GlobalLocation());
