@@ -34,6 +34,7 @@ import me.earth.earthhack.impl.modules.client.server.ServerModule;
 import me.earth.earthhack.impl.modules.client.settings.SettingsModule;
 import me.earth.earthhack.impl.modules.client.tab.TabModule;
 import me.earth.earthhack.impl.modules.client.xcrash.XCrash;
+import me.earth.earthhack.impl.modules.combat.anticityboss.AntiCityBoss;
 import me.earth.earthhack.impl.modules.combat.antisurround.AntiSurround;
 import me.earth.earthhack.impl.modules.combat.antitrap.AntiTrap;
 import me.earth.earthhack.impl.modules.combat.anvilaura.AnvilAura;
@@ -129,6 +130,7 @@ import me.earth.earthhack.impl.modules.misc.stashfinder.StashFinder;
 import me.earth.earthhack.impl.modules.misc.tooltips.ToolTips;
 import me.earth.earthhack.impl.modules.misc.tpcoordlog.TPCoordLog;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
+import me.earth.earthhack.impl.modules.misc.unfocusedcpu.UnfocusedCPU;
 import me.earth.earthhack.impl.modules.misc.visualrange.VisualRange;
 import me.earth.earthhack.impl.modules.movement.anchor.Anchor;
 import me.earth.earthhack.impl.modules.movement.antiglide.AntiGlide;
@@ -297,6 +299,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new XCrash());
 
         //combat
+        this.forceRegister(new AntiCityBoss());
         this.forceRegister(new AntiSurround());
         this.forceRegister(new AntiTrap());
         this.forceRegister(new Auto32k());
@@ -391,6 +394,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new TpsSync());
         this.forceRegister(new Tracker());
         this.forceRegister(new TrueDurability());
+        this.forceRegister(new UnfocusedCPU());
         this.forceRegister(new VisualRange());
 
         /*
