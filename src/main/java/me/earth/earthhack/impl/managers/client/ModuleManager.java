@@ -46,6 +46,7 @@ import me.earth.earthhack.impl.modules.combat.bedbomb.BedBomb;
 import me.earth.earthhack.impl.modules.combat.blocker.Blocker;
 import me.earth.earthhack.impl.modules.combat.bowkill.BowKiller;
 import me.earth.earthhack.impl.modules.combat.bowspam.BowSpam;
+import me.earth.earthhack.impl.modules.combat.burrow.Burrow;
 import me.earth.earthhack.impl.modules.combat.cevbreaker.CevBreaker;
 import me.earth.earthhack.impl.modules.combat.confuse.Confuse;
 import me.earth.earthhack.impl.modules.combat.criticals.Criticals;
@@ -110,6 +111,7 @@ import me.earth.earthhack.impl.modules.misc.noswing.NoSwing;
 import me.earth.earthhack.impl.modules.misc.nuker.Nuker;
 import me.earth.earthhack.impl.modules.misc.packetcanceller.PacketCanceller;
 import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
+import me.earth.earthhack.impl.modules.misc.packetlogger.PacketLogger;
 import me.earth.earthhack.impl.modules.misc.peek.Peek;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
 import me.earth.earthhack.impl.modules.misc.pearlnotify.PearlNotify;
@@ -304,6 +306,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new BowSpam());
         this.forceRegister(new Blocker());
         this.forceRegister(new BowKiller());
+        this.forceRegister(new Burrow());
         this.forceRegister(new Criticals());
         this.forceRegister(new CevBreaker());
         this.forceRegister(new Confuse());
@@ -392,6 +395,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoRegear());
         this.forceRegister(new PacketCanceller());
         this.forceRegister(new PacketDelay());
+        this.forceRegister(new PacketLogger());
         this.forceRegister(new Peek());
         this.forceRegister(new RPC());
 
