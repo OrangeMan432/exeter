@@ -5,27 +5,28 @@ Forge 1.12.2 Minecraft client mod. Branch `humza-client` tracks
 Root package is `me.earth.earthhack`. Mio 0.6.9 full source is held as a
 **donor only** (same Forge 1.12 toolchain, direct ports), not as base.
 
-## Build (BLOCKED on this machine, be honest about it)
+## Build (GREEN, keep it that way)
 
 ```bash
-chmod +x gradlew
+export JAVA_HOME=<temurin-or-zulu-jdk8>
 ./gradlew build
 ```
 
-- Toolchain is Gradle 4.9 + ForgeGradle 2.3-SNAPSHOT, Forge
-  1.12.2-14.23.5.2768, MCP stable_39, Java 8 target. Gradle 4.9 dist and
-  most FG artifacts are warm in ~/.gradle from a prior setup.
-- Temurin JDK 8 builds live in the opencode temp dir (8u504 + 8u312).
-- BUILD STATUS 2026-09-19: `./gradlew compileJava` runs ~2min with JDK 8
-  then FAILS IN BASE CODE, not in ports: ForgeGradle's generated
-  forgeBin jar has a malformed RuntimeInvisibleParameterAnnotations
-  attribute that javac rejects on both 8u504 and 8u312 (reproduced with a
-  5-line file). A clean tree fails identically. Suspect: current FG
-  2.3-SNAPSHOT vs the 2024 one upstream used. Do NOT claim green.
-- The `cabaletta:baritone-api:1.2` dep (impactdevelopment maven) was added
-  without a working build and is UNVERIFIED: confirm compile resolves it.
-- To unblock: pin an older FG 2.3 snapshot or repair the forgeBin
-  attribute (ASM strip), then verify. That toolchain fix is in-scope work.
+- Toolchain is Gradle 4.9 + ForgeGradle **pinned to
+  `2.3-20190910.005614-43`** (never float `2.3-SNAPSHOT`; current
+  snapshots generate a malformed forgeBin that no javac 8 accepts),
+  Forge 1.12.2-14.23.5.2768, MCP stable_39, Java 8 target (8u242
+  verified, newer 8u builds also fine for compiling OUR code).
+- Full build ~1min warm. Incremental rebuilds ~30-60s.
+- `cabaletta:baritone-deobf-unoptimized-mcp-dev:1.2` is a
+  **compileOnly** dep from the impactdevelopment maven (never shaded;
+  the Baritone Forge mod provides runtime classes).
+- Base quirk fixed in-tree: `AntiPackets` used a method ref the old
+  javac rejects, now a lambda. Do not "clean it up" back.
+- ECJ cross-check available: ecj 3.33 jar in opencode temp with the
+  minimal 1.12 classpath in /tmp/mincp.txt. Expect only the 9
+  raw-registry strictness hits in base files; any error in a port
+  is a real bug, fix it.
 
 ## Adding / porting a module
 
