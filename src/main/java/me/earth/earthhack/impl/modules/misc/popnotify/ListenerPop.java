@@ -30,7 +30,7 @@ final class ListenerPop extends ModuleListener<PopNotify, TotemPopEvent>
 
         boolean friend = Managers.FRIENDS.contains(player);
         ChatUtil.sendMessage(
-            TextFormatting.RESET
+            TextFormatting.RESET.toString()
                 + (friend ? TextFormatting.AQUA : TextFormatting.WHITE)
                 + player.getName()
                 + TextFormatting.RESET + " has popped "

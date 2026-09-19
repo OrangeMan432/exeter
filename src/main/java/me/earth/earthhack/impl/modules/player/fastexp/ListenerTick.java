@@ -3,6 +3,7 @@ package me.earth.earthhack.impl.modules.player.fastexp;
 import me.earth.earthhack.impl.event.events.misc.TickEvent;
 import me.earth.earthhack.impl.event.listeners.ModuleListener;
 import net.minecraft.init.Items;
+import net.minecraft.util.EnumHand;
 
 final class ListenerTick extends ModuleListener<FastExp, TickEvent>
 {
@@ -41,7 +42,9 @@ final class ListenerTick extends ModuleListener<FastExp, TickEvent>
             && mc.player.getHeldItemMainhand().getItem()
                 == Items.EXPERIENCE_BOTTLE)
         {
-            mc.rightClickMouse();
+            mc.rightClickDelayTimer = 0;
+            mc.playerController.processRightClick(
+                mc.player, mc.world, EnumHand.MAIN_HAND);
         }
     }
 

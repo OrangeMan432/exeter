@@ -60,7 +60,7 @@ final class ListenerTick extends ModuleListener<WebTrap, TickEvent>
         }
 
         stopSneaking();
-        module.target = getTarget();
+        module.target = findTarget();
         if (module.target == null
             || !module.delayTimer.passed(module.delay.getValue()))
         {
@@ -121,7 +121,7 @@ final class ListenerTick extends ModuleListener<WebTrap, TickEvent>
         }
     }
 
-    private EntityPlayer getTarget()
+    private EntityPlayer findTarget()
     {
         EntityPlayer best = null;
         double bestDist = module.range.getValue() * module.range.getValue();

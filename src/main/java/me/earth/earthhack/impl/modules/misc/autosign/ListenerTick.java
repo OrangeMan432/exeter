@@ -36,18 +36,21 @@ final class ListenerTick extends ModuleListener<AutoSign, TickEvent>
         }
 
         GuiEditSign sign = (GuiEditSign) mc.currentScreen;
-        sign.tileSign.signText[0] =
+        net.minecraft.tileentity.TileEntitySign tile =
+            net.minecraftforge.fml.common.ObfuscationReflectionHelper
+                .getPrivateValue(GuiEditSign.class, sign, "tileSign");
+        tile.signText[0] =
             new TextComponentString(line(module.line1.getValue()));
-        sign.tileSign.signText[1] =
+        tile.signText[1] =
             new TextComponentString(line(module.line2.getValue()));
-        sign.tileSign.signText[2] =
+        tile.signText[2] =
             new TextComponentString(line(module.line3.getValue()));
-        sign.tileSign.signText[3] =
+        tile.signText[3] =
             new TextComponentString(line(module.line4.getValue()));
 
         if (module.autoComplete.getValue())
         {
-            sign.tileSign.markDirty();
+            tile.markDirty();
             mc.displayGuiScreen(null);
             module.wasInSign = false;
         }

@@ -17,7 +17,7 @@ import org.lwjgl.input.Keyboard;
 public class KitDelete extends Module
 {
     protected final Setting<Bind> deleteKey =
-        register(new BindSetting("Key", new Bind(-1)));
+        register(new BindSetting("Key", Bind.none()));
 
     boolean keyDown;
 

@@ -33,7 +33,7 @@ final class ListenerDeath extends ModuleListener<PopNotify, DeathEvent>
 
         boolean friend = Managers.FRIENDS.contains(player);
         ChatUtil.sendMessage(
-            TextFormatting.RESET
+            TextFormatting.RESET.toString()
                 + (friend ? TextFormatting.AQUA : TextFormatting.WHITE)
                 + player.getName()
                 + TextFormatting.RESET + " died after popping "

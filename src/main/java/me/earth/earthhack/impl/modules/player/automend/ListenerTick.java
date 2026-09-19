@@ -4,6 +4,7 @@ import me.earth.earthhack.impl.event.events.misc.TickEvent;
 import me.earth.earthhack.impl.event.listeners.ModuleListener;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 
 final class ListenerTick extends ModuleListener<AutoMend, TickEvent>
 {
@@ -70,7 +71,8 @@ final class ListenerTick extends ModuleListener<AutoMend, TickEvent>
                 == Items.EXPERIENCE_BOTTLE)
         {
             mc.rightClickDelayTimer = 0;
-            mc.rightClickMouse();
+            mc.playerController.processRightClick(
+                mc.player, mc.world, EnumHand.MAIN_HAND);
         }
     }
 
