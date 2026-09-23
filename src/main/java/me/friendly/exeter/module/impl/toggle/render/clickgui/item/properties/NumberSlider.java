@@ -8,7 +8,6 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.properties.NumberProperty;
-import net.minecraft.client.Minecraft;
 
 public class NumberSlider extends Item {
   private NumberProperty numberProperty;
@@ -16,6 +15,7 @@ public class NumberSlider extends Item {
   private Number max;
   private int difference;
   private final boolean child;
+  private boolean dragging;
   private static final float CHILD_OFFSET = 1.0f;
 
   public NumberSlider(NumberProperty numberProperty, boolean child) {
@@ -39,7 +39,7 @@ public class NumberSlider extends Item {
             ? x + offsetX
             : x + offsetX + ((float) this.width + 7.4F) * partialMultiplier(),
         y + h,
-        !isHovering(mouseX, mouseY)
+        !isHovering(mouseX, mouseY) && !dragging
             ? Colors.getClientColorCustomAlpha(77)
             : Colors.getClientColorCustomAlpha(55));
     FontUtil.drawString(
@@ -54,11 +54,20 @@ public class NumberSlider extends Item {
     super.mouseClicked(mouseX, mouseY, mouseButton);
     if (isHovering(mouseX, mouseY) && mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       setSettingFromX(mouseX);
+      dragging = true;
+    }
+  }
+
+  @Override
+  public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
+    super.mouseReleased(mouseX, mouseY, releaseButton);
+    if (releaseButton == InputConstants.MOUSE_BUTTON_LEFT) {
+      dragging = false;
     }
   }
 
   private void setSettingFromX(int mouseX) {
-    float percent = (mouseX - x) / (width + 7.4F);
+    float percent = Math.max(0, Math.min(1, (mouseX - x) / (width + 7.4F)));
     if (numberProperty.getValue() instanceof Double) {
       double result = (Double) numberProperty.getMinimum() + (difference * percent);
       numberProperty.setValue(Math.round(10.0 * result) / 10.0);
@@ -77,8 +86,7 @@ public class NumberSlider extends Item {
   }
 
   private void dragSetting(int mouseX, int mouseY) {
-    if (isHovering(mouseX, mouseY)
-        && Minecraft.getInstance().mouseHandler.isLeftPressed()) {
+    if (dragging) {
       setSettingFromX(mouseX);
     }
   }
