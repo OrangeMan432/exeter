@@ -118,6 +118,7 @@ public class PlayerUtil {
   public static boolean isMoving() {
     if (mc.player == null) return false;
     return mc.player.input.hasForwardImpulse()
+        || mc.player.input.keyPresses.backward()
         || mc.player.input.keyPresses.left()
         || mc.player.input.keyPresses.right();
   }
