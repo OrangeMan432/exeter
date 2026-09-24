@@ -279,6 +279,108 @@ public final class CommandManager extends ListRegistry<Command> {
     };
   }
 
+  /**
+   * Dispatches a command without requiring the chat prefix. Used by the Console window.
+   *
+   * @param input the raw command input (e.g. "toggle speed" instead of ".toggle speed")
+   * @return the command output message
+   */
+  public String dispatchDirect(String input) {
+    String trimmed = input.trim();
+    if (trimmed.isEmpty()) return "No command entered.";
+
+    String[] arguments = trimmed.split(" ");
+    String execute = arguments[0];
+
+    for (Command command : getRegistry()) {
+      for (String alias : command.getAliases()) {
+        if (!execute.equalsIgnoreCase(alias.replaceAll(" ", ""))) continue;
+        try {
+          return command.dispatch(arguments);
+        } catch (Exception e) {
+          return String.format("%s %s", alias, command.getSyntax());
+        }
+      }
+    }
+
+    for (Module mod : Exeter.getInstance().getModuleManager().getRegistry()) {
+      for (String alias : mod.getAliases()) {
+        if (!execute.equalsIgnoreCase(alias.replace(" ", ""))) continue;
+        if (arguments.length > 1) {
+          String valueName = arguments[1];
+          if (arguments[1].equalsIgnoreCase("list")) {
+            if (mod.getProperties().size() > 0) {
+              StringJoiner stringJoiner = new StringJoiner(", ");
+              for (Property property : mod.getProperties()) {
+                stringJoiner.add(
+                    String.format(
+                        "%s [%s]",
+                        property.getAliases()[0],
+                        property.getValue() instanceof Enum
+                            ? ((EnumProperty) property).getFixedValue()
+                            : property.getValue()));
+              }
+              return String.format("Properties (%s) %s.", mod.getProperties().size(), stringJoiner.toString());
+            }
+            return String.format("%s has no properties.", mod.getLabel());
+          }
+          Property property = mod.getPropertyByAlias(valueName);
+          if (property == null) return String.format("Property '%s' not found.", valueName);
+          if (property.getValue() instanceof Number) {
+            if (!arguments[2].equalsIgnoreCase("get")) {
+              if (property.getValue() instanceof Double) {
+                property.setValue(Double.parseDouble(arguments[2]));
+              }
+              if (property.getValue() instanceof Integer) {
+                property.setValue(Integer.parseInt(arguments[2]));
+              }
+              if (property.getValue() instanceof Float) {
+                property.setValue(Float.parseFloat(arguments[2]));
+              }
+              if (property.getValue() instanceof Long) {
+                property.setValue(Long.parseLong(arguments[2]));
+              }
+              return String.format("%s has been set to %s for %s.",
+                  property.getAliases()[0], property.getValue(), mod.getLabel());
+            }
+            return String.format("%s current value is %s for %s.",
+                property.getAliases()[0], property.getValue(), mod.getLabel());
+          }
+          if (property.getValue() instanceof Enum) {
+            if (!arguments[2].equalsIgnoreCase("list")) {
+              ((EnumProperty) property).setValue(arguments[2]);
+              return String.format("%s has been set to %s for %s.",
+                  property.getAliases()[0], ((EnumProperty) property).getFixedValue(), mod.getLabel());
+            }
+            StringJoiner stringJoiner = new StringJoiner(", ");
+            Enum[] array = (Enum[]) property.getValue().getClass().getEnumConstants();
+            for (Enum e : array) {
+              stringJoiner.add(String.format("%s%s",
+                  e.name().equalsIgnoreCase(property.getValue().toString()) ? "" : "",
+                  getFixedValue(e)));
+            }
+            return String.format("Modes (%s) %s.", array.length, stringJoiner.toString());
+          }
+          if (property.getValue() instanceof String) {
+            property.setValue(arguments[2]);
+            return String.format("%s has been set to \"%s\" for %s.",
+                property.getAliases()[0], property.getValue(), mod.getLabel());
+          }
+          if (property.getValue() instanceof Boolean) {
+            property.setValue(!(Boolean) property.getValue());
+            return String.format("%s has been %s for %s.",
+                property.getAliases()[0],
+                (Boolean) property.getValue() ? "enabled" : "disabled",
+                mod.getLabel());
+          }
+        }
+        return String.format("%s [list|valuename] [list|get]", execute);
+      }
+    }
+
+    return "Unknown command: " + execute;
+  }
+
   public String getPrefix() {
     return this.prefix;
   }

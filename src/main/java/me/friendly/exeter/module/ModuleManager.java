@@ -10,6 +10,7 @@ import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
 import me.friendly.exeter.module.impl.toggle.client.Notifier;
 import me.friendly.exeter.module.impl.toggle.client.TestModule;
+import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
@@ -79,6 +80,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new TestModule());
     register(new Debug());
     register(new Notifier());
+    register(new WindowsModule());
 
     register(new WatermarkHud());
     register(new ArrayListHud());
@@ -104,6 +106,11 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindManager()
         .getKeybindByLabel("ClickGui")
         .setKey(InputConstants.KEY_RSHIFT);
+
+    Exeter.getInstance()
+        .getKeybindManager()
+        .getKeybindByLabel("Windows")
+        .setKey(InputConstants.KEY_GRAVE);
 
     new Config("module_configurations") {
 
