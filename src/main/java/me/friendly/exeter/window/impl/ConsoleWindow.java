@@ -22,7 +22,7 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
   private final StringBuilder inputBuffer = new StringBuilder();
   private int scrollOffset = 0;
   private boolean cursorVisible = true;
-  private int cursorTimer = 0;
+  private long lastBlinkTime = System.currentTimeMillis();
   private boolean autoScroll = true;
 
   public ConsoleWindow(int x, int y, int width, int height) {
@@ -76,13 +76,13 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
     int contentY = y + 16;
     int contentHeight = height - 16 - INPUT_HEIGHT;
 
-    RenderMethods.drawRect(x, contentY + contentHeight, x + width, contentY + contentHeight + INPUT_HEIGHT, 0xFF111111);
+    RenderMethods.drawRect(x, contentY + contentHeight, x + width, contentY + contentHeight + INPUT_HEIGHT, 0x77282828);
     FontUtil.drawString(">", x + 3, contentY + contentHeight + 3, 0xFF888888);
 
     String inputText = inputBuffer.toString();
-    cursorTimer++;
-    if (cursorTimer >= 20) {
-      cursorTimer = 0;
+    long now = System.currentTimeMillis();
+    if (now - lastBlinkTime >= 500) {
+      lastBlinkTime = now;
       cursorVisible = !cursorVisible;
     }
 
@@ -246,14 +246,14 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
       return true;
     }
 
-    return true;
+    return false;
   }
 
   private void executeCommand() {
     String input = inputBuffer.toString().trim();
     inputBuffer.setLength(0);
     cursorVisible = true;
-    cursorTimer = 0;
+    lastBlinkTime = System.currentTimeMillis();
 
     if (input.isEmpty()) return;
 

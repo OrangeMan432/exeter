@@ -1,5 +1,6 @@
 package me.friendly.exeter.window;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
@@ -51,7 +52,7 @@ public abstract class Window {
     int closeColor = closeHovered ? 0xFFFF5555 : 0xFFCCCCCC;
     FontUtil.drawString("X", closeX + 2, closeY + 1, closeColor);
 
-    RenderMethods.drawRect(x, y + TITLE_HEIGHT, x + width, y + height, 0xCC1A1A1A);
+    RenderMethods.drawRect(x, y + TITLE_HEIGHT, x + width, y + height, 0x77000000);
 
     renderContent(mouseX, mouseY, partialTicks);
 
@@ -69,12 +70,12 @@ public abstract class Window {
   public boolean mouseClicked(int mouseX, int mouseY, int button) {
     if (hidden) return false;
 
-    if (button == 0 && isCloseHovered(mouseX, mouseY)) {
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isCloseHovered(mouseX, mouseY)) {
       hidden = true;
       return true;
     }
 
-    if (button == 0 && isHoveredTitle(mouseX, mouseY)) {
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isHoveredTitle(mouseX, mouseY)) {
       dragging = true;
       dragOffsetX = mouseX - x;
       dragOffsetY = mouseY - y;
@@ -82,7 +83,7 @@ public abstract class Window {
       return true;
     }
 
-    if (button == 0 && isHovered(mouseX, mouseY)) {
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isHovered(mouseX, mouseY)) {
       focused = true;
       return consumeClick(mouseX, mouseY, button);
     }
@@ -91,7 +92,7 @@ public abstract class Window {
   }
 
   public void mouseReleased(int button) {
-    if (button == 0) {
+    if (button == InputConstants.MOUSE_BUTTON_LEFT) {
       dragging = false;
     }
   }

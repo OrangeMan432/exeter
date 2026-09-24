@@ -56,7 +56,7 @@ public class FriendsWindow extends Window {
       rowY += ENTRY_HEIGHT;
     }
 
-    RenderMethods.drawRect(x, contentY + listHeight, x + width, y + height, 0xFF111111);
+    RenderMethods.drawRect(x, contentY + listHeight, x + width, y + height, 0x77111111);
 
     int addBtnX = x + 3;
     int addBtnY = contentY + listHeight + 3;
@@ -178,7 +178,7 @@ public class FriendsWindow extends Window {
       return true;
     }
 
-    return true;
+    return false;
   }
 
   @Override

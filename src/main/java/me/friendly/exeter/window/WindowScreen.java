@@ -145,7 +145,7 @@ public final class WindowScreen extends Screen {
   @Override
   public boolean keyPressed(KeyEvent event) {
     int key = event.key();
-    if (key == InputConstants.KEY_GRAVE) {
+    if (key == InputConstants.KEY_GRAVE || key == InputConstants.KEY_ESCAPE) {
       minecraft.gui.setScreen(null);
       return true;
     }
