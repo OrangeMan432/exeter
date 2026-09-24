@@ -48,7 +48,7 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
     }
     if ((files = this.getFile().listFiles()).length > 0) {
       for (File file : files) {
-        if (!file.isFile()) continue;
+        if (!file.isFile() || !file.getName().endsWith(".jar")) continue;
         try {
           JarFile jarFile = new JarFile(file);
           Enumeration<JarEntry> entries = jarFile.entries();

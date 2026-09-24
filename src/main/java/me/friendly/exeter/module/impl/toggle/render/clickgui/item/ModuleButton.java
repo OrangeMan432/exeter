@@ -206,6 +206,16 @@ public class ModuleButton extends Button {
   }
 
   @Override
+  public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
+    super.mouseReleased(mouseX, mouseY, releaseButton);
+    if (this.subOpen) {
+      for (Item item : topLevelItems) {
+        item.mouseReleased(mouseX, mouseY, releaseButton);
+      }
+    }
+  }
+
+  @Override
   public int getHeight() {
     if (this.subOpen) {
       int height = 15;

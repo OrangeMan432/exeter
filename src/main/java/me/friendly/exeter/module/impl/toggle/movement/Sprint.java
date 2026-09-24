@@ -11,6 +11,10 @@ public class Sprint extends ToggleableModule {
 
   private final Property<Boolean> omni = new Property<>(false, "Omnidirectional");
 
+  public boolean isOmni() {
+    return omni.getValue();
+  }
+
   public Sprint() {
     super("Sprint", new String[] {"sprint", "autosprint"}, 0xFF0000, ModuleType.MOVEMENT);
     setDescription("Automatically sprints in the direction you are moving.");

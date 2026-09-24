@@ -9,6 +9,7 @@
       "MixinGuiIngame",
       "MixinKeyboardHandler",
       "MixinClientPlayer",
-      "MixinLevelRenderer"
+      "MixinLevelRenderer",
+      "MixinLivingEntity"
   ]
 }
