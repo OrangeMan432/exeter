@@ -13,6 +13,7 @@ import me.friendly.exeter.module.impl.toggle.client.TestModule;
 import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import me.friendly.exeter.module.impl.toggle.combat.AutoArmor;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
+import me.friendly.exeter.module.impl.toggle.combat.AutoMend;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
@@ -65,6 +66,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoItemDupe());
     register(new AutoTotem());
     register(new AutoArmor());
+    register(new AutoMend());
     register(new AutoGear());
     register(new SelfBed());
     register(new BedAura());
