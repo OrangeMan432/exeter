@@ -169,7 +169,7 @@ public class ExeterConfig {
           }
           var kb =
               Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
-          if (kb != null) {
+          if (kb != null && keybind != 0) {
             kb.setKey(keybind);
           }
         }

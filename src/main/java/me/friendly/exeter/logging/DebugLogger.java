@@ -133,6 +133,13 @@ public final class DebugLogger {
       writeToFile(formatted);
     }
 
+    LogEntry.Level entryLevel = switch (level) {
+      case INFO -> LogEntry.Level.INFO;
+      case WARN -> LogEntry.Level.WARN;
+      case ERROR -> LogEntry.Level.ERROR;
+    };
+    Logger.getLogger().dispatch(new LogEntry(formatted, entryLevel));
+
     if (logToChat) {
       sendToChat(formatted);
     }
@@ -160,6 +167,8 @@ public final class DebugLogger {
     String timestamp = LocalDateTime.now().format(timeFmt);
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
 
+    Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
+
     if (logToFile) {
       writeToFile(formatted);
     }
@@ -185,6 +194,8 @@ public final class DebugLogger {
 
     String timestamp = LocalDateTime.now().format(timeFmt);
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
+
+    Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
 
     if (logToFile) {
       writeToFile(formatted);

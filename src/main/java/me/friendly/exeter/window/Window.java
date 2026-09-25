@@ -1,0 +1,176 @@
+package me.friendly.exeter.window;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
+import net.minecraft.client.input.KeyEvent;
+
+public abstract class Window {
+  protected String title;
+  protected int x, y, width, height;
+  private boolean dragging;
+  private int dragOffsetX, dragOffsetY;
+  private boolean focused;
+  private boolean hidden;
+  protected static final int TITLE_HEIGHT = 16;
+  private static final int CLOSE_BUTTON_SIZE = 10;
+
+  public Window(String title, int x, int y, int width, int height) {
+    this.title = title;
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  public void render(int mouseX, int mouseY, float partialTicks) {
+    if (hidden) return;
+
+    if (dragging) {
+      x = mouseX - dragOffsetX;
+      y = mouseY - dragOffsetY;
+    }
+
+    int headerColor = focused
+        ? Colors.getClientColorCustomAlpha(220)
+        : Colors.getClientColorCustomAlpha(150);
+    int headerColorEnd = focused
+        ? Colors.getDarkerClientColorCustomAlpha(220)
+        : Colors.getDarkerClientColorCustomAlpha(150);
+
+    RenderMethods.drawGradientRect(
+        x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
+
+    FontUtil.drawString(title, x + 4, y + 4, 0xFFFFFFFF);
+
+    int closeX = x + width - CLOSE_BUTTON_SIZE - 3;
+    int closeY = y + 3;
+    boolean closeHovered =
+        mouseX >= closeX && mouseX <= closeX + CLOSE_BUTTON_SIZE
+            && mouseY >= closeY && mouseY <= closeY + CLOSE_BUTTON_SIZE;
+    int closeColor = closeHovered ? 0xFFFF5555 : 0xFFCCCCCC;
+    FontUtil.drawString("X", closeX + 2, closeY + 1, closeColor);
+
+    RenderMethods.drawRect(x, y + TITLE_HEIGHT, x + width, y + height, 0x77000000);
+
+    renderContent(mouseX, mouseY, partialTicks);
+
+    if (focused) {
+      int accent = Colors.getClientColor();
+      RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, accent);
+      RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, accent);
+      RenderMethods.drawRect(x - 1, y, x, y + height, accent);
+      RenderMethods.drawRect(x + width, y, x + width + 1, y + height, accent);
+    }
+  }
+
+  protected abstract void renderContent(int mouseX, int mouseY, float partialTicks);
+
+  public boolean mouseClicked(int mouseX, int mouseY, int button) {
+    if (hidden) return false;
+
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isCloseHovered(mouseX, mouseY)) {
+      hidden = true;
+      return true;
+    }
+
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isHoveredTitle(mouseX, mouseY)) {
+      dragging = true;
+      dragOffsetX = mouseX - x;
+      dragOffsetY = mouseY - y;
+      focused = true;
+      return true;
+    }
+
+    if (button == InputConstants.MOUSE_BUTTON_LEFT && isHovered(mouseX, mouseY)) {
+      focused = true;
+      return consumeClick(mouseX, mouseY, button);
+    }
+
+    return false;
+  }
+
+  public void mouseReleased(int button) {
+    if (button == InputConstants.MOUSE_BUTTON_LEFT) {
+      dragging = false;
+    }
+  }
+
+  public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta) {
+    if (hidden || !isHovered(mouseX, mouseY)) return false;
+    return consumeScroll(mouseX, mouseY, scrollDelta);
+  }
+
+  public boolean keyPressed(KeyEvent event) {
+    if (hidden || !focused) return false;
+    return consumeKeyPress(event);
+  }
+
+  protected boolean consumeClick(int mouseX, int mouseY, int button) {
+    return false;
+  }
+
+  protected boolean consumeScroll(double mouseX, double mouseY, double scrollDelta) {
+    return false;
+  }
+
+  protected boolean consumeKeyPress(KeyEvent event) {
+    return false;
+  }
+
+  public boolean isHovered(double mouseX, double mouseY) {
+    return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+  }
+
+  private boolean isHoveredTitle(double mouseX, double mouseY) {
+    return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + TITLE_HEIGHT;
+  }
+
+  private boolean isCloseHovered(double mouseX, double mouseY) {
+    int closeX = x + width - CLOSE_BUTTON_SIZE - 3;
+    int closeY = y + 3;
+    return mouseX >= closeX && mouseX <= closeX + CLOSE_BUTTON_SIZE
+        && mouseY >= closeY && mouseY <= closeY + CLOSE_BUTTON_SIZE;
+  }
+
+  public void setFocused(boolean focused) {
+    this.focused = focused;
+  }
+
+  public boolean isFocused() {
+    return focused;
+  }
+
+  public boolean isHidden() {
+    return hidden;
+  }
+
+  public void setHidden(boolean hidden) {
+    this.hidden = hidden;
+  }
+
+  public boolean isDragging() {
+    return dragging;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public int getX() {
+    return x;
+  }
+
+  public int getY() {
+    return y;
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
+  public int getHeight() {
+    return height;
+  }
+}

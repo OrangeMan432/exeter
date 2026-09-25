@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardHandler.class)
 public class MixinKeyboardHandler {
 
-  @Inject(method = "keyPress", at = @At("HEAD"))
+  @Inject(method = "keyPress", at = @At("HEAD"), cancellable = true)
   private void onKeyPress(long window, int action, KeyEvent event, CallbackInfo ci) {
     if (action == 1 && Exeter.getInstance() != null) {
       var mc = net.minecraft.client.Minecraft.getInstance();
@@ -20,6 +20,9 @@ public class MixinKeyboardHandler {
       Exeter.getInstance()
           .getEventManager()
           .dispatch(new InputEvent(InputEvent.Type.KEYBOARD_KEY_PRESS, event.key()));
+      if (mc.gui != null && mc.gui.screen() != null) {
+        ci.cancel();
+      }
     }
   }
 }
