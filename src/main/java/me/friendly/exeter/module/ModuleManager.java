@@ -45,6 +45,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
+import me.friendly.exeter.module.impl.toggle.world.fakeplayer.FakePlayerModule;
 import com.mojang.blaze3d.platform.InputConstants;
 
 /** Manages {@link Module}s for Exeter. */
@@ -71,6 +72,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoCart());
     register(new AutoPot());
     register(new AutoShulker());
+    register(new FakePlayerModule());
     register(new Velocity());
     register(new FastFall());
     register(new NoBedStep());

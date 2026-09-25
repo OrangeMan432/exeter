@@ -1,0 +1,95 @@
+package me.friendly.exeter.module.impl.toggle.world.fakeplayer.util;
+
+import com.mojang.authlib.GameProfile;
+import java.util.function.BooleanSupplier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.events.PacketEvent;
+
+public class FakePlayerEntity extends RemotePlayer {
+  private BooleanSupplier damageSupplier = () -> true;
+  private boolean hasTotem = true;
+
+  public FakePlayerEntity(ClientLevel level, GameProfile gameProfile) {
+    super(level, gameProfile);
+  }
+
+  @Override
+  protected void actuallyHurt(net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
+    if (!damageSupplier.getAsBoolean()) return;
+
+    float healthBefore = this.getHealth();
+    float newHealth = healthBefore - damage;
+
+    if (newHealth <= 0.0F && hasTotem) {
+      popTotem(damageSource);
+      return;
+    }
+
+    this.setHealth(Math.max(newHealth, 0.0F));
+  }
+
+  private void popTotem(DamageSource source) {
+    this.setHealth(1.0F);
+    this.setAbsorptionAmount(8.0F);
+    this.removeAllEffects();
+    this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
+    this.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
+    this.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 400, 0));
+
+    Minecraft mc = Minecraft.getInstance();
+
+    mc.level.addAlwaysVisibleParticle(
+        ParticleTypes.TOTEM_OF_UNDYING,
+        this.getX(), this.getY(), this.getZ(),
+        0, 0, 0);
+    for (int i = 0; i < 30; i++) {
+      mc.level.addAlwaysVisibleParticle(
+          ParticleTypes.TOTEM_OF_UNDYING,
+          this.getX() + (this.random.nextDouble() - 0.5) * 2.0,
+          this.getY() + this.random.nextDouble() * 2.0,
+          this.getZ() + (this.random.nextDouble() - 0.5) * 2.0,
+          (this.random.nextDouble() - 0.5) * 0.2,
+          this.random.nextDouble() * 0.2,
+          (this.random.nextDouble() - 0.5) * 0.2);
+    }
+
+    mc.level.playLocalSound(
+        this.getX(), this.getY(), this.getZ(),
+        SoundEvents.TOTEM_USE,
+        SoundSource.PLAYERS, 1.0F, 1.0F, false);
+
+    ClientboundEntityEventPacket packet = new ClientboundEntityEventPacket(this, (byte) 35);
+    Exeter.getInstance().getEventManager().dispatch(new PacketEvent(packet));
+  }
+
+  public void applyDamage(float damage) {
+    this.actuallyHurt(null, this.level().damageSources().generic(), damage);
+  }
+
+  public void setDamageSupplier(BooleanSupplier supplier) {
+    this.damageSupplier = supplier;
+  }
+
+  public void setHasTotem(boolean hasTotem) {
+    this.hasTotem = hasTotem;
+  }
+
+  public boolean hasTotem() {
+    return hasTotem;
+  }
+
+  public void setMotionDirect(double x, double y, double z) {
+    this.setDeltaMovement(x, y, z);
+  }
+}
