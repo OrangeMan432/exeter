@@ -22,6 +22,7 @@ public class Debug extends ToggleableModule {
   private final Property<Boolean> showInfo = new Property<Boolean>(true, "Show Info");
   private final Property<Boolean> showWarn = new Property<Boolean>(true, "Show Warnings");
   private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
+  private final Property<Object> moduleTogglesProp = new Property<>("", "Module Toggles");
   private final PopupProperty modulesPopup;
 
   private final Map<String, Boolean> moduleToggles = new LinkedHashMap<>();
@@ -32,7 +33,7 @@ public class Debug extends ToggleableModule {
     setDescription("Per-module debug logging to file and chat.");
     this.modulesPopup = new PopupProperty("Modules", this::openModulesPopup);
     offerProperties(
-        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, modulesPopup);
+        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, moduleTogglesProp, modulesPopup);
   }
 
   public void initModuleToggles(Iterable<Module> modules) {
@@ -75,6 +76,7 @@ public class Debug extends ToggleableModule {
                 "Debug Module Toggles",
                 items,
                 () -> {
+                  saveToggles();
                   syncSettings();
                   ClickGui.getClickGui().closePopup();
                 },
@@ -85,6 +87,7 @@ public class Debug extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     DebugLogger.get().setEnabled(true);
+    loadToggles();
     syncSettings();
   }
 
@@ -107,6 +110,32 @@ public class Debug extends ToggleableModule {
     for (Map.Entry<String, Boolean> entry : moduleToggles.entrySet()) {
       logger.setModuleEnabled(entry.getKey(), entry.getValue());
     }
+  }
+
+  private void loadToggles() {
+    moduleToggles.clear();
+    String raw = String.valueOf(moduleTogglesProp.getValue());
+    if (raw != null && !raw.isEmpty()) {
+      for (String pair : raw.split(",")) {
+        String trimmed = pair.trim();
+        if (trimmed.isEmpty()) continue;
+        int eq = trimmed.indexOf(':');
+        if (eq > 0) {
+          String name = trimmed.substring(0, eq).trim();
+          boolean enabled = Boolean.parseBoolean(trimmed.substring(eq + 1).trim());
+          moduleToggles.put(name, enabled);
+        }
+      }
+    }
+  }
+
+  private void saveToggles() {
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, Boolean> entry : moduleToggles.entrySet()) {
+      if (sb.length() > 0) sb.append(",");
+      sb.append(entry.getKey()).append(":").append(entry.getValue());
+    }
+    moduleTogglesProp.setValue(sb.toString());
   }
 
   public Property<Boolean> getLogToFile() {

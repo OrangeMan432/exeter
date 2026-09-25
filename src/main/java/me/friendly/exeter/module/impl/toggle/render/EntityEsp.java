@@ -39,6 +39,7 @@ public final class EntityEsp extends ToggleableModule {
   private final NumberProperty<Float> outlineAlpha =
       new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
   private final PopupProperty selectEntities;
+  private final Property<Object> selectedEntitiesProp = new Property<>("", "Selected Entities");
 
   private final Set<String> selectedEntities = new HashSet<>();
 
@@ -46,7 +47,7 @@ public final class EntityEsp extends ToggleableModule {
     super("EntityEsp", new String[] {"entityesp", "entity-esp"}, 0x00FFFF, ModuleType.RENDER);
     setDescription("Highlights specific entities in the world.");
     this.selectEntities = new PopupProperty("Select Entities", this::openEntityPopup);
-    offerProperties(range, lineWidth, renderMode, playersAlways, useCustomAlpha, fillAlpha, outlineAlpha, selectEntities);
+    offerProperties(range, lineWidth, renderMode, playersAlways, useCustomAlpha, fillAlpha, outlineAlpha, selectedEntitiesProp, selectEntities);
 
     this.listeners.add(
         new Listener<WorldRenderEvent>("entity_esp_render") {
@@ -55,6 +56,29 @@ public final class EntityEsp extends ToggleableModule {
             onRender();
           }
         });
+  }
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    loadSelections();
+  }
+
+  private void loadSelections() {
+    selectedEntities.clear();
+    String raw = String.valueOf(selectedEntitiesProp.getValue());
+    if (raw != null && !raw.isEmpty()) {
+      for (String id : raw.split(",")) {
+        String trimmed = id.trim();
+        if (!trimmed.isEmpty()) {
+          selectedEntities.add(trimmed);
+        }
+      }
+    }
+  }
+
+  private void saveSelections() {
+    selectedEntitiesProp.setValue(String.join(",", selectedEntities));
   }
 
   private void openEntityPopup() {
@@ -98,7 +122,10 @@ public final class EntityEsp extends ToggleableModule {
             new SearchSelectPopup(
                 "Select Entities",
                 items,
-                () -> ClickGui.getClickGui().closePopup(),
+                () -> {
+                  saveSelections();
+                  ClickGui.getClickGui().closePopup();
+                },
                 () -> ClickGui.getClickGui().closePopup()));
   }
 

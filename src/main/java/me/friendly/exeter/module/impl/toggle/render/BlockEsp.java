@@ -43,6 +43,7 @@ public final class BlockEsp extends ToggleableModule {
   private final NumberProperty<Integer> rescanInterval =
       new NumberProperty<Integer>(10, 1, 50, "Rescan Ticks");
   private final PopupProperty selectBlocks;
+  private final Property<Object> selectedBlocksProp = new Property<>("", "Selected Blocks");
 
   private final Set<String> selectedBlocks = new HashSet<>();
   private final List<Block> blockCache = new ArrayList<>();
@@ -53,7 +54,7 @@ public final class BlockEsp extends ToggleableModule {
     super("BlockEsp", new String[] {"blockesp", "block-esp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights specific blocks in the world.");
     this.selectBlocks = new PopupProperty("Select Blocks", this::openBlockPopup);
-    offerProperties(range, lineWidth, renderMode, useCustomAlpha, fillAlpha, outlineAlpha, rescanInterval, selectBlocks);
+    offerProperties(range, lineWidth, renderMode, useCustomAlpha, fillAlpha, outlineAlpha, rescanInterval, selectedBlocksProp, selectBlocks);
 
     this.listeners.add(
         new Listener<TickEvent>("block_esp_tick") {
@@ -115,6 +116,7 @@ public final class BlockEsp extends ToggleableModule {
                 "Select Blocks",
                 items,
                 () -> {
+                  saveSelections();
                   syncBlockCache();
                   ClickGui.getClickGui().closePopup();
                 },
@@ -139,9 +141,27 @@ public final class BlockEsp extends ToggleableModule {
     tickCounter = 0;
   }
 
+  private void loadSelections() {
+    selectedBlocks.clear();
+    String raw = String.valueOf(selectedBlocksProp.getValue());
+    if (raw != null && !raw.isEmpty()) {
+      for (String id : raw.split(",")) {
+        String trimmed = id.trim();
+        if (!trimmed.isEmpty()) {
+          selectedBlocks.add(trimmed);
+        }
+      }
+    }
+  }
+
+  private void saveSelections() {
+    selectedBlocksProp.setValue(String.join(",", selectedBlocks));
+  }
+
   @Override
   protected void onEnable() {
     super.onEnable();
+    loadSelections();
     syncBlockCache();
   }
 
