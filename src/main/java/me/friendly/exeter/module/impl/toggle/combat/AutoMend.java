@@ -10,14 +10,11 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.StopWatch;
+import me.friendly.exeter.logging.DebugLogger;
+import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
@@ -26,7 +23,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.phys.Vec3;
 
 public class AutoMend extends ToggleableModule {
@@ -118,19 +114,16 @@ public class AutoMend extends ToggleableModule {
     }
 
     if (toMendFlags > 0) {
-      lookDown();
+      float yaw = mc.player.getYRot();
+      float pitch = mc.player.getXRot();
+      PlayerUtil.setRotation(yaw, 90.0f);
       useXPBottle(xpSlot);
+      PlayerUtil.restoreRotation(yaw, pitch);
 
       if (takeOff.getValue()) {
         takeOffRepaired();
       }
     }
-  }
-
-  private void lookDown() {
-    mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(
-        mc.player.getYRot(), 90.0f, mc.player.onGround(), false));
-    mc.player.setXRot(90.0f);
   }
 
   private void useXPBottle(int hotbarSlot) {
@@ -231,9 +224,6 @@ public class AutoMend extends ToggleableModule {
   }
 
   private void sendDisableMessage(String reason) {
-    if (mc.player != null) {
-      mc.player.sendSystemMessage(
-          Component.literal("§c[AutoMend] " + reason + " - disabling"));
-    }
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, reason + " - disabling");
   }
 }
