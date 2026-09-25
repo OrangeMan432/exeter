@@ -23,6 +23,7 @@ run
 net/
 replenish.txt
 runClient.log
+nul
 
 # Forge.
 forge*changelog.txt
