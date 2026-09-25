@@ -190,8 +190,6 @@ public final class DebugLogger {
    * @param message the debug message
    */
   public void logAlways(String tag, String message) {
-    if (!enabled) return;
-
     String timestamp = LocalDateTime.now().format(timeFmt);
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
 
