@@ -39,7 +39,7 @@ public final class EntityEsp extends ToggleableModule {
   private final NumberProperty<Float> outlineAlpha =
       new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
   private final PopupProperty selectEntities;
-  private final Property<Object> selectedEntitiesProp = new Property<>("", "Selected Entities");
+  private final Property<String> selectedEntitiesProp = new Property<>("", "Selected Entities");
 
   private final Set<String> selectedEntities = new HashSet<>();
 
@@ -66,7 +66,7 @@ public final class EntityEsp extends ToggleableModule {
 
   private void loadSelections() {
     selectedEntities.clear();
-    String raw = String.valueOf(selectedEntitiesProp.getValue());
+    String raw = selectedEntitiesProp.getValue();
     if (raw != null && !raw.isEmpty()) {
       for (String id : raw.split(",")) {
         String trimmed = id.trim();

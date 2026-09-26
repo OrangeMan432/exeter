@@ -22,7 +22,7 @@ public class Debug extends ToggleableModule {
   private final Property<Boolean> showInfo = new Property<Boolean>(true, "Show Info");
   private final Property<Boolean> showWarn = new Property<Boolean>(true, "Show Warnings");
   private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
-  private final Property<Object> moduleTogglesProp = new Property<>("", "Module Toggles");
+  private final Property<String> moduleTogglesProp = new Property<>("", "Module Toggles");
   private final PopupProperty modulesPopup;
 
   private final Map<String, Boolean> moduleToggles = new LinkedHashMap<>();
@@ -114,7 +114,7 @@ public class Debug extends ToggleableModule {
 
   private void loadToggles() {
     moduleToggles.clear();
-    String raw = String.valueOf(moduleTogglesProp.getValue());
+    String raw = moduleTogglesProp.getValue();
     if (raw != null && !raw.isEmpty()) {
       for (String pair : raw.split(",")) {
         String trimmed = pair.trim();

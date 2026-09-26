@@ -111,7 +111,10 @@ public class ExeterConfig {
       Map<String, Object> data = tomlReader.read(file).toMap();
       DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
 
-      // Load module state (enabled, drawn, keybind)
+      // Load module state (enabled, drawn, keybind). The enabled flag is applied after
+      // settings are loaded so onEnable() observes the restored property values.
+      boolean restoreEnabled = false;
+      boolean hasEnabledState = false;
       if (module instanceof Toggleable && data.containsKey("module")) {
         Map<String, Object> moduleData = (Map<String, Object>) data.get("module");
         ToggleableModule toggleable = (ToggleableModule) module;
@@ -135,13 +138,10 @@ public class ExeterConfig {
           } else {
             enabled = Boolean.parseBoolean(String.valueOf(enabledVal));
           }
+          restoreEnabled = enabled;
+          hasEnabledState = true;
           DebugLogger.get()
-              .logSystem(
-                  "Config",
-                  "  setting enabled = " + enabled + " (was " + toggleable.isRunning() + ")");
-          toggleable.setRunning(enabled);
-          DebugLogger.get()
-              .logSystem("Config", "  after setRunning: isRunning = " + toggleable.isRunning());
+              .logSystem("Config", "  parsed enabled = " + enabled + ", will apply after settings");
         }
 
         if (moduleData.containsKey("keybind")) {
@@ -273,6 +273,18 @@ public class ExeterConfig {
         }
       } else {
         DebugLogger.get().logSystem("Config", "  no [settings] section in file");
+      }
+
+      // Apply enabled state after settings so onEnable() observes restored values.
+      if (hasEnabledState && module instanceof ToggleableModule) {
+        ToggleableModule toggleable = (ToggleableModule) module;
+        DebugLogger.get()
+            .logSystem(
+                "Config",
+                "  setting enabled = " + restoreEnabled + " (was " + toggleable.isRunning() + ")");
+        toggleable.setRunning(restoreEnabled);
+        DebugLogger.get()
+            .logSystem("Config", "  after setRunning: isRunning = " + toggleable.isRunning());
       }
 
       // Load HUD module position and corner

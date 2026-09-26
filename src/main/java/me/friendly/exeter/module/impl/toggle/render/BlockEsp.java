@@ -43,7 +43,7 @@ public final class BlockEsp extends ToggleableModule {
   private final NumberProperty<Integer> rescanInterval =
       new NumberProperty<Integer>(10, 1, 50, "Rescan Ticks");
   private final PopupProperty selectBlocks;
-  private final Property<Object> selectedBlocksProp = new Property<>("", "Selected Blocks");
+  private final Property<String> selectedBlocksProp = new Property<>("", "Selected Blocks");
 
   private final Set<String> selectedBlocks = new HashSet<>();
   private final List<Block> blockCache = new ArrayList<>();
@@ -143,7 +143,7 @@ public final class BlockEsp extends ToggleableModule {
 
   private void loadSelections() {
     selectedBlocks.clear();
-    String raw = String.valueOf(selectedBlocksProp.getValue());
+    String raw = selectedBlocksProp.getValue();
     if (raw != null && !raw.isEmpty()) {
       for (String id : raw.split(",")) {
         String trimmed = id.trim();
