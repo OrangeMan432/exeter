@@ -169,6 +169,8 @@ public class Speed extends ToggleableModule {
   private double getBaseSpeed() {
     double speed = 0.2873;
 
+    if (minecraft.player == null) return speed;
+
     if (minecraft.player.hasEffect(MobEffects.SPEED)) {
       speed += 0.2873 * (minecraft.player.getEffect(MobEffects.SPEED).getAmplifier() + 1) * 0.2;
     }
