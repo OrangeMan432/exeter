@@ -182,32 +182,6 @@ public final class DebugLogger {
     }
   }
 
-  /**
-   * Logs a debug message regardless of per-module enable state. Only respects global enable and
-   * output settings. Useful for config save/load where per-module state may not yet be loaded.
-   *
-   * @param tag a tag for the source
-   * @param message the debug message
-   */
-  public void logAlways(String tag, String message) {
-    String timestamp = LocalDateTime.now().format(timeFmt);
-    String formatted = "[" + timestamp + "] [" + tag + "] " + message;
-
-    Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
-
-    if (logToFile) {
-      writeToFile(formatted);
-    }
-
-    if (logToChat) {
-      sendToChat(formatted);
-    }
-
-    if (logToNotifications) {
-      sendToNotifications("[" + tag + "] " + message);
-    }
-  }
-
   /** Clears the debug log file. */
   public void clearLog() {
     try (PrintWriter pw = new PrintWriter(logFile)) {
