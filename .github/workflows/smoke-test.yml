@@ -25,8 +25,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Install headless display dependencies
-        run: sudo apt-get update && sudo apt-get install -y xvfb mesa-vulkan-drivers imagemagick
+      - name: Install software rendering dependencies
+        run: sudo apt-get update && sudo apt-get install -y mesa-vulkan-drivers
 
       - name: Run client smoke test
         timeout-minutes: 25
@@ -34,10 +34,8 @@ jobs:
           # Pre-seed options so first-boot onboarding screens don't block the title.
           mkdir -p run
           printf 'lang:en_us\ntutorialStep:none\nonboardAccessibility:false\n' > run/options.txt
-          Xvfb :99 -screen 0 1280x720x24 &
-          echo $! > xvfb.pid
-          export DISPLAY=:99
           # No GPU on runners: Mesa lavapipe (Vulkan) / llvmpipe (GL) is auto-selected.
+          # Loom wraps the game launch in xvfb-run itself, so no display setup is needed.
           export LIBGL_ALWAYS_SOFTWARE=1
           export JAVA_TOOL_OPTIONS="-Dexeter.smokeTest=true"
           ./gradlew runClient --args="--demo" > smoke.log 2>&1 &
@@ -48,12 +46,12 @@ jobs:
             sleep 5
             grep -q "sequence complete" run/smoke-markers.log 2>/dev/null && break
           done
-          import -window root screenshot.png || true
-          # The game is forked under the daemon: kill its JVM first or it survives.
+          # The game stops itself after the sequence; allow orderly shutdown.
+          sleep 20
+          # Backstop: the game is forked under the daemon, kill its JVM directly.
           pkill -f "devlaunchinjector" 2>/dev/null || true
-          sleep 10
+          sleep 5
           kill "$(cat client.pid)" 2>/dev/null || true
-          kill "$(cat xvfb.pid)" 2>/dev/null || true
           wait 2>/dev/null || true
           exit 0
 
@@ -65,7 +63,7 @@ jobs:
           path: |
             smoke.log
             run/smoke-markers.log
-            screenshot.png
+            run/screenshots/smoke-*.png
           if-no-files-found: warn
 
       - name: Assert smoke results
@@ -77,6 +75,7 @@ jobs:
           grep -q "close HUDEditor, screen=.*hud.HudEditorScreen" $LOG || (echo "::error::HUDEditor did not open" && exit 1)
           grep -q "close windows, screen=.*window.WindowScreen" $LOG || (echo "::error::Windows did not open" && exit 1)
           grep -q "sequence complete" $LOG || (echo "::error::smoke sequence did not complete" && exit 1)
+          test "$(ls run/screenshots/smoke-*.png 2>/dev/null | wc -l)" -eq 3 || (echo "::error::expected 3 GUI screenshots" && exit 1)
           if grep -Eq "Failed to load config|NullPointerException|Minecraft Crash Report|Mixin apply failed" smoke.log; then
             echo "::error::errors found in smoke log"
             grep -E "Failed to load config|NullPointerException|Minecraft Crash Report|Mixin apply failed" smoke.log

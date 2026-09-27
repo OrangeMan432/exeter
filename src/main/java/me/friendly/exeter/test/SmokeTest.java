@@ -5,6 +5,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -47,30 +48,58 @@ public final class SmokeTest {
       if (!pressDemoButton(mc)) return;
       if (!waitForWorld(mc)) return;
       Thread.sleep(5000);
-      step(mc, "open clickgui", () -> toggle(mc, "clickgui"));
+      step(mc, "open clickgui", null, () -> toggle(mc, "clickgui"));
       Thread.sleep(2000);
-      step(mc, "close ClickGUI", () -> mc.gui.setScreen(null));
+      step(mc, "close ClickGUI", "smoke-01-clickgui", () -> mc.gui.setScreen(null));
       Thread.sleep(2000);
-      step(mc, "open hudeditor", () -> toggle(mc, "hudeditor"));
+      step(mc, "open hudeditor", null, () -> toggle(mc, "hudeditor"));
       Thread.sleep(2000);
-      step(mc, "close HUDEditor", () -> mc.gui.setScreen(null));
+      step(mc, "close HUDEditor", "smoke-02-hudeditor", () -> mc.gui.setScreen(null));
       Thread.sleep(2000);
-      step(mc, "open windows", () -> toggle(mc, "Windows"));
+      step(mc, "open windows", null, () -> toggle(mc, "Windows"));
       Thread.sleep(2000);
-      step(mc, "close windows", () -> mc.gui.setScreen(null));
+      step(mc, "close windows", "smoke-03-windows", () -> mc.gui.setScreen(null));
       Thread.sleep(2000);
-      mc.execute(() -> mark("final screen=" + screenName(mc.gui.screen()) + ", sequence complete"));
+      mc.execute(
+          () -> {
+            mark("final screen=" + screenName(mc.gui.screen()) + ", sequence complete");
+            mc.stop();
+          });
     } catch (InterruptedException ignored) {
       Thread.currentThread().interrupt();
     }
   }
 
-  private static void step(Minecraft mc, String label, Runnable action) {
+  private static void step(Minecraft mc, String label, String shotName, Runnable action) {
     mc.execute(
         () -> {
+          if (shotName != null) {
+            capture(mc, shotName);
+          }
           mark(label + ", screen=" + screenName(mc.gui.screen()));
           action.run();
         });
+  }
+
+  private static void capture(Minecraft mc, String name) {
+    try {
+      java.io.File dir = new java.io.File("screenshots");
+      dir.mkdirs();
+      java.io.File file = new java.io.File(dir, name + ".png");
+      // grab(File, ...) treats the file as a directory, so write the image ourselves.
+      Screenshot.takeScreenshot(
+          mc.gameRenderer.mainRenderTarget(),
+          image -> {
+            try {
+              image.writeToFile(file);
+              mark("screenshot saved: " + file.getPath());
+            } catch (Exception e) {
+              mark("screenshot failed: " + e);
+            }
+          });
+    } catch (Exception e) {
+      mark("screenshot failed: " + e);
+    }
   }
 
   private static void toggle(Minecraft mc, String alias) {
