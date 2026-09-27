@@ -10,6 +10,7 @@
       "MixinKeyboardHandler",
       "MixinClientPlayer",
       "MixinLevelRenderer",
-      "MixinLivingEntity"
+      "MixinLivingEntity",
+      "MixinMinecraft"
   ]
 }
