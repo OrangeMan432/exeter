@@ -304,6 +304,40 @@ public class ExeterConfig {
           }
         }
       }
+
+      // Load saved window positions (applied when the Windows screen opens)
+      if (module instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule windowsModule
+          && data.containsKey("windows")) {
+        Map<String, Object> windowsData = (Map<String, Object>) data.get("windows");
+        Map<String, int[]> positions = new HashMap<>();
+        for (Map.Entry<String, Object> entry : windowsData.entrySet()) {
+          if (entry.getValue() instanceof Map) {
+            int[] pos = readPosition((Map<String, Object>) entry.getValue());
+            if (pos != null) {
+              positions.put(entry.getKey(), pos);
+            }
+          }
+        }
+        windowsModule.setPendingPositions(positions);
+        DebugLogger.get().logSystem("Config", "  loaded window positions: " + positions.keySet());
+      }
+
+      // Load saved ClickGUI panel positions (applied when the ClickGUI screen opens)
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule
+          && data.containsKey("panels")) {
+        Map<String, Object> panelsData = (Map<String, Object>) data.get("panels");
+        Map<String, int[]> positions = new HashMap<>();
+        for (Map.Entry<String, Object> entry : panelsData.entrySet()) {
+          if (entry.getValue() instanceof Map) {
+            int[] pos = readPosition((Map<String, Object>) entry.getValue());
+            if (pos != null) {
+              positions.put(entry.getKey(), pos);
+            }
+          }
+        }
+        clickGuiModule.setPendingPanels(positions);
+        DebugLogger.get().logSystem("Config", "  loaded panel positions: " + positions.keySet());
+      }
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to load config for " + module.getLabel() + ": " + e.getMessage());
@@ -340,6 +374,9 @@ public class ExeterConfig {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void savePropertyRecursive(Property<?> property, Map<String, Object> settings) {
+    if (property instanceof me.friendly.exeter.properties.ActionProperty) {
+      return;
+    }
     String key = property.getAliases()[0];
     Object value = property.getValue();
     DebugLogger.get()
@@ -385,6 +422,19 @@ public class ExeterConfig {
         settings.put(childKey, childValue);
       }
     }
+  }
+
+  /** Reads an {x, y} position table, or null when malformed. */
+  private static int[] readPosition(Map<String, Object> table) {
+    try {
+      Object x = table.get("x");
+      Object y = table.get("y");
+      if (x instanceof Number && y instanceof Number) {
+        return new int[] {((Number) x).intValue(), ((Number) y).intValue()};
+      }
+    } catch (Exception ignored) {
+    }
+    return null;
   }
 
   /** Saves a single module's configuration to its TOML file. */
@@ -442,6 +492,31 @@ public class ExeterConfig {
                     + hudModule.getY()
                     + " corner="
                     + hudModule.getCorner());
+      }
+
+      // Save window positions
+      if (module
+          instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule windowsModule) {
+        Map<String, Object> windowsData = new HashMap<>();
+        for (Map.Entry<String, int[]> entry : windowsModule.getPendingPositions().entrySet()) {
+          Map<String, Object> pos = new HashMap<>();
+          pos.put("x", (long) entry.getValue()[0]);
+          pos.put("y", (long) entry.getValue()[1]);
+          windowsData.put(entry.getKey(), pos);
+        }
+        data.put("windows", windowsData);
+      }
+
+      // Save ClickGUI panel positions
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule) {
+        Map<String, Object> panelsData = new HashMap<>();
+        for (Map.Entry<String, int[]> entry : clickGuiModule.getPendingPanels().entrySet()) {
+          Map<String, Object> pos = new HashMap<>();
+          pos.put("x", (long) entry.getValue()[0]);
+          pos.put("y", (long) entry.getValue()[1]);
+          panelsData.put(entry.getKey(), pos);
+        }
+        data.put("panels", panelsData);
       }
 
       DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());

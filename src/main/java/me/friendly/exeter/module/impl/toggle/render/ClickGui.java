@@ -1,7 +1,10 @@
 package me.friendly.exeter.module.impl.toggle.render;
 
+import java.util.HashMap;
+import java.util.Map;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
 
@@ -35,6 +38,10 @@ public final class ClickGui extends ToggleableModule {
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
+  public final ActionProperty resetPositions =
+      new ActionProperty("Reset Positions", this::resetPositions);
+
+  private final Map<String, int[]> pendingPanels = new HashMap<>();
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
@@ -47,7 +54,8 @@ public final class ClickGui extends ToggleableModule {
         showModuleCount,
         showGradient,
         panelAlignment,
-        searchEnabled);
+        searchEnabled,
+        resetPositions);
   }
 
   public GearMode getGearMode() {
@@ -80,11 +88,28 @@ public final class ClickGui extends ToggleableModule {
     }
   }
 
+  /** Panel positions loaded from clickgui.toml, applied when the screen opens. */
+  public void setPendingPanels(Map<String, int[]> positions) {
+    pendingPanels.clear();
+    pendingPanels.putAll(positions);
+  }
+
+  public Map<String, int[]> getPendingPanels() {
+    return pendingPanels;
+  }
+
   @Override
   protected void onEnable() {
     super.onEnable();
     this.minecraft.gui.setScreen(
         me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui());
     this.setRunning(false);
+  }
+
+  private void resetPositions() {
+    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui screen =
+        me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui();
+    screen.resetPanels();
+    me.friendly.exeter.util.NotificationManager.push("Panel positions reset", "warning");
   }
 }
