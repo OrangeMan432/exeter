@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -303,6 +304,9 @@ public class AutoArmor extends ToggleableModule {
   private boolean hasNearbyEnemies() {
     for (var entity : mc.level.entitiesForRendering()) {
       if (entity instanceof Player p && p != mc.player) {
+        if (!Exeter.getInstance().getFriendManager().isTargetable(p.getName().getString())) {
+          continue;
+        }
         if (p.distanceTo(mc.player) <= 6.0f) return true;
       }
       if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EndCrystal) {

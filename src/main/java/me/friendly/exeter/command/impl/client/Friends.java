@@ -22,6 +22,7 @@ public final class Friends {
       Friend friend = Exeter.getInstance().getFriendManager().getFriendByAliasOrLabel(name);
       String oldAlias = friend.getAlias();
       Exeter.getInstance().getFriendManager().unregister(friend);
+      Exeter.getInstance().getFriendManager().save();
       return String.format("Removed friend with alias %s.", oldAlias);
     }
   }
@@ -40,6 +41,7 @@ public final class Friends {
         return "That user is already a friend.";
       }
       Exeter.getInstance().getFriendManager().register(new Friend(username, alias));
+      Exeter.getInstance().getFriendManager().save();
       return String.format("Added friend with alias %s.", alias);
     }
   }

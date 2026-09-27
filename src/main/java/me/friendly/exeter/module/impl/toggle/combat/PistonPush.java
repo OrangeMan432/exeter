@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
@@ -218,6 +219,9 @@ public class PistonPush extends ToggleableModule {
     for (Entity entity : minecraft.level.players()) {
       if (entity == minecraft.player) continue;
       if (!entity.isAlive()) continue;
+      if (!Exeter.getInstance().getFriendManager().isTargetable(entity.getName().getString())) {
+        continue;
+      }
 
       double distance = minecraft.player.distanceTo(entity);
       if (distance <= range.getValue()) {

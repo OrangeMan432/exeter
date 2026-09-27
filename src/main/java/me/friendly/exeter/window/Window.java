@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
 public abstract class Window {
@@ -117,6 +118,47 @@ public abstract class Window {
   }
 
   protected boolean consumeKeyPress(KeyEvent event) {
+    return false;
+  }
+
+  /**
+   * Appends the character for a key press to a text buffer.
+   *
+   * <p>Must use {@code event.key()} (HID usage codes, contiguous per group), never {@code
+   * event.keycode()} (the scancode). Letters map shift-aware, digits map 1-9/0 in HID order, and
+   * Shift+Minus yields an underscore for Minecraft usernames.
+   *
+   * @return true if a character was appended
+   */
+  protected static boolean appendKeyChar(StringBuilder buffer, KeyEvent event, int maxLength) {
+    if (buffer.length() >= maxLength) {
+      return false;
+    }
+    int code = event.key();
+    if (code >= InputConstants.KEY_A && code <= InputConstants.KEY_Z) {
+      char typed = (char) ('A' + code - InputConstants.KEY_A);
+      if (!Minecraft.getInstance().hasShiftDown()) {
+        typed = Character.toLowerCase(typed);
+      }
+      buffer.append(typed);
+      return true;
+    }
+    if (code >= InputConstants.KEY_1 && code <= InputConstants.KEY_9) {
+      buffer.append((char) ('1' + code - InputConstants.KEY_1));
+      return true;
+    }
+    if (code == InputConstants.KEY_0) {
+      buffer.append('0');
+      return true;
+    }
+    if (code == InputConstants.KEY_MINUS) {
+      buffer.append(Minecraft.getInstance().hasShiftDown() ? '_' : '-');
+      return true;
+    }
+    if (code == InputConstants.KEY_SPACE) {
+      buffer.append(' ');
+      return true;
+    }
     return false;
   }
 
