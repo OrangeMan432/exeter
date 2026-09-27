@@ -3,6 +3,7 @@ package me.friendly.exeter.window;
 import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import net.minecraft.client.input.KeyEvent;
 
@@ -39,7 +40,12 @@ public abstract class Window {
             ? Colors.getDarkerClientColorCustomAlpha(220)
             : Colors.getDarkerClientColorCustomAlpha(150);
 
-    RenderMethods.drawGradientRect(x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
+    if (useGradient()) {
+      RenderMethods.drawGradientRect(
+          x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
+    } else {
+      RenderMethods.drawRect(x, y, x + width, y + TITLE_HEIGHT, headerColor);
+    }
 
     FontUtil.drawString(title, x + 4, y + 4, 0xFFFFFFFF);
 
@@ -67,6 +73,17 @@ public abstract class Window {
   }
 
   protected abstract void renderContent(int mouseX, int mouseY, float partialTicks);
+
+  /** Mirrors the ClickGUI {@code Gradient} setting: no gradient anywhere when it is off. */
+  protected static boolean useGradient() {
+    try {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      return !(module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg)
+          || cg.showGradient.getValue();
+    } catch (Exception e) {
+      return true;
+    }
+  }
 
   public boolean mouseClicked(int mouseX, int mouseY, int button) {
     if (hidden) return false;

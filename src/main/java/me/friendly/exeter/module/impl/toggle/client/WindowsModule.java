@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.client;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.window.WindowScreen;
+import me.friendly.exeter.window.impl.AccountWindow;
 import me.friendly.exeter.window.impl.ConsoleWindow;
 import me.friendly.exeter.window.impl.FriendsWindow;
 
@@ -24,6 +25,7 @@ public final class WindowsModule extends ToggleableModule {
 
     screen.addWindow(new ConsoleWindow(20, 20, 400, 250));
     screen.addWindow(new FriendsWindow(mcWidth - 220, 20, 200, 200));
+    screen.addWindow(new AccountWindow(mcWidth - 400, 240, 360, 250));
 
     minecraft.gui.setScreen(screen);
     setRunning(false);
