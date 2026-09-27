@@ -68,3 +68,5 @@ the same way that 3arthqu4ke's does (and Future's does).
 - Friendly — original 1.8 client
 - Gopro336 — source reconstruction, cleanup, javadoc, and porting work
 - OrangeMan432 — this fork
+- Earthhack (3arthqu4ke) — FakePlayer implementation
+- Lemon — various modules throughout the codebase
