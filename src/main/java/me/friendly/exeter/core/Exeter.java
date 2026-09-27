@@ -94,6 +94,7 @@ public final class Exeter {
             String.format(
                 "Initialized, took %s milliseconds.",
                 System.nanoTime() / 1000000L - this.startTime));
+    me.friendly.exeter.test.SmokeTest.maybeStart();
   }
 
   public static Exeter getInstance() {
