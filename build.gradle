@@ -140,9 +140,11 @@ task format {
     def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
 
     doFirst {
-        if (!jar.get().asFile.exists()) {
+        def jarFile = jar.get().asFile
+        if (!jarFile.exists()) {
+            jarFile.parentFile.mkdirs()
             ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
-                    dest: jar.get().asFile.absolutePath)
+                    dest: jarFile.absolutePath)
         }
     }
 
@@ -164,9 +166,11 @@ task formatCheck {
     def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
 
     doFirst {
-        if (!jar.get().asFile.exists()) {
+        def jarFile = jar.get().asFile
+        if (!jarFile.exists()) {
+            jarFile.parentFile.mkdirs()
             ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
-                    dest: jar.get().asFile.absolutePath)
+                    dest: jarFile.absolutePath)
         }
     }
 
