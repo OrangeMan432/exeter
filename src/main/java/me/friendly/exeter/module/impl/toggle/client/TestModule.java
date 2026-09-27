@@ -38,17 +38,20 @@ public class TestModule extends ToggleableModule {
   private void onTick() {
     if (testInfo.getValue()) {
       testInfo.setValue(false);
-      DebugLogger.get().log("TestModule", DebugLogger.Level.INFO, "This is an info-level test message.");
+      DebugLogger.get()
+          .log("TestModule", DebugLogger.Level.INFO, "This is an info-level test message.");
     }
 
     if (testWarning.getValue()) {
       testWarning.setValue(false);
-      DebugLogger.get().log("TestModule", DebugLogger.Level.WARN, "This is a warning test message.");
+      DebugLogger.get()
+          .log("TestModule", DebugLogger.Level.WARN, "This is a warning test message.");
     }
 
     if (testError.getValue()) {
       testError.setValue(false);
-      DebugLogger.get().log("TestModule", DebugLogger.Level.ERROR, "This is an error test message.");
+      DebugLogger.get()
+          .log("TestModule", DebugLogger.Level.ERROR, "This is an error test message.");
     }
 
     if (testMultiLine.getValue()) {

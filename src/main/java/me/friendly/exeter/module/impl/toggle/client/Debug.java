@@ -31,7 +31,14 @@ public class Debug extends ToggleableModule {
     setDescription("Per-module debug logging to file and chat.");
     this.modulesPopup = new PopupProperty("Modules", this::openModulesPopup);
     offerProperties(
-        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, moduleToggles.getProperty(), modulesPopup);
+        logToFile,
+        logToChat,
+        logToNotifications,
+        showInfo,
+        showWarn,
+        showError,
+        moduleToggles.getProperty(),
+        modulesPopup);
   }
 
   public void initModuleToggles(Iterable<Module> modules) {

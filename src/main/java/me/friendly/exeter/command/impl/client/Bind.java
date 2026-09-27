@@ -1,10 +1,10 @@
 package me.friendly.exeter.command.impl.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
 import me.friendly.exeter.core.Exeter;
-import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 

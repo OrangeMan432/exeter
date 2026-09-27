@@ -343,7 +343,8 @@ public class AutoGear extends ToggleableModule {
     return output;
   }
 
-  private static String holderName(net.minecraft.core.Holder<net.minecraft.world.item.alchemy.Potion> h) {
+  private static String holderName(
+      net.minecraft.core.Holder<net.minecraft.world.item.alchemy.Potion> h) {
     return h.getRegisteredName();
   }
 
@@ -361,12 +362,16 @@ public class AutoGear extends ToggleableModule {
         if (!contents.customEffects().isEmpty()) {
           StringBuilder eff = new StringBuilder();
           for (var e : contents.customEffects()) {
-            eff.append(e.getEffect().value().getDescriptionId()).append(":").append(e.getAmplifier()).append(";");
+            eff.append(e.getEffect().value().getDescriptionId())
+                .append(":")
+                .append(e.getAmplifier())
+                .append(";");
           }
           base += "[" + eff + "]";
         }
       }
-    } catch (Exception ignored) {}
+    } catch (Exception ignored) {
+    }
     return base;
   }
 

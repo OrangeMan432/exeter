@@ -85,7 +85,10 @@ public final class FastFall extends ToggleableModule {
         minecraft.player.setDeltaMovement(motion.x, motion.y - reduction, motion.z);
       }
 
-      if (traceDistance != 0 && traceDistance <= height.getValue() && trace() && minecraft.player.onGround()) {
+      if (traceDistance != 0
+          && traceDistance <= height.getValue()
+          && trace()
+          && minecraft.player.onGround()) {
         Vec3 motion = minecraft.player.getDeltaMovement();
         minecraft.player.setDeltaMovement(motion.x * 0.05, motion.y, motion.z * 0.05);
       }
@@ -113,13 +116,14 @@ public final class FastFall extends ToggleableModule {
     int y = (int) Math.round(minecraft.player.getY()) - 1;
 
     for (int tracey = y; tracey >= 0; tracey--) {
-      BlockHitResult trace = minecraft.level.clip(
-          new net.minecraft.world.level.ClipContext(
-              minecraft.player.position(),
-              new Vec3(minecraft.player.getX(), tracey, minecraft.player.getZ()),
-              net.minecraft.world.level.ClipContext.Block.COLLIDER,
-              net.minecraft.world.level.ClipContext.Fluid.NONE,
-              minecraft.player));
+      BlockHitResult trace =
+          minecraft.level.clip(
+              new net.minecraft.world.level.ClipContext(
+                  minecraft.player.position(),
+                  new Vec3(minecraft.player.getX(), tracey, minecraft.player.getZ()),
+                  net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                  net.minecraft.world.level.ClipContext.Fluid.NONE,
+                  minecraft.player));
 
       if (trace.getType() == BlockHitResult.Type.BLOCK) return retval;
       retval++;
@@ -144,19 +148,25 @@ public final class FastFall extends ToggleableModule {
     positions.put(new Vec3(maxX, basepos.y, maxZ), new Vec3(maxX, basepos.y - 1, maxZ));
 
     for (Map.Entry<Vec3, Vec3> entry : positions.entrySet()) {
-      BlockHitResult result = minecraft.level.clip(
-          new net.minecraft.world.level.ClipContext(
-              entry.getKey(),
-              entry.getValue(),
-              net.minecraft.world.level.ClipContext.Block.COLLIDER,
-              net.minecraft.world.level.ClipContext.Fluid.NONE,
-              minecraft.player));
+      BlockHitResult result =
+          minecraft.level.clip(
+              new net.minecraft.world.level.ClipContext(
+                  entry.getKey(),
+                  entry.getValue(),
+                  net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                  net.minecraft.world.level.ClipContext.Fluid.NONE,
+                  minecraft.player));
 
       if (result.getType() == BlockHitResult.Type.BLOCK) return false;
     }
 
-    return minecraft.level.getBlockState(
-            new BlockPos((int) minecraft.player.getX(), (int) (minecraft.player.getY() - 1), (int) minecraft.player.getZ()))
+    return minecraft
+        .level
+        .getBlockState(
+            new BlockPos(
+                (int) minecraft.player.getX(),
+                (int) (minecraft.player.getY() - 1),
+                (int) minecraft.player.getZ()))
         .isAir();
   }
 }

@@ -1,8 +1,8 @@
 package me.friendly.exeter.window.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
-import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.logging.LogEntry;
@@ -28,12 +28,14 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
   public ConsoleWindow(int x, int y, int width, int height) {
     super("Console", x, y, width, height);
     if (!listenerRegistered) {
-      Logger.getLogger().addListener(entry -> {
-        staticEntries.add(entry);
-        while (staticEntries.size() > MAX_ENTRIES) {
-          staticEntries.remove(0);
-        }
-      });
+      Logger.getLogger()
+          .addListener(
+              entry -> {
+                staticEntries.add(entry);
+                while (staticEntries.size() > MAX_ENTRIES) {
+                  staticEntries.remove(0);
+                }
+              });
       listenerRegistered = true;
     }
     rebuildLines();
@@ -76,7 +78,12 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
     int contentY = y + 16;
     int contentHeight = height - 16 - INPUT_HEIGHT;
 
-    RenderMethods.drawRect(x, contentY + contentHeight, x + width, contentY + contentHeight + INPUT_HEIGHT, 0x77282828);
+    RenderMethods.drawRect(
+        x,
+        contentY + contentHeight,
+        x + width,
+        contentY + contentHeight + INPUT_HEIGHT,
+        0x77282828);
     FontUtil.drawString(">", x + 3, contentY + contentHeight + 3, 0xFF888888);
 
     String inputText = inputBuffer.toString();
@@ -90,7 +97,9 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
     int maxInputWidth = width - 12;
     if (FontUtil.getStringWidth(displayInput) > maxInputWidth) {
       int charCount = displayInput.length();
-      while (charCount > 0 && FontUtil.getStringWidth(displayInput.substring(displayInput.length() - charCount)) > maxInputWidth) {
+      while (charCount > 0
+          && FontUtil.getStringWidth(displayInput.substring(displayInput.length() - charCount))
+              > maxInputWidth) {
         charCount--;
       }
       displayInput = "..." + displayInput.substring(displayInput.length() - charCount);
@@ -99,7 +108,12 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
     FontUtil.drawString(displayInput, x + 10, contentY + contentHeight + 3, 0xFFEEEEEE);
     if (cursorVisible && isFocused()) {
       int cursorX = x + 10 + FontUtil.getStringWidth(displayInput);
-      RenderMethods.drawRect(cursorX, contentY + contentHeight + 2, cursorX + 1, contentY + contentHeight + 12, 0xFFEEEEEE);
+      RenderMethods.drawRect(
+          cursorX,
+          contentY + contentHeight + 2,
+          cursorX + 1,
+          contentY + contentHeight + 12,
+          0xFFEEEEEE);
     }
 
     int maxLines = contentHeight / LINE_HEIGHT;
@@ -260,8 +274,8 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
     addEntry(new LogEntry("> " + input, LogEntry.Level.OUTPUT));
 
     try {
-      String result = me.friendly.exeter.core.Exeter.getInstance()
-          .getCommandManager().dispatchDirect(input);
+      String result =
+          me.friendly.exeter.core.Exeter.getInstance().getCommandManager().dispatchDirect(input);
       if (result != null && !result.isEmpty()) {
         addEntry(new LogEntry(result, LogEntry.Level.OUTPUT));
       }

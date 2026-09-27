@@ -25,7 +25,6 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 
 public final class BlockEsp extends ToggleableModule {
   private final NumberProperty<Double> range =
@@ -53,7 +52,16 @@ public final class BlockEsp extends ToggleableModule {
     super("BlockEsp", new String[] {"blockesp", "block-esp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights specific blocks in the world.");
     this.selectBlocks = new PopupProperty("Select Blocks", this::openBlockPopup);
-    offerProperties(range, lineWidth, renderMode, useCustomAlpha, fillAlpha, outlineAlpha, rescanInterval, blockSelections.getProperty(), selectBlocks);
+    offerProperties(
+        range,
+        lineWidth,
+        renderMode,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha,
+        rescanInterval,
+        blockSelections.getProperty(),
+        selectBlocks);
 
     this.listeners.add(
         new Listener<TickEvent>("block_esp_tick") {
@@ -77,17 +85,23 @@ public final class BlockEsp extends ToggleableModule {
     List<SearchSelectPopup.ToggleItem> items = new ArrayList<>();
 
     net.minecraft.core.registries.BuiltInRegistries.BLOCK.stream()
-        .filter(block -> block != Blocks.AIR && block != Blocks.VOID_AIR && block != Blocks.CAVE_AIR)
-        .sorted((a, b) -> {
-          String aName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(a).getPath();
-          String bName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
-          return aName.compareTo(bName);
-        })
-        .forEach(block -> {
-          String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
-          String displayName = block.getName().getString();
-          items.add(SelectionPopup.idItem(id, displayName, blockSelections.getSelected()));
-        });
+        .filter(
+            block -> block != Blocks.AIR && block != Blocks.VOID_AIR && block != Blocks.CAVE_AIR)
+        .sorted(
+            (a, b) -> {
+              String aName =
+                  net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(a).getPath();
+              String bName =
+                  net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+              return aName.compareTo(bName);
+            })
+        .forEach(
+            block -> {
+              String id =
+                  net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
+              String displayName = block.getName().getString();
+              items.add(SelectionPopup.idItem(id, displayName, blockSelections.getSelected()));
+            });
 
     SelectionPopup.open(
         "Select Blocks",
@@ -194,11 +208,19 @@ public final class BlockEsp extends ToggleableModule {
     if (matchedPositions.isEmpty()) return;
 
     float lw = lineWidth.getValue();
-    boolean filled = renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
-    boolean outlined = renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
+    boolean filled =
+        renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
+    boolean outlined =
+        renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
 
-    int fillAlphaVal = useCustomAlpha.getValue() ? Math.round(fillAlpha.getValue()) : EspRenderManager.getGlobalFillAlpha();
-    int outlineAlphaVal = useCustomAlpha.getValue() ? Math.round(outlineAlpha.getValue()) : EspRenderManager.getGlobalOutlineAlpha();
+    int fillAlphaVal =
+        useCustomAlpha.getValue()
+            ? Math.round(fillAlpha.getValue())
+            : EspRenderManager.getGlobalFillAlpha();
+    int outlineAlphaVal =
+        useCustomAlpha.getValue()
+            ? Math.round(outlineAlpha.getValue())
+            : EspRenderManager.getGlobalOutlineAlpha();
 
     int color = EspRenderManager.getClientColor();
     int fillColor = ARGB.color(fillAlphaVal, color);

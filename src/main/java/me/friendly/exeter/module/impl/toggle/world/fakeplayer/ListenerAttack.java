@@ -3,13 +3,13 @@ package me.friendly.exeter.module.impl.toggle.world.fakeplayer;
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 
 public class ListenerAttack extends Listener<PacketEvent> {
   private static final Minecraft mc = Minecraft.getInstance();
@@ -36,15 +36,29 @@ public class ListenerAttack extends Listener<PacketEvent> {
     float cooldown = mc.player.getAttackStrengthScale(0.5f);
 
     if (cooldown > 0.9f) {
-      mc.player.level().playLocalSound(
-          pos.x, pos.y, pos.z,
-          SoundEvents.PLAYER_ATTACK_STRONG,
-          SoundSource.PLAYERS, 1.0F, 1.0F, false);
+      mc.player
+          .level()
+          .playLocalSound(
+              pos.x,
+              pos.y,
+              pos.z,
+              SoundEvents.PLAYER_ATTACK_STRONG,
+              SoundSource.PLAYERS,
+              1.0F,
+              1.0F,
+              false);
     } else {
-      mc.player.level().playLocalSound(
-          pos.x, pos.y, pos.z,
-          SoundEvents.PLAYER_ATTACK_WEAK,
-          SoundSource.PLAYERS, 1.0F, 1.0F, false);
+      mc.player
+          .level()
+          .playLocalSound(
+              pos.x,
+              pos.y,
+              pos.z,
+              SoundEvents.PLAYER_ATTACK_WEAK,
+              SoundSource.PLAYERS,
+              1.0F,
+              1.0F,
+              false);
     }
 
     mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);

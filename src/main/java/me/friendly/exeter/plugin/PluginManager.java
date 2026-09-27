@@ -59,9 +59,13 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
             String className = name.replaceAll("/", ".");
             className = className.substring(0, className.length() - 6);
             URLClassLoader classLoader =
-                new URLClassLoader(new URL[] {new URL("file:///" + file.getAbsolutePath())}, getClass().getClassLoader());
+                new URLClassLoader(
+                    new URL[] {new URL("file:///" + file.getAbsolutePath())},
+                    getClass().getClassLoader());
             Class<?> clazz = classLoader.loadClass(className);
-            if (clazz == null || clazz.getSuperclass() == null || !clazz.getSuperclass().equals(Plugin.class)) continue;
+            if (clazz == null
+                || clazz.getSuperclass() == null
+                || !clazz.getSuperclass().equals(Plugin.class)) continue;
             Plugin plugin = (Plugin) clazz.newInstance();
             this.getList().add(plugin);
             plugin.setRunning(true);

@@ -1,8 +1,8 @@
 package me.friendly.exeter.window;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
-import com.mojang.blaze3d.platform.InputConstants;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
@@ -46,23 +46,29 @@ public final class WindowScreen extends Screen {
   private void renderTaskbar(int mouseX, int mouseY) {
     int taskbarY = this.height - TASKBAR_HEIGHT;
     RenderMethods.drawRect(0, taskbarY, this.width, this.height, 0xDD111111);
-    RenderMethods.drawRect(0, taskbarY, this.width, taskbarY + 1, Colors.getClientColorCustomAlpha(180));
+    RenderMethods.drawRect(
+        0, taskbarY, this.width, taskbarY + 1, Colors.getClientColorCustomAlpha(180));
 
     int btnX = 4;
     for (Window window : windows) {
       int btnWidth = FontUtil.getStringWidth(window.getTitle()) + 12;
-      boolean hovered = mouseX >= btnX && mouseX <= btnX + btnWidth
-          && mouseY >= taskbarY + 3 && mouseY <= taskbarY + TASKBAR_HEIGHT - 3;
+      boolean hovered =
+          mouseX >= btnX
+              && mouseX <= btnX + btnWidth
+              && mouseY >= taskbarY + 3
+              && mouseY <= taskbarY + TASKBAR_HEIGHT - 3;
       boolean isActive = !window.isHidden();
 
       int bgColor;
       if (isActive) {
-        bgColor = hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(140);
+        bgColor =
+            hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(140);
       } else {
         bgColor = hovered ? 0xFF444444 : 0xFF2A2A2A;
       }
 
-      RenderMethods.drawRect(btnX, taskbarY + 3, btnX + btnWidth, taskbarY + TASKBAR_HEIGHT - 3, bgColor);
+      RenderMethods.drawRect(
+          btnX, taskbarY + 3, btnX + btnWidth, taskbarY + TASKBAR_HEIGHT - 3, bgColor);
 
       int textColor = isActive ? 0xFFFFFFFF : 0xFF888888;
       FontUtil.drawString(window.getTitle(), btnX + 6, taskbarY + 6, textColor);

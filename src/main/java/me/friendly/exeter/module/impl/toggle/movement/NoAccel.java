@@ -6,7 +6,6 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.phys.Vec3;
 
 public class NoAccel extends ToggleableModule {
 
@@ -45,7 +44,8 @@ public class NoAccel extends ToggleableModule {
     double sin = Math.sin(rad);
     double cos = Math.cos(rad);
 
-    double accelSpeed = minecraft.player.onGround() ? minecraft.player.getSpeed() : getFlyingSpeed();
+    double accelSpeed =
+        minecraft.player.onGround() ? minecraft.player.getSpeed() : getFlyingSpeed();
 
     double speed = getBaseSpeed() - accelSpeed;
     if (speed < 0) speed = 0;
@@ -68,8 +68,7 @@ public class NoAccel extends ToggleableModule {
     }
 
     if (minecraft.player.hasEffect(MobEffects.SLOWNESS)) {
-      speed -=
-          0.2873 * (minecraft.player.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1) * 0.15;
+      speed -= 0.2873 * (minecraft.player.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1) * 0.15;
     }
 
     return Math.max(speed, 0.2873);

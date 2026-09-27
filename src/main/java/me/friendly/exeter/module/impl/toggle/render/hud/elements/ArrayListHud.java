@@ -35,17 +35,18 @@ public final class ArrayListHud extends ListHudModule {
 
   @Override
   protected List<TextEntry> getEntries() {
-    List<Module> modules =
-        new ArrayList<>(Exeter.getInstance().getModuleManager().getRegistry());
+    List<Module> modules = new ArrayList<>(Exeter.getInstance().getModuleManager().getRegistry());
 
     Comparator<Module> cmp;
     if (organize.getValue() == Organize.ABC) {
       cmp = Comparator.comparing(Module::getLabel);
     } else {
-      cmp = Comparator.comparingInt(
-              (Module m) -> me.friendly.api.minecraft.render.font.FontUtil.getStringWidth(
-                  getTag(m.getLabel())))
-          .reversed();
+      cmp =
+          Comparator.comparingInt(
+                  (Module m) ->
+                      me.friendly.api.minecraft.render.font.FontUtil.getStringWidth(
+                          getTag(m.getLabel())))
+              .reversed();
     }
     modules.sort(cmp);
 

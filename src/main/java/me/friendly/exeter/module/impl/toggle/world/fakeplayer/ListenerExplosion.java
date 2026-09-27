@@ -23,30 +23,32 @@ public class ListenerExplosion extends Listener<PacketEvent> {
     if (!module.isRunning()) return;
     if (!(event.getPacket() instanceof ClientboundExplodePacket packet)) return;
 
-    mc.execute(() -> {
-      if (mc.level == null || module.getFakePlayer() == null || !module.isRunning()) return;
+    mc.execute(
+        () -> {
+          if (mc.level == null || module.getFakePlayer() == null || !module.isRunning()) return;
 
-      Vec3 center = packet.center();
-      double x = center.x();
-      double y = center.y();
-      double z = center.z();
-      float strength = packet.radius();
+          Vec3 center = packet.center();
+          double x = center.x();
+          double y = center.y();
+          double z = center.z();
+          float strength = packet.radius();
 
-      double dx = module.getFakePlayer().getX() - x;
-      double dy = module.getFakePlayer().getY() - y;
-      double dz = module.getFakePlayer().getZ() - z;
-      double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          double dx = module.getFakePlayer().getX() - x;
+          double dy = module.getFakePlayer().getY() - y;
+          double dz = module.getFakePlayer().getZ() - z;
+          double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-      if (distance > 12.0) return;
+          if (distance > 12.0) return;
 
-      double distFactor = 1.0 - distance / 12.0;
-      if (distFactor <= 0) return;
+          double distFactor = 1.0 - distance / 12.0;
+          if (distFactor <= 0) return;
 
-      double exposure = (distFactor * distFactor + distFactor) / 2.0;
-      float damage = (float) ((exposure * exposure + exposure) / 2.0 * 7.0 * strength * 2.0 + 1.0);
+          double exposure = (distFactor * distFactor + distFactor) / 2.0;
+          float damage =
+              (float) ((exposure * exposure + exposure) / 2.0 * 7.0 * strength * 2.0 + 1.0);
 
-      DamageSource source = mc.level.damageSources().explosion(null, null);
-      module.getFakePlayer().applyDamage(damage);
-    });
+          DamageSource source = mc.level.damageSources().explosion(null, null);
+          module.getFakePlayer().applyDamage(damage);
+        });
   }
 }

@@ -49,8 +49,14 @@ public final class Colors extends Module {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
     offerProperties(
-        hue, saturation, lightness, hudRainbow, rainbowSpeed, rainbowHue,
-        espFillAlpha, espOutlineAlpha);
+        hue,
+        saturation,
+        lightness,
+        hudRainbow,
+        rainbowSpeed,
+        rainbowHue,
+        espFillAlpha,
+        espOutlineAlpha);
   }
 
   public static int getClientColorCustomAlpha(int alpha) {

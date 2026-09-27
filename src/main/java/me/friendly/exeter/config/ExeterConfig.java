@@ -161,8 +161,7 @@ public class ExeterConfig {
             }
           }
           if (!"sdl".equals(String.valueOf(marker))) {
-            int migrated =
-                me.friendly.exeter.keybind.Keybind.migrateLegacyGlfwKey(keybind);
+            int migrated = me.friendly.exeter.keybind.Keybind.migrateLegacyGlfwKey(keybind);
             DebugLogger.get()
                 .logSystem("Config", "  migrating legacy keybind " + keybind + " -> " + migrated);
             keybind = migrated;
@@ -210,8 +209,7 @@ public class ExeterConfig {
                         + property.getValue());
 
             if (value instanceof Map) {
-              DebugLogger.get()
-                  .logSystem("Config", "    value is nested map, loading children");
+              DebugLogger.get().logSystem("Config", "    value is nested map, loading children");
               Map<String, Object> childMap = (Map<String, Object>) value;
               for (Property<?> child : property.getChildren()) {
                 String childKey = child.getAliases()[0];
@@ -230,8 +228,7 @@ public class ExeterConfig {
                   applyPropertyValue(child, childValue);
                   DebugLogger.get()
                       .logSystem(
-                          "Config",
-                          "    after load child: " + childKey + " = " + child.getValue());
+                          "Config", "    after load child: " + childKey + " = " + child.getValue());
                 }
               }
             } else {
@@ -439,8 +436,12 @@ public class ExeterConfig {
         DebugLogger.get()
             .logSystem(
                 "Config",
-                "  HUD position: x=" + hudModule.getX() + " y=" + hudModule.getY()
-                    + " corner=" + hudModule.getCorner());
+                "  HUD position: x="
+                    + hudModule.getX()
+                    + " y="
+                    + hudModule.getY()
+                    + " corner="
+                    + hudModule.getCorner());
       }
 
       DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());

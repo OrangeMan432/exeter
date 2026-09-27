@@ -121,11 +121,12 @@ public final class DebugLogger {
     if (!isModuleEnabled(module)) return;
     if (!isLevelEnabled(level)) return;
 
-    String prefix = switch (level) {
-      case INFO -> "";
-      case WARN -> "[WARNING] ";
-      case ERROR -> "[ERROR] ";
-    };
+    String prefix =
+        switch (level) {
+          case INFO -> "";
+          case WARN -> "[WARNING] ";
+          case ERROR -> "[ERROR] ";
+        };
     String timestamp = LocalDateTime.now().format(timeFmt);
     String formatted = "[" + timestamp + "] [" + module + "] " + prefix + message;
 
@@ -133,11 +134,12 @@ public final class DebugLogger {
       writeToFile(formatted);
     }
 
-    LogEntry.Level entryLevel = switch (level) {
-      case INFO -> LogEntry.Level.INFO;
-      case WARN -> LogEntry.Level.WARN;
-      case ERROR -> LogEntry.Level.ERROR;
-    };
+    LogEntry.Level entryLevel =
+        switch (level) {
+          case INFO -> LogEntry.Level.INFO;
+          case WARN -> LogEntry.Level.WARN;
+          case ERROR -> LogEntry.Level.ERROR;
+        };
     Logger.getLogger().dispatch(new LogEntry(formatted, entryLevel));
 
     if (logToChat) {
@@ -145,11 +147,12 @@ public final class DebugLogger {
     }
 
     if (logToNotifications) {
-      String icon = switch (level) {
-        case INFO -> "info";
-        case WARN -> "warning";
-        case ERROR -> "error";
-      };
+      String icon =
+          switch (level) {
+            case INFO -> "info";
+            case WARN -> "warning";
+            case ERROR -> "error";
+          };
       sendToNotifications("[" + module + "] " + prefix + message, icon);
     }
   }
@@ -231,7 +234,8 @@ public final class DebugLogger {
   private void sendToNotifications(String message, String icon) {
     try {
       me.friendly.exeter.util.NotificationManager.push(message, icon);
-    } catch (Exception ignored) {}
+    } catch (Exception ignored) {
+    }
   }
 
   private void sendToNotifications(String message) {

@@ -85,7 +85,8 @@ public final class TabGui extends HudModule {
                       guiTabHandler.mainMenu = true;
                       break;
                     }
-                    guiTabHandler.tabs
+                    guiTabHandler
+                        .tabs
                         .get(guiTabHandler.selectedTab)
                         .getMods()
                         .get(guiTabHandler.selectedItem)
@@ -96,7 +97,8 @@ public final class TabGui extends HudModule {
                 case InputConstants.KEY_RETURN:
                   {
                     if (guiTabHandler.mainMenu || !guiTabHandler.visible) break;
-                    guiTabHandler.tabs
+                    guiTabHandler
+                        .tabs
                         .get(guiTabHandler.selectedTab)
                         .getMods()
                         .get(guiTabHandler.selectedItem)

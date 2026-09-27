@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.properties.Property;
 
 public abstract class HudModule extends ToggleableModule {
 

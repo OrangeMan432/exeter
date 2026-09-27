@@ -32,16 +32,17 @@ public final class NoFall extends ToggleableModule {
     if (minecraft.player.isCreative() || minecraft.player.isSpectator()) return;
     if (minecraft.player.isFallFlying()) return;
     double fall = minecraft.player.fallDistance;
-    if (fall > minDistance.getValue() && !minecraft.player.onGround() && minecraft.player.getDeltaMovement().y < -0.1) {
+    if (fall > minDistance.getValue()
+        && !minecraft.player.onGround()
+        && minecraft.player.getDeltaMovement().y < -0.1) {
       minecraft.player.fallDistance = 0;
       // spoof onGround to prevent server fall damage calculation
       try {
         if (minecraft.getConnection() != null) {
-          minecraft
-              .getConnection()
-              .send(new ServerboundMovePlayerPacket.StatusOnly(true, false));
+          minecraft.getConnection().send(new ServerboundMovePlayerPacket.StatusOnly(true, false));
         }
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     } else if (fall > minDistance.getValue()) {
       // still reset even if not falling fast to avoid accumulated fall
       minecraft.player.fallDistance = 0;

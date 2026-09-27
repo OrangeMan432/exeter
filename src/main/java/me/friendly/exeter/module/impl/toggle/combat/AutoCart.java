@@ -3,9 +3,9 @@ package me.friendly.exeter.module.impl.toggle.combat;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.NotificationManager;
@@ -95,7 +95,8 @@ public class AutoCart extends ToggleableModule {
     }
 
     if (isLighting) {
-      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "lighting phase stage=" + lightStage);
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "lighting phase stage=" + lightStage);
       tickLighting();
       return;
     }
@@ -140,7 +141,8 @@ public class AutoCart extends ToggleableModule {
         NotificationManager.push("Placing rail at " + targetPos.toShortString(), "rail");
         placeBlock(targetPos, railSlot, rotateRail.getValue());
       } else {
-        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no rail in hotbar for " + targetPos);
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "no rail in hotbar for " + targetPos);
       }
       return;
     }
@@ -180,7 +182,10 @@ public class AutoCart extends ToggleableModule {
         swapPending = true;
       } else {
         DebugLogger.get()
-            .log(getLabel(), DebugLogger.Level.WARN, "out of carts at " + cartsPlaced + ", proceeding to detonate");
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "out of carts at " + cartsPlaced + ", proceeding to detonate");
         NotificationManager.push("Out of carts, detonating", "tnt");
         // force finish so placed carts can detonate via mining/lighting
         cartsPlaced = tntCarts.getValue();
@@ -191,7 +196,8 @@ public class AutoCart extends ToggleableModule {
     PlayerUtil.swapBack();
 
     if (instaLight.getValue()) {
-      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "entering instaLight break at " + targetPos);
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "entering instaLight break at " + targetPos);
       NotificationManager.push("AutoCart lighting", "flint_and_steel");
       isLighting = true;
       breakTimer = 0;
@@ -201,7 +207,8 @@ public class AutoCart extends ToggleableModule {
 
     if (!doneMessageSent) {
       DebugLogger.get()
-          .log(getLabel(), DebugLogger.Level.INFO, "done " + cartsPlaced + " carts at " + targetPos);
+          .log(
+              getLabel(), DebugLogger.Level.INFO, "done " + cartsPlaced + " carts at " + targetPos);
       NotificationManager.push("AutoCart done " + cartsPlaced + " carts", "tnt_minecart");
     }
     doneMessageSent = true;
@@ -310,7 +317,8 @@ public class AutoCart extends ToggleableModule {
       swapPending = true;
 
       breakTimer = breakDelay.getValue();
-      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "rail broken, waiting " + breakTimer);
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "rail broken, waiting " + breakTimer);
       lightStage = 1;
     } else if (lightStage == 1) {
       if (breakTimer > 0) {
@@ -320,7 +328,8 @@ public class AutoCart extends ToggleableModule {
 
       int flintSlot = PlayerUtil.findInHotbar(stack -> stack.is(Items.FLINT_AND_STEEL));
       if (flintSlot != -1) {
-        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "lighting at " + targetPos.below());
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.INFO, "lighting at " + targetPos.below());
         PlayerUtil.swapTo(flintSlot);
 
         BlockHitResult hit =
@@ -330,7 +339,8 @@ public class AutoCart extends ToggleableModule {
 
         swapPending = true;
       } else {
-        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no flint and steel for lighting");
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "no flint and steel for lighting");
       }
 
       isLighting = false;

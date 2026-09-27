@@ -15,7 +15,8 @@ public final class WatermarkHud extends HudModule {
   @Override
   public int getWidth() {
     String dirty = Exeter.DIRTY ? " (dirty)" : "";
-    String text = String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
+    String text =
+        String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
     return FontUtil.getStringWidth(text);
   }
 
@@ -27,7 +28,8 @@ public final class WatermarkHud extends HudModule {
   @Override
   public void render(int scaledWidth, int scaledHeight) {
     String dirty = Exeter.DIRTY ? " (dirty)" : "";
-    String text = String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
+    String text =
+        String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
     FontUtil.drawString(text, getX(), getY(), -1);
   }
 }

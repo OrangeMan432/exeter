@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
-import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -41,8 +40,7 @@ public final class PotionsHud extends ListHudModule {
       if (effect == null) continue;
       MobEffect mobEffect = effect.getEffect().value();
       if (mobEffect == null) continue;
-      String name =
-          net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
+      String name = net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
       String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
       String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
       entries.add(new TextEntry(text, 0xFF000000 | mobEffect.getColor()));

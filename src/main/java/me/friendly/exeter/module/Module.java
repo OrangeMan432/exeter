@@ -2,7 +2,6 @@ package me.friendly.exeter.module;
 
 import java.util.*;
 import me.friendly.api.interfaces.Labeled;
-import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.presets.Preset;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.client.Minecraft;

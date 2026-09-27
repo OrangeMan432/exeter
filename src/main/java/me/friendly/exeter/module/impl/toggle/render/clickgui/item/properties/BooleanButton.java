@@ -7,7 +7,6 @@ import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.Module;
-import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
@@ -102,7 +101,9 @@ public class BooleanButton extends Button {
 
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (hasChildren() && mouseButton == InputConstants.MOUSE_BUTTON_RIGHT && this.isHovering(mouseX, mouseY)) {
+    if (hasChildren()
+        && mouseButton == InputConstants.MOUSE_BUTTON_RIGHT
+        && this.isHovering(mouseX, mouseY)) {
       this.childrenOpen = !this.childrenOpen;
       this.animTimer = 0;
       if (this.childrenOpen) {

@@ -5,13 +5,13 @@ import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import me.friendly.exeter.util.StopWatch;
-import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.util.PlayerUtil;
+import me.friendly.exeter.util.StopWatch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
@@ -30,12 +30,12 @@ public class AutoMend extends ToggleableModule {
   private final NumberProperty<Integer> minDamage = new NumberProperty<>(50, 1, 100, "Min Damage");
   private final NumberProperty<Integer> repairTo = new NumberProperty<>(90, 1, 100, "Repair To");
   private final Property<Boolean> takeOff = new Property<>(true, "TakeOff");
-  private final NumberProperty<Integer> takeOffDelay = new NumberProperty<>(0, 0, 10, "TakeOff Delay");
+  private final NumberProperty<Integer> takeOffDelay =
+      new NumberProperty<>(0, 0, 10, "TakeOff Delay");
   private final Property<Boolean> healthCheck = new Property<>(true, "Health Check");
   private final NumberProperty<Integer> minHealth = new NumberProperty<>(16, 0, 36, "Min Health");
   private final Property<Boolean> enemyCheck = new Property<>(true, "Enemy Check");
-  private final Property<Boolean> disableOnComplete =
-      new Property<>(true, "Disable On Complete");
+  private final Property<Boolean> disableOnComplete = new Property<>(true, "Disable On Complete");
 
   private final StopWatch timer = new StopWatch();
   private final StopWatch takeOffTimer = new StopWatch();
@@ -46,19 +46,28 @@ public class AutoMend extends ToggleableModule {
 
   private static final Minecraft mc = Minecraft.getInstance();
 
-  private final Listener<TickEvent> tickListener = new Listener<TickEvent>("automend_tick") {
-    @Override
-    public void call(TickEvent event) {
-      if (event.getStage() != Stage.PRE) return;
-      onTick();
-    }
-  };
+  private final Listener<TickEvent> tickListener =
+      new Listener<TickEvent>("automend_tick") {
+        @Override
+        public void call(TickEvent event) {
+          if (event.getStage() != Stage.PRE) return;
+          onTick();
+        }
+      };
 
   public AutoMend() {
-    super("AutoMend", new String[]{"automend", "auto-mend"}, 0xFF55FF, ModuleType.COMBAT);
+    super("AutoMend", new String[] {"automend", "auto-mend"}, 0xFF55FF, ModuleType.COMBAT);
     setDescription("Uses XP bottles to mend your armor via Mending enchantment.");
-    offerProperties(delay, minDamage, repairTo, takeOff, takeOffDelay, healthCheck, minHealth,
-        enemyCheck, disableOnComplete);
+    offerProperties(
+        delay,
+        minDamage,
+        repairTo,
+        takeOff,
+        takeOffDelay,
+        healthCheck,
+        minHealth,
+        enemyCheck,
+        disableOnComplete);
     listeners.add(tickListener);
   }
 
@@ -70,10 +79,21 @@ public class AutoMend extends ToggleableModule {
     wasFinished = false;
     seeded = false;
     debug("enabled");
-    DebugLogger.get().logFile(getLabel(), "settings: disableOnComplete="
-        + disableOnComplete.getValue() + " minDamage=" + minDamage.getValue() + " repairTo="
-        + repairTo.getValue() + " takeOff=" + takeOff.getValue() + " healthCheck="
-        + healthCheck.getValue() + " enemyCheck=" + enemyCheck.getValue());
+    DebugLogger.get()
+        .logFile(
+            getLabel(),
+            "settings: disableOnComplete="
+                + disableOnComplete.getValue()
+                + " minDamage="
+                + minDamage.getValue()
+                + " repairTo="
+                + repairTo.getValue()
+                + " takeOff="
+                + takeOff.getValue()
+                + " healthCheck="
+                + healthCheck.getValue()
+                + " enemyCheck="
+                + enemyCheck.getValue());
   }
 
   private void onTick() {
@@ -89,8 +109,12 @@ public class AutoMend extends ToggleableModule {
     if (healthCheck.getValue()) {
       float effectiveHealth = mc.player.getHealth() + mc.player.getAbsorptionAmount();
       if (effectiveHealth < minHealth.getValue()) {
-        sendDisableMessage("Low health (" + String.format("%.1f", effectiveHealth)
-            + " < " + minHealth.getValue() + ")");
+        sendDisableMessage(
+            "Low health ("
+                + String.format("%.1f", effectiveHealth)
+                + " < "
+                + minHealth.getValue()
+                + ")");
         setRunning(false);
         return;
       }
@@ -103,7 +127,8 @@ public class AutoMend extends ToggleableModule {
         for (int i = 0; i < nearby.size(); i++) {
           if (i > 0) reason.append(", ");
           Player p = nearby.get(i);
-          reason.append(p.getName().getString())
+          reason
+              .append(p.getName().getString())
               .append(" ")
               .append(String.format("%.1f", p.distanceTo(mc.player)))
               .append("m");
@@ -125,8 +150,10 @@ public class AutoMend extends ToggleableModule {
     if (checkFinished()) {
       if (!wasFinished) {
         wasFinished = true;
-        debug("All armor mended (" + armorSummary()
-            + (disableOnComplete.getValue() ? " - disabling" : " - monitoring"));
+        debug(
+            "All armor mended ("
+                + armorSummary()
+                + (disableOnComplete.getValue() ? " - disabling" : " - monitoring"));
       }
       if (disableOnComplete.getValue()) {
         sendDisableMessage("All armor mended (" + armorSummary() + ")");
@@ -154,8 +181,7 @@ public class AutoMend extends ToggleableModule {
         activeMendFlags &= ~(1 << i);
         continue;
       }
-      if (durabilityPercent <= minDamage.getValue()
-          && (activeMendFlags & (1 << i)) == 0) {
+      if (durabilityPercent <= minDamage.getValue() && (activeMendFlags & (1 << i)) == 0) {
         activeMendFlags |= (1 << i);
         debug(slotFromIndex(i) + " latched at " + durabilityPercent + "%");
       }
@@ -200,7 +226,8 @@ public class AutoMend extends ToggleableModule {
 
       int containerSlot = 5 + i;
       int containerId = mc.player.containerMenu.containerId;
-      mc.gameMode.handleContainerInput(containerId, containerSlot, 0, ContainerInput.QUICK_MOVE, mc.player);
+      mc.gameMode.handleContainerInput(
+          containerId, containerSlot, 0, ContainerInput.QUICK_MOVE, mc.player);
       debug("took off repaired " + slot + " (" + durabilityPercent + "%)");
       return;
     }
@@ -228,8 +255,12 @@ public class AutoMend extends ToggleableModule {
       }
     }
     if (activeMendFlags != 0) {
-      debug("seeded " + Integer.bitCount(activeMendFlags) + " piece(s) below "
-          + repairTo.getValue() + "%");
+      debug(
+          "seeded "
+              + Integer.bitCount(activeMendFlags)
+              + " piece(s) below "
+              + repairTo.getValue()
+              + "%");
     }
   }
 
@@ -288,7 +319,8 @@ public class AutoMend extends ToggleableModule {
 
   private int getDurabilityPercent(ItemStack stack) {
     if (stack.getMaxDamage() == 0) return 100;
-    return (int) ((float) (stack.getMaxDamage() - stack.getDamageValue()) / stack.getMaxDamage() * 100);
+    return (int)
+        ((float) (stack.getMaxDamage() - stack.getDamageValue()) / stack.getMaxDamage() * 100);
   }
 
   private static EquipmentSlot slotFromIndex(int index) {

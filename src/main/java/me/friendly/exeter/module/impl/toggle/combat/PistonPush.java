@@ -6,9 +6,9 @@ import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.NotificationManager;
@@ -104,7 +104,12 @@ public class PistonPush extends ToggleableModule {
         .log(
             getLabel(),
             DebugLogger.Level.INFO,
-            "placing piston " + pos.pistonPos + " -> redstone " + pos.redstonePos + " facing " + pos.facing);
+            "placing piston "
+                + pos.pistonPos
+                + " -> redstone "
+                + pos.redstonePos
+                + " facing "
+                + pos.facing);
     NotificationManager.push(
         "PistonPush " + target.getName().getString() + " " + pos.facing, "piston");
     placePiston(pos, pistonSlot, redstoneSlot);
@@ -120,8 +125,7 @@ public class PistonPush extends ToggleableModule {
       PlayerUtil.setRotation(pistonYaw, 0f);
     }
 
-    DebugLogger.get()
-        .log(getLabel(), DebugLogger.Level.INFO, "placing piston at " + pos.pistonPos);
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "placing piston at " + pos.pistonPos);
     NotificationManager.push("Placing piston at " + pos.pistonPos.toShortString(), "piston");
     PlayerUtil.swapTo(pistonSlot);
     PlayerUtil.useItemOn(pos.pistonPos, Direction.UP);
@@ -135,7 +139,8 @@ public class PistonPush extends ToggleableModule {
 
     DebugLogger.get()
         .log(getLabel(), DebugLogger.Level.INFO, "placing redstone at " + pos.redstonePos);
-    NotificationManager.push("Placing redstone at " + pos.redstonePos.toShortString(), "redstone_block");
+    NotificationManager.push(
+        "Placing redstone at " + pos.redstonePos.toShortString(), "redstone_block");
     PlayerUtil.swapTo(redstoneSlot);
     PlayerUtil.useItemOn(pos.redstonePos, Direction.UP);
     if (swingHand.getValue()) PlayerUtil.swingHand();

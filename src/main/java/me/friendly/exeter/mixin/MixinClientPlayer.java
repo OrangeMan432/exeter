@@ -28,7 +28,7 @@ public class MixinClientPlayer {
   @Inject(method = "shouldStopRunSprinting", at = @At("HEAD"), cancellable = true)
   private void onShouldStopRunSprinting(CallbackInfoReturnable<Boolean> cir) {
     Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("sprint");
-      if (module instanceof Sprint sprint && sprint.isRunning() && sprint.isOmni()) {
+    if (module instanceof Sprint sprint && sprint.isRunning() && sprint.isOmni()) {
       LocalPlayer player = (LocalPlayer) (Object) this;
       if (player.input.hasForwardImpulse()
           || player.input.keyPresses.left()

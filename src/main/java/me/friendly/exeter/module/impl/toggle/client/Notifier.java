@@ -66,8 +66,13 @@ public final class Notifier extends ToggleableModule {
             if (totemNotify.getValue()) {
               String name = player.getName().getString();
               boolean self = player == mc.player;
-              String text = name + " popped " + count + " totem" + (count == 1 ? "" : "s")
-                  + (self ? " (you)" : "");
+              String text =
+                  name
+                      + " popped "
+                      + count
+                      + " totem"
+                      + (count == 1 ? "" : "s")
+                      + (self ? " (you)" : "");
               NotificationManager.push(text, "totem_of_undying");
             }
           } else if (id == 3) {
@@ -163,12 +168,13 @@ public final class Notifier extends ToggleableModule {
     UUID uuid = p.getUUID();
     String name = p.getName().getString();
     ItemStack[] prev = prevArmor.get(uuid);
-    ItemStack[] cur = new ItemStack[] {
-        p.getItemBySlot(EquipmentSlot.HEAD),
-        p.getItemBySlot(EquipmentSlot.CHEST),
-        p.getItemBySlot(EquipmentSlot.LEGS),
-        p.getItemBySlot(EquipmentSlot.FEET)
-    };
+    ItemStack[] cur =
+        new ItemStack[] {
+          p.getItemBySlot(EquipmentSlot.HEAD),
+          p.getItemBySlot(EquipmentSlot.CHEST),
+          p.getItemBySlot(EquipmentSlot.LEGS),
+          p.getItemBySlot(EquipmentSlot.FEET)
+        };
     String[] slotNames = {"Helmet", "Chestplate", "Leggings", "Boots"};
 
     for (int i = 0; i < 4; i++) {
@@ -218,9 +224,11 @@ public final class Notifier extends ToggleableModule {
       double dy = cur.y - prev.y;
       double dz = cur.z - prev.z;
       double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      boolean pearlRecent = System.currentTimeMillis() - lastPearlThrow.getOrDefault(uuid, 0L) < 10000;
+      boolean pearlRecent =
+          System.currentTimeMillis() - lastPearlThrow.getOrDefault(uuid, 0L) < 10000;
       double threshold = pearlRecent ? 3.0 : 8.0;
-      // ignore small movement and respawn at world spawn; threshold 8 blocks (3 if pearl) in one tick ~ teleport
+      // ignore small movement and respawn at world spawn; threshold 8 blocks (3 if pearl) in one
+      // tick ~ teleport
       if (dist > threshold && dist < 10000) {
         String from = String.format("%.1f, %.1f, %.1f", prev.x, prev.y, prev.z);
         String to = String.format("%.1f, %.1f, %.1f", cur.x, cur.y, cur.z);
