@@ -4,11 +4,11 @@ import java.io.*;
 import java.io.File;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.BuildInfo;
+import me.friendly.exeter.account.AccountManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.friend.FriendManager;
-import me.friendly.exeter.gui.screens.accountmanager.AccountManager;
 import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.ModuleManager;
@@ -67,7 +67,7 @@ public final class Exeter {
     this.commandManager = new CommandManager();
     this.exeterConfig = new ExeterConfig();
     this.moduleManager = new ModuleManager();
-    //        this.accountManager = new AccountManager();
+    this.accountManager = new AccountManager();
     this.pluginManager = new PluginManager();
     try {
       this.pluginManager.onLoad();
@@ -129,7 +129,6 @@ public final class Exeter {
     return this.exeterConfig;
   }
 
-  // AccountManager is not working
   public AccountManager getAccountManager() {
     return this.accountManager;
   }

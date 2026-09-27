@@ -70,3 +70,4 @@ the same way that 3arthqu4ke's does (and Future's does).
 - OrangeMan432 — this fork
 - Earthhack (3arthqu4ke) — FakePlayer implementation
 - Lemon — various modules throughout the codebase
+- OpenMyau (60124808866) — account manager this client's Accounts window is ported from
