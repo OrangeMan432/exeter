@@ -22,8 +22,10 @@ the agent writes code. Ask before crossing that boundary.
 
 ## Branches and remotes
 
-- Work on `newbase-orange`, push to the `addon` remote
-  (`https://github.com/OrangeMan432/exeter.git`).
+- Every set of new features gets its own branch, created for a PR (e.g. `packetmine`).
+  Do not pile unrelated work onto shared branches; `newbase-orange` is retired for new work.
+- Push to the `addon` remote (`https://github.com/OrangeMan432/exeter.git`).
+- Push a branch and open its PR with `gh pr create` only when asked.
 - Push to `newbase` only when explicitly asked; prefer PRs for merging into it.
 
 ## Environment
@@ -47,3 +49,19 @@ the agent writes code. Ask before crossing that boundary.
 - Test-only hooks go in `me.friendly.exeter.test` and must be inert unless explicitly
   enabled (e.g. `-Dexeter.smokeTest=true`).
 - If the user corrects you, treat it as a standing constraint until explicitly lifted.
+
+## Logging in new modules
+
+- Every new or ported module must log through `DebugLogger`: enable (with key settings),
+  state transitions, and actions taken with their values (positions, slots, names,
+  distances, durability numbers).
+- Never log per-tick. Log events and transitions only; gate repeated messages on
+  state-change flags.
+- Disable and shutdown reasons log at WARN with the exact values behind the decision,
+  not just the check name.
+- Detail too long for chat goes through `DebugLogger.logFile` (file and console only).
+
+## Formatting
+
+- Run `./gradlew format` (or verify `./gradlew formatCheck`) once, right before
+  committing. Do not run the formatter repeatedly during development.
