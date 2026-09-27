@@ -38,7 +38,7 @@ jobs:
           # Loom wraps the game launch in xvfb-run itself, so no display setup is needed.
           export LIBGL_ALWAYS_SOFTWARE=1
           export JAVA_TOOL_OPTIONS="-Dexeter.smokeTest=true"
-          ./gradlew runClient --args="--demo" > smoke.log 2>&1 &
+          ./gradlew runClient --args="--demo --width 1920 --height 1080" > smoke.log 2>&1 &
           echo $! > client.pid
           # Markers are written directly by the game to run/smoke-markers.log;
           # smoke.log is only reliable after shutdown (Gradle output buffering).
