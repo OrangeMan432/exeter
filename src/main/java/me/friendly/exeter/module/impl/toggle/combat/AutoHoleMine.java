@@ -10,7 +10,6 @@ import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.toggle.world.fakeplayer.util.FakePlayerEntity;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -342,7 +341,6 @@ public final class AutoHoleMine extends ToggleableModule {
     double best = range * range;
     for (Player player : minecraft.level.players()) {
       if (player == minecraft.player || player.isDeadOrDying()) continue;
-      if (player instanceof FakePlayerEntity) continue;
       double dist = player.distanceToSqr(minecraft.player);
       if (dist < best) {
         best = dist;

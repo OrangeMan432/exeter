@@ -336,6 +336,11 @@ public final class PacketMine extends ToggleableModule {
       DebugLogger.get()
           .log(getLabel(), DebugLogger.Level.INFO, "mining " + pos + " (" + lastBlock.time + "ms)");
       instantly = lastBlock.time == 0 && !isAirLike(pos);
+      allow = true;
+      sendDigging(
+          ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
+          lastBlock.pos,
+          lastBlock.facing);
       sendDigging(
           ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, lastBlock.pos, lastBlock.facing);
       if (lastBlock.time == 0) {
