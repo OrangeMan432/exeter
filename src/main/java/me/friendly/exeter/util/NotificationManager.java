@@ -21,12 +21,29 @@ public final class NotificationManager {
       this.count = 1;
     }
 
-    public String text() { return text; }
-    public String iconName() { return iconName; }
-    public long createdAt() { return createdAt; }
-    public long durationMs() { return durationMs; }
-    public int count() { return count; }
-    public String displayText() { return count > 1 ? text + " (x" + count + ")" : text; }
+    public String text() {
+      return text;
+    }
+
+    public String iconName() {
+      return iconName;
+    }
+
+    public long createdAt() {
+      return createdAt;
+    }
+
+    public long durationMs() {
+      return durationMs;
+    }
+
+    public int count() {
+      return count;
+    }
+
+    public String displayText() {
+      return count > 1 ? text + " (x" + count + ")" : text;
+    }
   }
 
   private static final List<Notification> queue = new ArrayList<>();
@@ -42,7 +59,8 @@ public final class NotificationManager {
   public static void push(String text, String iconName, long durationMs) {
     synchronized (queue) {
       for (Notification n : queue) {
-        if (n.text.equals(text) && n.iconName.equals(iconName)
+        if (n.text.equals(text)
+            && n.iconName.equals(iconName)
             && System.currentTimeMillis() - n.createdAt < n.durationMs + 300) {
           n.count++;
           n.createdAt = System.currentTimeMillis();

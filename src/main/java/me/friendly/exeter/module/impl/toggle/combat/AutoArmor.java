@@ -26,7 +26,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.equipment.Equippable;
-import net.minecraft.world.phys.Vec3;
 
 public class AutoArmor extends ToggleableModule {
 
@@ -47,19 +46,29 @@ public class AutoArmor extends ToggleableModule {
 
   private static final Minecraft mc = Minecraft.getInstance();
 
-  private final Listener<TickEvent> tickListener = new Listener<TickEvent>("autoarmor_tick") {
-    @Override
-    public void call(TickEvent event) {
-      if (event.getStage() != Stage.PRE) return;
-      onTick();
-    }
-  };
+  private final Listener<TickEvent> tickListener =
+      new Listener<TickEvent>("autoarmor_tick") {
+        @Override
+        public void call(TickEvent event) {
+          if (event.getStage() != Stage.PRE) return;
+          onTick();
+        }
+      };
 
   public AutoArmor() {
-    super("AutoArmor", new String[]{"autoarmor", "auto-armor"}, 0xFF5500, ModuleType.COMBAT);
+    super("AutoArmor", new String[] {"autoarmor", "auto-armor"}, 0xFF5500, ModuleType.COMBAT);
     setDescription("Automatically equips the best armor from your inventory.");
-    offerProperties(delay, strict, stackArmor, swapSlot, packetSwitch, armorSaver, depletion,
-        pauseWhenSafe, allowMend, repairTo);
+    offerProperties(
+        delay,
+        strict,
+        stackArmor,
+        swapSlot,
+        packetSwitch,
+        armorSaver,
+        depletion,
+        pauseWhenSafe,
+        allowMend,
+        repairTo);
     listeners.add(tickListener);
   }
 
@@ -70,7 +79,8 @@ public class AutoArmor extends ToggleableModule {
 
     if (mc.player.tickCount % delay.getValue() != 0) return;
 
-    if (strict.getValue() && (mc.player.xOld != mc.player.getX() || mc.player.zOld != mc.player.getZ())) {
+    if (strict.getValue()
+        && (mc.player.xOld != mc.player.getX() || mc.player.zOld != mc.player.getZ())) {
       return;
     }
 
@@ -99,7 +109,9 @@ public class AutoArmor extends ToggleableModule {
 
     List<ArmorCandidate> candidates = findArmorCandidates();
 
-    EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+    EquipmentSlot[] slots = {
+      EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+    };
     int[] containerSlots = {5, 6, 7, 8};
 
     for (int s = 0; s < 4; s++) {
@@ -109,8 +121,11 @@ public class AutoArmor extends ToggleableModule {
       ItemStack current = mc.player.getItemBySlot(equipSlot);
       boolean isEmpty = current.isEmpty();
 
-      boolean saveCurrent = !isEmpty && armorSaver.getValue() && current.getCount() == 1
-          && getDurabilityPercent(current) <= depletion.getValue();
+      boolean saveCurrent =
+          !isEmpty
+              && armorSaver.getValue()
+              && current.getCount() == 1
+              && getDurabilityPercent(current) <= depletion.getValue();
 
       boolean shouldReplace = isEmpty || saveCurrent;
 
@@ -128,7 +143,8 @@ public class AutoArmor extends ToggleableModule {
 
       for (ArmorCandidate candidate : candidates) {
         if (candidate.slot() != equipSlot) continue;
-        if (saveCurrent && getDurabilityPercent(candidate.stack()) <= depletion.getValue()) continue;
+        if (saveCurrent && getDurabilityPercent(candidate.stack()) <= depletion.getValue())
+          continue;
 
         if (candidate.stack().getCount() > 1 && stackArmor.getValue()) {
           swapStack(candidate.containerSlot(), containerSlot);
@@ -144,7 +160,8 @@ public class AutoArmor extends ToggleableModule {
     int containerId = mc.player.containerMenu.containerId;
 
     if (mc.player.containerMenu.getSlot(target).getItem().isEmpty()) {
-      mc.gameMode.handleContainerInput(containerId, source, 0, ContainerInput.QUICK_MOVE, mc.player);
+      mc.gameMode.handleContainerInput(
+          containerId, source, 0, ContainerInput.QUICK_MOVE, mc.player);
     } else {
       boolean hasEmpty = false;
       for (int i = 9; i < 45; i++) {
@@ -155,8 +172,10 @@ public class AutoArmor extends ToggleableModule {
       }
 
       if (hasEmpty) {
-        mc.gameMode.handleContainerInput(containerId, target, 0, ContainerInput.QUICK_MOVE, mc.player);
-        mc.gameMode.handleContainerInput(containerId, source, 0, ContainerInput.QUICK_MOVE, mc.player);
+        mc.gameMode.handleContainerInput(
+            containerId, target, 0, ContainerInput.QUICK_MOVE, mc.player);
+        mc.gameMode.handleContainerInput(
+            containerId, source, 0, ContainerInput.QUICK_MOVE, mc.player);
       } else {
         mc.gameMode.handleContainerInput(containerId, source, 0, ContainerInput.PICKUP, mc.player);
         mc.gameMode.handleContainerInput(containerId, target, 0, ContainerInput.PICKUP, mc.player);
@@ -170,11 +189,13 @@ public class AutoArmor extends ToggleableModule {
     int containerId = mc.player.containerMenu.containerId;
 
     if (!mc.player.containerMenu.getSlot(target).getItem().isEmpty()) {
-      mc.gameMode.handleContainerInput(containerId, target, 0, ContainerInput.QUICK_MOVE, mc.player);
+      mc.gameMode.handleContainerInput(
+          containerId, target, 0, ContainerInput.QUICK_MOVE, mc.player);
     }
 
     int hotbarIndex = swapSlot.getValue() - 1;
-    mc.gameMode.handleContainerInput(containerId, source, hotbarIndex, ContainerInput.SWAP, mc.player);
+    mc.gameMode.handleContainerInput(
+        containerId, source, hotbarIndex, ContainerInput.SWAP, mc.player);
 
     int prevSelected = mc.player.getInventory().getSelectedSlot();
     mc.player.getInventory().setSelectedSlot(hotbarIndex);
@@ -183,14 +204,16 @@ public class AutoArmor extends ToggleableModule {
 
     mc.player.getInventory().setSelectedSlot(prevSelected);
 
-    mc.gameMode.handleContainerInput(containerId, source, hotbarIndex, ContainerInput.SWAP, mc.player);
+    mc.gameMode.handleContainerInput(
+        containerId, source, hotbarIndex, ContainerInput.SWAP, mc.player);
 
     sleep = true;
   }
 
   private void quickMoveArmor(int containerSlot) {
     int containerId = mc.player.containerMenu.containerId;
-    mc.gameMode.handleContainerInput(containerId, containerSlot, 0, ContainerInput.QUICK_MOVE, mc.player);
+    mc.gameMode.handleContainerInput(
+        containerId, containerSlot, 0, ContainerInput.QUICK_MOVE, mc.player);
   }
 
   private List<ArmorCandidate> findArmorCandidates() {
@@ -228,11 +251,13 @@ public class AutoArmor extends ToggleableModule {
 
   private int getDefense(ItemStack stack) {
     int[] defense = {0};
-    stack.forEachModifier(EquipmentSlotGroup.ANY, (attribute, modifier, display) -> {
-      if (attribute.is(Attributes.ARMOR)) {
-        defense[0] += (int) modifier.amount();
-      }
-    });
+    stack.forEachModifier(
+        EquipmentSlotGroup.ANY,
+        (attribute, modifier, display) -> {
+          if (attribute.is(Attributes.ARMOR)) {
+            defense[0] += (int) modifier.amount();
+          }
+        });
     return defense[0];
   }
 
@@ -264,7 +289,8 @@ public class AutoArmor extends ToggleableModule {
 
   private int getDurabilityPercent(ItemStack stack) {
     if (stack.getMaxDamage() == 0) return 100;
-    return (int) ((float) (stack.getMaxDamage() - stack.getDamageValue()) / stack.getMaxDamage() * 100);
+    return (int)
+        ((float) (stack.getMaxDamage() - stack.getDamageValue()) / stack.getMaxDamage() * 100);
   }
 
   private boolean hasEmptyInventorySlot() {
@@ -300,5 +326,6 @@ public class AutoArmor extends ToggleableModule {
     return rightClickTimer;
   }
 
-  private record ArmorCandidate(ItemStack stack, EquipmentSlot slot, int containerSlot, int score) {}
+  private record ArmorCandidate(
+      ItemStack stack, EquipmentSlot slot, int containerSlot, int score) {}
 }

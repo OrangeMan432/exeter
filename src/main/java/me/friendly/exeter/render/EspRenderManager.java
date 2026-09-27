@@ -8,7 +8,6 @@ import me.friendly.exeter.events.WorldRenderEvent;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.AABB;
 
 public final class EspRenderManager {
@@ -49,10 +48,15 @@ public final class EspRenderManager {
   }
 
   public void addBoxEsp(
-      AABB box, float lineWidth, boolean filled, boolean outlined,
-      int overrideFillAlpha, int overrideOutlineAlpha) {
+      AABB box,
+      float lineWidth,
+      boolean filled,
+      boolean outlined,
+      int overrideFillAlpha,
+      int overrideOutlineAlpha) {
     int fillAlpha = overrideFillAlpha >= 0 ? overrideFillAlpha : Colors.getEspFillAlpha();
-    int outlineAlpha = overrideOutlineAlpha >= 0 ? overrideOutlineAlpha : Colors.getEspOutlineAlpha();
+    int outlineAlpha =
+        overrideOutlineAlpha >= 0 ? overrideOutlineAlpha : Colors.getEspOutlineAlpha();
 
     int fillColor = Colors.getClientColorCustomAlpha(fillAlpha);
     int outlineColor = Colors.getClientColorCustomAlpha(outlineAlpha);
@@ -107,9 +111,5 @@ public final class EspRenderManager {
   }
 
   private record EspEntry(
-      AABB box,
-      int fillColor,
-      int outlineColor,
-      float lineWidth,
-      EntryMode mode) {}
+      AABB box, int fillColor, int outlineColor, float lineWidth, EntryMode mode) {}
 }

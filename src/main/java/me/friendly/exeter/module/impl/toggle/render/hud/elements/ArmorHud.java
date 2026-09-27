@@ -84,8 +84,7 @@ public final class ArmorHud extends HudModule {
         ItemStack stack = minecraft.player.getItemBySlot(slot);
         if (stack == null || stack.isEmpty()) continue;
         if (showDurability.getValue() && stack.isDamageableItem()) {
-          FontUtil.drawString(
-              getDurabilityText(stack), textX, y + 5, getDurabilityColor(stack));
+          FontUtil.drawString(getDurabilityText(stack), textX, y + 5, getDurabilityColor(stack));
         }
         y += 16;
       }

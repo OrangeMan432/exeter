@@ -102,7 +102,8 @@ public final class NotificationHud extends HudModule {
         try {
           RenderMethods.guiGraphics.item(stack, x, y);
           return;
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
       }
     }
     // try GMod silk icon16 (eye, exclamation, cross, tick, error, information, clock, arrow_undo)
@@ -113,26 +114,33 @@ public final class NotificationHud extends HudModule {
         // check resource exists
         var res = Minecraft.getInstance().getResourceManager().getResource(id);
         if (res.isPresent()) {
-          RenderMethods.guiGraphics.blit(id, x, y, x + ICON_SIZE, y + ICON_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
+          RenderMethods.guiGraphics.blit(
+              id, x, y, x + ICON_SIZE, y + ICON_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
           return;
         }
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
     // fallback: colored square with icon initial
     int col = 0xFF3B82F6;
     if (iconName != null) {
       String lower = iconName.toLowerCase();
-      if (lower.contains("error") || lower.contains("cross") || lower.contains("cancel")) col = 0xFFEF4444;
-      else if (lower.contains("success") || lower.contains("tick") || lower.contains("accept")) col = 0xFF22C55E;
-      else if (lower.contains("warn") || lower.contains("exclam") || lower.contains("caution")) col = 0xFFF59E0B;
+      if (lower.contains("error") || lower.contains("cross") || lower.contains("cancel"))
+        col = 0xFFEF4444;
+      else if (lower.contains("success") || lower.contains("tick") || lower.contains("accept"))
+        col = 0xFF22C55E;
+      else if (lower.contains("warn") || lower.contains("exclam") || lower.contains("caution"))
+        col = 0xFFF59E0B;
       else if (lower.contains("undo")) col = 0xFF3B82F6;
       else if (lower.contains("clean")) col = 0xFF06B6D4;
       else if (lower.contains("hint")) col = 0xFFA855F7;
     }
     if (RenderMethods.guiGraphics != null) {
       RenderMethods.guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, col | 0xFF000000);
-      RenderMethods.guiGraphics.fill(x + 1, y + 1, x + ICON_SIZE - 1, y + ICON_SIZE - 1, 0xFF1A1A1A);
-      String letter = (iconName != null && !iconName.isEmpty()) ? iconName.substring(0, 1).toUpperCase() : "!";
+      RenderMethods.guiGraphics.fill(
+          x + 1, y + 1, x + ICON_SIZE - 1, y + ICON_SIZE - 1, 0xFF1A1A1A);
+      String letter =
+          (iconName != null && !iconName.isEmpty()) ? iconName.substring(0, 1).toUpperCase() : "!";
       int tw = FontUtil.getStringWidth(letter);
       FontUtil.drawString(letter, x + (ICON_SIZE - tw) / 2, y + 4, 0xFFFFFFFF);
     }
@@ -171,8 +179,9 @@ public final class NotificationHud extends HudModule {
   public int getWidth() {
     List<NotificationManager.Notification> active = NotificationManager.getActive();
     // show dummy in editor when empty
-    boolean inEditor = Minecraft.getInstance().gui != null
-        && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
+    boolean inEditor =
+        Minecraft.getInstance().gui != null
+            && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
     if (active.isEmpty() && inEditor) {
       String dummy = "Undone Prop";
       return FontUtil.getStringWidth(dummy) + NOTIF_PADDING * 2 + ICON_SIZE + 4;
@@ -188,8 +197,9 @@ public final class NotificationHud extends HudModule {
   @Override
   public int getHeight() {
     List<NotificationManager.Notification> active = NotificationManager.getActive();
-    boolean inEditor = Minecraft.getInstance().gui != null
-        && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
+    boolean inEditor =
+        Minecraft.getInstance().gui != null
+            && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
     if (active.isEmpty() && inEditor) return NOTIF_HEIGHT;
     if (active.isEmpty()) return 0;
     return active.size() * (NOTIF_HEIGHT + 2) - 2;
@@ -198,8 +208,9 @@ public final class NotificationHud extends HudModule {
   @Override
   public void render(int scaledWidth, int scaledHeight) {
     List<NotificationManager.Notification> active = NotificationManager.getActive();
-    boolean inEditor = Minecraft.getInstance().gui != null
-        && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
+    boolean inEditor =
+        Minecraft.getInstance().gui != null
+            && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
 
     if (active.isEmpty() && inEditor) {
       // dummy preview

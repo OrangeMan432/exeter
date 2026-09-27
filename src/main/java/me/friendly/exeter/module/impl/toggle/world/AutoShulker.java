@@ -16,7 +16,6 @@ import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
-
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -153,7 +152,10 @@ public class AutoShulker extends ToggleableModule {
           if (slotIndex > 8 && !swapped) {
             if (!inventory.getValue()) {
               DebugLogger.get()
-                  .log(getLabel(), DebugLogger.Level.WARN, "shulker in inventory but inventory pull disabled");
+                  .log(
+                      getLabel(),
+                      DebugLogger.Level.WARN,
+                      "shulker in inventory but inventory pull disabled");
               return;
             }
 
@@ -170,10 +172,12 @@ public class AutoShulker extends ToggleableModule {
           }
 
           if (!isAir(blockAim.pos) && !canReplace(blockAim.pos)) {
-            DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "opening shulker at " + blockAim.pos);
+            DebugLogger.get()
+                .log(getLabel(), DebugLogger.Level.INFO, "opening shulker at " + blockAim.pos);
             openBlock();
           } else {
-            DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "placing shulker at " + blockAim.pos);
+            DebugLogger.get()
+                .log(getLabel(), DebugLogger.Level.INFO, "placing shulker at " + blockAim.pos);
             switchTo(slotIndex, this::placeBlock);
             if (tickDelay.getValue() == 0) {
               openBlock();
@@ -337,7 +341,10 @@ public class AutoShulker extends ToggleableModule {
 
     NotificationManager.push("Placed shulker at " + blockAim.pos.toShortString(), "shulker_box");
     DebugLogger.get()
-        .log(getLabel(), DebugLogger.Level.INFO, "placed shulker at " + blockAim.pos + " facing " + blockAim.facing);
+        .log(
+            getLabel(),
+            DebugLogger.Level.INFO,
+            "placed shulker at " + blockAim.pos + " facing " + blockAim.facing);
     tick = 0;
   }
 

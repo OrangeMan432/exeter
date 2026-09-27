@@ -10,17 +10,15 @@ import java.util.function.Consumer;
 import me.friendly.exeter.properties.Property;
 
 /**
- * Shared building blocks for modules that configure selections through a {@link
- * SearchSelectPopup}. Replaces the copy-pasted open/load/save popup code previously duplicated
- * across BlockEsp, EntityEsp and Debug.
+ * Shared building blocks for modules that configure selections through a {@link SearchSelectPopup}.
+ * Replaces the copy-pasted open/load/save popup code previously duplicated across BlockEsp,
+ * EntityEsp and Debug.
  */
 public final class SelectionPopup {
 
   private SelectionPopup() {}
 
-  /**
-   * A popup row bound to membership of {@code selected}. Displayed as {@code name [id]}.
-   */
+  /** A popup row bound to membership of {@code selected}. Displayed as {@code name [id]}. */
   public static SearchSelectPopup.ToggleItem idItem(
       String id, String displayName, Set<String> selected) {
     return toggle(
@@ -60,8 +58,7 @@ public final class SelectionPopup {
    * Opens the popup. {@code onDone} runs when Done is clicked (use it to persist and apply side
    * effects); the popup is closed afterwards in both cases.
    */
-  public static void open(
-      String title, List<SearchSelectPopup.ToggleItem> items, Runnable onDone) {
+  public static void open(String title, List<SearchSelectPopup.ToggleItem> items, Runnable onDone) {
     ClickGui.getClickGui()
         .openPopup(
             new SearchSelectPopup(

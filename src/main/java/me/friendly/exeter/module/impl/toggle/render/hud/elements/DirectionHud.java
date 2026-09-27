@@ -24,7 +24,8 @@ public final class DirectionHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    String text = String.format("\u00a77%s", PlayerHelper.getFacingWithProperCapitals().toUpperCase());
+    String text =
+        String.format("\u00a77%s", PlayerHelper.getFacingWithProperCapitals().toUpperCase());
     FontUtil.drawString(text, getX(), getY(), -1);
   }
 }

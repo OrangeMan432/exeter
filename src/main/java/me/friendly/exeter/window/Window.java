@@ -32,23 +32,24 @@ public abstract class Window {
       y = mouseY - dragOffsetY;
     }
 
-    int headerColor = focused
-        ? Colors.getClientColorCustomAlpha(220)
-        : Colors.getClientColorCustomAlpha(150);
-    int headerColorEnd = focused
-        ? Colors.getDarkerClientColorCustomAlpha(220)
-        : Colors.getDarkerClientColorCustomAlpha(150);
+    int headerColor =
+        focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
+    int headerColorEnd =
+        focused
+            ? Colors.getDarkerClientColorCustomAlpha(220)
+            : Colors.getDarkerClientColorCustomAlpha(150);
 
-    RenderMethods.drawGradientRect(
-        x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
+    RenderMethods.drawGradientRect(x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
 
     FontUtil.drawString(title, x + 4, y + 4, 0xFFFFFFFF);
 
     int closeX = x + width - CLOSE_BUTTON_SIZE - 3;
     int closeY = y + 3;
     boolean closeHovered =
-        mouseX >= closeX && mouseX <= closeX + CLOSE_BUTTON_SIZE
-            && mouseY >= closeY && mouseY <= closeY + CLOSE_BUTTON_SIZE;
+        mouseX >= closeX
+            && mouseX <= closeX + CLOSE_BUTTON_SIZE
+            && mouseY >= closeY
+            && mouseY <= closeY + CLOSE_BUTTON_SIZE;
     int closeColor = closeHovered ? 0xFFFF5555 : 0xFFCCCCCC;
     FontUtil.drawString("X", closeX + 2, closeY + 1, closeColor);
 
@@ -130,8 +131,10 @@ public abstract class Window {
   private boolean isCloseHovered(double mouseX, double mouseY) {
     int closeX = x + width - CLOSE_BUTTON_SIZE - 3;
     int closeY = y + 3;
-    return mouseX >= closeX && mouseX <= closeX + CLOSE_BUTTON_SIZE
-        && mouseY >= closeY && mouseY <= closeY + CLOSE_BUTTON_SIZE;
+    return mouseX >= closeX
+        && mouseX <= closeX + CLOSE_BUTTON_SIZE
+        && mouseY >= closeY
+        && mouseY <= closeY + CLOSE_BUTTON_SIZE;
   }
 
   public void setFocused(boolean focused) {

@@ -9,7 +9,6 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-
 import me.friendly.exeter.module.impl.toggle.render.tabgui.item.GuiItem;
 import me.friendly.exeter.module.impl.toggle.render.tabgui.item.GuiTab;
 import net.minecraft.client.Minecraft;

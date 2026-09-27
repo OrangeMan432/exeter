@@ -44,7 +44,8 @@ public class FakePlayerModule extends ToggleableModule {
     super("FakePlayer", new String[] {"fakeplayer", "fp", "bot"}, 0xFFAA00, ModuleType.WORLD);
     setDescription("Spawns a fake player for testing combat and movement.");
 
-    offerProperties(record, playRecording, loop, gapple, gappleDelay, damage, copyArmor, respawnDelay);
+    offerProperties(
+        record, playRecording, loop, gapple, gappleDelay, damage, copyArmor, respawnDelay);
 
     listeners.add(new ListenerTick(this));
     listeners.add(new ListenerAttack(this));
@@ -99,13 +100,18 @@ public class FakePlayerModule extends ToggleableModule {
     fakePlayer.setHealth(mc.player.getHealth());
     fakePlayer.setAbsorptionAmount(mc.player.getAbsorptionAmount());
 
-    fakePlayer.setItemSlot(EquipmentSlot.MAINHAND, mc.player.getItemBySlot(EquipmentSlot.MAINHAND).copy());
+    fakePlayer.setItemSlot(
+        EquipmentSlot.MAINHAND, mc.player.getItemBySlot(EquipmentSlot.MAINHAND).copy());
 
     if (copyArmor.getValue()) {
-      fakePlayer.setItemSlot(EquipmentSlot.HEAD, mc.player.getItemBySlot(EquipmentSlot.HEAD).copy());
-      fakePlayer.setItemSlot(EquipmentSlot.CHEST, mc.player.getItemBySlot(EquipmentSlot.CHEST).copy());
-      fakePlayer.setItemSlot(EquipmentSlot.LEGS, mc.player.getItemBySlot(EquipmentSlot.LEGS).copy());
-      fakePlayer.setItemSlot(EquipmentSlot.FEET, mc.player.getItemBySlot(EquipmentSlot.FEET).copy());
+      fakePlayer.setItemSlot(
+          EquipmentSlot.HEAD, mc.player.getItemBySlot(EquipmentSlot.HEAD).copy());
+      fakePlayer.setItemSlot(
+          EquipmentSlot.CHEST, mc.player.getItemBySlot(EquipmentSlot.CHEST).copy());
+      fakePlayer.setItemSlot(
+          EquipmentSlot.LEGS, mc.player.getItemBySlot(EquipmentSlot.LEGS).copy());
+      fakePlayer.setItemSlot(
+          EquipmentSlot.FEET, mc.player.getItemBySlot(EquipmentSlot.FEET).copy());
     }
 
     ItemStack playerOffhand = mc.player.getItemBySlot(EquipmentSlot.OFFHAND);
@@ -121,8 +127,7 @@ public class FakePlayerModule extends ToggleableModule {
     timer.reset();
     pendingRespawn = false;
 
-    mc.player.sendSystemMessage(
-        Component.literal("[FakePlayer] Spawned fake player."));
+    mc.player.sendSystemMessage(Component.literal("[FakePlayer] Spawned fake player."));
   }
 
   public void checkRespawn() {

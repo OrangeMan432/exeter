@@ -1,4 +1,6 @@
-package me.friendly.exeter.gui.screens.accountmanager; /// *
+package me.friendly.exeter.gui.screens.accountmanager;
+
+/// *
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

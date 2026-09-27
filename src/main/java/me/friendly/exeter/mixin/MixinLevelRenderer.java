@@ -12,12 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer {
 
-  @Inject(
-      method = "collectPerFrameRenderThreadGizmos",
-      at = @At("RETURN"))
+  @Inject(method = "collectPerFrameRenderThreadGizmos", at = @At("RETURN"))
   private void onCollectGizmos(CallbackInfoReturnable<Gizmos.TemporaryCollection> cir) {
-    Exeter.getInstance()
-        .getEventManager()
-        .dispatch(new WorldRenderEvent(null, 0));
+    Exeter.getInstance().getEventManager().dispatch(new WorldRenderEvent(null, 0));
   }
 }

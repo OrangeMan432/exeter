@@ -2,19 +2,18 @@ package me.friendly.exeter.module.impl.toggle.world.fakeplayer.util;
 
 import com.mojang.authlib.GameProfile;
 import java.util.function.BooleanSupplier;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.events.PacketEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.events.PacketEvent;
 
 public class FakePlayerEntity extends RemotePlayer {
   private BooleanSupplier damageSupplier = () -> true;
@@ -25,7 +24,8 @@ public class FakePlayerEntity extends RemotePlayer {
   }
 
   @Override
-  protected void actuallyHurt(net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
+  protected void actuallyHurt(
+      net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
     if (!damageSupplier.getAsBoolean()) return;
 
     float healthBefore = this.getHealth();
@@ -50,9 +50,7 @@ public class FakePlayerEntity extends RemotePlayer {
     Minecraft mc = Minecraft.getInstance();
 
     mc.level.addAlwaysVisibleParticle(
-        ParticleTypes.TOTEM_OF_UNDYING,
-        this.getX(), this.getY(), this.getZ(),
-        0, 0, 0);
+        ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
     for (int i = 0; i < 30; i++) {
       mc.level.addAlwaysVisibleParticle(
           ParticleTypes.TOTEM_OF_UNDYING,
@@ -65,9 +63,14 @@ public class FakePlayerEntity extends RemotePlayer {
     }
 
     mc.level.playLocalSound(
-        this.getX(), this.getY(), this.getZ(),
+        this.getX(),
+        this.getY(),
+        this.getZ(),
         SoundEvents.TOTEM_USE,
-        SoundSource.PLAYERS, 1.0F, 1.0F, false);
+        SoundSource.PLAYERS,
+        1.0F,
+        1.0F,
+        false);
 
     ClientboundEntityEventPacket packet = new ClientboundEntityEventPacket(this, (byte) 35);
     Exeter.getInstance().getEventManager().dispatch(new PacketEvent(packet));

@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.api.minecraft.render.RenderMethods;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import com.mojang.blaze3d.platform.InputConstants;
 
 public final class ClickGui extends Screen {
   private static ClickGui clickGui;
@@ -57,7 +57,8 @@ public final class ClickGui extends Screen {
     this.panels.clear();
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
     me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment alignment =
-        guiModule != null ? guiModule.panelAlignment.getValue()
+        guiModule != null
+            ? guiModule.panelAlignment.getValue()
             : me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.CENTERED;
 
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
@@ -67,7 +68,8 @@ public final class ClickGui extends Screen {
 
     int x;
     int y;
-    if (alignment == me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.TOP_LEFT) {
+    if (alignment
+        == me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.TOP_LEFT) {
       x = 4 - 90;
       y = 4;
     } else {
@@ -171,7 +173,8 @@ public final class ClickGui extends Screen {
       }
 
       if (hoveredDesc != null) {
-        if (descMode == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
+        if (descMode
+            == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
           Panel lastPanel = this.panels.isEmpty() ? null : this.panels.get(this.panels.size() - 1);
           int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
           int descY = lastPanel != null ? lastPanel.getY() : 4;
@@ -183,12 +186,17 @@ public final class ClickGui extends Screen {
           int descH = headerH - 6 + padding + 8 + padding;
 
           RenderMethods.drawGradientRect(
-              descX, descY - 1.5f, descX + descW, descY + headerH - 6,
-              Colors.getClientColorCustomAlpha(77), Colors.getClientColorCustomAlpha(77));
+              descX,
+              descY - 1.5f,
+              descX + descW,
+              descY + headerH - 6,
+              Colors.getClientColorCustomAlpha(77),
+              Colors.getClientColorCustomAlpha(77));
           RenderMethods.drawRect(
               descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
           FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
-          FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
+          FontUtil.drawString(
+              hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
         } else {
           int textWidth = FontUtil.getStringWidth(hoveredDesc);
           int centerX = this.width / 2 - textWidth / 2;
@@ -316,8 +324,6 @@ public final class ClickGui extends Screen {
     }
     return super.keyPressed(event);
   }
-
-
 
   @Override
   public boolean isPauseScreen() {

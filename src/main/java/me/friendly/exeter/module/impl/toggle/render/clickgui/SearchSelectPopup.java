@@ -1,12 +1,11 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
-import com.mojang.blaze3d.platform.InputConstants;
-
 
 public class SearchSelectPopup {
 
@@ -81,11 +80,7 @@ public class SearchSelectPopup {
         Colors.getClientColorCustomAlpha(77));
 
     RenderMethods.drawRect(
-        popupX,
-        popupY + HEADER_H - 6,
-        popupX + popupW,
-        popupY + popupH,
-        0x77000000);
+        popupX, popupY + HEADER_H - 6, popupX + popupW, popupY + popupH, 0x77000000);
 
     FontUtil.drawString(title, popupX + 6, popupY + 1.5f, 0xFFFFFFFF);
 
@@ -114,8 +109,11 @@ public class SearchSelectPopup {
       if (cursorVisible) {
         int cursorX = popupX + 8 + FontUtil.getStringWidth(search);
         RenderMethods.drawRect(
-            cursorX, popupY + SEARCH_Y_OFFSET + 2, cursorX + 1,
-            popupY + SEARCH_Y_OFFSET + SEARCH_H - 1, 0xFFFFFFFF);
+            cursorX,
+            popupY + SEARCH_Y_OFFSET + 2,
+            cursorX + 1,
+            popupY + SEARCH_Y_OFFSET + SEARCH_H - 1,
+            0xFFFFFFFF);
       }
     }
 
@@ -125,7 +123,8 @@ public class SearchSelectPopup {
     scroll = Math.max(0, Math.min(scroll, maxScroll));
 
     boolean hasScrollbar = maxScroll > 0;
-    int contentRight = hasScrollbar ? popupX + popupW - SCROLLBAR_W - SCROLLBAR_PAD - 4 : popupX + popupW - 4;
+    int contentRight =
+        hasScrollbar ? popupX + popupW - SCROLLBAR_W - SCROLLBAR_PAD - 4 : popupX + popupW - 4;
 
     if (hasScrollbar && draggingScrollbar) {
       int trackH = listH;
@@ -150,10 +149,7 @@ public class SearchSelectPopup {
       }
 
       boolean hover =
-          mouseX >= popupX + 4
-              && mouseX <= contentRight
-              && mouseY >= iy
-              && mouseY <= iy + itemH;
+          mouseX >= popupX + 4 && mouseX <= contentRight && mouseY >= iy && mouseY <= iy + itemH;
 
       if (hover) {
         RenderMethods.drawRect(popupX + 4, drawTop, contentRight, drawBottom, 0xFF333333);
@@ -207,10 +203,7 @@ public class SearchSelectPopup {
     int doneX = popupX + popupW - 59;
     int doneY = popupY + popupH - BUTTON_AREA_H;
     boolean doneHover =
-        mouseX >= doneX
-            && mouseX <= doneX + 55
-            && mouseY >= doneY
-            && mouseY <= doneY + 14;
+        mouseX >= doneX && mouseX <= doneX + 55 && mouseY >= doneY && mouseY <= doneY + 14;
     int doneColor =
         doneHover ? Colors.getClientColorCustomAlpha(180) : Colors.getClientColorCustomAlpha(120);
     RenderMethods.drawRect(doneX, doneY, doneX + 55, doneY + 14, doneColor);
@@ -258,10 +251,7 @@ public class SearchSelectPopup {
 
       int doneX = popupX + popupW - 59;
       int doneY = popupY + popupH - BUTTON_AREA_H;
-      if (mouseX >= doneX
-          && mouseX <= doneX + 55
-          && mouseY >= doneY
-          && mouseY <= doneY + 14) {
+      if (mouseX >= doneX && mouseX <= doneX + 55 && mouseY >= doneY && mouseY <= doneY + 14) {
         onDone.run();
         return true;
       }
@@ -316,10 +306,7 @@ public class SearchSelectPopup {
     if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT) {
       int doneX = popupX + popupW - 59;
       int doneY = popupY + popupH - BUTTON_AREA_H;
-      if (mouseX >= doneX
-          && mouseX <= doneX + 55
-          && mouseY >= doneY
-          && mouseY <= doneY + 14) {
+      if (mouseX >= doneX && mouseX <= doneX + 55 && mouseY >= doneY && mouseY <= doneY + 14) {
         onCancel.run();
         return true;
       }

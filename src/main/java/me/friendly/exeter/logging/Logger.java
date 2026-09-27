@@ -38,7 +38,8 @@ public final class Logger {
     for (Consumer<LogEntry> listener : listeners) {
       try {
         listener.accept(entry);
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
   }
 

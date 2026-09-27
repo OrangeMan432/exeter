@@ -72,7 +72,8 @@ public class AutoItemDupe extends ToggleableModule {
     recipeDisplayId = findWoodenButtonRecipe();
     if (recipeDisplayId == -1) {
       DebugLogger.get()
-          .log(getLabel(), DebugLogger.Level.WARN, "recipe not found on enable, will retry on tick");
+          .log(
+              getLabel(), DebugLogger.Level.WARN, "recipe not found on enable, will retry on tick");
     } else {
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "recipe found " + recipeDisplayId);
     }
@@ -114,18 +115,22 @@ public class AutoItemDupe extends ToggleableModule {
               minecraft.player.getInventory().setSelectedSlot(throwSlot);
               minecraft
                   .getConnection()
-                  .send(new net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket(throwSlot));
+                  .send(
+                      new net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket(
+                          throwSlot));
               // wait a tick for server to ack slot change before dropping
               phaseStart = System.currentTimeMillis();
               return;
             }
-            // use ServerboundPlayerActionPacket like pressing Q - more reliable than container click for Via
+            // use ServerboundPlayerActionPacket like pressing Q - more reliable than container
+            // click for Via
             // DROP_ALL_ITEMS (entire stack) matches THROW button 1
             minecraft
                 .getConnection()
                 .send(
                     new net.minecraft.network.protocol.game.ServerboundPlayerActionPacket(
-                        net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS,
+                        net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action
+                            .DROP_ALL_ITEMS,
                         minecraft.player.blockPosition(),
                         net.minecraft.core.Direction.DOWN));
           } else {
@@ -133,7 +138,8 @@ public class AutoItemDupe extends ToggleableModule {
                 throwSlot + 36, 1, ContainerInput.THROW, minecraft.player);
           }
         } catch (Exception e) {
-          DebugLogger.get().log(getLabel(), DebugLogger.Level.ERROR, "throw failed " + e.getMessage());
+          DebugLogger.get()
+              .log(getLabel(), DebugLogger.Level.ERROR, "throw failed " + e.getMessage());
           NotificationManager.push("Dupe throw failed", "error");
           phase = Phase.NONE;
           return;
@@ -158,7 +164,8 @@ public class AutoItemDupe extends ToggleableModule {
             phase = Phase.NONE;
             return;
           }
-          DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "found recipe on retry " + recipeDisplayId);
+          DebugLogger.get()
+              .log(getLabel(), DebugLogger.Level.INFO, "found recipe on retry " + recipeDisplayId);
         }
         DebugLogger.get()
             .log(getLabel(), DebugLogger.Level.INFO, "sending recipe " + recipeDisplayId);
@@ -235,7 +242,8 @@ public class AutoItemDupe extends ToggleableModule {
           try {
             var disp = entry.display();
             // if display is accessible, check result would be button; fallback to ingredient check
-          } catch (Exception ignored) {}
+          } catch (Exception ignored) {
+          }
           return entry.id().index();
         }
       }

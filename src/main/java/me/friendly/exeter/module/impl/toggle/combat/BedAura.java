@@ -55,8 +55,19 @@ public class BedAura extends ToggleableModule {
     setDescription("Automatically places and breaks beds for combat.");
 
     this.offerProperties(
-        rotate, autoSwitch, switchBack, placeRange, targetRange, placeDelay, breakDelay, swingHand,
-        anarchyServer, showEsp, useCustomAlpha, fillAlpha, outlineAlpha);
+        rotate,
+        autoSwitch,
+        switchBack,
+        placeRange,
+        targetRange,
+        placeDelay,
+        breakDelay,
+        swingHand,
+        anarchyServer,
+        showEsp,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha);
 
     this.listeners.add(
         new Listener<TickEvent>("bed_aura_tick") {
@@ -163,8 +174,8 @@ public class BedAura extends ToggleableModule {
     if (showEsp.getValue()) {
       int overrideFill = useCustomAlpha.getValue() ? Math.round(fillAlpha.getValue()) : -1;
       int overrideOutline = useCustomAlpha.getValue() ? Math.round(outlineAlpha.getValue()) : -1;
-      EspRenderManager.getInstance().addBoxEsp(
-          new AABB(pos), 3.0f, true, true, overrideFill, overrideOutline);
+      EspRenderManager.getInstance()
+          .addBoxEsp(new AABB(pos), 3.0f, true, true, overrideFill, overrideOutline);
     }
   }
 

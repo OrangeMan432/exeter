@@ -44,7 +44,16 @@ public final class EntityEsp extends ToggleableModule {
     super("EntityEsp", new String[] {"entityesp", "entity-esp"}, 0x00FFFF, ModuleType.RENDER);
     setDescription("Highlights specific entities in the world.");
     this.selectEntities = new PopupProperty("Select Entities", this::openEntityPopup);
-    offerProperties(range, lineWidth, renderMode, playersAlways, useCustomAlpha, fillAlpha, outlineAlpha, entitySelections.getProperty(), selectEntities);
+    offerProperties(
+        range,
+        lineWidth,
+        renderMode,
+        playersAlways,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha,
+        entitySelections.getProperty(),
+        selectEntities);
 
     this.listeners.add(
         new Listener<WorldRenderEvent>("entity_esp_render") {
@@ -66,16 +75,23 @@ public final class EntityEsp extends ToggleableModule {
 
     net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.stream()
         .filter(type -> type != EntityTypes.PLAYER)
-        .sorted((a, b) -> {
-          String aName = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(a).getPath();
-          String bName = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(b).getPath();
-          return aName.compareTo(bName);
-        })
-        .forEach(entityType -> {
-          String id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
-          String displayName = entityType.getDescription().getString();
-          items.add(SelectionPopup.idItem(id, displayName, entitySelections.getSelected()));
-        });
+        .sorted(
+            (a, b) -> {
+              String aName =
+                  net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(a).getPath();
+              String bName =
+                  net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(b).getPath();
+              return aName.compareTo(bName);
+            })
+        .forEach(
+            entityType -> {
+              String id =
+                  net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
+                      .getKey(entityType)
+                      .toString();
+              String displayName = entityType.getDescription().getString();
+              items.add(SelectionPopup.idItem(id, displayName, entitySelections.getSelected()));
+            });
 
     SelectionPopup.open("Select Entities", items, () -> entitySelections.save());
   }
@@ -85,11 +101,19 @@ public final class EntityEsp extends ToggleableModule {
 
     double rangeSq = range.getValue() * range.getValue();
     float lw = lineWidth.getValue();
-    boolean filled = renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
-    boolean outlined = renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
+    boolean filled =
+        renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
+    boolean outlined =
+        renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
 
-    int fillAlphaVal = useCustomAlpha.getValue() ? Math.round(fillAlpha.getValue()) : EspRenderManager.getGlobalFillAlpha();
-    int outlineAlphaVal = useCustomAlpha.getValue() ? Math.round(outlineAlpha.getValue()) : EspRenderManager.getGlobalOutlineAlpha();
+    int fillAlphaVal =
+        useCustomAlpha.getValue()
+            ? Math.round(fillAlpha.getValue())
+            : EspRenderManager.getGlobalFillAlpha();
+    int outlineAlphaVal =
+        useCustomAlpha.getValue()
+            ? Math.round(outlineAlpha.getValue())
+            : EspRenderManager.getGlobalOutlineAlpha();
 
     for (Entity entity : minecraft.level.entitiesForRendering()) {
       if (entity == null || entity == minecraft.player) continue;
@@ -102,8 +126,10 @@ public final class EntityEsp extends ToggleableModule {
       }
 
       if (!match) {
-        String typeId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-            .getKey(entity.getType()).toString();
+        String typeId =
+            net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
+                .getKey(entity.getType())
+                .toString();
         if (entitySelections.getSelected().contains(typeId)) {
           match = true;
         }

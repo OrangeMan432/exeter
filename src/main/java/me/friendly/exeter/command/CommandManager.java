@@ -320,7 +320,8 @@ public final class CommandManager extends ListRegistry<Command> {
                             ? ((EnumProperty) property).getFixedValue()
                             : property.getValue()));
               }
-              return String.format("Properties (%s) %s.", mod.getProperties().size(), stringJoiner.toString());
+              return String.format(
+                  "Properties (%s) %s.", mod.getProperties().size(), stringJoiner.toString());
             }
             return String.format("%s has no properties.", mod.getLabel());
           }
@@ -340,35 +341,44 @@ public final class CommandManager extends ListRegistry<Command> {
               if (property.getValue() instanceof Long) {
                 property.setValue(Long.parseLong(arguments[2]));
               }
-              return String.format("%s has been set to %s for %s.",
+              return String.format(
+                  "%s has been set to %s for %s.",
                   property.getAliases()[0], property.getValue(), mod.getLabel());
             }
-            return String.format("%s current value is %s for %s.",
+            return String.format(
+                "%s current value is %s for %s.",
                 property.getAliases()[0], property.getValue(), mod.getLabel());
           }
           if (property.getValue() instanceof Enum) {
             if (!arguments[2].equalsIgnoreCase("list")) {
               ((EnumProperty) property).setValue(arguments[2]);
-              return String.format("%s has been set to %s for %s.",
-                  property.getAliases()[0], ((EnumProperty) property).getFixedValue(), mod.getLabel());
+              return String.format(
+                  "%s has been set to %s for %s.",
+                  property.getAliases()[0],
+                  ((EnumProperty) property).getFixedValue(),
+                  mod.getLabel());
             }
             StringJoiner stringJoiner = new StringJoiner(", ");
             Enum[] array = (Enum[]) property.getValue().getClass().getEnumConstants();
             for (Enum e : array) {
-              stringJoiner.add(String.format("%s%s",
-                  e.name().equalsIgnoreCase(property.getValue().toString()) ? "" : "",
-                  getFixedValue(e)));
+              stringJoiner.add(
+                  String.format(
+                      "%s%s",
+                      e.name().equalsIgnoreCase(property.getValue().toString()) ? "" : "",
+                      getFixedValue(e)));
             }
             return String.format("Modes (%s) %s.", array.length, stringJoiner.toString());
           }
           if (property.getValue() instanceof String) {
             property.setValue(arguments[2]);
-            return String.format("%s has been set to \"%s\" for %s.",
+            return String.format(
+                "%s has been set to \"%s\" for %s.",
                 property.getAliases()[0], property.getValue(), mod.getLabel());
           }
           if (property.getValue() instanceof Boolean) {
             property.setValue(!(Boolean) property.getValue());
-            return String.format("%s has been %s for %s.",
+            return String.format(
+                "%s has been %s for %s.",
                 property.getAliases()[0],
                 (Boolean) property.getValue() ? "enabled" : "disabled",
                 mod.getLabel());

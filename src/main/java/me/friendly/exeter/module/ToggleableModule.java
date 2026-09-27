@@ -88,7 +88,8 @@ public class ToggleableModule extends Module implements Toggleable {
       String icon = running ? "tick" : "cross";
       try {
         NotificationManager.push(text, icon);
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
   }
 

@@ -28,8 +28,8 @@ public abstract class Keybind implements Labeled {
   public abstract void onPressed();
 
   /**
-   * Migrates a pre-26.3 GLFW keycode to the SDL keycode used by
-   * {@link com.mojang.blaze3d.platform.InputConstants}. Unknown values pass through unchanged.
+   * Migrates a pre-26.3 GLFW keycode to the SDL keycode used by {@link
+   * com.mojang.blaze3d.platform.InputConstants}. Unknown values pass through unchanged.
    */
   public static int migrateLegacyGlfwKey(int glfw) {
     if (glfw >= 'A' && glfw <= 'Z') {

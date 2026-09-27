@@ -1,5 +1,6 @@
 package me.friendly.exeter.module;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
@@ -22,9 +23,9 @@ import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
+import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
 import me.friendly.exeter.module.impl.toggle.movement.NoBedStep;
 import me.friendly.exeter.module.impl.toggle.movement.NoFall;
-import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
@@ -34,21 +35,20 @@ import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.PotionsHud;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
-import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.PotionsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import me.friendly.exeter.module.impl.toggle.world.AutoShulker;
 import me.friendly.exeter.module.impl.toggle.world.fakeplayer.FakePlayerModule;
-import com.mojang.blaze3d.platform.InputConstants;
 
 /** Manages {@link Module}s for Exeter. */
 public final class ModuleManager extends ListRegistry<Module> {

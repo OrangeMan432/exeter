@@ -2,8 +2,8 @@ package me.friendly.exeter.core;
 
 import java.io.*;
 import java.io.File;
-import me.friendly.exeter.BuildInfo;
 import me.friendly.api.event.basic.BasicEventManager;
+import me.friendly.exeter.BuildInfo;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
 import me.friendly.exeter.config.ExeterConfig;
