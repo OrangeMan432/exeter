@@ -130,15 +130,18 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+ext {
+    googleJavaFormatVersion = '1.36.1'
+}
+
 task format {
     description = 'Formats all Java source files using google-java-format'
     group = 'formatting'
-    def gjfVersion = '1.36.1'
-    def jar = layout.buildDirectory.file("google-java-format-${gjfVersion}.jar")
+    def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
 
     doFirst {
         if (!jar.get().asFile.exists()) {
-            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${gjfVersion}/google-java-format-${gjfVersion}-all-deps.jar",
+            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
                     dest: jar.get().asFile.absolutePath)
         }
     }
@@ -151,6 +154,34 @@ task format {
             if (proc.exitValue() != 0) {
                 throw new GradleException("Failed to format ${file.name}: ${proc.errorStream.text}")
             }
+        }
+    }
+}
+
+task formatCheck {
+    description = 'Fails if any Java source file is not formatted with google-java-format'
+    group = 'verification'
+    def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
+
+    doFirst {
+        if (!jar.get().asFile.exists()) {
+            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
+                    dest: jar.get().asFile.absolutePath)
+        }
+    }
+
+    doLast {
+        def jarPath = jar.get().asFile.absolutePath
+        def unformatted = []
+        fileTree('src/main/java').matching { include '**/*.java' }.each { file ->
+            def proc = ['java', '-jar', jarPath, '--dry-run', '--set-exit-if-changed', file.absolutePath].execute()
+            proc.waitFor()
+            if (proc.exitValue() != 0) {
+                unformatted << file.name
+            }
+        }
+        if (!unformatted.isEmpty()) {
+            throw new GradleException("Unformatted files (run ./gradlew format):\n" + unformatted.join('\n'))
         }
     }
 }
