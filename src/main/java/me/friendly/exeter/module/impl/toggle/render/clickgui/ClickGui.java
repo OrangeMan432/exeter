@@ -2,6 +2,8 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
@@ -11,6 +13,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +25,10 @@ public final class ClickGui extends Screen {
   private final ArrayList<Panel> panels = new ArrayList();
   private SearchSelectPopup popup;
   private String search = "";
+
+  // Expansion state kept in memory so reopening the GUI restores it. Never persisted to disk.
+  private final Map<String, Boolean> subOpenMemory = new HashMap<>();
+  private final Map<String, Boolean> childOpenMemory = new HashMap<>();
 
   public ClickGui() {
     super(Component.literal("ClickGui"));
@@ -212,7 +219,102 @@ public final class ClickGui extends Screen {
 
   @Override
   public void init() {
+    snapshotOpenStates();
     this.load();
+    restoreOpenStates();
+    applySavedPositions();
+  }
+
+  private void snapshotOpenStates() {
+    subOpenMemory.clear();
+    childOpenMemory.clear();
+    for (Panel panel : panels) {
+      for (var item : panel.getItems()) {
+        if (item instanceof ModuleButton moduleButton) {
+          subOpenMemory.put(moduleButton.getModule().getLabel(), moduleButton.isSubOpen());
+          for (var child : moduleButton.getTopLevelItems()) {
+            if (child instanceof BooleanButton booleanChild) {
+              childOpenMemory.put(
+                  moduleButton.getModule().getLabel() + ">" + booleanChild.getLabel(),
+                  booleanChild.isChildrenOpen());
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private void restoreOpenStates() {
+    for (Panel panel : panels) {
+      for (var item : panel.getItems()) {
+        if (item instanceof ModuleButton moduleButton) {
+          Boolean open = subOpenMemory.get(moduleButton.getModule().getLabel());
+          if (open != null) {
+            moduleButton.setSubOpen(open);
+          }
+          for (var child : moduleButton.getTopLevelItems()) {
+            if (child instanceof BooleanButton booleanChild) {
+              Boolean childOpen =
+                  childOpenMemory.get(
+                      moduleButton.getModule().getLabel() + ">" + booleanChild.getLabel());
+              if (childOpen != null) {
+                booleanChild.setChildrenOpen(childOpen);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /** Applies positions from clickgui.toml on top of the default layout. */
+  private void applySavedPositions() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    if (guiModule == null) {
+      return;
+    }
+    for (Panel panel : panels) {
+      int[] pos = guiModule.getPendingPanels().get(panel.getLabel());
+      if (pos != null) {
+        panel.setX(pos[0]);
+        panel.setY(pos[1]);
+      }
+    }
+  }
+
+  /** Copies live panel positions into the module for saving. */
+  private void capturePositions() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    if (guiModule == null) {
+      return;
+    }
+    guiModule.getPendingPanels().clear();
+    for (Panel panel : panels) {
+      guiModule.getPendingPanels().put(panel.getLabel(), new int[] {panel.getX(), panel.getY()});
+    }
+  }
+
+  /** Restores the default layout and persists it. */
+  public void resetPanels() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    if (guiModule != null) {
+      guiModule.getPendingPanels().clear();
+    }
+    this.load();
+    capturePositions();
+    if (guiModule != null) {
+      me.friendly.exeter.config.ExeterConfig.getInstance().saveModule(guiModule);
+    }
+  }
+
+  @Override
+  public void removed() {
+    super.removed();
+    capturePositions();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
+    if (guiModule != null) {
+      me.friendly.exeter.config.ExeterConfig.getInstance().saveModule(guiModule);
+    }
   }
 
   @Override
@@ -227,7 +329,9 @@ public final class ClickGui extends Screen {
       }
     }
 
-    this.panels.forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
+    // Copy: button actions (e.g. Reset Positions) may rebuild this list mid-click.
+    new ArrayList<>(this.panels)
+        .forEach(panel -> panel.mouseClicked(mouseX, mouseY, clickedButton));
     return super.mouseClicked(event, bool);
   }
 

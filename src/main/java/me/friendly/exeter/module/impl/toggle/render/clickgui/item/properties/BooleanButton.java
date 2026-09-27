@@ -44,6 +44,12 @@ public class BooleanButton extends Button {
     return this.childrenOpen;
   }
 
+  public void setChildrenOpen(boolean open) {
+    this.childrenOpen = open;
+    this.animTimer = 0;
+    this.animFrame = open ? 0 : 2;
+  }
+
   public List<Item> getChildren() {
     return this.children;
   }

@@ -10,9 +10,11 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.ActionButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.EnumButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.NumberSlider;
+import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
@@ -83,6 +85,9 @@ public class ModuleButton extends Button {
   }
 
   private Item createOtherPropertyButton(Property<?> property, boolean child) {
+    if (property instanceof ActionProperty action) {
+      return new ActionButton(action);
+    }
     if (property instanceof PopupProperty) {
       return new PopupButton((PopupProperty) property, child);
     }
@@ -101,6 +106,14 @@ public class ModuleButton extends Button {
 
   public boolean isSubOpen() {
     return this.subOpen;
+  }
+
+  public void setSubOpen(boolean open) {
+    this.subOpen = open;
+  }
+
+  public List<Item> getTopLevelItems() {
+    return this.topLevelItems;
   }
 
   @Override

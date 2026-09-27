@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.config.ExeterConfig;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -172,4 +176,14 @@ public final class WindowScreen extends Screen {
 
   @Override
   public void init() {}
+
+  @Override
+  public void removed() {
+    super.removed();
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("windows");
+    if (module instanceof WindowsModule windowsModule) {
+      windowsModule.capturePositions();
+      ExeterConfig.getInstance().saveModule(windowsModule);
+    }
+  }
 }
