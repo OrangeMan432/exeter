@@ -14,8 +14,8 @@ import net.minecraft.client.input.MouseButtonInfo;
 
 /**
  * Test-only smoke hook for CI. Active only with {@code -Dexeter.smokeTest=true}: presses Play Demo
- * World on the title screen, waits for the world, opens the ClickGUI once, and logs markers for
- * log assertions. Never runs in normal play.
+ * World on the title screen, waits for the world, opens the ClickGUI once, and logs markers for log
+ * assertions. Never runs in normal play.
  */
 public final class SmokeTest {
 
@@ -61,10 +61,7 @@ public final class SmokeTest {
     mc.execute(
         () -> {
           System.out.println(
-              "[Exeter] SmokeTest: "
-                  + label
-                  + ", screen="
-                  + screenName(mc.gui.screen()));
+              "[Exeter] SmokeTest: " + label + ", screen=" + screenName(mc.gui.screen()));
           action.run();
         });
   }
@@ -91,9 +88,7 @@ public final class SmokeTest {
             if (child instanceof Button button
                 && button.getMessage().getString().contains("Play Demo")) {
               mc.execute(
-                  () ->
-                      button.onPress(
-                          new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
+                  () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
               System.out.println("[Exeter] SmokeTest: pressed Play Demo World");
               return true;
             }
@@ -108,8 +103,7 @@ public final class SmokeTest {
 
   private static boolean waitForWorld(Minecraft mc) throws InterruptedException {
     long deadline = System.currentTimeMillis() + 240_000;
-    while ((mc.level == null || mc.player == null)
-        && System.currentTimeMillis() < deadline) {
+    while ((mc.level == null || mc.player == null) && System.currentTimeMillis() < deadline) {
       Thread.sleep(1000);
     }
     if (mc.level == null || mc.player == null) {
