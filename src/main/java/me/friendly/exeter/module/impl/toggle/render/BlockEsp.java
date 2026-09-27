@@ -10,8 +10,8 @@ import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.events.WorldRenderEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
@@ -43,9 +43,8 @@ public final class BlockEsp extends ToggleableModule {
   private final NumberProperty<Integer> rescanInterval =
       new NumberProperty<Integer>(10, 1, 50, "Rescan Ticks");
   private final PopupProperty selectBlocks;
-  private final Property<String> selectedBlocksProp = new Property<>("", "Selected Blocks");
+  private final SelectionPopup.Ids blockSelections = new SelectionPopup.Ids("Selected Blocks");
 
-  private final Set<String> selectedBlocks = new HashSet<>();
   private final List<Block> blockCache = new ArrayList<>();
   private final Set<BlockPos> matchedPositions = new HashSet<>();
   private int tickCounter = 0;
@@ -54,7 +53,7 @@ public final class BlockEsp extends ToggleableModule {
     super("BlockEsp", new String[] {"blockesp", "block-esp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights specific blocks in the world.");
     this.selectBlocks = new PopupProperty("Select Blocks", this::openBlockPopup);
-    offerProperties(range, lineWidth, renderMode, useCustomAlpha, fillAlpha, outlineAlpha, rescanInterval, selectedBlocksProp, selectBlocks);
+    offerProperties(range, lineWidth, renderMode, useCustomAlpha, fillAlpha, outlineAlpha, rescanInterval, blockSelections.getProperty(), selectBlocks);
 
     this.listeners.add(
         new Listener<TickEvent>("block_esp_tick") {
@@ -87,45 +86,21 @@ public final class BlockEsp extends ToggleableModule {
         .forEach(block -> {
           String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
           String displayName = block.getName().getString();
-          items.add(
-              new SearchSelectPopup.ToggleItem() {
-                @Override
-                public String getLabel() {
-                  return displayName + " [" + id + "]";
-                }
-
-                @Override
-                public boolean isEnabled() {
-                  return selectedBlocks.contains(id);
-                }
-
-                @Override
-                public void setEnabled(boolean enabled) {
-                  if (enabled) {
-                    selectedBlocks.add(id);
-                  } else {
-                    selectedBlocks.remove(id);
-                  }
-                }
-              });
+          items.add(SelectionPopup.idItem(id, displayName, blockSelections.getSelected()));
         });
 
-    ClickGui.getClickGui()
-        .openPopup(
-            new SearchSelectPopup(
-                "Select Blocks",
-                items,
-                () -> {
-                  saveSelections();
-                  syncBlockCache();
-                  ClickGui.getClickGui().closePopup();
-                },
-                () -> ClickGui.getClickGui().closePopup()));
+    SelectionPopup.open(
+        "Select Blocks",
+        items,
+        () -> {
+          blockSelections.save();
+          syncBlockCache();
+        });
   }
 
   private void syncBlockCache() {
     blockCache.clear();
-    for (String id : selectedBlocks) {
+    for (String id : blockSelections.getSelected()) {
       var key = Identifier.tryParse(id);
       if (key != null) {
         var ref = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(key);
@@ -141,27 +116,10 @@ public final class BlockEsp extends ToggleableModule {
     tickCounter = 0;
   }
 
-  private void loadSelections() {
-    selectedBlocks.clear();
-    String raw = selectedBlocksProp.getValue();
-    if (raw != null && !raw.isEmpty()) {
-      for (String id : raw.split(",")) {
-        String trimmed = id.trim();
-        if (!trimmed.isEmpty()) {
-          selectedBlocks.add(trimmed);
-        }
-      }
-    }
-  }
-
-  private void saveSelections() {
-    selectedBlocksProp.setValue(String.join(",", selectedBlocks));
-  }
-
   @Override
   protected void onEnable() {
     super.onEnable();
-    loadSelections();
+    blockSelections.load();
     syncBlockCache();
   }
 
@@ -261,7 +219,7 @@ public final class BlockEsp extends ToggleableModule {
   }
 
   public Set<String> getSelectedBlocks() {
-    return selectedBlocks;
+    return blockSelections.getSelected();
   }
 
   private static enum RenderMode {
