@@ -78,20 +78,27 @@ public final class SmokeTest {
   }
 
   private static boolean pressDemoButton(Minecraft mc) throws InterruptedException {
-    long deadline = System.currentTimeMillis() + 120_000;
+    long deadline = System.currentTimeMillis() + 600_000;
+    String lastSeen = "";
     while (System.currentTimeMillis() < deadline) {
       Gui gui = mc.gui;
-      if (gui != null) {
-        Screen screen = gui.screen();
-        if (screen instanceof TitleScreen) {
-          for (GuiEventListener child : screen.children()) {
-            if (child instanceof Button button
-                && button.getMessage().getString().contains("Play Demo")) {
-              mc.execute(
-                  () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
-              System.out.println("[Exeter] SmokeTest: pressed Play Demo World");
-              return true;
-            }
+      Screen screen = gui == null ? null : gui.screen();
+      String seen =
+          screen == null
+              ? (gui == null ? "<booting>" : "<no screen>")
+              : screen.getClass().getName();
+      if (!seen.equals(lastSeen)) {
+        lastSeen = seen;
+        System.out.println("[Exeter] SmokeTest: waiting for title, seen=" + seen);
+      }
+      if (screen instanceof TitleScreen) {
+        for (GuiEventListener child : screen.children()) {
+          if (child instanceof Button button
+              && button.getMessage().getString().contains("Play Demo")) {
+            mc.execute(
+                () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
+            System.out.println("[Exeter] SmokeTest: pressed Play Demo World");
+            return true;
           }
         }
       }
