@@ -133,11 +133,12 @@ tasks.withType(JavaCompile).configureEach {
 task format {
     description = 'Formats all Java source files using google-java-format'
     group = 'formatting'
-    def jar = layout.buildDirectory.file('google-java-format.jar')
+    def gjfVersion = '1.36.1'
+    def jar = layout.buildDirectory.file("google-java-format-${gjfVersion}.jar")
 
     doFirst {
         if (!jar.get().asFile.exists()) {
-            ant.get(src: 'https://github.com/google/google-java-format/releases/download/v1.19.2/google-java-format-1.19.2-all-deps.jar',
+            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${gjfVersion}/google-java-format-${gjfVersion}-all-deps.jar",
                     dest: jar.get().asFile.absolutePath)
         }
     }
