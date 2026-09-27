@@ -24,7 +24,7 @@ the agent writes code. Ask before crossing that boundary.
 
 - Every set of new features gets its own branch, created for a PR (e.g. `packetmine`).
   Do not pile unrelated work onto shared branches; `newbase-orange` is retired for new work.
-- Push to the `origin` remote (the fork).
+- Push to the `origin` remote.
 - Push a branch and open its PR with `gh pr create` only when asked.
 - Push to `newbase` only when explicitly asked; prefer PRs for merging into it.
 
