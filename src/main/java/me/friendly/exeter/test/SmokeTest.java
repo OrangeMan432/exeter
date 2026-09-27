@@ -101,6 +101,17 @@ public final class SmokeTest {
             return true;
           }
         }
+      } else if (screen.getClass().getSimpleName().contains("Onboarding")) {
+        for (GuiEventListener child : screen.children()) {
+          if (child instanceof Button button
+              && button.getMessage().getString().equalsIgnoreCase("Done")) {
+            mc.execute(
+                () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
+            System.out.println(
+                "[Exeter] SmokeTest: dismissed " + screen.getClass().getSimpleName());
+            break;
+          }
+        }
       }
       Thread.sleep(1000);
     }

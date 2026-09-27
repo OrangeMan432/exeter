@@ -31,6 +31,9 @@ jobs:
       - name: Run client smoke test
         timeout-minutes: 25
         run: |
+          # Pre-seed options so first-boot onboarding screens don't block the title.
+          mkdir -p run
+          printf 'lang:en_us\ntutorialStep:none\nonboardAccessibility:false\n' > run/options.txt
           Xvfb :99 -screen 0 1280x720x24 &
           echo $! > xvfb.pid
           export DISPLAY=:99
