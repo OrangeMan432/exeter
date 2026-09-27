@@ -101,7 +101,7 @@ public final class SmokeTest {
             return true;
           }
         }
-      } else if (screen.getClass().getSimpleName().contains("Onboarding")) {
+      } else if (screen != null && screen.getClass().getSimpleName().contains("Onboarding")) {
         for (GuiEventListener child : screen.children()) {
           if (child instanceof Button button
               && button.getMessage().getString().equalsIgnoreCase("Done")) {
