@@ -23,6 +23,9 @@ run
 net/
 replenish.txt
 runClient.log
+smoke.log
+screenshot.png
+*.pid
 nul
 
 # Forge.
