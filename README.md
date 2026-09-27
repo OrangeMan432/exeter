@@ -9,6 +9,12 @@ Exeter is most widely known as the client the 0x22 based Future client off of. T
 Future is still based on Exeter's base (0x22 has even admitted this). The event system works
 the same way that 3arthqu4ke's does (and Future's does).
 
+## Screenshots
+
+![ClickGUI](clickgui.png)
+![HUDEditor](hudeditor.png)
+![Windows](windows.png)
+
 ## Current target
 
 - Minecraft `26.4-snapshot-1`
