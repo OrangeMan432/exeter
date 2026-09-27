@@ -11,9 +11,9 @@ the same way that 3arthqu4ke's does (and Future's does).
 
 ## Screenshots
 
-![ClickGUI](clickgui.png)
-![HUDEditor](hudeditor.png)
-![Windows](windows.png)
+![ClickGUI](assets/clickgui.png)
+![HUDEditor](assets/hudeditor.png)
+![Windows](assets/windows.png)
 
 ## Current target
 
