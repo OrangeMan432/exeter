@@ -28,6 +28,19 @@ public final class SmokeTest {
     thread.start();
   }
 
+  /**
+   * Logs a marker to stdout and appends it to {@code smoke-markers.log} in the game directory.
+   * Written directly by the game so CI can poll it without relying on Gradle streaming.
+   */
+  private static void mark(String message) {
+    String line = "[Exeter] SmokeTest: " + message;
+    System.out.println(line);
+    try (java.io.FileWriter writer = new java.io.FileWriter("smoke-markers.log", true)) {
+      writer.write("[" + java.time.LocalTime.now() + "] " + line + "\n");
+    } catch (java.io.IOException ignored) {
+    }
+  }
+
   private static void run() {
     try {
       Minecraft mc = Minecraft.getInstance();
@@ -46,12 +59,7 @@ public final class SmokeTest {
       Thread.sleep(2000);
       step(mc, "close windows", () -> mc.gui.setScreen(null));
       Thread.sleep(2000);
-      mc.execute(
-          () ->
-              System.out.println(
-                  "[Exeter] SmokeTest: final screen="
-                      + screenName(mc.gui.screen())
-                      + ", sequence complete"));
+      mc.execute(() -> mark("final screen=" + screenName(mc.gui.screen()) + ", sequence complete"));
     } catch (InterruptedException ignored) {
       Thread.currentThread().interrupt();
     }
@@ -60,8 +68,7 @@ public final class SmokeTest {
   private static void step(Minecraft mc, String label, Runnable action) {
     mc.execute(
         () -> {
-          System.out.println(
-              "[Exeter] SmokeTest: " + label + ", screen=" + screenName(mc.gui.screen()));
+          mark(label + ", screen=" + screenName(mc.gui.screen()));
           action.run();
         });
   }
@@ -89,7 +96,7 @@ public final class SmokeTest {
               : screen.getClass().getName();
       if (!seen.equals(lastSeen)) {
         lastSeen = seen;
-        System.out.println("[Exeter] SmokeTest: waiting for title, seen=" + seen);
+        mark("waiting for title, seen=" + seen);
       }
       if (screen instanceof TitleScreen) {
         for (GuiEventListener child : screen.children()) {
@@ -97,7 +104,7 @@ public final class SmokeTest {
               && button.getMessage().getString().contains("Play Demo")) {
             mc.execute(
                 () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
-            System.out.println("[Exeter] SmokeTest: pressed Play Demo World");
+            mark("pressed Play Demo World");
             return true;
           }
         }
@@ -107,15 +114,14 @@ public final class SmokeTest {
               && button.getMessage().getString().equalsIgnoreCase("Done")) {
             mc.execute(
                 () -> button.onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)));
-            System.out.println(
-                "[Exeter] SmokeTest: dismissed " + screen.getClass().getSimpleName());
+            mark("dismissed " + screen.getClass().getSimpleName());
             break;
           }
         }
       }
       Thread.sleep(1000);
     }
-    System.out.println("[Exeter] SmokeTest: timed out waiting for title screen");
+    mark("timed out waiting for title screen");
     return false;
   }
 
@@ -125,7 +131,7 @@ public final class SmokeTest {
       Thread.sleep(1000);
     }
     if (mc.level == null || mc.player == null) {
-      System.out.println("[Exeter] SmokeTest: timed out waiting for world");
+      mark("timed out waiting for world");
       return false;
     }
     return true;

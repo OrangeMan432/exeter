@@ -42,13 +42,17 @@ jobs:
           export JAVA_TOOL_OPTIONS="-Dexeter.smokeTest=true"
           ./gradlew runClient --args="--demo" > smoke.log 2>&1 &
           echo $! > client.pid
+          # Markers are written directly by the game to run/smoke-markers.log;
+          # smoke.log is only reliable after shutdown (Gradle output buffering).
           for i in $(seq 1 200); do
             sleep 5
-            grep -q "SmokeTest: sequence complete" smoke.log && break
+            grep -q "sequence complete" run/smoke-markers.log 2>/dev/null && break
           done
           import -window root screenshot.png || true
+          # The game is forked under the daemon: kill its JVM first or it survives.
+          pkill -f "devlaunchinjector" 2>/dev/null || true
+          sleep 10
           kill "$(cat client.pid)" 2>/dev/null || true
-          pkill -f "net.minecraft.client.main.Main" 2>/dev/null || true
           kill "$(cat xvfb.pid)" 2>/dev/null || true
           wait 2>/dev/null || true
           exit 0
@@ -60,17 +64,19 @@ jobs:
           name: smoke-test
           path: |
             smoke.log
+            run/smoke-markers.log
             screenshot.png
           if-no-files-found: warn
 
       - name: Assert smoke results
         run: |
+          LOG=run/smoke-markers.log
           grep -q "Exeter] Initialized" smoke.log || (echo "::error::Exeter did not initialize" && exit 1)
-          grep -q "SmokeTest: pressed Play Demo World" smoke.log || (echo "::error::demo world was not joined" && exit 1)
-          grep -q "open hudeditor, screen=.*clickgui.ClickGui" smoke.log || (echo "::error::ClickGUI did not open" && exit 1)
-          grep -q "open windows, screen=.*hud.HudEditorScreen" smoke.log || (echo "::error::HUDEditor did not open" && exit 1)
-          grep -q "close windows, screen=.*window.WindowScreen" smoke.log || (echo "::error::Windows did not open" && exit 1)
-          grep -q "SmokeTest: sequence complete" smoke.log || (echo "::error::smoke sequence did not complete" && exit 1)
+          grep -q "pressed Play Demo World" $LOG || (echo "::error::demo world was not joined" && exit 1)
+          grep -q "close ClickGUI, screen=.*clickgui.ClickGui" $LOG || (echo "::error::ClickGUI did not open" && exit 1)
+          grep -q "close HUDEditor, screen=.*hud.HudEditorScreen" $LOG || (echo "::error::HUDEditor did not open" && exit 1)
+          grep -q "close windows, screen=.*window.WindowScreen" $LOG || (echo "::error::Windows did not open" && exit 1)
+          grep -q "sequence complete" $LOG || (echo "::error::smoke sequence did not complete" && exit 1)
           if grep -Eq "Failed to load config|NullPointerException|Minecraft Crash Report|Mixin apply failed" smoke.log; then
             echo "::error::errors found in smoke log"
             grep -E "Failed to load config|NullPointerException|Minecraft Crash Report|Mixin apply failed" smoke.log
