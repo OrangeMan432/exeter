@@ -224,6 +224,6 @@ public class AutoMend extends ToggleableModule {
   }
 
   private void sendDisableMessage(String reason) {
-    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, reason + " - disabling");
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, reason + " - disabling");
   }
 }
