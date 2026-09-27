@@ -160,6 +160,95 @@ task format {
     }
 }
 
+def githubRepoSlug() {
+    def url = git("remote", "get-url", "addon") ?: git("remote", "get-url", "origin")
+    if (url == null) return null
+    def matcher = url =~ /github\.com[:\/](.+?)(\.git)?$/
+    return matcher.find() ? matcher.group(1) : null
+}
+
+def gh(String repo, List<String> args) {
+    def proc = (['gh', '-R', repo] + args).execute()
+    def out = new StringBuffer()
+    def err = new StringBuffer()
+    proc.waitForProcessOutput(out, err)
+    if (proc.exitValue() != 0) {
+        throw new GradleException("gh ${args.join(' ')} failed: ${err.toString().trim()}")
+    }
+    return out.toString().trim()
+}
+
+task updateScreenshots {
+    description = 'Refreshes README screenshots and versions from the latest passing smoke test (override run with -PsmokeRun=<id>)'
+    group = 'documentation'
+
+    doLast {
+        def repo = githubRepoSlug()
+        if (repo == null) {
+            throw new GradleException("Could not determine GitHub repo (need addon or origin remote)")
+        }
+        def authProc = ['gh', 'auth', 'status'].execute()
+        authProc.waitFor()
+        if (authProc.exitValue() != 0) {
+            throw new GradleException("gh is not authenticated (run gh auth login)")
+        }
+
+        def runId = findProperty('smokeRun')
+        if (runId == null) {
+            runId = gh(repo, ['run', 'list', '--workflow', 'smoke-test.yml', '--status', 'success',
+                    '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId'])
+            if (runId.isEmpty()) {
+                throw new GradleException("No successful smoke test runs found")
+            }
+        }
+        println("Using smoke test run ${runId}")
+
+        def dest = file("${buildDir}/smoke-artifact")
+        delete dest
+        gh(repo, ['run', 'download', runId.toString(), '-n', 'smoke-test', '-D', dest.absolutePath])
+
+        def shots = [
+                'clickgui.png' : 'run/screenshots/smoke-01-clickgui.png',
+                'hudeditor.png': 'run/screenshots/smoke-02-hudeditor.png',
+                'windows.png'  : 'run/screenshots/smoke-03-windows.png',
+        ]
+        shots.each { target, path ->
+            def src = new File(dest, path)
+            if (!src.exists()) {
+                throw new GradleException("Artifact is missing ${path}")
+            }
+            copy {
+                from src
+                into 'assets'
+                rename { target }
+            }
+        }
+
+        def props = new Properties()
+        new File(projectDir, 'gradle.properties').withInputStream { props.load(it) }
+        def buildText = new File(projectDir, 'build.gradle').text
+        def loomVersion = (buildText =~ /id 'net\.fabricmc\.fabric-loom' version '([^']+)'/)[0][1]
+        def jdkVersion = (buildText =~ /JavaLanguageVersion\.of\((\d+)\)/)[0][1]
+        def replacements = [
+                "- Minecraft `[^`]+`": "- Minecraft `${props.getProperty('minecraft_version')}`",
+                "- Fabric Loader `[^`]+`, Fabric API `[^`]+`":
+                        "- Fabric Loader `${props.getProperty('loader_version')}`, Fabric API `${props.getProperty('fabric_api_version')}`",
+                "- Fabric Loom `[^`]+`": "- Fabric Loom `${loomVersion}`",
+                "- JDK \\d+ \\(Eclipse Temurin\\)": "- JDK ${jdkVersion} (Eclipse Temurin)",
+        ]
+        def readme = new File(projectDir, 'README.md')
+        def text = readme.text
+        replacements.each { pattern, replacement ->
+            if (!(text =~ pattern).find()) {
+                throw new GradleException("README.md is missing expected line matching: ${pattern}")
+            }
+            text = text.replaceFirst("(?m)^${pattern}\$", replacement)
+        }
+        readme.text = text
+        println("Updated assets/clickgui.png, hudeditor.png, windows.png and README.md versions")
+    }
+}
+
 task formatCheck {
     description = 'Fails if any Java source file is not formatted with google-java-format'
     group = 'verification'
