@@ -33,15 +33,4 @@ public class Property<T> {
     this.children.add(child);
     return this;
   }
-
-  /**
-   * This method does not exist in Exeter 1.8, but was added as part of the process in making it
-   * buildable. Given that this is decompiled code, some errors exist and have to be manually fixed.
-   * This method was added to fix an error in {@link EnumProperty}, and should only be called from
-   * {@link EnumProperty} Objects.
-   *
-   * @author Gopro336
-   * @param value the string value input
-   */
-  public void setValue(String value) {}
 }

@@ -1,15 +1,14 @@
 package me.friendly.exeter.module.impl.toggle.render;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.WorldRenderEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
@@ -39,14 +38,13 @@ public final class EntityEsp extends ToggleableModule {
   private final NumberProperty<Float> outlineAlpha =
       new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
   private final PopupProperty selectEntities;
-
-  private final Set<String> selectedEntities = new HashSet<>();
+  private final SelectionPopup.Ids entitySelections = new SelectionPopup.Ids("Selected Entities");
 
   public EntityEsp() {
     super("EntityEsp", new String[] {"entityesp", "entity-esp"}, 0x00FFFF, ModuleType.RENDER);
     setDescription("Highlights specific entities in the world.");
     this.selectEntities = new PopupProperty("Select Entities", this::openEntityPopup);
-    offerProperties(range, lineWidth, renderMode, playersAlways, useCustomAlpha, fillAlpha, outlineAlpha, selectEntities);
+    offerProperties(range, lineWidth, renderMode, playersAlways, useCustomAlpha, fillAlpha, outlineAlpha, entitySelections.getProperty(), selectEntities);
 
     this.listeners.add(
         new Listener<WorldRenderEvent>("entity_esp_render") {
@@ -55,6 +53,12 @@ public final class EntityEsp extends ToggleableModule {
             onRender();
           }
         });
+  }
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    entitySelections.load();
   }
 
   private void openEntityPopup() {
@@ -70,36 +74,10 @@ public final class EntityEsp extends ToggleableModule {
         .forEach(entityType -> {
           String id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
           String displayName = entityType.getDescription().getString();
-          items.add(
-              new SearchSelectPopup.ToggleItem() {
-                @Override
-                public String getLabel() {
-                  return displayName + " [" + id + "]";
-                }
-
-                @Override
-                public boolean isEnabled() {
-                  return selectedEntities.contains(id);
-                }
-
-                @Override
-                public void setEnabled(boolean enabled) {
-                  if (enabled) {
-                    selectedEntities.add(id);
-                  } else {
-                    selectedEntities.remove(id);
-                  }
-                }
-              });
+          items.add(SelectionPopup.idItem(id, displayName, entitySelections.getSelected()));
         });
 
-    ClickGui.getClickGui()
-        .openPopup(
-            new SearchSelectPopup(
-                "Select Entities",
-                items,
-                () -> ClickGui.getClickGui().closePopup(),
-                () -> ClickGui.getClickGui().closePopup()));
+    SelectionPopup.open("Select Entities", items, () -> entitySelections.save());
   }
 
   private void onRender() {
@@ -126,7 +104,7 @@ public final class EntityEsp extends ToggleableModule {
       if (!match) {
         String typeId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
             .getKey(entity.getType()).toString();
-        if (selectedEntities.contains(typeId)) {
+        if (entitySelections.getSelected().contains(typeId)) {
           match = true;
         }
       }
@@ -153,7 +131,7 @@ public final class EntityEsp extends ToggleableModule {
   }
 
   public Set<String> getSelectedEntities() {
-    return selectedEntities;
+    return entitySelections.getSelected();
   }
 
   private static enum RenderMode {

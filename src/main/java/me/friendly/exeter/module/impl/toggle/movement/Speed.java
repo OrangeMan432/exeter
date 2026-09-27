@@ -56,6 +56,12 @@ public class Speed extends ToggleableModule {
   @Override
   protected void onEnable() {
     super.onEnable();
+    if (minecraft.player == null) {
+      // Enabled by config restore during startup: Speed is a short-burst module,
+      // so it always starts disabled and must be toggled on in-game.
+      setRunning(false);
+      return;
+    }
     boostSpeed = 0;
     lastRandomBoost = System.currentTimeMillis();
     moveSpeed = getBaseSpeed();
@@ -168,6 +174,8 @@ public class Speed extends ToggleableModule {
 
   private double getBaseSpeed() {
     double speed = 0.2873;
+
+    if (minecraft.player == null) return speed;
 
     if (minecraft.player.hasEffect(MobEffects.SPEED)) {
       speed += 0.2873 * (minecraft.player.getEffect(MobEffects.SPEED).getAmplifier() + 1) * 0.2;

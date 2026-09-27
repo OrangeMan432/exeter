@@ -19,7 +19,6 @@ public class EnumProperty<T extends Enum> extends Property<T> {
    *
    * @param value value input
    */
-  @Override
   public void setValue(String value) {
     Enum[] array = (Enum[]) ((Enum) this.getValue()).getClass().getEnumConstants();
     int length = array.length;

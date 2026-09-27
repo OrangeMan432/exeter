@@ -183,31 +183,19 @@ public final class DebugLogger {
   }
 
   /**
-   * Logs a debug message regardless of per-module enable state. Only respects global enable and
-   * output settings. Useful for config save/load where per-module state may not yet be loaded.
+   * Writes a timestamped line to the debug log file (and console window) only. Unlike {@link #log},
+   * this never touches chat or notifications, for detail that is only readable in the file.
    *
-   * @param tag a tag for the source
+   * @param tag a tag for the source (e.g. a module name)
    * @param message the debug message
    */
-  public void logAlways(String tag, String message) {
-    if (!enabled) return;
+  public void logFile(String tag, String message) {
+    if (!logToFile) return;
 
     String timestamp = LocalDateTime.now().format(timeFmt);
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
-
+    writeToFile(formatted);
     Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
-
-    if (logToFile) {
-      writeToFile(formatted);
-    }
-
-    if (logToChat) {
-      sendToChat(formatted);
-    }
-
-    if (logToNotifications) {
-      sendToNotifications("[" + tag + "] " + message);
-    }
   }
 
   /** Clears the debug log file. */

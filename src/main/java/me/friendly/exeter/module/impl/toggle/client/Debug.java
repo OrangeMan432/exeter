@@ -1,15 +1,14 @@
 package me.friendly.exeter.module.impl.toggle.client;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 
@@ -22,9 +21,9 @@ public class Debug extends ToggleableModule {
   private final Property<Boolean> showInfo = new Property<Boolean>(true, "Show Info");
   private final Property<Boolean> showWarn = new Property<Boolean>(true, "Show Warnings");
   private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
+  private final SelectionPopup.Toggles moduleToggles = new SelectionPopup.Toggles("Module Toggles");
   private final PopupProperty modulesPopup;
 
-  private final Map<String, Boolean> moduleToggles = new LinkedHashMap<>();
   private List<Module> allModules;
 
   public Debug() {
@@ -32,7 +31,7 @@ public class Debug extends ToggleableModule {
     setDescription("Per-module debug logging to file and chat.");
     this.modulesPopup = new PopupProperty("Modules", this::openModulesPopup);
     offerProperties(
-        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, modulesPopup);
+        logToFile, logToChat, logToNotifications, showInfo, showWarn, showError, moduleToggles.getProperty(), modulesPopup);
   }
 
   public void initModuleToggles(Iterable<Module> modules) {
@@ -41,7 +40,7 @@ public class Debug extends ToggleableModule {
       if (module == this) continue;
       if (module instanceof ToggleableModule) {
         this.allModules.add(module);
-        moduleToggles.putIfAbsent(module.getLabel(), false);
+        moduleToggles.getToggles().putIfAbsent(module.getLabel(), false);
       }
     }
   }
@@ -51,40 +50,26 @@ public class Debug extends ToggleableModule {
     for (Module module : allModules) {
       String name = module.getLabel();
       items.add(
-          new SearchSelectPopup.ToggleItem() {
-            @Override
-            public String getLabel() {
-              return name;
-            }
-
-            @Override
-            public boolean isEnabled() {
-              return moduleToggles.getOrDefault(name, false);
-            }
-
-            @Override
-            public void setEnabled(boolean enabled) {
-              moduleToggles.put(name, enabled);
-            }
-          });
+          SelectionPopup.toggle(
+              name,
+              () -> moduleToggles.getToggles().getOrDefault(name, false),
+              enabled -> moduleToggles.getToggles().put(name, enabled)));
     }
 
-    ClickGui.getClickGui()
-        .openPopup(
-            new SearchSelectPopup(
-                "Debug Module Toggles",
-                items,
-                () -> {
-                  syncSettings();
-                  ClickGui.getClickGui().closePopup();
-                },
-                () -> ClickGui.getClickGui().closePopup()));
+    SelectionPopup.open(
+        "Debug Module Toggles",
+        items,
+        () -> {
+          moduleToggles.save();
+          syncSettings();
+        });
   }
 
   @Override
   protected void onEnable() {
     super.onEnable();
     DebugLogger.get().setEnabled(true);
+    moduleToggles.load();
     syncSettings();
   }
 
@@ -104,7 +89,7 @@ public class Debug extends ToggleableModule {
     logger.setShowWarn(showWarn.getValue());
     logger.setShowError(showError.getValue());
 
-    for (Map.Entry<String, Boolean> entry : moduleToggles.entrySet()) {
+    for (Map.Entry<String, Boolean> entry : moduleToggles.getToggles().entrySet()) {
       logger.setModuleEnabled(entry.getKey(), entry.getValue());
     }
   }
@@ -122,6 +107,6 @@ public class Debug extends ToggleableModule {
   }
 
   public Map<String, Boolean> getModuleToggles() {
-    return moduleToggles;
+    return moduleToggles.getToggles();
   }
 }
