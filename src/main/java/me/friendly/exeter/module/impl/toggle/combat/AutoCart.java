@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.combat;
 
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
@@ -221,6 +222,9 @@ public class AutoCart extends ToggleableModule {
     for (Player player : minecraft.level.players()) {
       if (player == minecraft.player || !player.isAlive()) continue;
       if (player.isCreative()) continue;
+      if (!Exeter.getInstance().getFriendManager().isTargetable(player.getName().getString())) {
+        continue;
+      }
 
       double dist = minecraft.player.distanceToSqr(player);
       if (dist < closestDist) {

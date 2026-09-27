@@ -317,7 +317,7 @@ public class AutoPot extends ToggleableModule {
 
   private boolean basicChecks(Player player) {
     return !player.isAlive()
-        || Exeter.getInstance().getFriendManager().isFriend(player.getName().getString());
+        || !Exeter.getInstance().getFriendManager().isTargetable(player.getName().getString());
   }
 
   private boolean healthCheck(double value) {

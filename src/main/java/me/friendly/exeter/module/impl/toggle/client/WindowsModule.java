@@ -24,7 +24,7 @@ public final class WindowsModule extends ToggleableModule {
     int mcHeight = minecraft.getWindow().getGuiScaledHeight();
 
     screen.addWindow(new ConsoleWindow(20, 20, 400, 250));
-    screen.addWindow(new FriendsWindow(mcWidth - 220, 20, 200, 200));
+    screen.addWindow(new FriendsWindow(mcWidth - 300, 20, 200, 200));
     screen.addWindow(new AccountWindow(mcWidth - 400, 240, 360, 250));
 
     minecraft.gui.setScreen(screen);
