@@ -182,6 +182,22 @@ public final class DebugLogger {
     }
   }
 
+  /**
+   * Writes a timestamped line to the debug log file (and console window) only. Unlike {@link #log},
+   * this never touches chat or notifications, for detail that is only readable in the file.
+   *
+   * @param tag a tag for the source (e.g. a module name)
+   * @param message the debug message
+   */
+  public void logFile(String tag, String message) {
+    if (!logToFile) return;
+
+    String timestamp = LocalDateTime.now().format(timeFmt);
+    String formatted = "[" + timestamp + "] [" + tag + "] " + message;
+    writeToFile(formatted);
+    Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
+  }
+
   /** Clears the debug log file. */
   public void clearLog() {
     try (PrintWriter pw = new PrintWriter(logFile)) {
