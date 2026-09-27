@@ -14,6 +14,7 @@ import me.friendly.exeter.module.impl.toggle.client.TestModule;
 import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import me.friendly.exeter.module.impl.toggle.combat.AutoArmor;
 import me.friendly.exeter.module.impl.toggle.combat.AutoCart;
+import me.friendly.exeter.module.impl.toggle.combat.AutoHoleMine;
 import me.friendly.exeter.module.impl.toggle.combat.AutoMend;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
@@ -75,6 +76,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new NoAccel());
     register(new PistonPush());
     register(new PacketMine());
+    register(new AutoHoleMine());
     register(new AutoCart());
     register(new AutoPot());
     register(new AutoShulker());
