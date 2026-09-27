@@ -23,7 +23,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.phys.Vec3;
 
 public class AutoMend extends ToggleableModule {
 
@@ -35,10 +34,15 @@ public class AutoMend extends ToggleableModule {
   private final Property<Boolean> healthCheck = new Property<>(true, "Health Check");
   private final NumberProperty<Integer> minHealth = new NumberProperty<>(16, 0, 36, "Min Health");
   private final Property<Boolean> enemyCheck = new Property<>(true, "Enemy Check");
+  private final Property<Boolean> disableOnComplete =
+      new Property<>(true, "Disable On Complete");
 
   private final StopWatch timer = new StopWatch();
   private final StopWatch takeOffTimer = new StopWatch();
   private int toMendFlags;
+  private int activeMendFlags;
+  private boolean wasFinished;
+  private boolean seeded;
 
   private static final Minecraft mc = Minecraft.getInstance();
 
@@ -54,7 +58,7 @@ public class AutoMend extends ToggleableModule {
     super("AutoMend", new String[]{"automend", "auto-mend"}, 0xFF55FF, ModuleType.COMBAT);
     setDescription("Uses XP bottles to mend your armor via Mending enchantment.");
     offerProperties(delay, minDamage, repairTo, takeOff, takeOffDelay, healthCheck, minHealth,
-        enemyCheck);
+        enemyCheck, disableOnComplete);
     listeners.add(tickListener);
   }
 
@@ -62,6 +66,14 @@ public class AutoMend extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     toMendFlags = 0;
+    activeMendFlags = 0;
+    wasFinished = false;
+    seeded = false;
+    debug("enabled");
+    DebugLogger.get().logFile(getLabel(), "settings: disableOnComplete="
+        + disableOnComplete.getValue() + " minDamage=" + minDamage.getValue() + " repairTo="
+        + repairTo.getValue() + " takeOff=" + takeOff.getValue() + " healthCheck="
+        + healthCheck.getValue() + " enemyCheck=" + enemyCheck.getValue());
   }
 
   private void onTick() {
@@ -69,17 +81,38 @@ public class AutoMend extends ToggleableModule {
     if (mc.player.isDeadOrDying() || mc.player.tickCount < 10) return;
     if (mc.player.containerMenu != mc.player.inventoryMenu) return;
 
-    if (healthCheck.getValue()
-        && mc.player.getHealth() + mc.player.getAbsorptionAmount() < minHealth.getValue()) {
-      sendDisableMessage("Low health");
-      setRunning(false);
-      return;
+    if (!seeded) {
+      seeded = true;
+      seedActiveFlags();
     }
 
-    if (enemyCheck.getValue() && hasNearbyEnemies()) {
-      sendDisableMessage("Players nearby");
-      setRunning(false);
-      return;
+    if (healthCheck.getValue()) {
+      float effectiveHealth = mc.player.getHealth() + mc.player.getAbsorptionAmount();
+      if (effectiveHealth < minHealth.getValue()) {
+        sendDisableMessage("Low health (" + String.format("%.1f", effectiveHealth)
+            + " < " + minHealth.getValue() + ")");
+        setRunning(false);
+        return;
+      }
+    }
+
+    if (enemyCheck.getValue()) {
+      List<Player> nearby = nearbyPlayers();
+      if (!nearby.isEmpty()) {
+        StringBuilder reason = new StringBuilder("Players nearby (");
+        for (int i = 0; i < nearby.size(); i++) {
+          if (i > 0) reason.append(", ");
+          Player p = nearby.get(i);
+          reason.append(p.getName().getString())
+              .append(" ")
+              .append(String.format("%.1f", p.distanceTo(mc.player)))
+              .append("m");
+        }
+        reason.append(")");
+        sendDisableMessage(reason.toString());
+        setRunning(false);
+        return;
+      }
     }
 
     int xpSlot = findXPSlot();
@@ -90,10 +123,18 @@ public class AutoMend extends ToggleableModule {
     }
 
     if (checkFinished()) {
-      sendDisableMessage("All armor mended");
-      setRunning(false);
+      if (!wasFinished) {
+        wasFinished = true;
+        debug("All armor mended (" + armorSummary()
+            + (disableOnComplete.getValue() ? " - disabling" : " - monitoring"));
+      }
+      if (disableOnComplete.getValue()) {
+        sendDisableMessage("All armor mended (" + armorSummary() + ")");
+        setRunning(false);
+      }
       return;
     }
+    wasFinished = false;
 
     if (!timer.hasPassed((long) delay.getValue() * 50)) return;
     timer.reset();
@@ -103,12 +144,22 @@ public class AutoMend extends ToggleableModule {
 
     for (int i = 0; i < armors.size(); i++) {
       ItemStack itemStack = armors.get(i);
-      if (itemStack.isEmpty()) continue;
-      if (!hasEnchantment(itemStack, Enchantments.MENDING)) continue;
+      if (itemStack.isEmpty() || !hasEnchantment(itemStack, Enchantments.MENDING)) {
+        activeMendFlags &= ~(1 << i);
+        continue;
+      }
 
       int durabilityPercent = getDurabilityPercent(itemStack);
-      if (durabilityPercent >= repairTo.getValue()) continue;
-      if (durabilityPercent <= minDamage.getValue()) {
+      if (durabilityPercent >= repairTo.getValue()) {
+        activeMendFlags &= ~(1 << i);
+        continue;
+      }
+      if (durabilityPercent <= minDamage.getValue()
+          && (activeMendFlags & (1 << i)) == 0) {
+        activeMendFlags |= (1 << i);
+        debug(slotFromIndex(i) + " latched at " + durabilityPercent + "%");
+      }
+      if ((activeMendFlags & (1 << i)) != 0) {
         toMendFlags |= (1 << i);
       }
     }
@@ -119,6 +170,7 @@ public class AutoMend extends ToggleableModule {
       PlayerUtil.setRotation(yaw, 90.0f);
       useXPBottle(xpSlot);
       PlayerUtil.restoreRotation(yaw, pitch);
+      debug("used XP bottle from slot " + xpSlot);
 
       if (takeOff.getValue()) {
         takeOffRepaired();
@@ -149,6 +201,7 @@ public class AutoMend extends ToggleableModule {
       int containerSlot = 5 + i;
       int containerId = mc.player.containerMenu.containerId;
       mc.gameMode.handleContainerInput(containerId, containerSlot, 0, ContainerInput.QUICK_MOVE, mc.player);
+      debug("took off repaired " + slot + " (" + durabilityPercent + "%)");
       return;
     }
   }
@@ -164,6 +217,31 @@ public class AutoMend extends ToggleableModule {
       }
     }
     return true;
+  }
+
+  private void seedActiveFlags() {
+    for (int i = 0; i < 4; i++) {
+      ItemStack armor = mc.player.getItemBySlot(slotFromIndex(i));
+      if (armor.isEmpty() || !hasEnchantment(armor, Enchantments.MENDING)) continue;
+      if (getDurabilityPercent(armor) < repairTo.getValue()) {
+        activeMendFlags |= (1 << i);
+      }
+    }
+    if (activeMendFlags != 0) {
+      debug("seeded " + Integer.bitCount(activeMendFlags) + " piece(s) below "
+          + repairTo.getValue() + "%");
+    }
+  }
+
+  private String armorSummary() {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 4; i++) {
+      ItemStack armor = mc.player.getItemBySlot(slotFromIndex(i));
+      if (armor.isEmpty()) continue;
+      if (sb.length() > 0) sb.append(", ");
+      sb.append(slotFromIndex(i)).append(" ").append(getDurabilityPercent(armor)).append("%");
+    }
+    return sb.toString();
   }
 
   private List<ItemStack> getEquippedArmor() {
@@ -183,14 +261,14 @@ public class AutoMend extends ToggleableModule {
     return -1;
   }
 
-  private boolean hasNearbyEnemies() {
-    Vec3 pos = mc.player.position();
+  private List<Player> nearbyPlayers() {
+    List<Player> nearby = new ArrayList<>();
     for (var entity : mc.level.entitiesForRendering()) {
       if (entity instanceof Player p && p != mc.player) {
-        if (p.distanceTo(mc.player) <= 6.0f) return true;
+        if (p.distanceTo(mc.player) <= 6.0f) nearby.add(p);
       }
     }
-    return false;
+    return nearby;
   }
 
   private boolean hasEmptyInventorySlot() {
@@ -225,5 +303,9 @@ public class AutoMend extends ToggleableModule {
 
   private void sendDisableMessage(String reason) {
     DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, reason + " - disabling");
+  }
+
+  private void debug(String message) {
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, message);
   }
 }
