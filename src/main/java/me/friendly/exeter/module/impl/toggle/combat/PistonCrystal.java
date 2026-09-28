@@ -6,6 +6,7 @@ import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
@@ -16,7 +17,6 @@ import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -60,11 +60,18 @@ public class PistonCrystal extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
   private final Property<Boolean> showEsp = new Property<Boolean>(true, "Show ESP", "ESP");
+  private final Property<Boolean> cleanup = new Property<Boolean>(true, "Cleanup");
+  private final NumberProperty<Integer> cleanupDelay =
+      new NumberProperty<Integer>(10, 0, 40, "Cleanup Delay");
 
   private int tickCounter;
   private int lastAttemptTick;
   private Setup active;
+  private Setup pending;
+  private String pendingKey;
+  private int holdTicks;
   private int waitTicks;
+  private final List<CleanupEntry> cleanupQueue = new ArrayList<>();
   private float lastDamage;
   private ArmorProfile targetProfile;
   private net.minecraft.world.Difficulty targetDifficulty;
@@ -88,13 +95,32 @@ public class PistonCrystal extends ToggleableModule {
         swingHand,
         autoSwitch,
         switchBack,
-        showEsp);
+        showEsp,
+        cleanup,
+        cleanupDelay);
     this.listeners.add(
         new Listener<TickEvent>("piston_crystal_tick") {
           @Override
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
             onTick();
+          }
+        });
+    this.listeners.add(
+        new Listener<PacketEvent>("piston_crystal_packet") {
+          @Override
+          public void call(PacketEvent event) {
+            PlayerUtil.spoofMovement(event);
+          }
+        });
+    this.listeners.add(
+        new Listener<TickEvent>("piston_crystal_post") {
+          @Override
+          public void call(TickEvent event) {
+            if (event.getStage() != Stage.POST) return;
+            if (PlayerUtil.isSpoofing() && !PlayerUtil.consumeDeliveredFlag()) {
+              PlayerUtil.sendSpoofTopUp();
+            }
           }
         });
   }
@@ -105,6 +131,9 @@ public class PistonCrystal extends ToggleableModule {
     tickCounter = 0;
     lastAttemptTick = -100;
     active = null;
+    pending = null;
+    cleanupQueue.clear();
+    PlayerUtil.clearSpoofedLook(getLabel());
     waitTicks = 0;
     lastDamage = 0;
     DebugLogger.get()
@@ -121,6 +150,9 @@ public class PistonCrystal extends ToggleableModule {
   protected void onDisable() {
     super.onDisable();
     active = null;
+    pending = null;
+    cleanupQueue.clear();
+    PlayerUtil.clearSpoofedLook(getLabel());
     DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "disabled");
   }
 
@@ -130,17 +162,22 @@ public class PistonCrystal extends ToggleableModule {
 
     tickCounter++;
 
+    runCleanup();
+
     if (active != null) {
       tickActive();
       return;
     }
-    if (tickCounter - lastAttemptTick < delay.getValue()) return;
+    // The delay gate only starts new attempts; a held placement runs every tick.
+    if (pending == null && tickCounter - lastAttemptTick < delay.getValue()) return;
 
     int pistonSlot = findBlock(Blocks.PISTON);
     if (pistonSlot == -1) pistonSlot = findBlock(Blocks.STICKY_PISTON);
     int redstoneSlot = findBlock(Blocks.REDSTONE_BLOCK);
     int crystalSlot = PlayerUtil.findInHotbar(stack -> stack.getItem() == Items.END_CRYSTAL);
     if (pistonSlot == -1 || redstoneSlot == -1 || crystalSlot == -1) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
       DebugLogger.get()
           .log(
               getLabel(),
@@ -156,10 +193,60 @@ public class PistonCrystal extends ToggleableModule {
     }
 
     Setup setup = findSetup();
-    lastAttemptTick = tickCounter;
-    if (setup == null) return;
-    if (breakCrystalsAround(setup.head)) return;
+    if (setup == null) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
+      lastAttemptTick = tickCounter;
+      return;
+    }
+    if (breakCrystalsAround(setup.head)) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
+      lastAttemptTick = tickCounter;
+      return;
+    }
 
+    if (!rotate.getValue()) {
+      pending = null;
+      logPlacing(setup);
+      place(setup, pistonSlot, redstoneSlot, crystalSlot);
+      lastAttemptTick = tickCounter;
+      return;
+    }
+
+    String key = setup.piston + setup.dir.toString() + setup.redstone + setup.crystal;
+    if (pending == null || !key.equals(pendingKey)) {
+      pendingKey = key;
+      holdTicks = 0;
+    }
+    pending = setup;
+    // Hold the piston look on client and server every tick; a rotation packet sent on the
+    // same tick as the placement can be dropped server-side, facing the piston the wrong way.
+    float pistonYaw = yawFor(setup.dir);
+    PlayerUtil.setSpoofedLook(getLabel(), pistonYaw, 0f);
+    holdTicks++;
+    // Place only on a fresh spoof: a stall between hold and placement would otherwise place
+    // with whatever look the server last saw. Abort if delivery stalls out.
+    if (holdTicks >= 2) {
+      if (System.currentTimeMillis() - PlayerUtil.lastSpoofSendMs() < 150) {
+        logPlacing(setup);
+        place(setup, pistonSlot, redstoneSlot, crystalSlot);
+        pending = null;
+        lastAttemptTick = tickCounter;
+      } else if (holdTicks > 40) {
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "stale spoof, aborting placement at " + setup.piston);
+        pending = null;
+        PlayerUtil.clearSpoofedLook(getLabel());
+        lastAttemptTick = tickCounter;
+      }
+    }
+  }
+
+  private void logPlacing(Setup setup) {
     DebugLogger.get()
         .log(
             getLabel(),
@@ -172,44 +259,37 @@ public class PistonCrystal extends ToggleableModule {
                 + setup.crystal
                 + " damage "
                 + setup.damage);
-    place(setup, pistonSlot, redstoneSlot, crystalSlot);
   }
 
   private void place(Setup setup, int pistonSlot, int redstoneSlot, int crystalSlot) {
-    float yaw = minecraft.player.getYRot();
-    float pitch = minecraft.player.getXRot();
-
+    int origSlot = minecraft.player.getInventory().getSelectedSlot();
     if (setup.placeBase) {
       int obsidianSlot = findBlock(Blocks.OBSIDIAN);
       if (obsidianSlot == -1) return;
       swapTo(obsidianSlot);
-      if (rotate.getValue()) {
-        PlayerUtil.setRotation(PlayerUtil.getYaw(setup.base), PlayerUtil.getPitch(setup.base));
-      }
       clickPlace(setup.base);
       if (swingHand.getValue()) PlayerUtil.swingHand();
       swapBack();
     }
 
     swapTo(pistonSlot);
-    // Pistons face opposite the look direction, so look along the push axis to face the crystal.
-    // The look is also sent to the server: placement facing is computed server-side from the
-    // last sent rotation, so a client-only rotation would face the piston the wrong way.
-    float pistonYaw = yawFor(setup.dir);
-    if (rotate.getValue()) {
-      PlayerUtil.setRotation(pistonYaw, 0f);
-      sendLook(pistonYaw, 0f);
-    }
-    clickPlace(setup.piston);
-    if (swingHand.getValue()) PlayerUtil.swingHand();
+    // Silent: the piston look was spoofed server-side while holding, so the camera stays.
+    // Ordered top-up right before the use packets: guarantees a spoofed look immediately
+    // precedes placement on the wire, regardless of fps or stalls.
+    PlayerUtil.sendSpoofTopUp();
+    // Single-tick client look so prediction renders the same facing the server places.
+    // Restored synchronously before the frame renders, so the camera never visibly moves.
+    PlayerUtil.withRotation(
+        yawFor(setup.dir),
+        0f,
+        () -> {
+          clickPlace(setup.piston);
+          if (swingHand.getValue()) PlayerUtil.swingHand();
+        });
     swapBack();
 
     if (setup.placeRedstone) {
       swapTo(redstoneSlot);
-      if (rotate.getValue()) {
-        PlayerUtil.setRotation(
-            PlayerUtil.getYaw(setup.redstone), PlayerUtil.getPitch(setup.redstone));
-      }
       clickPlace(setup.redstone);
       if (swingHand.getValue()) PlayerUtil.swingHand();
       swapBack();
@@ -220,10 +300,14 @@ public class PistonCrystal extends ToggleableModule {
     if (swingHand.getValue()) PlayerUtil.swingHand();
     swapBack();
 
-    if (rotate.getValue()) {
-      PlayerUtil.restoreRotation(yaw, pitch);
-      sendLook(yaw, pitch);
+    // Heal any silent-swap divergence so later placements use the visibly held stack.
+    if (autoSwitch.getValue() && switchBack.getValue()) {
+      minecraft.player.getInventory().setSelectedSlot(origSlot);
     }
+    PlayerUtil.resyncSlot();
+
+    // Resync the server look back to the real one.
+    PlayerUtil.clearSpoofedLook(getLabel());
 
     if (showEsp.getValue()) {
       if (setup.placeBase) {
@@ -241,20 +325,46 @@ public class PistonCrystal extends ToggleableModule {
     waitTicks = 0;
   }
 
+  /**
+   * Breaks our placed redstone (letting pistons retract) and then the pistons themselves, so
+   * attempts don't leave permanently extended arms behind. Entries only break while the cell still
+   * holds our block; still-extended pistons are retried later instead of orphaning heads.
+   */
+  private void runCleanup() {
+    if (cleanupQueue.isEmpty()) return;
+    cleanupQueue.removeIf(
+        entry -> {
+          if (tickCounter < entry.dueTick) return false;
+          var state = minecraft.level.getBlockState(entry.pos);
+          if (entry.piston) {
+            if ((state.is(Blocks.PISTON) || state.is(Blocks.STICKY_PISTON))
+                && state.hasProperty(BlockStateProperties.EXTENDED)
+                && !state.getValue(BlockStateProperties.EXTENDED)) {
+              PlayerUtil.breakBlock(entry.pos, Direction.UP);
+              return true;
+            }
+            if (state.isAir()) return true;
+            entry.dueTick = tickCounter + 5;
+            return false;
+          }
+          if (state.is(Blocks.REDSTONE_BLOCK)) {
+            PlayerUtil.breakBlock(entry.pos, Direction.UP);
+          }
+          return true;
+        });
+  }
+
   private void swapTo(int slot) {
     if (autoSwitch.getValue() && slot != minecraft.player.getInventory().getSelectedSlot()) {
       PlayerUtil.swapTo(slot);
+      // Keep the client on the same slot so client-side placement prediction consumes
+      // the right stack instead of ghost-consuming the visibly held one.
+      minecraft.player.getInventory().setSelectedSlot(slot);
     }
   }
 
   private void swapBack() {
     if (autoSwitch.getValue() && switchBack.getValue()) PlayerUtil.swapBack();
-  }
-
-  private void sendLook(float yaw, float pitch) {
-    if (minecraft.player == null || minecraft.player.connection == null) return;
-    minecraft.player.connection.send(
-        new ServerboundMovePlayerPacket.Rot(yaw, pitch, minecraft.player.onGround(), false));
   }
 
   private void tickActive() {
@@ -271,6 +381,7 @@ public class PistonCrystal extends ToggleableModule {
     if (extended) {
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "piston extended, breaking");
       breakCrystalsAround(active.head);
+      scheduleCleanup(active);
       active = null;
       return;
     }
@@ -280,8 +391,16 @@ public class PistonCrystal extends ToggleableModule {
               getLabel(),
               DebugLogger.Level.WARN,
               "piston never extended after " + waitTicks + " ticks, resetting");
+      scheduleCleanup(active);
       active = null;
     }
+  }
+
+  private void scheduleCleanup(Setup setup) {
+    if (!cleanup.getValue() || setup == null) return;
+    int due = tickCounter + cleanupDelay.getValue();
+    cleanupQueue.add(new CleanupEntry(setup.redstone, due, false));
+    cleanupQueue.add(new CleanupEntry(setup.piston, due + 3, true));
   }
 
   /** Breaks crystals around the head position that are within break range. */
@@ -300,15 +419,8 @@ public class PistonCrystal extends ToggleableModule {
   }
 
   private void breakCrystal(EndCrystal crystal) {
-    float yaw = minecraft.player.getYRot();
-    float pitch = minecraft.player.getXRot();
-    if (rotate.getValue()) {
-      PlayerUtil.setRotation(
-          PlayerUtil.getYaw(crystal.blockPosition()), PlayerUtil.getPitch(crystal.blockPosition()));
-    }
     minecraft.gameMode.attack(minecraft.player, crystal);
     if (swingHand.getValue()) PlayerUtil.swingHand();
-    if (rotate.getValue()) PlayerUtil.restoreRotation(yaw, pitch);
     DebugLogger.get()
         .log(getLabel(), DebugLogger.Level.INFO, "broke crystal at " + crystal.blockPosition());
   }
@@ -423,6 +535,10 @@ public class PistonCrystal extends ToggleableModule {
       double range,
       boolean placeBase) {
     if (!PlayerUtil.isAirOrReplaceable(pistonPos)) return null;
+    // Don't rebuild where a piston already sits (e.g. our last setup before cleanup
+    // breaks it); otherwise every cycle replays the same spot.
+    var existing = minecraft.level.getBlockState(pistonPos);
+    if (existing.is(Blocks.PISTON) || existing.is(Blocks.STICKY_PISTON)) return null;
     double rangeSq = range * range;
     if (eye.distanceToSqr(Vec3.atCenterOf(pistonPos)) > rangeSq) return null;
     if (eye.distanceToSqr(Vec3.atCenterOf(base)) > rangeSq) return null;
@@ -705,6 +821,18 @@ public class PistonCrystal extends ToggleableModule {
     RedstoneSpot(BlockPos pos, boolean place) {
       this.pos = pos;
       this.place = place;
+    }
+  }
+
+  private static class CleanupEntry {
+    final BlockPos pos;
+    int dueTick;
+    final boolean piston;
+
+    CleanupEntry(BlockPos pos, int dueTick, boolean piston) {
+      this.pos = pos;
+      this.dueTick = dueTick;
+      this.piston = piston;
     }
   }
 
