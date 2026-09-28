@@ -11,6 +11,8 @@
       "MixinClientPlayer",
       "MixinLevelRenderer",
       "MixinLivingEntity",
-      "MixinMinecraft"
+      "MixinMinecraft",
+      "MixinMouseHandler",
+      "MixinCamera"
   ]
 }

@@ -19,9 +19,11 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoMend;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
+import me.friendly.exeter.module.impl.toggle.combat.ElytraTarget;
 import me.friendly.exeter.module.impl.toggle.combat.PacketMine;
 import me.friendly.exeter.module.impl.toggle.combat.PistonPush;
 import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
+import me.friendly.exeter.module.impl.toggle.misc.AutoFirework;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
@@ -36,6 +38,7 @@ import me.friendly.exeter.module.impl.toggle.render.BlockEsp;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
+import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
@@ -70,6 +73,8 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoArmor());
     register(new AutoMend());
     register(new AutoGear());
+    register(new AutoFirework());
+    register(new ElytraTarget());
     register(new SelfBed());
     register(new BedAura());
     register(new Speed());
@@ -104,6 +109,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new NotificationHud());
     register(new BlockEsp());
     register(new EntityEsp());
+    register(new FreeLook());
 
     for (Module m : registry) {
       if (m instanceof Debug debug) {
