@@ -1,9 +1,13 @@
 package me.friendly.exeter.util;
 
 import java.util.function.Predicate;
+import me.friendly.exeter.events.PacketEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.world.InteractionHand;
@@ -65,6 +69,19 @@ public class PlayerUtil {
     previousSlot = -1;
   }
 
+  /**
+   * Forces the server selection to match the client's actual selected slot. Silent swaps move only
+   * the server selection, so any unbalanced swap (switch-back off, early return, stale slot) leaves
+   * the two diverged and later placements consume from the wrong stack. Call at the end of a
+   * placement sequence to heal it unconditionally.
+   */
+  public static void resyncSlot() {
+    if (mc.player == null || mc.player.connection == null) return;
+    previousSlot = -1;
+    mc.player.connection.send(
+        new ServerboundSetCarriedItemPacket(mc.player.getInventory().getSelectedSlot()));
+  }
+
   public static void withRotation(double yaw, double pitch, Runnable action) {
     if (mc.player == null) return;
     float origYaw = mc.player.getYRot();
@@ -86,6 +103,164 @@ public class PlayerUtil {
     if (mc.player == null) return;
     mc.player.setYRot(yaw);
     mc.player.setXRot(pitch);
+  }
+
+  /**
+   * Silent rotation in the style of Homovore's RotationManager. Modules engage a spoofed look with
+   * {@link #setSpoofedLook} and every outgoing movement packet has its look replaced 1:1 by {@link
+   * #spoofMovement}, so the server sees the spoofed facing while the client camera never moves.
+   * Replacing 1:1 matters: the server kicks on two position packets in one tick, so extra movement
+   * packets must never be sent alongside vanilla's own.
+   */
+  private static boolean spoofing = false;
+
+  private static String spoofOwner = null;
+  private static float spoofYaw;
+  private static float spoofPitch;
+  private static boolean swapping = false;
+  private static boolean deliveredThisTick = false;
+  private static int spoofDebugCount = 0;
+  private static long lastSpoofSendMs = 0;
+
+  public static void setSpoofedLook(String owner, float yaw, float pitch) {
+    spoofing = true;
+    spoofOwner = owner;
+    spoofYaw = yaw;
+    spoofPitch = pitch;
+  }
+
+  public static boolean isSpoofing() {
+    return spoofing;
+  }
+
+  /** Releases this owner's spoof. Vanilla's next movement packet resyncs the server look. */
+  public static void clearSpoofedLook(String owner) {
+    if (!spoofing || (spoofOwner != null && !spoofOwner.equals(owner))) return;
+    spoofing = false;
+    spoofOwner = null;
+  }
+
+  /**
+   * PacketEvent handler for outgoing movement. Cancels vanilla's packet and resends it with the
+   * spoofed look, keeping exactly one movement packet on the wire.
+   */
+  public static void spoofMovement(PacketEvent event) {
+    // Inbound reads (either side, e.g. the integrated server reading our packet over loopback)
+    // must never be touched: canceling + resending those loops forever and the server would
+    // never apply movement.
+    if (!event.isSending()) return;
+    if (!spoofing || swapping) return;
+    if (event.isCanceled()) return;
+    if (!(event.getPacket() instanceof ServerboundMovePlayerPacket move)) return;
+    if (!move.hasRotation() && !move.hasPosition()) return;
+    double x = move.getX(0.0);
+    double y = move.getY(0.0);
+    double z = move.getZ(0.0);
+    if (!Double.isFinite(x)
+        || !Double.isFinite(y)
+        || !Double.isFinite(z)
+        || !Float.isFinite(spoofYaw)
+        || !Float.isFinite(spoofPitch)) {
+      DebugLogger.get()
+          .logFile(
+              "Spoof",
+              "dropping non-finite movement, vanilla=("
+                  + x
+                  + ","
+                  + y
+                  + ","
+                  + z
+                  + ") spoof=("
+                  + spoofYaw
+                  + ","
+                  + spoofPitch
+                  + ") owner="
+                  + spoofOwner);
+      event.setCanceled(true);
+      return;
+    }
+    Packet<?> replacement;
+    if (move.hasPosition()) {
+      replacement =
+          new ServerboundMovePlayerPacket.PosRot(
+              x, y, z, spoofYaw, spoofPitch, move.isOnGround(), move.horizontalCollision());
+    } else {
+      replacement =
+          new ServerboundMovePlayerPacket.Rot(
+              spoofYaw, spoofPitch, move.isOnGround(), move.horizontalCollision());
+    }
+    event.setCanceled(true);
+    swapping = true;
+    try {
+      if (mc.player != null && mc.player.connection != null) {
+        DebugLogger.get()
+            .logFile(
+                "Spoof",
+                event.getPacket().getClass().getSimpleName()
+                    + " replaced: look=("
+                    + spoofYaw
+                    + ","
+                    + spoofPitch
+                    + ") owner="
+                    + spoofOwner);
+        if (spoofDebugCount < 40) {
+          spoofDebugCount++;
+          DebugLogger.get()
+              .logFile(
+                  "SpoofDbg", Thread.currentThread().getName() + " sender=" + findPacketSender());
+        }
+        mc.player.connection.send(replacement);
+        deliveredThisTick = true;
+        lastSpoofSendMs = System.currentTimeMillis();
+      }
+    } finally {
+      swapping = false;
+    }
+  }
+
+  /** Temporary: identifies who is sending movement packets at burst rates. */
+  private static String findPacketSender() {
+    for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+      String cls = frame.getClassName();
+      if (cls.startsWith("java.")
+          || cls.startsWith("jdk.")
+          || cls.contains("me.friendly.exeter.util.PlayerUtil")
+          || cls.contains("me.friendly.api.event")
+          || cls.contains("me.friendly.exeter.mixin.MixinNetworkManager")
+          || cls.contains("net.minecraft.network.Connection")
+          || cls.contains("io.netty")
+          || cls.contains("org.spongepowered")) {
+        continue;
+      }
+      return cls + "." + frame.getMethodName() + ":" + frame.getLineNumber();
+    }
+    return "?";
+  }
+
+  /**
+   * Returns and clears the per-tick delivery flag. Modules call this on tick end: if vanilla sent
+   * nothing replaceable that tick (idle ticks), a rotation-only top-up is needed instead.
+   */
+  public static boolean consumeDeliveredFlag() {
+    boolean delivered = deliveredThisTick;
+    deliveredThisTick = false;
+    return delivered;
+  }
+
+  /** Rotation-only spoof top-up for ticks where vanilla sent no movement packet. Never kicks. */
+  public static void sendSpoofTopUp() {
+    if (!spoofing || mc.player == null || mc.player.connection == null) return;
+    mc.player.connection.send(
+        new ServerboundMovePlayerPacket.Rot(
+            spoofYaw, spoofPitch, mc.player.onGround(), mc.player.horizontalCollision));
+    lastSpoofSendMs = System.currentTimeMillis();
+    DebugLogger.get()
+        .logFile("Spoof", "top-up Rot sent: look=(" + spoofYaw + "," + spoofPitch + ")");
+  }
+
+  /** Millis timestamp of the last spoofed-look packet sent, for placement freshness gates. */
+  public static long lastSpoofSendMs() {
+    return lastSpoofSendMs;
   }
 
   public static void useItemOn(BlockPos pos, Direction face) {
