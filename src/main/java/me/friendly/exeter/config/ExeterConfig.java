@@ -83,14 +83,14 @@ public class ExeterConfig {
 
   /** Saves all module configurations to TOML files. */
   public void saveAll() {
-    DebugLogger.get().logSystem("Config", "=== SAVE ALL START ===");
+    DebugLogger.get().logFile("Config", "=== SAVE ALL START ===");
     int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      DebugLogger.get().logSystem("Config", "Saving module " + count + ": " + module.getLabel());
+      DebugLogger.get().logFile("Config", "Saving module " + count + ": " + module.getLabel());
       saveModule(module);
       count++;
     }
-    DebugLogger.get().logSystem("Config", "=== SAVE ALL END (" + count + " modules) ===");
+    DebugLogger.get().logFile("Config", "=== SAVE ALL END (" + count + " modules) ===");
   }
 
   /** Loads a single module's configuration from its TOML file. */
@@ -380,7 +380,7 @@ public class ExeterConfig {
     String key = property.getAliases()[0];
     Object value = property.getValue();
     DebugLogger.get()
-        .logSystem(
+        .logFile(
             "Config",
             "  property: "
                 + key
@@ -403,7 +403,7 @@ public class ExeterConfig {
       String childKey = key + "__" + child.getAliases()[0];
       Object childValue = child.getValue();
       DebugLogger.get()
-          .logSystem(
+          .logFile(
               "Config",
               "  child property: "
                   + childKey
@@ -442,7 +442,7 @@ public class ExeterConfig {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
     File file = configDir.resolve(fileName).toFile();
     DebugLogger.get()
-        .logSystem("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
+        .logFile("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
 
     try {
       Map<String, Object> data = new HashMap<>();
@@ -457,9 +457,9 @@ public class ExeterConfig {
         moduleData.put("keybind", (long) (keybind != null ? keybind.getKey() : 0));
         moduleData.put("keycodes", "sdl");
         data.put("module", moduleData);
-        DebugLogger.get().logSystem("Config", "  module.enabled = " + toggleable.isRunning());
+        DebugLogger.get().logFile("Config", "  module.enabled = " + toggleable.isRunning());
         DebugLogger.get()
-            .logSystem(
+            .logFile(
                 "Config", "  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));
       }
 
@@ -471,7 +471,7 @@ public class ExeterConfig {
         }
         if (!settings.isEmpty()) {
           data.put("settings", settings);
-          DebugLogger.get().logSystem("Config", "  settings map size = " + settings.size());
+          DebugLogger.get().logFile("Config", "  settings map size = " + settings.size());
         }
       }
 
@@ -484,7 +484,7 @@ public class ExeterConfig {
         hudData.put("corner", hudModule.getCorner().name());
         data.put("hud", hudData);
         DebugLogger.get()
-            .logSystem(
+            .logFile(
                 "Config",
                 "  HUD position: x="
                     + hudModule.getX()
@@ -519,9 +519,9 @@ public class ExeterConfig {
         data.put("panels", panelsData);
       }
 
-      DebugLogger.get().logSystem("Config", "  writing TOML to " + file.getAbsolutePath());
+      DebugLogger.get().logFile("Config", "  writing TOML to " + file.getAbsolutePath());
       tomlWriter.write(data, file);
-      DebugLogger.get().logSystem("Config", "  write SUCCESS for " + module.getLabel());
+      DebugLogger.get().logFile("Config", "  write SUCCESS for " + module.getLabel());
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to save config for " + module.getLabel() + ": " + e.getMessage());
