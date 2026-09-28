@@ -6,6 +6,7 @@ import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
@@ -16,7 +17,6 @@ import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -41,6 +41,9 @@ public class PistonPush extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
   private final Property<Boolean> showEsp = new Property<Boolean>(true, "Show ESP", "ESP");
+  private final Property<Boolean> cleanup = new Property<Boolean>(true, "Cleanup");
+  private final NumberProperty<Integer> cleanupDelay =
+      new NumberProperty<Integer>(10, 0, 40, "Cleanup Delay");
 
   private int tickCounter;
   private int lastAttemptTick;
@@ -49,18 +52,48 @@ public class PistonPush extends ToggleableModule {
   private String lastNullReason;
   private String lastPushKey;
   private String lastVerifyKey;
+  private PushSetup pending;
+  private String pendingKey;
+  private int holdTicks;
+  private final List<CleanupEntry> cleanupQueue = new ArrayList<>();
 
   public PistonPush() {
     super("PistonPush", new String[] {"pistonpush", "piston-push"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Pushes players with pistons.");
     offerProperties(
-        targetRange, placeRange, attemptDelay, rotate, swingHand, autoSwitch, switchBack, showEsp);
+        targetRange,
+        placeRange,
+        attemptDelay,
+        rotate,
+        swingHand,
+        autoSwitch,
+        switchBack,
+        showEsp,
+        cleanup,
+        cleanupDelay);
     this.listeners.add(
         new Listener<TickEvent>("piston_push_tick") {
           @Override
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
             onTick();
+          }
+        });
+    this.listeners.add(
+        new Listener<PacketEvent>("piston_push_packet") {
+          @Override
+          public void call(PacketEvent event) {
+            PlayerUtil.spoofMovement(event);
+          }
+        });
+    this.listeners.add(
+        new Listener<TickEvent>("piston_push_post") {
+          @Override
+          public void call(TickEvent event) {
+            if (event.getStage() != Stage.POST) return;
+            if (PlayerUtil.isSpoofing() && !PlayerUtil.consumeDeliveredFlag()) {
+              PlayerUtil.sendSpoofTopUp();
+            }
           }
         });
   }
@@ -74,6 +107,10 @@ public class PistonPush extends ToggleableModule {
     lastNullReason = null;
     lastPushKey = null;
     lastVerifyKey = null;
+    pending = null;
+    pendingKey = null;
+    cleanupQueue.clear();
+    PlayerUtil.clearSpoofedLook(getLabel());
     DebugLogger.get()
         .log(
             getLabel(),
@@ -87,6 +124,9 @@ public class PistonPush extends ToggleableModule {
   @Override
   protected void onDisable() {
     super.onDisable();
+    pending = null;
+    cleanupQueue.clear();
+    PlayerUtil.clearSpoofedLook(getLabel());
     DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "disabled");
   }
 
@@ -96,6 +136,7 @@ public class PistonPush extends ToggleableModule {
 
     tickCounter++;
 
+    runCleanup();
     if (verifyPos != null) {
       var state = minecraft.level.getBlockState(verifyPos);
       String result;
@@ -118,12 +159,15 @@ public class PistonPush extends ToggleableModule {
       verifyPos = null;
     }
 
-    if (tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
+    // The delay gate only starts new attempts; a held placement runs every tick.
+    if (pending == null && tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
 
     int pistonSlot = findBlock(Blocks.PISTON);
     if (pistonSlot == -1) pistonSlot = findBlock(Blocks.STICKY_PISTON);
     int redstoneSlot = findBlock(Blocks.REDSTONE_BLOCK);
     if (pistonSlot == -1 || redstoneSlot == -1) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
       DebugLogger.get()
           .log(
               getLabel(),
@@ -133,10 +177,16 @@ public class PistonPush extends ToggleableModule {
     }
 
     Player target = findTarget();
-    if (target == null) return;
+    if (target == null) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
+      return;
+    }
 
     PushSetup setup = findSetup(target);
     if (setup == null) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
       DebugLogger.get()
           .log(
               getLabel(),
@@ -162,8 +212,58 @@ public class PistonPush extends ToggleableModule {
     }
     lastNullReason = null;
 
-    if (alreadyPowered(setup)) return;
+    if (alreadyPowered(setup)) {
+      pending = null;
+      PlayerUtil.clearSpoofedLook(getLabel());
+      return;
+    }
 
+    if (!rotate.getValue()) {
+      pending = null;
+      logPushDetail(target, setup);
+      placePush(setup, pistonSlot, redstoneSlot);
+      lastAttemptTick = tickCounter;
+      return;
+    }
+
+    String key = target.getName().getString() + setup.pistonPos + setup.facing + setup.redstonePos;
+    if (pending == null || !key.equals(pendingKey)) {
+      pendingKey = key;
+      holdTicks = 0;
+    }
+    pending = setup;
+    // Hold the placement look on client and server every tick. A rotation packet sent on the
+    // same tick as the placement can be dropped server-side (e.g. while a teleport ack is
+    // pending after a moved-wrongly rollback), so the look is held until it has gone out
+    // repeatedly before anything is placed.
+    float pistonYaw = yawFor(setup.facing.getOpposite());
+    PlayerUtil.setSpoofedLook(getLabel(), pistonYaw, 0f);
+    holdTicks++;
+    // Place only on a fresh spoof: a stall between hold and placement would otherwise place
+    // with whatever look the server last saw. Abort if delivery stalls out.
+    if (holdTicks >= 2) {
+      if (System.currentTimeMillis() - PlayerUtil.lastSpoofSendMs() < 150) {
+        logPushDetail(target, setup);
+        placePush(setup, pistonSlot, redstoneSlot);
+        pending = null;
+        lastAttemptTick = tickCounter;
+      } else if (holdTicks > 40) {
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "stale spoof for "
+                    + target.getName().getString()
+                    + ", aborting placement at "
+                    + setup.pistonPos);
+        pending = null;
+        PlayerUtil.clearSpoofedLook(getLabel());
+        lastAttemptTick = tickCounter;
+      }
+    }
+  }
+
+  private void logPushDetail(Player target, PushSetup setup) {
     // Per-attempt detail goes to the file only; chat/notifications only on a new setup.
     String pushKey =
         target.getName().getString() + setup.pistonPos + setup.facing + setup.redstonePos;
@@ -182,52 +282,66 @@ public class PistonPush extends ToggleableModule {
             + minecraft.player.getXRot()
             + ") sentLook=("
             + yawFor(setup.facing.getOpposite())
-            + ", 0.0)";
+            + ", 0.0) rotate="
+            + rotate.getValue();
     DebugLogger.get().logFile(getLabel(), detail);
     if (!pushKey.equals(lastPushKey)) {
       lastPushKey = pushKey;
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, detail);
     }
-    placePush(setup, pistonSlot, redstoneSlot);
-    lastAttemptTick = tickCounter;
   }
 
   private void placePush(PushSetup setup, int pistonSlot, int redstoneSlot) {
-    float yaw = minecraft.player.getYRot();
-    float pitch = minecraft.player.getXRot();
-    boolean needSwitch =
+    int origSlot = minecraft.player.getInventory().getSelectedSlot();
+    boolean needPistonSwitch =
         autoSwitch.getValue() && pistonSlot != minecraft.player.getInventory().getSelectedSlot();
 
-    if (needSwitch) PlayerUtil.swapTo(pistonSlot);
-    // Pistons face opposite the look direction, so look away from the push to face the player.
-    // The look is also sent to the server: placement facing is computed server-side from the
-    // last sent rotation, so a client-only rotation would face the piston the wrong way.
+    if (needPistonSwitch) {
+      PlayerUtil.swapTo(pistonSlot);
+      // Keep the client on the same slot so client-side placement prediction consumes
+      // the right stack instead of ghost-consuming the visibly held one.
+      minecraft.player.getInventory().setSelectedSlot(pistonSlot);
+    }
+    // Ordered top-up right before the use packets: guarantees a spoofed look immediately
+    // precedes placement on the wire, regardless of fps or stalls.
+    PlayerUtil.sendSpoofTopUp();
+    // Single-tick client look so prediction renders the same facing the server places.
+    // Restored synchronously before the frame renders, so the camera never visibly moves.
+    // Without this the client predicts with the real look and every piston renders wrong.
     float pistonYaw = yawFor(setup.facing.getOpposite());
-    if (rotate.getValue()) {
-      PlayerUtil.setRotation(pistonYaw, 0f);
-      sendLook(pistonYaw, 0f);
-    }
-    clickPlace(setup.pistonPos);
-    if (swingHand.getValue()) PlayerUtil.swingHand();
-    if (needSwitch && switchBack.getValue()) PlayerUtil.swapBack();
+    PlayerUtil.withRotation(
+        pistonYaw,
+        0f,
+        () -> {
+          // Silent: the placement look was spoofed server-side while holding, so the camera stays.
+          clickPlace(setup.pistonPos);
+          if (swingHand.getValue()) PlayerUtil.swingHand();
+          if (needPistonSwitch && switchBack.getValue()) PlayerUtil.swapBack();
 
-    needSwitch =
-        autoSwitch.getValue() && redstoneSlot != minecraft.player.getInventory().getSelectedSlot();
-    if (needSwitch) PlayerUtil.swapTo(redstoneSlot);
-    if (rotate.getValue()) {
-      PlayerUtil.setRotation(
-          PlayerUtil.getYaw(setup.redstonePos), PlayerUtil.getPitch(setup.redstonePos));
-      sendLook(
-          (float) PlayerUtil.getYaw(setup.redstonePos),
-          (float) PlayerUtil.getPitch(setup.redstonePos));
-    }
-    clickPlace(setup.redstonePos);
-    if (swingHand.getValue()) PlayerUtil.swingHand();
-    if (needSwitch && switchBack.getValue()) PlayerUtil.swapBack();
+          boolean needRedstoneSwitch =
+              autoSwitch.getValue()
+                  && redstoneSlot != minecraft.player.getInventory().getSelectedSlot();
+          if (needRedstoneSwitch) {
+            PlayerUtil.swapTo(redstoneSlot);
+            minecraft.player.getInventory().setSelectedSlot(redstoneSlot);
+          }
+          clickPlace(setup.redstonePos);
+          if (swingHand.getValue()) PlayerUtil.swingHand();
+          if (needRedstoneSwitch && switchBack.getValue()) PlayerUtil.swapBack();
+        });
 
-    if (rotate.getValue()) {
-      PlayerUtil.restoreRotation(yaw, pitch);
-      sendLook(yaw, pitch);
+    // Resync the server look back to the real one.
+    PlayerUtil.clearSpoofedLook(getLabel());
+    // Heal any silent-swap divergence so later placements use the visibly held stack.
+    if (autoSwitch.getValue() && switchBack.getValue()) {
+      minecraft.player.getInventory().setSelectedSlot(origSlot);
+    }
+    PlayerUtil.resyncSlot();
+
+    if (cleanup.getValue()) {
+      int due = tickCounter + cleanupDelay.getValue();
+      cleanupQueue.add(new CleanupEntry(setup.redstonePos, due, false));
+      cleanupQueue.add(new CleanupEntry(setup.pistonPos, due + 3, true));
     }
 
     verifyPos = setup.pistonPos;
@@ -238,6 +352,35 @@ public class PistonPush extends ToggleableModule {
       EspRenderManager.getInstance()
           .addBoxEsp(new AABB(setup.redstonePos), 3.0f, true, true, -1, -1);
     }
+  }
+
+  /**
+   * Breaks our placed redstone (letting pistons retract) and then the pistons themselves, so
+   * attempts don't leave permanently extended arms behind. Entries only break while the cell still
+   * holds our block; still-extended pistons are retried later instead of orphaning heads.
+   */
+  private void runCleanup() {
+    if (cleanupQueue.isEmpty()) return;
+    cleanupQueue.removeIf(
+        entry -> {
+          if (tickCounter < entry.dueTick) return false;
+          var state = minecraft.level.getBlockState(entry.pos);
+          if (entry.piston) {
+            if ((state.is(Blocks.PISTON) || state.is(Blocks.STICKY_PISTON))
+                && state.hasProperty(BlockStateProperties.EXTENDED)
+                && !state.getValue(BlockStateProperties.EXTENDED)) {
+              PlayerUtil.breakBlock(entry.pos, Direction.UP);
+              return true;
+            }
+            if (state.isAir()) return true;
+            entry.dueTick = tickCounter + 5;
+            return false;
+          }
+          if (state.is(Blocks.REDSTONE_BLOCK)) {
+            PlayerUtil.breakBlock(entry.pos, Direction.UP);
+          }
+          return true;
+        });
   }
 
   /**
@@ -253,12 +396,6 @@ public class PistonPush extends ToggleableModule {
       return;
     }
     PlayerUtil.useItemOn(cell, Direction.UP);
-  }
-
-  private void sendLook(float yaw, float pitch) {
-    if (minecraft.player == null || minecraft.player.connection == null) return;
-    minecraft.player.connection.send(
-        new ServerboundMovePlayerPacket.Rot(yaw, pitch, minecraft.player.onGround(), false));
   }
 
   private PushSetup findSetup(Player target) {
@@ -395,6 +532,18 @@ public class PistonPush extends ToggleableModule {
       this.pistonPos = pistonPos;
       this.redstonePos = redstonePos;
       this.facing = facing;
+    }
+  }
+
+  private static class CleanupEntry {
+    final BlockPos pos;
+    int dueTick;
+    final boolean piston;
+
+    CleanupEntry(BlockPos pos, int dueTick, boolean piston) {
+      this.pos = pos;
+      this.dueTick = dueTick;
+      this.piston = piston;
     }
   }
 }
