@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 public class ElytraTarget extends ToggleableModule {
 
   private final NumberProperty<Double> range =
-      new NumberProperty<Double>(12.0, 1.0, 30.0, "Range", "range");
+      new NumberProperty<Double>(12.0, 1.0, 120.0, "Range", "range");
   private final NumberProperty<Float> speed =
       new NumberProperty<Float>(30.0f, 1.0f, 180.0f, "Speed", "speed");
   private final Property<Boolean> showTarget = new Property<Boolean>(true, "Show Target", "esp");
