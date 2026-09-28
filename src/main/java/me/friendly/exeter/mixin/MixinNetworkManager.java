@@ -27,7 +27,7 @@ public class MixinNetworkManager {
       cancellable = true)
   public void onPacketSend(
       Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
-    PacketEvent packetSendEvent = new PacketEvent(packet);
+    PacketEvent packetSendEvent = new PacketEvent(packet, true);
     Exeter.getInstance().getEventManager().dispatch(packetSendEvent);
 
     if (packetSendEvent.isCanceled()) {
@@ -37,7 +37,7 @@ public class MixinNetworkManager {
 
   @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)
   public void onPacketReceive(ChannelHandlerContext chc, Packet<?> packet, CallbackInfo info) {
-    PacketEvent packetReceiveEvent = new PacketEvent(packet);
+    PacketEvent packetReceiveEvent = new PacketEvent(packet, false);
     Exeter.getInstance().getEventManager().dispatch(packetReceiveEvent);
 
     if (packetReceiveEvent.isCanceled()) {

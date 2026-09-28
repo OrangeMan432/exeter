@@ -41,7 +41,9 @@ def getHash() {
 }
 
 def getBuild() {
-    String tag = git("describe", "--tags", "--abbrev=0")
+    // The dev tag is a rolling marker maintained by the dev release workflow; exclude it
+    // or it shadows real build tags like b28 in the watermark.
+    String tag = git("describe", "--tags", "--abbrev=0", "--exclude=dev")
     String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
     return "${tag ?: 'unknown'}-mc${project.minecraft_version}+${commitSinceTag ?: '0'}"
 }
