@@ -1,4 +1,4 @@
-package me.friendly.exeter.module.impl.toggle.render;
+package me.friendly.exeter.module.impl.toggle.client;
 
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -6,7 +6,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 
 public final class HUDEditor extends ToggleableModule {
   public HUDEditor() {
-    super("HUDEditor", new String[] {"hudeditor", "hudedit"}, ModuleType.RENDER);
+    super("HUDEditor", new String[] {"hudeditor", "hudedit"}, ModuleType.CLIENT);
     setDescription("Opens the HUD editor to reposition overlay elements.");
   }
 
