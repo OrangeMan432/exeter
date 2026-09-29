@@ -33,6 +33,16 @@ public final class HudEditorScreen extends Screen {
     return instance;
   }
 
+  /** The ClickGUI Background setting dims every fullscreen UI, the HUD editor included. */
+  private static boolean isBackgroundEnabled() {
+    if (Exeter.getInstance() == null) {
+      return true;
+    }
+    var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    return !(module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui gui)
+        || gui.showBackground.getValue();
+  }
+
   private void ensurePanel() {
     if (hudPanel != null) return;
 
@@ -58,7 +68,9 @@ public final class HudEditorScreen extends Screen {
   public void extractRenderState(
       GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
     RenderMethods.guiGraphics = guiGraphics;
-    RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
+    if (isBackgroundEnabled()) {
+      RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
+    }
 
     int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();

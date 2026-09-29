@@ -32,11 +32,23 @@ public final class WindowScreen extends Screen {
     return windows;
   }
 
+  /** The ClickGUI Background setting dims every fullscreen UI, windows included. */
+  private static boolean isBackgroundEnabled() {
+    if (Exeter.getInstance() == null) {
+      return true;
+    }
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    return !(module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui gui)
+        || gui.showBackground.getValue();
+  }
+
   @Override
   public void extractRenderState(
       GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
     RenderMethods.guiGraphics = guiGraphics;
-    RenderMethods.drawGradientRect(0, 0, this.width, this.height, 0x80000000, 0x40000000);
+    if (isBackgroundEnabled()) {
+      RenderMethods.drawGradientRect(0, 0, this.width, this.height, 0x80000000, 0x40000000);
+    }
 
     for (Window window : windows) {
       if (!window.isHidden()) {
