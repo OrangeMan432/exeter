@@ -1,9 +1,9 @@
 package me.friendly.api.minecraft.render;
 
-import java.awt.Color;
-import java.awt.Rectangle;
 import java.nio.ByteBuffer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import org.lwjgl.opengl.GL11;
 
@@ -13,29 +13,14 @@ public final class RenderMethods {
   public static java.nio.FloatBuffer matModelView = java.nio.FloatBuffer.allocate(16);
   public static java.nio.FloatBuffer matProjection = java.nio.FloatBuffer.allocate(16);
 
-  public static Color rainbow(long offset, float fade) {
+  public static int rainbow(long offset, float fade) {
     float hue = (float) (System.nanoTime() + offset) / 1.0E10f % 1.0f;
-    long color = Long.parseLong(Integer.toHexString(Color.HSBtoRGB(hue, 1.0f, 1.0f)), 16);
-    Color c = new Color((int) color);
-    return new Color(
-        (float) c.getRed() / 255.0f * fade,
-        (float) c.getGreen() / 255.0f * fade,
-        (float) c.getBlue() / 255.0f * fade,
-        (float) c.getAlpha() / 255.0f);
+    int color = Mth.hsvToRgb(hue, 1.0f, 1.0f);
+    return ARGB.scaleRGB(color, fade);
   }
 
-  public static Color blend(Color color1, Color color2, float ratio) {
-    float rat = 1.0f - ratio;
-    float[] rgb1 = new float[3];
-    float[] rgb2 = new float[3];
-    color1.getColorComponents(rgb1);
-    color2.getColorComponents(rgb2);
-    Color color =
-        new Color(
-            rgb1[0] * ratio + rgb2[0] * rat,
-            rgb1[1] * ratio + rgb2[1] * rat,
-            rgb1[2] * ratio + rgb2[2] * rat);
-    return color;
+  public static int blend(int color1, int color2, float ratio) {
+    return ARGB.srgbLerp(1.0f - ratio, color2, color1);
   }
 
   public static double getDiff(double lastI, double i, float ticks, double ownI) {
@@ -160,15 +145,6 @@ public final class RenderMethods {
     GL11.glEnable((int) 3553);
   }
 
-  public static void drawRect(Rectangle rectangle, int color) {
-    RenderMethods.drawRect(
-        rectangle.x,
-        rectangle.y,
-        rectangle.x + rectangle.width,
-        rectangle.y + rectangle.height,
-        color);
-  }
-
   public static void drawRect(float x, float y, float x1, float y1, int color) {
     if (guiGraphics != null) {
       guiGraphics.fill((int) x, (int) y, (int) x1, (int) y1, color);
@@ -247,23 +223,6 @@ public final class RenderMethods {
     RenderMethods.drawHLine(x + 1.0f, x + 1.0f, y1 - 2.0f, borderC);
     RenderMethods.drawRect(x + 1.0f, y + 1.0f, x1 - 1.0f, y1 - 1.0f, insideC);
     GL11.glScalef((float) 2.0f, (float) 2.0f, (float) 2.0f);
-    RenderMethods.disableGL2D();
-  }
-
-  public static void drawBorderedRect(
-      Rectangle rectangle, float width, int internalColor, int borderColor) {
-    float x = rectangle.x;
-    float y = rectangle.y;
-    float x1 = rectangle.x + rectangle.width;
-    float y1 = rectangle.y + rectangle.height;
-    RenderMethods.enableGL2D();
-    RenderMethods.glColor(internalColor);
-    RenderMethods.drawRect(x + width, y + width, x1 - width, y1 - width);
-    RenderMethods.glColor(borderColor);
-    RenderMethods.drawRect(x + 1.0f, y, x1 - 1.0f, y + width);
-    RenderMethods.drawRect(x, y, x + width, y1);
-    RenderMethods.drawRect(x1 - width, y, x1, y1);
-    RenderMethods.drawRect(x + 1.0f, y1 - width, x1 - 1.0f, y1);
     RenderMethods.disableGL2D();
   }
 
@@ -478,8 +437,6 @@ public final class RenderMethods {
     GL11.glScalef((float) 2.0f, (float) 2.0f, (float) 2.0f);
     RenderMethods.disableGL2D();
   }
-
-  public static void glColor(Color color) {}
 
   public static void glColor(int hex) {}
 

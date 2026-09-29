@@ -1,9 +1,9 @@
 package me.friendly.exeter.module.impl.active.render;
 
-import java.awt.*;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 /**
@@ -60,41 +60,32 @@ public final class Colors extends Module {
   }
 
   public static int getClientColorCustomAlpha(int alpha) {
-    Color color =
-        setAlpha(
-            new Color(
-                Color.HSBtoRGB(
-                    hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f)),
-            alpha);
-    return color.getRGB();
+    return setAlpha(
+        Mth.hsvToRgb(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f),
+        alpha);
   }
 
   // used for clickgui
   public static int getDarkerClientColorCustomAlpha(int alpha) {
-    Color color =
-        setAlpha(
-            new Color(
-                Color.HSBtoRGB(
-                    hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 250f)),
-            alpha);
-    return color.getRGB();
+    return setAlpha(
+        Mth.hsvToRgb(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 250f),
+        alpha);
   }
 
-  public static final Color setAlpha(Color color, int alpha) {
-    alpha = Mth.clamp(alpha, 0, 255);
-    return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+  /** Replaces the alpha channel of a packed ARGB color, clamping {@code alpha} to 0-255. */
+  public static int setAlpha(int color, int alpha) {
+    return ARGB.color(
+        Mth.clamp(alpha, 0, 255), ARGB.red(color), ARGB.green(color), ARGB.blue(color));
   }
 
-  public static Color getRainbow(int speed, int offset, float s, float brightness) {
+  public static int getRainbow(int speed, int offset, float s, float brightness) {
     float hue = (System.currentTimeMillis() + offset) % speed;
     hue /= speed;
-    return Color.getHSBColor(hue, s, brightness);
+    return Mth.hsvToRgb(hue, s, brightness);
   }
 
   public static int getClientColor() {
-    return Color.getHSBColor(
-            hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f)
-        .getRGB();
+    return Mth.hsvToRgb(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f);
   }
 
   public static int getEspFillAlpha() {
@@ -106,10 +97,8 @@ public final class Colors extends Module {
   }
 
   public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {
-    Color base =
-        new Color(
-            Color.HSBtoRGB(
-                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f));
-    return setAlpha(base, fillAlpha).getRGB();
+    return setAlpha(
+        Mth.hsvToRgb(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f),
+        fillAlpha);
   }
 }
