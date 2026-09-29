@@ -11,9 +11,7 @@ import me.friendly.exeter.command.impl.client.Modules;
 import me.friendly.exeter.command.impl.client.Prefix;
 import me.friendly.exeter.command.impl.client.Presets;
 import me.friendly.exeter.command.impl.client.Runtime;
-import me.friendly.exeter.command.impl.client.ScreenShot;
 import me.friendly.exeter.command.impl.client.Toggle;
-import me.friendly.exeter.command.impl.player.Grab;
 import me.friendly.exeter.command.impl.player.HClip;
 import me.friendly.exeter.command.impl.player.VClip;
 import me.friendly.exeter.command.impl.server.Connect;
@@ -34,7 +32,6 @@ public final class CommandManager extends ListRegistry<Command> {
     this.registry = new ArrayList();
     this.register(new Toggle());
     this.register(new Runtime());
-    this.register(new Grab());
     this.register(new Help());
     this.register(new Modules());
     this.register(new Prefix());
@@ -46,7 +43,6 @@ public final class CommandManager extends ListRegistry<Command> {
     this.register(new Friends.Add());
     this.register(new Friends.Remove());
     this.register(new Bind());
-    this.register(new ScreenShot());
     this.registry.sort((cmd1, cmd2) -> cmd1.getAliases()[0].compareTo(cmd2.getAliases()[0]));
     Exeter.getInstance()
         .getEventManager()
