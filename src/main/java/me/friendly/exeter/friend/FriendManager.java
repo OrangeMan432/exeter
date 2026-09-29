@@ -28,20 +28,14 @@ public final class FriendManager extends ListRegistry<Friend> {
 
           @Override
           public void load(Object... source) {
-            JsonElement root;
-            try {
-              if (!this.getFile().exists()) {
-                this.getFile().createNewFile();
-              }
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-            if (!this.getFile().exists()) {
+            String contents = this.read();
+            if (contents == null || contents.isBlank()) {
               return;
             }
-            try (FileReader reader = new FileReader(this.getFile()); ) {
-              root = new JsonParser().parse((Reader) reader);
-            } catch (IOException e) {
+            JsonElement root;
+            try {
+              root = JsonParser.parseString(contents);
+            } catch (Exception e) {
               e.printStackTrace();
               return;
             }
@@ -81,9 +75,6 @@ public final class FriendManager extends ListRegistry<Friend> {
 
           @Override
           public void save(Object... destination) {
-            if (this.getFile().exists()) {
-              this.getFile().delete();
-            }
             JsonArray friends = new JsonArray();
             Exeter.getInstance()
                 .getFriendManager()
@@ -100,13 +91,12 @@ public final class FriendManager extends ListRegistry<Friend> {
                         e.printStackTrace();
                       }
                     });
-            try (FileWriter writer = new FileWriter(this.getFile()); ) {
+            try {
               JsonObject root = new JsonObject();
               root.add("friends", friends);
               root.addProperty(
                   "overrideAttack", Exeter.getInstance().getFriendManager().isOverride());
-              writer.write(
-                  new GsonBuilder().setPrettyPrinting().create().toJson((JsonElement) root));
+              this.write(new GsonBuilder().setPrettyPrinting().create().toJson((JsonElement) root));
             } catch (Exception e) {
               e.printStackTrace();
             }

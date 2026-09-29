@@ -2,8 +2,6 @@ package me.friendly.exeter.command.impl.server;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import java.io.FileReader;
 import java.util.Map;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
@@ -76,7 +74,7 @@ public class GearCommand extends Command {
   private String save(String name) {
     JsonObject completeJson;
     try {
-      completeJson = JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      completeJson = AutoGear.readJson();
       if (completeJson.get(name) != null) {
         return "Kit &e" + name + "&7 already exists.";
       }
@@ -97,8 +95,7 @@ public class GearCommand extends Command {
 
   private String set(String name) {
     try {
-      JsonObject completeJson =
-          JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      JsonObject completeJson = AutoGear.readJson();
       if (completeJson.get(name) == null) {
         return "Kit &e" + name + "&7 not found.";
       }
@@ -122,8 +119,7 @@ public class GearCommand extends Command {
 
   private String delete(String name) {
     try {
-      JsonObject completeJson =
-          JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      JsonObject completeJson = AutoGear.readJson();
       if (completeJson.get(name) == null) {
         return "Kit &e" + name + "&7 not found.";
       }
@@ -140,8 +136,7 @@ public class GearCommand extends Command {
 
   private String list() {
     try {
-      JsonObject completeJson =
-          JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      JsonObject completeJson = AutoGear.readJson();
       StringBuilder kits = new StringBuilder();
       for (Map.Entry<String, JsonElement> entry : completeJson.entrySet()) {
         String item = entry.getKey();
@@ -161,8 +156,7 @@ public class GearCommand extends Command {
 
   public static String getCurrentSet() {
     try {
-      JsonObject completeJson =
-          JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      JsonObject completeJson = AutoGear.readJson();
       String pointer = completeJson.get("pointer").getAsString();
       if (!pointer.equals("none")) {
         return pointer;
@@ -174,8 +168,7 @@ public class GearCommand extends Command {
 
   public static String getInventoryKit(String kit) {
     try {
-      JsonObject completeJson =
-          JsonParser.parseReader(new FileReader(AutoGear.getFile())).getAsJsonObject();
+      JsonObject completeJson = AutoGear.readJson();
       return completeJson.get(kit).getAsString();
     } catch (Exception e) {
       return "";

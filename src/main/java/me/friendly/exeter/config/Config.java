@@ -1,37 +1,27 @@
 package me.friendly.exeter.config;
 
-import java.io.File;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.platform.ExeterStorageProvider;
 
-/** An object that is saved to a file, and an implementation of Labeled */
+/**
+ * An object whose state is persisted under a single storage key, and an implementation of Labeled.
+ *
+ * <p>Contents go through {@link ExeterStorageProvider} rather than {@code java.io.File}, so the
+ * same subclasses work on a desktop JVM and in a browser build that has no filesystem. Subclasses
+ * read and write the whole value with {@link #read()} and {@link #write(String)}; line-oriented
+ * formats are the caller's business.
+ */
 public abstract class Config implements Labeled {
   private final String label;
-  private final File file;
-  private final File directory;
 
   /**
-   * Instantiates label, file, and directory. registers current Config instance with ConfigManager
+   * Instantiates the label and registers this instance with the ConfigManager.
    *
-   * @param label the name of the file that will be created and saved to
+   * @param label the storage key this config is saved under
    */
   public Config(String label) {
     this.label = label;
-    this.directory = Exeter.getInstance().getDirectory();
-    this.file = new File(this.directory, label);
-    Exeter.getInstance().getConfigManager().register(this);
-  }
-
-  /**
-   * Instantiates label, file, and directory. registers current Config instance with ConfigManager
-   *
-   * @param label the name of the file that will be created and saved to
-   * @param directory the directory that will be saved to
-   */
-  public Config(String label, File directory) {
-    this.label = label;
-    this.directory = directory;
-    this.file = new File(directory, label);
     Exeter.getInstance().getConfigManager().register(this);
   }
 
@@ -40,12 +30,24 @@ public abstract class Config implements Labeled {
     return this.label;
   }
 
-  public File getDirectory() {
-    return this.directory;
+  /** Returns the stored contents, or null when this config has never been saved. */
+  protected String read() {
+    return ExeterStorageProvider.get().read(this.label);
   }
 
-  public File getFile() {
-    return this.file;
+  /** Whether this config has a stored value. */
+  protected boolean exists() {
+    return read() != null;
+  }
+
+  /** Stores {@code contents} as this config's value. */
+  protected void write(String contents) {
+    ExeterStorageProvider.get().write(this.label, contents);
+  }
+
+  /** Removes the stored value. */
+  protected void delete() {
+    ExeterStorageProvider.get().delete(this.label);
   }
 
   public abstract void load(Object... var1);

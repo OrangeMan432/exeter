@@ -5,9 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import me.friendly.api.event.Listener;
 import me.friendly.api.registry.ListRegistry;
@@ -56,17 +53,13 @@ public final class AccountManager extends ListRegistry<Account> {
         new Config("accounts.json") {
           @Override
           public void load(Object... source) {
-            JsonElement root;
-            try {
-              if (!this.getFile().exists()) {
-                this.getFile().createNewFile();
-              }
-            } catch (IOException e) {
-              DebugLogger.get().log(TAG, DebugLogger.Level.ERROR, "Couldn't create accounts.json");
+            String contents = this.read();
+            if (contents == null || contents.isBlank()) {
               return;
             }
-            try (FileReader reader = new FileReader(this.getFile())) {
-              root = new JsonParser().parse(reader);
+            JsonElement root;
+            try {
+              root = JsonParser.parseString(contents);
             } catch (Exception e) {
               DebugLogger.get().log(TAG, DebugLogger.Level.ERROR, "Couldn't read accounts.json");
               return;
@@ -114,8 +107,8 @@ public final class AccountManager extends ListRegistry<Account> {
               object.addProperty("type", account.getType().name());
               accounts.add(object);
             }
-            try (FileWriter writer = new FileWriter(this.getFile())) {
-              writer.write(new GsonBuilder().setPrettyPrinting().create().toJson(accounts));
+            try {
+              this.write(new GsonBuilder().setPrettyPrinting().create().toJson(accounts));
             } catch (Exception e) {
               DebugLogger.get().log(TAG, DebugLogger.Level.ERROR, "Couldn't save accounts.json");
             }

@@ -2,9 +2,6 @@ package me.friendly.exeter.module.impl.toggle.misc;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +12,7 @@ import me.friendly.exeter.command.impl.server.GearCommand;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.platform.ExeterStorageProvider;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -375,16 +373,13 @@ public class AutoGear extends ToggleableModule {
     return base;
   }
 
-  public static File getFile() {
-    return new File(
-        net.minecraft.client.Minecraft.getInstance().gameDirectory, "Exeter/AutoGear.json");
-  }
+  private static final String GEAR_FILE = "AutoGear.json";
 
   public static JsonObject readJson() {
     try {
-      File file = getFile();
-      if (!file.exists()) return null;
-      return JsonParser.parseReader(new FileReader(file)).getAsJsonObject();
+      String contents = ExeterStorageProvider.get().read(GEAR_FILE);
+      if (contents == null || contents.isBlank()) return null;
+      return JsonParser.parseString(contents).getAsJsonObject();
     } catch (Exception e) {
       return null;
     }
@@ -392,14 +387,8 @@ public class AutoGear extends ToggleableModule {
 
   public static void writeJson(JsonObject json) {
     try {
-      File file = getFile();
-      if (file.getParentFile() != null) {
-        file.getParentFile().mkdirs();
-      }
-      java.io.FileWriter writer = new java.io.FileWriter(file);
-      writer.write(json.toString());
-      writer.close();
-    } catch (IOException e) {
+      ExeterStorageProvider.get().write(GEAR_FILE, json.toString());
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }

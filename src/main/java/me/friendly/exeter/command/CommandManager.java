@@ -1,10 +1,5 @@
 package me.friendly.exeter.command;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringJoiner;
 import me.friendly.api.event.Listener;
@@ -231,47 +226,24 @@ public final class CommandManager extends ListRegistry<Command> {
 
       @Override
       public void load(Object... source) {
-        try {
-          if (!this.getFile().exists()) {
-            this.getFile().createNewFile();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        if (!this.getFile().exists()) {
+        String contents = this.read();
+        if (contents == null || contents.isBlank()) {
           return;
         }
-        try {
-          String readLine;
-          BufferedReader br = new BufferedReader(new FileReader(this.getFile()));
-          while ((readLine = br.readLine()) != null) {
-            try {
-              String[] split = readLine.split(":");
-              prefix = split[0];
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
+        for (String readLine : contents.split("\\R")) {
+          try {
+            String[] split = readLine.split(":");
+            prefix = split[0];
+          } catch (Exception e) {
+            e.printStackTrace();
           }
-          br.close();
-        } catch (Exception e) {
-          e.printStackTrace();
         }
       }
 
       @Override
       public void save(Object... destination) {
         try {
-          if (!this.getFile().exists()) {
-            this.getFile().createNewFile();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        try {
-          BufferedWriter bw = new BufferedWriter(new FileWriter(this.getFile()));
-          bw.write(prefix);
-          bw.newLine();
-          bw.close();
+          this.write(prefix + "\n");
         } catch (Exception e) {
           e.printStackTrace();
         }

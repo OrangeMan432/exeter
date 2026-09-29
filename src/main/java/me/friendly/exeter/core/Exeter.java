@@ -1,7 +1,6 @@
 package me.friendly.exeter.core;
 
 import java.io.*;
-import java.io.File;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.BuildInfo;
 import me.friendly.exeter.account.AccountManager;
@@ -12,7 +11,6 @@ import me.friendly.exeter.friend.FriendManager;
 import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.ModuleManager;
-import me.friendly.exeter.plugin.PluginManager;
 
 /**
  * Exeter client for Fabric 26.2
@@ -42,24 +40,12 @@ public final class Exeter {
   private ConfigManager configManager;
   private ExeterConfig exeterConfig;
   private AccountManager accountManager;
-  private PluginManager pluginManager;
-  private File directory;
 
   public Exeter() {
 
     Logger.getLogger().print("Initializing...");
     instance = this;
 
-    // In exeter 1.8, the config file is named clarinet for whatever reason. I changed that to be
-    // exeter
-    this.directory = new File("config/exeter");
-
-    if (!this.directory.exists()) {
-      Logger.getLogger()
-          .print(
-              String.format(
-                  "%s client directory.", this.directory.mkdir() ? "Created" : "Failed to create"));
-    }
     this.eventManager = new BasicEventManager();
     this.configManager = new ConfigManager();
     this.friendManager = new FriendManager();
@@ -68,14 +54,6 @@ public final class Exeter {
     this.exeterConfig = new ExeterConfig();
     this.moduleManager = new ModuleManager();
     this.accountManager = new AccountManager();
-    this.pluginManager = new PluginManager();
-    try {
-      this.pluginManager.onLoad();
-      System.out.println("Plugin manager started.");
-      System.out.println(this.pluginManager.getList() + "has been loaded.");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     me.friendly.exeter.util.TotemPopTracker.getInstance();
     this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
     Runtime.getRuntime()
@@ -131,13 +109,5 @@ public final class Exeter {
 
   public AccountManager getAccountManager() {
     return this.accountManager;
-  }
-
-  public PluginManager getPluginManager() {
-    return this.pluginManager;
-  }
-
-  public File getDirectory() {
-    return this.directory;
   }
 }
