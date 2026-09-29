@@ -8,7 +8,6 @@ import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
-import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
 import me.friendly.exeter.module.impl.toggle.client.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.client.Notifier;
 import me.friendly.exeter.module.impl.toggle.client.TestModule;
@@ -69,7 +68,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new EatTimer());
     register(new Colors());
     register(new HUDEditor());
-    register(new DiscordRPC());
     register(new AutoItemDupe());
     register(new AutoTotem());
     register(new AutoArmor());
