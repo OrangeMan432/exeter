@@ -65,7 +65,7 @@ public abstract class Window {
     renderContent(mouseX, mouseY, partialTicks);
 
     if (focused) {
-      int accent = Colors.getClientColor();
+      int accent = Colors.getClientColorCustomAlpha(220);
       RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, accent);
       RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, accent);
       RenderMethods.drawRect(x - 1, y, x, y + height, accent);
