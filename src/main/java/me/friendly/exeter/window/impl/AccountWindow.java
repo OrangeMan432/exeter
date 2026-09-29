@@ -419,7 +419,7 @@ public class AccountWindow extends Window {
         }
         return true;
       }
-      int codepoint = event.keycode();
+      int codepoint = event.key();
       if (codepoint >= 32 && codepoint < 127 && inputBuffer.length() < 1024) {
         inputBuffer.append((char) codepoint);
         return true;

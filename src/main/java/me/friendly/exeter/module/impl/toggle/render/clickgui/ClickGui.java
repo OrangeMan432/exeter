@@ -393,7 +393,7 @@ public final class ClickGui extends Screen {
   @Override
   public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
     if (popup != null) {
-      if (popup.keyPressed(event.key(), event.keycode(), event.modifiers())) {
+      if (popup.keyPressed(event.key(), event.key(), event.modifiers())) {
         return true;
       }
     }

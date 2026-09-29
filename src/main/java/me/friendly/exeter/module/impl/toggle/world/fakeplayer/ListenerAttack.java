@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MaceItem;
-import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
 
 public class ListenerAttack extends Listener<PacketEvent> {
@@ -77,7 +76,7 @@ public class ListenerAttack extends Listener<PacketEvent> {
               false);
     }
 
-    mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
+    mc.player.swing(InteractionHand.MAIN_HAND, true);
 
     float damage = 1.0F + cooldown * 0.5F;
     float sharpBonus = getSharpBonus();

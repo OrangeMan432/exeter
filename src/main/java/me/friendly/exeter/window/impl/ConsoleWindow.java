@@ -254,7 +254,7 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
       return true;
     }
 
-    int codepoint = event.keycode();
+    int codepoint = event.key();
     if (codepoint >= 32 && codepoint < 127) {
       inputBuffer.append((char) codepoint);
       return true;

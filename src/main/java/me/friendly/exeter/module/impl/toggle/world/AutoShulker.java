@@ -333,10 +333,7 @@ public class AutoShulker extends ToggleableModule {
     }
 
     if (placeSwing.getValue()) {
-      minecraft.player.swing(
-          InteractionHand.MAIN_HAND,
-          minecraft.player.getMainHandItem().getAttackAnimation(),
-          false);
+      minecraft.player.swing(InteractionHand.MAIN_HAND, false);
     }
 
     NotificationManager.push("Placed shulker at " + blockAim.pos.toShortString(), "shulker_box");
