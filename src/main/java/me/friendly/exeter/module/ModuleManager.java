@@ -21,6 +21,7 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.ElytraTarget;
+import me.friendly.exeter.module.impl.toggle.combat.MaceDive;
 import me.friendly.exeter.module.impl.toggle.combat.PacketMine;
 import me.friendly.exeter.module.impl.toggle.combat.PistonCrystal;
 import me.friendly.exeter.module.impl.toggle.combat.PistonPush;
@@ -76,6 +77,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoGear());
     register(new AutoFirework());
     register(new ElytraTarget());
+    register(new MaceDive());
     register(new SelfBed());
     register(new BedAura());
     register(new Speed());

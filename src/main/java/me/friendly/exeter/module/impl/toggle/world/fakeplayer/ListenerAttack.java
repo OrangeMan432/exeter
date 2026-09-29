@@ -3,11 +3,15 @@ package me.friendly.exeter.module.impl.toggle.world.fakeplayer;
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
 
@@ -25,13 +29,25 @@ public class ListenerAttack extends Listener<PacketEvent> {
     if (!module.isDamageEnabled()) return;
     if (mc.level == null || mc.player == null) return;
     if (module.getFakePlayer() == null) return;
+
+    // Modern attacks arrive as ServerboundAttackPacket; older paths use Interact. Handle both.
+    if (event.getPacket() instanceof ServerboundAttackPacket attackPacket) {
+      Entity target = mc.level.getEntity(attackPacket.entityId());
+      if (target == null || target != module.getFakePlayer()) return;
+      event.setCanceled(true);
+      applyHit();
+      return;
+    }
     if (!(event.getPacket() instanceof ServerboundInteractPacket packet)) return;
 
     Entity target = mc.level.getEntity(packet.entityId());
     if (target == null || target != module.getFakePlayer()) return;
 
     event.setCanceled(true);
+    applyHit();
+  }
 
+  private void applyHit() {
     Vec3 pos = mc.player.position();
     float cooldown = mc.player.getAttackStrengthScale(0.5f);
 
@@ -67,7 +83,26 @@ public class ListenerAttack extends Listener<PacketEvent> {
     float sharpBonus = getSharpBonus();
     damage += sharpBonus;
 
+    ItemStack mainHand = mc.player.getMainHandItem();
+    if (mainHand.is(Items.MACE) && MaceItem.canSmashAttack(mc.player)) {
+      damage += smashBonus(mc.player.fallDistance);
+    }
+
     module.getFakePlayer().applyDamage(damage);
+  }
+
+  /**
+   * Mirrors vanilla's mace smash fall curve so dive tests register real numbers on the dummy.
+   * Density needs the server and is skipped, same as the rest of this local pipeline.
+   */
+  private float smashBonus(double fallDistance) {
+    if (fallDistance <= 3.0) {
+      return (float) (4.0 * fallDistance);
+    }
+    if (fallDistance <= 8.0) {
+      return (float) (12.0 + 2.0 * (fallDistance - 3.0));
+    }
+    return (float) (22.0 + (fallDistance - 8.0));
   }
 
   private float getSharpBonus() {

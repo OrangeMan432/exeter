@@ -76,6 +76,9 @@ public class ElytraTarget extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null || minecraft.player.isDeadOrDying()) {
       return;
     }
+    if (maceDiveActive()) {
+      return;
+    }
 
     Player next = findTarget();
     if (next != target) {
@@ -121,6 +124,13 @@ public class ElytraTarget extends ToggleableModule {
     aimYaw = Mth.wrapDegrees(aimYaw);
     aimPitch = Mth.clamp(aimPitch, -90.0f, 90.0f);
     PlayerUtil.setRotation(aimYaw, aimPitch);
+  }
+
+  /** Stands down while MaceDive runs so the two never fight over steering. */
+  private boolean maceDiveActive() {
+    var module = Exeter.getInstance().getModuleManager().getModuleByAlias("macedive");
+    return module instanceof me.friendly.exeter.module.ToggleableModule toggleable
+        && toggleable.isRunning();
   }
 
   private Player findTarget() {

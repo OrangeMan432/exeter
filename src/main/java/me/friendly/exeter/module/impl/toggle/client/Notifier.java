@@ -37,6 +37,7 @@ public final class Notifier extends ToggleableModule {
 
   // totem pops
   private final Map<UUID, Integer> totemPops = new HashMap<>();
+  private final Map<UUID, Long> lastPopTime = new HashMap<>();
 
   // armor low warning dedup
   private final Set<String> warnedArmor = new HashSet<>();
@@ -61,6 +62,13 @@ public final class Notifier extends ToggleableModule {
           byte id = pkt.getEventId();
           if (id == 35) {
             UUID uuid = player.getUUID();
+            long now = System.currentTimeMillis();
+            // The pop packet can arrive multiple times for one pop; dedup bursts while
+            // keeping genuine rapid pops (totem chains are seconds apart, not ms).
+            if (now - lastPopTime.getOrDefault(uuid, 0L) < 750) {
+              return;
+            }
+            lastPopTime.put(uuid, now);
             int count = totemPops.getOrDefault(uuid, 0) + 1;
             totemPops.put(uuid, count);
             if (totemNotify.getValue()) {
@@ -137,6 +145,7 @@ public final class Notifier extends ToggleableModule {
     super.onEnable();
     knownPlayers.clear();
     totemPops.clear();
+    lastPopTime.clear();
     warnedArmor.clear();
     prevArmor.clear();
     prevPos.clear();

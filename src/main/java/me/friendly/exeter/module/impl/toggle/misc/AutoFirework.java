@@ -88,6 +88,9 @@ public class AutoFirework extends ToggleableModule {
     if (minecraft.level == null || minecraft.player == null || minecraft.player.isDeadOrDying()) {
       return;
     }
+    if (maceDiveActive()) {
+      return;
+    }
     if (!minecraft.player.isFallFlying()) {
       wasFlying = false;
       return;
@@ -129,6 +132,16 @@ public class AutoFirework extends ToggleableModule {
       refillGrace = 10;
     }
     fire(slot);
+  }
+
+  /** Stands down while MaceDive runs so the two never fight over flight. */
+  private boolean maceDiveActive() {
+    var module =
+        me.friendly.exeter.core.Exeter.getInstance()
+            .getModuleManager()
+            .getModuleByAlias("macedive");
+    return module instanceof me.friendly.exeter.module.ToggleableModule toggleable
+        && toggleable.isRunning();
   }
 
   /** True while one of our rockets is still boosting the player. */
