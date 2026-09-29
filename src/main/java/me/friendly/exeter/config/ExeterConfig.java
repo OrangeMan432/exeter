@@ -2,10 +2,6 @@ package me.friendly.exeter.config;
 
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.interfaces.Toggleable;
@@ -14,10 +10,10 @@ import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
+import me.friendly.exeter.platform.ExeterStorageProvider;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
-import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * Manages module configuration in TOML format. Each module gets its own .toml file in
@@ -44,29 +40,17 @@ import net.fabricmc.loader.api.FabricLoader;
  */
 public class ExeterConfig {
   private static ExeterConfig instance;
-  private final Path configDir;
   private final Toml tomlReader;
   private final TomlWriter tomlWriter;
 
   public ExeterConfig() {
     instance = this;
-    this.configDir = FabricLoader.getInstance().getConfigDir().resolve("exeter");
     this.tomlReader = new Toml();
     this.tomlWriter = new TomlWriter();
-
-    try {
-      Files.createDirectories(configDir);
-    } catch (IOException e) {
-      System.err.println("[Exeter] Failed to create config directory: " + e.getMessage());
-    }
   }
 
   public static ExeterConfig getInstance() {
     return instance;
-  }
-
-  public Path getConfigDir() {
-    return configDir;
   }
 
   /** Loads all module configurations from TOML files. */
@@ -97,18 +81,16 @@ public class ExeterConfig {
   @SuppressWarnings("unchecked")
   public void loadModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
-    File file = configDir.resolve(fileName).toFile();
-    DebugLogger.get()
-        .logSystem(
-            "Config", "loadModule: " + module.getLabel() + " from " + file.getAbsolutePath());
+    String contents = ExeterStorageProvider.get().read(fileName);
+    DebugLogger.get().logSystem("Config", "loadModule: " + module.getLabel() + " from " + fileName);
 
-    if (!file.exists()) {
-      DebugLogger.get().logSystem("Config", "  file does not exist, skipping");
+    if (contents == null) {
+      DebugLogger.get().logSystem("Config", "  no stored config, skipping");
       return;
     }
 
     try {
-      Map<String, Object> data = tomlReader.read(file).toMap();
+      Map<String, Object> data = tomlReader.read(contents).toMap();
       DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
 
       // Load module state (enabled, drawn, keybind). The enabled flag is applied after
@@ -440,9 +422,7 @@ public class ExeterConfig {
   /** Saves a single module's configuration to its TOML file. */
   public void saveModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
-    File file = configDir.resolve(fileName).toFile();
-    DebugLogger.get()
-        .logFile("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
+    DebugLogger.get().logFile("Config", "saveModule: " + module.getLabel() + " -> " + fileName);
 
     try {
       Map<String, Object> data = new HashMap<>();
@@ -519,8 +499,8 @@ public class ExeterConfig {
         data.put("panels", panelsData);
       }
 
-      DebugLogger.get().logFile("Config", "  writing TOML to " + file.getAbsolutePath());
-      tomlWriter.write(data, file);
+      DebugLogger.get().logFile("Config", "  writing TOML to " + fileName);
+      ExeterStorageProvider.get().write(fileName, tomlWriter.write(data));
       DebugLogger.get().logFile("Config", "  write SUCCESS for " + module.getLabel());
     } catch (Exception e) {
       System.err.println(

@@ -1,13 +1,10 @@
 package me.friendly.exeter.logging;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.fabricmc.loader.api.FabricLoader;
+import me.friendly.exeter.platform.ExeterStorageProvider;
 
 /**
  * Centralized debug logging system. Modules call {@link #log(String, String)} to log messages.
@@ -21,7 +18,7 @@ public final class DebugLogger {
   }
 
   private static DebugLogger instance;
-  private final File logFile;
+  private static final String LOG_FILE_NAME = "debug.log";
   private final Map<String, Boolean> moduleEnabled = new ConcurrentHashMap<>();
   private volatile boolean logToFile = false;
   private volatile boolean logToChat = false;
@@ -32,11 +29,7 @@ public final class DebugLogger {
   private volatile boolean showError = true;
   private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
-  private DebugLogger() {
-    this.logFile =
-        FabricLoader.getInstance().getConfigDir().resolve("exeter").resolve("debug.log").toFile();
-    FabricLoader.getInstance().getConfigDir().resolve("exeter").toFile().mkdirs();
-  }
+  private DebugLogger() {}
 
   public static DebugLogger get() {
     if (instance == null) {
@@ -203,16 +196,18 @@ public final class DebugLogger {
 
   /** Clears the debug log file. */
   public void clearLog() {
-    try (PrintWriter pw = new PrintWriter(logFile)) {
-      pw.print("");
+    try {
+      ExeterStorageProvider.get().write(LOG_FILE_NAME, "");
     } catch (Exception e) {
       System.err.println("[Exeter Debug] Failed to clear log: " + e.getMessage());
     }
   }
 
   private void writeToFile(String message) {
-    try (PrintWriter pw = new PrintWriter(new FileWriter(logFile, true))) {
-      pw.println(message);
+    try {
+      String existing = ExeterStorageProvider.get().read(LOG_FILE_NAME);
+      String updated = (existing == null || existing.isEmpty() ? "" : existing + "\n") + message;
+      ExeterStorageProvider.get().write(LOG_FILE_NAME, updated);
     } catch (Exception e) {
       System.err.println("[Exeter Debug] Failed to write log: " + e.getMessage());
     }

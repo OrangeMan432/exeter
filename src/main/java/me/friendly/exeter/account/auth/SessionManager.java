@@ -3,7 +3,7 @@ package me.friendly.exeter.account.auth;
 import java.util.Optional;
 import java.util.UUID;
 import me.friendly.exeter.logging.DebugLogger;
-import me.friendly.exeter.mixin.MixinMinecraft;
+import me.friendly.exeter.platform.ExeterBootstrap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 
@@ -26,7 +26,7 @@ public final class SessionManager {
 
   public static void set(String username, UUID uuid, String accessToken) {
     User user = new User(username, uuid, accessToken, Optional.empty(), Optional.empty());
-    ((MixinMinecraft) (Object) Minecraft.getInstance()).exeter$setUser(user);
+    ExeterBootstrap.userSwapper().setUser(user);
     DebugLogger.get().logFile(TAG, "Session set to " + username);
   }
 

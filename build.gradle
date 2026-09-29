@@ -52,6 +52,7 @@ def generatedSourcesDir = file("${buildDir}/generated/sources/me.friendly.exeter
 
 sourceSets.main {
     java.srcDir generatedSourcesDir
+    java.srcDir 'src/platform/fabric/java'
 }
 
 task generateBuildInfo {
