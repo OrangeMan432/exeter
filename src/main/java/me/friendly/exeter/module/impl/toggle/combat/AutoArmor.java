@@ -23,6 +23,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -118,6 +119,19 @@ public class AutoArmor extends ToggleableModule {
     for (int s = 0; s < 4; s++) {
       EquipmentSlot equipSlot = slots[s];
       int containerSlot = containerSlots[s];
+
+      // Never touch the chest slot mid-flight: stripping a worn elytra kills.
+      if (equipSlot == EquipmentSlot.CHEST && mc.player.isFallFlying()) {
+        continue;
+      }
+
+      // Leave a worn elytra alone while MaceDive is running, or the two modules swap
+      // armor back and forth every tick and takeoff becomes impossible.
+      if (equipSlot == EquipmentSlot.CHEST
+          && mc.player.getItemBySlot(equipSlot).is(Items.ELYTRA)
+          && maceDiveRunning()) {
+        continue;
+      }
 
       ItemStack current = mc.player.getItemBySlot(equipSlot);
       boolean isEmpty = current.isEmpty();
@@ -314,6 +328,15 @@ public class AutoArmor extends ToggleableModule {
       }
     }
     return false;
+  }
+
+  private boolean maceDiveRunning() {
+    var module =
+        me.friendly.exeter.core.Exeter.getInstance()
+            .getModuleManager()
+            .getModuleByAlias("macedive");
+    return module instanceof me.friendly.exeter.module.ToggleableModule toggleable
+        && toggleable.isRunning();
   }
 
   private static EquipmentSlot slotFromIndex(int index) {
