@@ -1,7 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import java.awt.*;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;

@@ -2,7 +2,6 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
-import java.awt.*;
 import java.io.InputStream;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Labeled;

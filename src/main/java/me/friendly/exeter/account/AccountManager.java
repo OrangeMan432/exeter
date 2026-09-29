@@ -20,7 +20,12 @@ import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
 
 /**
- * Stores Minecraft accounts, persists them to {@code accounts.json}, and tracks Hypixel ban state.
+ * Stores offline usernames, persists them to {@code accounts.json}, and tracks Hypixel ban state.
+ *
+ * <p>The Microsoft and token login paths were removed: they need outbound HTTPS to
+ * login.microsoftonline.com and Mojang, whose responses carry no CORS headers, so a browser build
+ * cannot complete them. Ban tracking is unaffected, because it is derived from disconnect packets
+ * rather than from an auth call.
  *
  * <p>Ported from OpenMyau's {@code me.ksyz.accountmanager.AccountManager} and {@code Events}
  * (derived from https://github.com/ksyzov/AccountManager, originally LGPL, modified version GPL
@@ -75,14 +80,9 @@ public final class AccountManager extends ListRegistry<Account> {
               try {
                 AccountManager.this.register(
                     new Account(
-                        getString(object, "refreshToken"),
-                        getString(object, "accessToken"),
                         getString(object, "username"),
                         getString(object, "uuid"),
-                        getLong(object, "unban"),
-                        getString(object, "clientId"),
-                        getString(object, "scope"),
-                        parseType(getString(object, "type"))));
+                        getLong(object, "unban")));
               } catch (Exception e) {
                 DebugLogger.get()
                     .log(TAG, DebugLogger.Level.WARN, "Skipping malformed account entry");
@@ -97,14 +97,9 @@ public final class AccountManager extends ListRegistry<Account> {
             JsonArray accounts = new JsonArray();
             for (Account account : AccountManager.this.getRegistry()) {
               JsonObject object = new JsonObject();
-              object.addProperty("refreshToken", account.getRefreshToken());
-              object.addProperty("accessToken", account.getAccessToken());
               object.addProperty("username", account.getUsername());
               object.addProperty("uuid", account.getUuid());
               object.addProperty("unban", account.getUnban());
-              object.addProperty("clientId", account.getClientId());
-              object.addProperty("scope", account.getScope());
-              object.addProperty("type", account.getType().name());
               accounts.add(object);
             }
             try {
@@ -117,7 +112,6 @@ public final class AccountManager extends ListRegistry<Account> {
     Exeter.getInstance().getEventManager().register(packetListener);
   }
 
-  /** Marks the currently active account banned, mirroring upstream disconnect handling. */
   private void handleDisconnect(Component reason) {
     if (reason == null) {
       return;
@@ -227,14 +221,6 @@ public final class AccountManager extends ListRegistry<Account> {
       return element != null && !element.isJsonNull() ? element.getAsLong() : 0L;
     } catch (Exception e) {
       return 0L;
-    }
-  }
-
-  private static Account.Type parseType(String name) {
-    try {
-      return Account.Type.valueOf(name);
-    } catch (Exception e) {
-      return Account.Type.MICROSOFT;
     }
   }
 

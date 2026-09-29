@@ -1,122 +1,51 @@
 package me.friendly.exeter.account;
 
 /**
- * A stored Minecraft account.
+ * A stored offline username.
  *
- * <p>Ported from OpenMyau's {@code me.ksyz.accountmanager.auth.Account} (derived from
- * https://github.com/ksyzov/AccountManager, originally LGPL, modified version GPL v3). Adds a
- * {@code uuid} field, which modern Minecraft needs to build its {@code User} session object, and a
- * {@code type} marking how the account logs in.
+ * <p>Originally this held Microsoft OAuth credentials, a Minecraft access/refresh token, a client
+ * id and a scope, and could represent three account types. Those flows all require outbound HTTPS
+ * to login.microsoftonline.com and Mojang endpoints, which a browser build cannot perform: those
+ * APIs send no CORS headers, so the requests are blocked before they leave the page. Only the
+ * offline (cracked) form is reachable from a browser, so this is now a name and the UUID derived
+ * from it.
+ *
+ * <p>The {@code unban} timestamp survives because it is filled in from server disconnect packets,
+ * not from any auth call.
  */
 public class Account {
-  /** How this account authenticates. */
-  public enum Type {
-    /** Full Microsoft OAuth account with refreshable tokens. */
-    MICROSOFT,
-    /** A raw Minecraft session token with no refresh path. */
-    SESSION,
-    /** Cracked/offline account, no network auth involved. */
-    OFFLINE
-  }
 
-  private String refreshToken;
-  private String accessToken;
   private String username;
   private String uuid;
   private long unban;
-  private String clientId;
-  private String scope;
-  private Type type;
 
-  public Account(
-      String refreshToken,
-      String accessToken,
-      String username,
-      String uuid,
-      long unban,
-      String clientId,
-      String scope,
-      Type type) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
+  public Account(String username, String uuid, long unban) {
     this.username = username;
     this.uuid = uuid;
     this.unban = unban;
-    this.clientId = clientId;
-    this.scope = scope;
-    this.type = type == null ? Type.MICROSOFT : type;
-  }
-
-  public String getClientId() {
-    return clientId;
-  }
-
-  public String getScope() {
-    return scope;
-  }
-
-  public String getRefreshToken() {
-    return refreshToken;
-  }
-
-  public String getAccessToken() {
-    return accessToken;
   }
 
   public String getUsername() {
     return username;
   }
 
-  public String getUuid() {
-    return uuid;
-  }
-
-  public long getUnban() {
-    return unban;
-  }
-
-  public Type getType() {
-    return type;
-  }
-
-  public void setRefreshToken(String refreshToken) {
-    this.refreshToken = refreshToken;
-  }
-
-  public void setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
-  }
-
   public void setUsername(String username) {
     this.username = username;
+  }
+
+  public String getUuid() {
+    return uuid;
   }
 
   public void setUuid(String uuid) {
     this.uuid = uuid;
   }
 
+  public long getUnban() {
+    return unban;
+  }
+
   public void setUnban(long unban) {
     this.unban = unban;
-  }
-
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
-  }
-
-  public void setScope(String scope) {
-    this.scope = scope;
-  }
-
-  public void setType(Type type) {
-    this.type = type == null ? Type.MICROSOFT : type;
-  }
-
-  /** Short colored tag shown next to the username in the account list. */
-  public String getTypeTag() {
-    return switch (type) {
-      case MICROSOFT -> "§9[MS]";
-      case SESSION -> "§e[Token]";
-      case OFFLINE -> "§7[Offline]";
-    };
   }
 }
