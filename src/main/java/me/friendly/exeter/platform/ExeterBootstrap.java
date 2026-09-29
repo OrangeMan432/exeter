@@ -16,8 +16,36 @@ import me.friendly.exeter.core.Exeter;
 public final class ExeterBootstrap {
 
   private static volatile boolean initialized;
+  private static volatile Runnable postInit = () -> {};
 
   private ExeterBootstrap() {}
+
+  /**
+   * Installs work to run once the client has finished initializing. Hosts use this to attach a test
+   * or diagnostic harness, since core cannot depend on one. Call before {@link #init()}.
+   */
+  public static void setPostInitHook(Runnable hook) {
+    postInit = hook == null ? () -> {} : hook;
+  }
+
+  /** Runs the post-init hook, if any. Called by the client once startup finishes. */
+  public static void runPostInit() {
+    postInit.run();
+  }
+
+  /**
+   * Writes every registered config back to storage.
+   *
+   * <p>Hosts call this when the game is going away. A desktop JVM does it from a shutdown hook; a
+   * browser tab has no such event, so an Eaglercraft build calls it when the window closes or the
+   * player leaves the world.
+   */
+  public static void saveAll() {
+    Exeter exeter = Exeter.getInstance();
+    if (exeter != null) {
+      exeter.saveAll();
+    }
+  }
 
   /**
    * Starts the client. Safe to call more than once; later calls are ignored.

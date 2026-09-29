@@ -1,7 +1,5 @@
 package me.friendly.exeter.logging;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import me.friendly.exeter.platform.ExeterStorageProvider;
@@ -27,9 +25,23 @@ public final class DebugLogger {
   private volatile boolean showInfo = true;
   private volatile boolean showWarn = true;
   private volatile boolean showError = true;
-  private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
   private DebugLogger() {}
+
+  /**
+   * Formats the current time as {@code HH:mm:ss.SSS}.
+   *
+   * <p>Uses UTC computed from the millisecond clock rather than {@code java.time}, which a browser
+   * build does not fully provide, and there is no local timezone database to read there anyway.
+   */
+  private static String timestamp() {
+    long ms = System.currentTimeMillis() % 86400000L;
+    long hours = ms / 3600000L;
+    long minutes = (ms / 60000L) % 60L;
+    long seconds = (ms / 1000L) % 60L;
+    long millis = ms % 1000L;
+    return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+  }
 
   public static DebugLogger get() {
     if (instance == null) {
@@ -120,7 +132,7 @@ public final class DebugLogger {
           case WARN -> "[WARNING] ";
           case ERROR -> "[ERROR] ";
         };
-    String timestamp = LocalDateTime.now().format(timeFmt);
+    String timestamp = timestamp();
     String formatted = "[" + timestamp + "] [" + module + "] " + prefix + message;
 
     if (logToFile) {
@@ -160,7 +172,7 @@ public final class DebugLogger {
   public void logSystem(String tag, String message) {
     if (!enabled) return;
 
-    String timestamp = LocalDateTime.now().format(timeFmt);
+    String timestamp = timestamp();
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
 
     Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));
@@ -188,7 +200,7 @@ public final class DebugLogger {
   public void logFile(String tag, String message) {
     if (!logToFile) return;
 
-    String timestamp = LocalDateTime.now().format(timeFmt);
+    String timestamp = timestamp();
     String formatted = "[" + timestamp + "] [" + tag + "] " + message;
     writeToFile(formatted);
     Logger.getLogger().dispatch(new LogEntry(formatted, LogEntry.Level.INFO));

@@ -1,6 +1,5 @@
 package me.friendly.exeter.core;
 
-import java.io.*;
 import me.friendly.api.event.basic.BasicEventManager;
 import me.friendly.exeter.BuildInfo;
 import me.friendly.exeter.account.AccountManager;
@@ -11,6 +10,7 @@ import me.friendly.exeter.friend.FriendManager;
 import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.ModuleManager;
+import me.friendly.exeter.platform.ExeterBootstrap;
 
 /**
  * Exeter client for Fabric 26.2
@@ -56,23 +56,25 @@ public final class Exeter {
     this.accountManager = new AccountManager();
     me.friendly.exeter.util.TotemPopTracker.getInstance();
     this.getConfigManager().getRegistry().forEach(config -> config.load(new Object[0]));
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread("Shutdown Hook Thread") {
-
-              @Override
-              public void run() {
-                Logger.getLogger().print("Shutting down...");
-                getConfigManager().getRegistry().forEach(config -> config.save(new Object[0]));
-                Logger.getLogger().print("Shutdown.");
-              }
-            });
     Logger.getLogger()
         .print(
             String.format(
                 "Initialized, took %s milliseconds.",
                 System.nanoTime() / 1000000L - this.startTime));
-    me.friendly.exeter.test.SmokeTest.maybeStart();
+    ExeterBootstrap.runPostInit();
+  }
+
+  /**
+   * Writes every registered config back to storage.
+   *
+   * <p>Hosts must call this when the game is going away. A desktop JVM does it from a shutdown
+   * hook, but a browser tab has no JVM shutdown event, so an Eaglercraft build calls it when the
+   * window closes or the player leaves the world. Without it, settings only persist whenever
+   * something else happens to save them, such as closing the ClickGUI.
+   */
+  public void saveAll() {
+    Logger.getLogger().print("Saving config...");
+    this.getConfigManager().getRegistry().forEach(config -> config.save(new Object[0]));
   }
 
   public static Exeter getInstance() {

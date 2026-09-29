@@ -10,8 +10,6 @@ import org.lwjgl.opengl.GL11;
 @SuppressWarnings("redundant")
 public final class RenderMethods {
   public static GuiGraphicsExtractor guiGraphics;
-  public static java.nio.FloatBuffer matModelView = java.nio.FloatBuffer.allocate(16);
-  public static java.nio.FloatBuffer matProjection = java.nio.FloatBuffer.allocate(16);
 
   public static int rainbow(long offset, float fade) {
     float hue = (float) (System.nanoTime() + offset) / 1.0E10f % 1.0f;

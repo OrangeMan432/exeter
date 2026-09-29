@@ -4,6 +4,7 @@ import java.io.File;
 import me.friendly.exeter.platform.ExeterBootstrap;
 import me.friendly.exeter.platform.ExeterStorageProvider;
 import me.friendly.exeter.platform.FileExeterStorage;
+import me.friendly.exeter.test.SmokeTest;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -20,6 +21,21 @@ public class ExeterInitializer implements ModInitializer {
   public void onInitialize() {
     File configDir = FabricLoader.getInstance().getConfigDir().resolve("exeter").toFile();
     ExeterStorageProvider.set(new FileExeterStorage(configDir));
+
+    // The smoke harness needs a real filesystem and a background thread, so it lives here rather
+    // than in core.
+    ExeterBootstrap.setPostInitHook(SmokeTest::maybeStart);
+
+    // A JVM has a shutdown event; a browser tab does not.
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  ExeterBootstrap.saveAll();
+                  System.out.println("[Exeter] Shutdown.");
+                },
+                "Exeter-Shutdown"));
+
     ExeterBootstrap.init();
   }
 }
