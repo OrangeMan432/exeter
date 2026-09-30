@@ -6,6 +6,7 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import net.minecraft.client.gui.screen.Screen;
 
 public final class WindowScreen extends Screen {
@@ -155,5 +156,16 @@ public final class WindowScreen extends Screen {
   @Override
   public boolean shouldPause() {
     return false;
+  }
+
+  public void removed() {
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("windows");
+    if (module instanceof WindowsModule) {
+      WindowsModule windowsModule = (WindowsModule) module;
+      windowsModule.capturePositions();
+      if (Exeter.getInstance().getExeterConfig() != null) {
+        Exeter.getInstance().getExeterConfig().saveModule(windowsModule);
+      }
+    }
   }
 }

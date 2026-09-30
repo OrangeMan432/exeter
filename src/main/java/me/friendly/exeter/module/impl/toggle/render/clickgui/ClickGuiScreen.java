@@ -23,17 +23,54 @@ public final class ClickGuiScreen extends Screen {
     super();
   }
 
-  @Override
-  public void init() {
-    super.init();
-    reload();
-  }
-
   public static ClickGuiScreen getInstance() {
     if (instance == null) {
       instance = new ClickGuiScreen();
     }
     return instance;
+  }
+
+  @Override
+  public void init() {
+    super.init();
+    reload();
+    applySavedPositions();
+  }
+
+  @Override
+  public void removed() {
+    super.removed();
+    capturePositions();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    if (guiMod != null && me.friendly.exeter.core.Exeter.getInstance() != null
+        && me.friendly.exeter.core.Exeter.getInstance().getExeterConfig() != null) {
+      me.friendly.exeter.core.Exeter.getInstance().getExeterConfig().saveModule(guiMod);
+    }
+  }
+
+  private void applySavedPositions() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    if (guiMod == null) {
+      return;
+    }
+    for (Panel panel : panels) {
+      int[] pos = guiMod.getPendingPanels().get(panel.getLabel());
+      if (pos != null) {
+        panel.setX(pos[0]);
+        panel.setY(pos[1]);
+      }
+    }
+  }
+
+  private void capturePositions() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    if (guiMod == null) {
+      return;
+    }
+    guiMod.getPendingPanels().clear();
+    for (Panel panel : panels) {
+      guiMod.getPendingPanels().put(panel.getLabel(), new int[] {panel.getX(), panel.getY()});
+    }
   }
 
   public void openPopup(SearchSelectPopup popup) {

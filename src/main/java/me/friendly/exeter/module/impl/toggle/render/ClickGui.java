@@ -1,9 +1,13 @@
 package me.friendly.exeter.module.impl.toggle.render;
 
+import java.util.HashMap;
+import java.util.Map;
 import me.friendly.exeter.beta.mixin.MinecraftAccessor;
+import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGuiScreen;
+import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.client.Minecraft;
 
@@ -17,12 +21,38 @@ public final class ClickGui extends ToggleableModule {
       new Property<Boolean>(true, "Gradient", "gradient");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
   public final Property<Boolean> showBorder = new Property<Boolean>(true, "Border", "border");
+  public final ActionProperty resetPositions =
+      new ActionProperty(
+          "Reset Positions",
+          new Runnable() {
+            @Override
+            public void run() {
+              resetPositions();
+            }
+          });
+
+  private final Map<String, int[]> pendingPanels = new HashMap<String, int[]>();
 
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui", "gui"}, 0xFFAA55, ModuleType.CLIENT);
     setDescription("Opens the module configuration panel.");
     offerProperties(
-        showBackground, showDescriptions, showArrow, showGradient, searchEnabled, showBorder);
+        showBackground,
+        showDescriptions,
+        showArrow,
+        showGradient,
+        searchEnabled,
+        showBorder,
+        resetPositions);
+  }
+
+  public void setPendingPanels(Map<String, int[]> positions) {
+    pendingPanels.clear();
+    pendingPanels.putAll(positions);
+  }
+
+  public Map<String, int[]> getPendingPanels() {
+    return pendingPanels;
   }
 
   @Override
@@ -33,5 +63,13 @@ public final class ClickGui extends ToggleableModule {
       mc.setScreen(ClickGuiScreen.getInstance());
     }
     setRunning(false);
+  }
+
+  private void resetPositions() {
+    pendingPanels.clear();
+    ClickGuiScreen.getInstance().reload();
+    if (ExeterConfig.getInstance() != null) {
+      ExeterConfig.getInstance().saveModule(this);
+    }
   }
 }

@@ -31,7 +31,8 @@ public class BooleanButton extends Button {
     } else {
       bg = Colors.getDarkerClientColorCustomAlpha(33);
     }
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
+    fill((int) this.x, (int) this.y, (int) (this.x + this.width) + 7,
+        (int) (this.y + this.height), bg);
     FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 4.0f, on ? -1 : -5592406);
   }
 

@@ -15,7 +15,8 @@ public class PopupButton extends Button {
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     boolean hovered = isHovering(mouseX, mouseY);
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+    fill((int) this.x, (int) this.y, (int) (this.x + this.width) + 7,
+        (int) (this.y + this.height),
         hovered ? 0xFF444444 : 0xFF222222);
     FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 4.0f, -1);
     FontUtil.drawString(">", this.x + this.width - 8.0f, this.y + 4.0f, 0xFFCCCCCC);

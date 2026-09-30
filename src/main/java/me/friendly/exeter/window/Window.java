@@ -151,4 +151,9 @@ public abstract class Window extends DrawableHelper {
   public int getHeight() {
     return height;
   }
+
+  public void setPosition(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
 }

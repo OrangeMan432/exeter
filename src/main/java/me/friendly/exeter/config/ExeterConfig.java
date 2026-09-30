@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
@@ -116,10 +117,52 @@ public class ExeterConfig {
       if (hasEnabledState && module instanceof ToggleableModule) {
         ((ToggleableModule) module).setRunning(restoreEnabled);
       }
+
+      if (module
+              instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule
+          && data.has("windows")) {
+        JsonObject windowsData = data.getAsJsonObject("windows");
+        Map<String, int[]> positions = new HashMap<String, int[]>();
+        for (Map.Entry<String, JsonElement> entry : windowsData.entrySet()) {
+          int[] pos = readPosition(entry.getValue());
+          if (pos != null) {
+            positions.put(entry.getKey(), pos);
+          }
+        }
+        ((me.friendly.exeter.module.impl.toggle.client.WindowsModule) module)
+            .setPendingPositions(positions);
+      }
+
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui
+          && data.has("panels")) {
+        JsonObject panelsData = data.getAsJsonObject("panels");
+        Map<String, int[]> positions = new HashMap<String, int[]>();
+        for (Map.Entry<String, JsonElement> entry : panelsData.entrySet()) {
+          int[] pos = readPosition(entry.getValue());
+          if (pos != null) {
+            positions.put(entry.getKey(), pos);
+          }
+        }
+        ((me.friendly.exeter.module.impl.toggle.render.ClickGui) module)
+            .setPendingPanels(positions);
+      }
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to load config for " + module.getLabel() + ": " + e.getMessage());
     }
+  }
+
+  private int[] readPosition(JsonElement element) {
+    try {
+      if (element != null && element.isJsonObject()) {
+        JsonObject table = element.getAsJsonObject();
+        if (table.has("x") && table.has("y")) {
+          return new int[] {table.get("x").getAsInt(), table.get("y").getAsInt()};
+        }
+      }
+    } catch (Exception ignored) {
+    }
+    return null;
   }
 
   /** Saves a single module's configuration to its JSON file. */
@@ -146,6 +189,33 @@ public class ExeterConfig {
       }
       if (settings.size() > 0) {
         data.add("settings", settings);
+      }
+
+      if (module instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule) {
+        Map<String, int[]> positions =
+            ((me.friendly.exeter.module.impl.toggle.client.WindowsModule) module)
+                .getPendingPositions();
+        JsonObject windowsData = new JsonObject();
+        for (Map.Entry<String, int[]> entry : positions.entrySet()) {
+          JsonObject pos = new JsonObject();
+          pos.addProperty("x", entry.getValue()[0]);
+          pos.addProperty("y", entry.getValue()[1]);
+          windowsData.add(entry.getKey(), pos);
+        }
+        data.add("windows", windowsData);
+      }
+
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+        Map<String, int[]> positions =
+            ((me.friendly.exeter.module.impl.toggle.render.ClickGui) module).getPendingPanels();
+        JsonObject panelsData = new JsonObject();
+        for (Map.Entry<String, int[]> entry : positions.entrySet()) {
+          JsonObject pos = new JsonObject();
+          pos.addProperty("x", entry.getValue()[0]);
+          pos.addProperty("y", entry.getValue()[1]);
+          panelsData.add(entry.getKey(), pos);
+        }
+        data.add("panels", panelsData);
       }
 
       FileWriter writer = new FileWriter(fileFor(module));
