@@ -7,7 +7,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 
-public final class ArrayListHud extends HudModule {
+public final class ArrayListHud extends ListHudModule {
 
   public ArrayListHud() {
     super("ArrayList", new String[] {"arraylist", "array", "list"}, Corner.TOP_RIGHT);
@@ -41,40 +41,9 @@ public final class ArrayListHud extends HudModule {
   }
 
   @Override
-  public int getWidth() {
-    int width = 0;
+  protected List<TextEntry> getEntries() {
+    List<TextEntry> entries = new ArrayList<TextEntry>();
     for (Module module : modules()) {
-      int w = FontUtil.getStringWidth(module.getLabel());
-      if (w > width) {
-        width = w;
-      }
-    }
-    return width;
-  }
-
-  @Override
-  public int getHeight() {
-    int count = modules().size();
-    if (count == 0) {
-      return 0;
-    }
-    return count * (FontUtil.getFontHeight() + 1) - 1;
-  }
-
-  @Override
-  public void render(int scaledWidth, int scaledHeight) {
-    List<Module> modules = modules();
-    int line = FontUtil.getFontHeight() + 1;
-    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
-    int y = top ? getY() : getY() + getHeight() - FontUtil.getFontHeight();
-    for (int i = 0; i < modules.size(); i++) {
-      Module module = top ? modules.get(i) : modules.get(modules.size() - 1 - i);
-      int w = FontUtil.getStringWidth(module.getLabel());
-      int x = getX();
-      if (right) {
-        x = getX() + getWidth() - w;
-      }
       int color = 0xFFFFFFFF;
       if (module instanceof me.friendly.exeter.module.ToggleableModule) {
         color = ((me.friendly.exeter.module.ToggleableModule) module).getColor();
@@ -82,8 +51,8 @@ public final class ArrayListHud extends HudModule {
           color = 0xFFFFFFFF;
         }
       }
-      FontUtil.drawString(module.getLabel(), (float) x, (float) y, color);
-      y += top ? line : -line;
+      entries.add(new TextEntry(module.getLabel(), color));
     }
+    return entries;
   }
 }
