@@ -154,6 +154,10 @@ public final class DebugLogger {
     if (logToChat) {
       sendToChat(formatted);
     }
+
+    if (logToNotifications) {
+      NotificationManager.push("[" + tag + "] " + message, "info");
+    }
   }
 
   /**

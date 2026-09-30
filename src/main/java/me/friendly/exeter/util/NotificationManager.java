@@ -27,6 +27,14 @@ public final class NotificationManager {
       return iconName;
     }
 
+    public long createdAt() {
+      return createdAt;
+    }
+
+    public long durationMs() {
+      return durationMs;
+    }
+
     public boolean isExpired() {
       return System.currentTimeMillis() - createdAt >= durationMs;
     }
