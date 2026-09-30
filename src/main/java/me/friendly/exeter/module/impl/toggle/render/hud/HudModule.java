@@ -21,6 +21,7 @@ public abstract class HudModule extends ToggleableModule {
   private Corner corner;
   private boolean positioned = false;
   private int lastLayoutHeight = -1;
+  private int lastLayoutWidth = -1;
 
   protected HudModule(String label, String[] aliases, int color, Corner defaultCorner) {
     super(label, aliases, color, ModuleType.HUD);
@@ -122,17 +123,30 @@ public abstract class HudModule extends ToggleableModule {
     }
     // Bottom-anchored boxes pin their bottom edge: dynamic-height elements
     // (notifications, radar) grow upward instead of sliding off screen.
+    // Right-anchored boxes pin their right edge the same way.
     for (HudModule module : modules) {
       if (!module.isPositioned()) continue;
-      if (module.getCorner() != Corner.BOTTOM_LEFT
-          && module.getCorner() != Corner.BOTTOM_RIGHT) continue;
+      boolean bottom =
+          module.getCorner() == Corner.BOTTOM_LEFT || module.getCorner() == Corner.BOTTOM_RIGHT;
+      boolean right =
+          module.getCorner() == Corner.TOP_RIGHT || module.getCorner() == Corner.BOTTOM_RIGHT;
       int h = module.getHeight();
-      if (module.lastLayoutHeight == -1) {
+      int w = module.getWidth();
+      if (module.lastLayoutHeight == -1 || module.lastLayoutWidth == -1) {
         module.lastLayoutHeight = h;
-      } else if (h != module.lastLayoutHeight) {
+        module.lastLayoutWidth = w;
+        continue;
+      }
+      if (bottom && h != module.lastLayoutHeight) {
         module.setY(module.getY() + module.lastLayoutHeight - h);
         module.lastLayoutHeight = h;
       }
+      if (right && w != module.lastLayoutWidth) {
+        module.setX(module.getX() + module.lastLayoutWidth - w);
+        module.lastLayoutWidth = w;
+      }
+      if (!bottom) module.lastLayoutHeight = h;
+      if (!right) module.lastLayoutWidth = w;
     }
     for (HudModule module : modules) {
       if (!module.isPositioned()) {
