@@ -118,10 +118,31 @@ public class ExeterConfig {
         ((ToggleableModule) module).setRunning(restoreEnabled);
       }
 
+      // Load HUD module position and corner.
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudModule
+          && data.has("hud")) {
+        me.friendly.exeter.module.impl.toggle.render.hud.HudModule hudModule =
+            (me.friendly.exeter.module.impl.toggle.render.hud.HudModule) module;
+        JsonObject hudData = data.getAsJsonObject("hud");
+        if (hudData.has("x")) {
+          hudModule.setX(hudData.get("x").getAsInt());
+        }
+        if (hudData.has("y")) {
+          hudModule.setY(hudData.get("y").getAsInt());
+        }
+        if (hudData.has("corner")) {
+          try {
+            hudModule.setCorner(
+                me.friendly.exeter.module.impl.toggle.render.hud.HudModule.Corner.valueOf(
+                    hudData.get("corner").getAsString()));
+          } catch (IllegalArgumentException ignored) {
+          }
+        }
+      }
+
       if (module
               instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule
-          && data.has("windows")) {
-        JsonObject windowsData = data.getAsJsonObject("windows");
+          && data.has("windows")) {        JsonObject windowsData = data.getAsJsonObject("windows");
         Map<String, int[]> positions = new HashMap<String, int[]>();
         for (Map.Entry<String, JsonElement> entry : windowsData.entrySet()) {
           int[] pos = readPosition(entry.getValue());
@@ -203,6 +224,16 @@ public class ExeterConfig {
           windowsData.add(entry.getKey(), pos);
         }
         data.add("windows", windowsData);
+      }
+
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudModule) {
+        me.friendly.exeter.module.impl.toggle.render.hud.HudModule hudModule =
+            (me.friendly.exeter.module.impl.toggle.render.hud.HudModule) module;
+        JsonObject hudData = new JsonObject();
+        hudData.addProperty("x", hudModule.getX());
+        hudData.addProperty("y", hudModule.getY());
+        hudData.addProperty("corner", hudModule.getCorner().name());
+        data.add("hud", hudData);
       }
 
       if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
