@@ -7,7 +7,11 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
-import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
+import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import org.lwjgl.input.Keyboard;
 
 /** Manages {@link Module}s for Exeter. */
@@ -17,9 +21,13 @@ public final class ModuleManager extends ListRegistry<Module> {
     this.registry = new ArrayList<Module>();
 
     register(new ClickGui());
+    register(new HUDEditor());
+    register(new HudRenderer());
+    register(new WatermarkHud());
+    register(new CoordsHud());
+    register(new ArrayListHud());
     register(new Speed());
     register(new KillAura());
-    register(new HudModule());
 
     Exeter.getInstance()
         .getKeybindManager()
