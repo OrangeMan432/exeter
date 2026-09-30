@@ -96,10 +96,14 @@ public class ConsoleWindow extends Window {
       if (!input.isEmpty()) {
         addLine("> " + input, LogEntry.Level.OUTPUT);
         if (Exeter.getInstance() != null) {
+          String effective = input;
           String prefix = Exeter.getInstance().getCommandManager().getPrefix();
-          if (input.startsWith(prefix)) {
+          if (effective.startsWith(prefix)) {
+            effective = effective.substring(prefix.length());
+          }
+          if (!effective.trim().isEmpty()) {
             String response =
-                Exeter.getInstance().getCommandManager().dispatchDirect(input);
+                Exeter.getInstance().getCommandManager().dispatchDirect(effective);
             if (response != null && !response.isEmpty()) {
               addLine(response, LogEntry.Level.INFO);
             }
