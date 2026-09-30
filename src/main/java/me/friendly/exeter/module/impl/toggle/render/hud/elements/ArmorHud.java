@@ -8,6 +8,7 @@ import me.friendly.exeter.properties.Property;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.item.ItemStack;
+import org.lwjgl.opengl.GL11;
 
 public final class ArmorHud extends HudModule {
 
@@ -81,6 +82,23 @@ public final class ArmorHud extends HudModule {
     Minecraft mc = MinecraftAccessor.getMinecraft();
     if (mc == null || mc.player == null) return;
     ItemStack[] armor = armor();
+    // Item rendering touches lighting/texture/blend state that the HUD text
+    // renderer depends on; isolate it so the rest of the HUD keeps rendering.
+    GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+    try {
+      renderItems(mc, armor);
+    } finally {
+      GL11.glPopAttrib();
+      GL11.glDisable(GL11.GL_LIGHTING);
+      GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
+    if (orientation.getValue() == Orientation.VERTICAL
+        && showDurability.getValue().booleanValue()) {
+      renderDurabilityText(armor);
+    }
+  }
+
+  private void renderItems(Minecraft mc, ItemStack[] armor) {
     if (orientation.getValue() == Orientation.VERTICAL) {
       int x = getX();
       int y = getY();
@@ -91,10 +109,6 @@ public final class ArmorHud extends HudModule {
         if (stack == null || stack.count <= 0) continue;
         itemRenderer.method_1487(mc.textRenderer, mc.textureManager, stack, x, y);
         itemRenderer.method_1488(mc.textRenderer, mc.textureManager, stack, x, y);
-        if (showDurability.getValue().booleanValue() && stack.isDamageable()) {
-          FontUtil.drawString(
-              durabilityText(stack), (float) (x + 18), (float) (y + 5), 0xFFFFFFFF);
-        }
         y += 18;
       }
     } else {
@@ -108,6 +122,20 @@ public final class ArmorHud extends HudModule {
         itemRenderer.method_1488(mc.textRenderer, mc.textureManager, stack, x, y);
         x += 18;
       }
+    }
+  }
+
+  private void renderDurabilityText(ItemStack[] armor) {
+    int x = getX();
+    int y = getY();
+    for (int i = 3; i >= 0; --i) {
+      if (i >= armor.length) continue;
+      ItemStack stack = armor[i];
+      if (stack == null || stack.count <= 0) continue;
+      if (stack.isDamageable()) {
+        FontUtil.drawString(durabilityText(stack), (float) (x + 18), (float) (y + 5), 0xFFFFFFFF);
+      }
+      y += 18;
     }
   }
 }
