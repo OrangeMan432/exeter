@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.beta.mixin.MinecraftAccessor;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
@@ -34,7 +35,17 @@ public final class ArmorHud extends HudModule {
     if (mc == null || mc.player == null || mc.player.inventory == null) {
       return new ItemStack[0];
     }
-    return mc.player.inventory.armor;
+    ItemStack[] armor = mc.player.inventory.armor;
+    if (equippedCount() == 0 && mc.currentScreen instanceof HudEditorScreen) {
+      // Editor preview when naked: full diamond for positioning.
+      return new ItemStack[] {
+        new ItemStack(313, 1, 0),
+        new ItemStack(312, 1, 0),
+        new ItemStack(311, 1, 0),
+        new ItemStack(310, 1, 0)
+      };
+    }
+    return armor;
   }
 
   private int equippedCount() {
