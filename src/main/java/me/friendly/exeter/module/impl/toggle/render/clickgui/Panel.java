@@ -102,8 +102,9 @@ public class Panel extends DrawableHelper implements Labeled {
 
     if (showArrow) {
       float rotation = (180 - this.angle) * 0.5f;
-      me.friendly.api.minecraft.render.GlShapes.drawTriangle(
-          this.x + this.width - 8, this.y + 6, 3.5f, rotation, 0xFFCCCCCC);
+      me.friendly.api.minecraft.render.GuiTextures.drawIcon(
+          me.friendly.api.minecraft.render.GuiTextures.arrowId(),
+          this.x + this.width - 8.0f, this.y + 6.0f, 10.0f, rotation);
     }
 
     if (this.open) {

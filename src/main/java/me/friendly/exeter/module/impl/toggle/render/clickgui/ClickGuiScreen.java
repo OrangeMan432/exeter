@@ -59,18 +59,28 @@ public final class ClickGuiScreen extends Screen {
     int x = (this.width / 2) - (totalGuiWidth / 2) - panelWidth;
     int y = 40;
     for (ModuleType type : ModuleType.values()) {
-      if (type == ModuleType.HUD) continue;
+      if (type == ModuleType.HUD || type == ModuleType.CLIENT) continue;
       Panel panel = new Panel(type.getLabel(), x += panelWidth, y, true);
-      for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-        if (module instanceof ToggleableModule) {
-          ToggleableModule toggleable = (ToggleableModule) module;
-          if (toggleable.getModuleType() == type) {
-            panel.addButton(new ModuleButton(module));
-          }
-        }
-      }
+      addModuleButtons(panel, type);
       sortPanelItems(panel);
       panels.add(panel);
+    }
+    Panel clientPanel = new Panel(ModuleType.CLIENT.getLabel(), x += panelWidth, y, true);
+    addModuleButtons(clientPanel, ModuleType.CLIENT);
+    sortPanelItems(clientPanel);
+    panels.add(clientPanel);
+  }
+
+  private void addModuleButtons(Panel panel, ModuleType type) {
+    for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
+      if (module instanceof ToggleableModule) {
+        ToggleableModule toggleable = (ToggleableModule) module;
+        if (toggleable.getModuleType() == type) {
+          panel.addButton(new ModuleButton(module));
+        }
+      } else if (type == ModuleType.CLIENT) {
+        panel.addButton(new ModuleButton(module));
+      }
     }
   }
 

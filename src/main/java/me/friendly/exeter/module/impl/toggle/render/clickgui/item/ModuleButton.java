@@ -21,6 +21,7 @@ public class ModuleButton extends Button {
   private boolean subOpen;
   private int gearAnimFrame = 2;
   private int gearAnimTimer = 0;
+  private float gearRotation;
 
   public ModuleButton(Module module) {
     super(module.getLabel());
@@ -76,9 +77,10 @@ public class ModuleButton extends Button {
     super.drawScreen(mouseX, mouseY, partialTicks);
 
     if (!topLevelItems.isEmpty()) {
-      me.friendly.api.minecraft.render.GlShapes.drawRing(
-          this.x + this.width - 7.0f, this.y + 7.5f, 4.0f,
-          subOpen ? 0xFFFFFFFF : 0xFFCCCCCC);
+      this.gearRotation += 0.5f;
+      me.friendly.api.minecraft.render.GuiTextures.drawIcon(
+          me.friendly.api.minecraft.render.GuiTextures.gearId(),
+          this.x + this.width - 7.0f, this.y + 7.5f, 10.0f, this.gearRotation);
     }
 
     if (this.subOpen) {
