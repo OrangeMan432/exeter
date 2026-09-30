@@ -2,27 +2,27 @@
   "schemaVersion": 1,
   "id": "exeter",
   "version": "${version}",
+
   "name": "Exeter",
-  "description": "A Minecraft client based on Exeter.",
+  "description": "Exeter client ported to Beta 1.7.3.",
   "authors": [
-    "Friendly",
-    "Gopro336"
+    "Friendly"
   ],
-  "contact": {},
-  "license": "MIT",
-  "environment": "client",
+
+  "license": "All-Rights-Reserved",
+
+  "environment": "*",
   "entrypoints": {
     "main": [
-      "me.friendly.exeter.ExeterInitializer"
+      "me.friendly.exeter.beta.ExeterBeta"
     ]
   },
   "mixins": [
-    "mixins.exeter.json"
+    "exeter.mixins.json"
   ],
+
   "depends": {
-    "fabricloader": ">=0.15.0",
-    "fabric-api": "*",
-    "minecraft": ">=26.3",
-    "java": ">=25"
+    "fabricloader": ">=0.13.3",
+    "minecraft": "1.0.0-beta.7.3"
   }
 }

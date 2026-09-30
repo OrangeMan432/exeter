@@ -1,282 +1,63 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.18.2'
+    id 'babric-loom' version '1.5-SNAPSHOT'
     id 'maven-publish'
 }
 
-group project.modGroup
-version project.modVersion
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
-base {
-    archivesName = project.modBaseName
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+loom {
+    gluedMinecraftJar()
+    customMinecraftManifest.set("https://babric.github.io/manifest-polyfill/${minecraft_version}.json")
+    intermediaryUrl.set("https://maven.glass-launcher.net/babric/babric/intermediary/%1\$s/intermediary-%1\$s-v2.jar")
 }
-
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
-}
-
-def git(String... args) {
-    try {
-        def pb = new ProcessBuilder(["git"] + (args as List))
-        pb.directory(projectDir)
-        pb.redirectErrorStream(true)
-        def proc = pb.start()
-        def output = new String(proc.inputStream.readAllBytes()).trim()
-        proc.waitFor()
-        return proc.exitValue() == 0 ? output : null
-    } catch (ignored) {
-        return null
-    }
-}
-
-def getHash() {
-    def gitFolder = "$projectDir/.git/"
-    def takeFromHash = 16
-    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
-    def isCommit = head.length == 1
-
-    if(isCommit) return head[0].trim().take(takeFromHash)
-
-    def refHead = new File(gitFolder + head[1].trim())
-    refHead.text.trim().take takeFromHash
-}
-
-def getBuild() {
-    // The dev tag is a rolling marker maintained by the dev release workflow; exclude it
-    // or it shadows real build tags like b28 in the watermark.
-    String tag = git("describe", "--tags", "--abbrev=0", "--exclude=dev")
-    String commitSinceTag = tag != null ? git("rev-list", "${tag}..HEAD", "--count") : null
-    return "${tag ?: 'unknown'}-mc${project.minecraft_version}+${commitSinceTag ?: '0'}"
-}
-
-def generatedSourcesDir = file("${buildDir}/generated/sources/me.friendly.exeter")
-
-sourceSets.main {
-    java.srcDir generatedSourcesDir
-}
-
-task generateBuildInfo {
-    description = 'Generates BuildInfo.java with git commit info'
-    outputs.upToDateWhen { false }
-
-    doLast {
-        def hashVal = getHash()
-        def buildVal = getBuild()
-
-        def statusOut = git("status", "--porcelain")
-        def dirty = statusOut != null && !statusOut.trim().isEmpty()
-
-        def pkg = new File(generatedSourcesDir, "me/friendly/exeter")
-        pkg.mkdirs()
-        def out = new File(pkg, "BuildInfo.java")
-        out.text = """\
-package me.friendly.exeter;
-
-public final class BuildInfo {
-    public static final String HASH = "${hashVal}";
-    public static final String BUILD = "${buildVal}";
-    public static final boolean DIRTY = ${dirty};
-
-    private BuildInfo() {}
-}
-"""
-    }
-}
-
-compileJava.dependsOn generateBuildInfo
 
 repositories {
-    mavenCentral()
     maven {
-        name = 'fabric'
-        url = 'https://maven.fabricmc.net/'
-    }
-    maven {
-        name = 'SpongePowered'
-        url = 'https://repo.spongepowered.org/maven/'
-    }
-    maven {
-        name = 'meteor-maven'
-        url = 'https://maven.meteordev.org/releases'
+        name = 'Babric'
+        url = 'https://maven.glass-launcher.net/babric'
     }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    mappings "babric:barn:${project.yarn_mappings}:v2"
+    modImplementation "babric:fabric-loader:${project.loader_version}"
 
-    implementation "com.moandjiezana.toml:toml4j:0.7.2"
-    compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
-
-    implementation "meteordevelopment:discord-ipc:1.1"
-    implementation "com.google.code.gson:gson:2.11.0"
+    implementation "org.slf4j:slf4j-api:1.8.0-beta4"
+    implementation "org.apache.logging.log4j:log4j-slf4j18-impl:2.16.0"
+    implementation "com.google.code.gson:gson:2.10.1"
 }
 
 processResources {
-    inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
+}
+
+java {
+    withSourcesJar()
 }
 
 jar {
-    manifest {
-        attributes(
-                'MixinConfigs': 'mixins.exeter.json',
-                'TweakOrder': 0,
-        )
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-ext {
-    googleJavaFormatVersion = '1.36.1'
-}
-
-task format {
-    description = 'Formats all Java source files using google-java-format'
-    group = 'formatting'
-    def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
-
-    doFirst {
-        def jarFile = jar.get().asFile
-        if (!jarFile.exists()) {
-            jarFile.parentFile.mkdirs()
-            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
-                    dest: jarFile.absolutePath)
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
     }
 
-    doLast {
-        def jarPath = jar.get().asFile.absolutePath
-        fileTree('src/main/java').matching { include '**/*.java' }.each { file ->
-            def proc = ['java', '-jar', jarPath, '--replace', file.absolutePath].execute()
-            proc.waitFor()
-            if (proc.exitValue() != 0) {
-                throw new GradleException("Failed to format ${file.name}: ${proc.errorStream.text}")
-            }
-        }
-    }
-}
-
-def githubRepoSlug() {
-    def url = git("remote", "get-url", "addon") ?: git("remote", "get-url", "origin")
-    if (url == null) return null
-    def matcher = url =~ /github\.com[:\/](.+?)(\.git)?$/
-    return matcher.find() ? matcher.group(1) : null
-}
-
-def gh(String repo, List<String> args) {
-    def proc = (['gh', '-R', repo] + args).execute()
-    def out = new StringBuffer()
-    def err = new StringBuffer()
-    proc.waitForProcessOutput(out, err)
-    if (proc.exitValue() != 0) {
-        throw new GradleException("gh ${args.join(' ')} failed: ${err.toString().trim()}")
-    }
-    return out.toString().trim()
-}
-
-task updateScreenshots {
-    description = 'Refreshes README screenshots and versions from the latest passing smoke test (override run with -PsmokeRun=<id>)'
-    group = 'documentation'
-
-    doLast {
-        def repo = githubRepoSlug()
-        if (repo == null) {
-            throw new GradleException("Could not determine GitHub repo (need addon or origin remote)")
-        }
-        def authProc = ['gh', 'auth', 'status'].execute()
-        authProc.waitFor()
-        if (authProc.exitValue() != 0) {
-            throw new GradleException("gh is not authenticated (run gh auth login)")
-        }
-
-        def runId = findProperty('smokeRun')
-        if (runId == null) {
-            runId = gh(repo, ['run', 'list', '--workflow', 'smoke-test.yml', '--status', 'success',
-                    '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId'])
-            if (runId.isEmpty()) {
-                throw new GradleException("No successful smoke test runs found")
-            }
-        }
-        println("Using smoke test run ${runId}")
-
-        def dest = file("${buildDir}/smoke-artifact")
-        delete dest
-        gh(repo, ['run', 'download', runId.toString(), '-n', 'smoke-test', '-D', dest.absolutePath])
-
-        def shots = [
-                'clickgui.png' : 'run/screenshots/smoke-01-clickgui.png',
-                'hudeditor.png': 'run/screenshots/smoke-02-hudeditor.png',
-                'windows.png'  : 'run/screenshots/smoke-03-windows.png',
-        ]
-        shots.each { target, path ->
-            def src = new File(dest, path)
-            if (!src.exists()) {
-                throw new GradleException("Artifact is missing ${path}")
-            }
-            copy {
-                from src
-                into 'assets'
-                rename { target }
-            }
-        }
-
-        def props = new Properties()
-        new File(projectDir, 'gradle.properties').withInputStream { props.load(it) }
-        def buildText = new File(projectDir, 'build.gradle').text
-        def loomVersion = (buildText =~ /id 'net\.fabricmc\.fabric-loom' version '([^']+)'/)[0][1]
-        def jdkVersion = (buildText =~ /JavaLanguageVersion\.of\((\d+)\)/)[0][1]
-        def replacements = [
-                "- Minecraft `[^`]+`": "- Minecraft `${props.getProperty('minecraft_version')}`",
-                "- Fabric Loader `[^`]+`, Fabric API `[^`]+`":
-                        "- Fabric Loader `${props.getProperty('loader_version')}`, Fabric API `${props.getProperty('fabric_api_version')}`",
-                "- Fabric Loom `[^`]+`": "- Fabric Loom `${loomVersion}`",
-                "- JDK \\d+ \\(Eclipse Temurin\\)": "- JDK ${jdkVersion} (Eclipse Temurin)",
-        ]
-        def readme = new File(projectDir, 'README.md')
-        def text = readme.text
-        replacements.each { pattern, replacement ->
-            if (!(text =~ pattern).find()) {
-                throw new GradleException("README.md is missing expected line matching: ${pattern}")
-            }
-            text = text.replaceFirst("(?m)^${pattern}\$", replacement)
-        }
-        readme.text = text
-        println("Updated assets/clickgui.png, hudeditor.png, windows.png and README.md versions")
-    }
-}
-
-task formatCheck {
-    description = 'Fails if any Java source file is not formatted with google-java-format'
-    group = 'verification'
-    def jar = layout.buildDirectory.file("google-java-format-${googleJavaFormatVersion}.jar")
-
-    doFirst {
-        def jarFile = jar.get().asFile
-        if (!jarFile.exists()) {
-            jarFile.parentFile.mkdirs()
-            ant.get(src: "https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar",
-                    dest: jarFile.absolutePath)
-        }
-    }
-
-    doLast {
-        def jarPath = jar.get().asFile.absolutePath
-        def unformatted = []
-        fileTree('src/main/java').matching { include '**/*.java' }.each { file ->
-            def proc = ['java', '-jar', jarPath, '--dry-run', '--set-exit-if-changed', file.absolutePath].execute()
-            proc.waitFor()
-            if (proc.exitValue() != 0) {
-                unformatted << file.name
-            }
-        }
-        if (!unformatted.isEmpty()) {
-            throw new GradleException("Unformatted files (run ./gradlew format):\n" + unformatted.join('\n'))
-        }
+    repositories {
     }
 }
