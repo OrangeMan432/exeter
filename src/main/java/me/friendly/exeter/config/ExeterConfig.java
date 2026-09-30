@@ -1,20 +1,19 @@
 package me.friendly.exeter.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.moandjiezana.toml.Toml;
+import com.moandjiezana.toml.TomlWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.interfaces.Toggleable;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.keybind.Keybind;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
@@ -22,146 +21,224 @@ import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 
 /**
- * Module settings persistence as Gson JSON. Each module gets its own file:
+ * Manages module configuration in TOML format (newbase parity). Each module gets its own .toml
+ * file in the modules directory.
  *
  * <pre>
- * {
- *   "module": { "enabled": true, "keybind": 19 },
- *   "settings": { "Range": 4.5, "Mode": "FAST" }
- * }
+ * [module]
+ * enabled = false
+ * keybind = 0
+ *
+ * [settings]
+ * Factor = 1.5
+ * Mode = "FAST"
+ *
+ * [hud]
+ * x = 5
+ * y = 5
+ * corner = "TOP_LEFT"
  * </pre>
  */
 public class ExeterConfig {
   private static ExeterConfig instance;
   private final File configDir;
-  private final Gson gson;
+  private final Toml tomlReader;
+  private final TomlWriter tomlWriter;
 
   public ExeterConfig() {
     instance = this;
     this.configDir = new File(Exeter.getInstance().getDirectory(), "modules");
-    if (!this.configDir.exists()) {
-      this.configDir.mkdirs();
+    this.tomlReader = new Toml();
+    this.tomlWriter = new TomlWriter();
+
+    try {
+      Files.createDirectories(configDir.toPath());
+    } catch (IOException e) {
+      System.err.println("[Exeter] Failed to create config directory: " + e.getMessage());
     }
-    this.gson = new GsonBuilder().setPrettyPrinting().create();
   }
 
   public static ExeterConfig getInstance() {
     return instance;
   }
 
-  /** Loads all module configurations from JSON files. */
+  /** Loads all module configurations from TOML files. */
   public void loadAll() {
+    DebugLogger.get().logSystem("Config", "=== LOAD ALL START ===");
+    int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
+      DebugLogger.get().logSystem("Config", "Loading module " + count + ": " + module.getLabel());
       loadModule(module);
+      count++;
     }
+    DebugLogger.get().logSystem("Config", "=== LOAD ALL END (" + count + " modules) ===");
   }
 
-  /** Saves all module configurations to JSON files. */
+  /** Saves all module configurations to TOML files. */
   public void saveAll() {
+    DebugLogger.get().logFile("Config", "=== SAVE ALL START ===");
+    int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
+      DebugLogger.get().logFile("Config", "Saving module " + count + ": " + module.getLabel());
       saveModule(module);
+      count++;
     }
+    DebugLogger.get().logFile("Config", "=== SAVE ALL END (" + count + " modules) ===");
   }
 
-  /** Loads a single module's configuration from its JSON file. */
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  /** Loads a single module's configuration from its TOML file. */
+  @SuppressWarnings({"unchecked"})
   public void loadModule(Module module) {
-    File file = fileFor(module);
+    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
+    File file = new File(configDir, fileName);
+    DebugLogger.get()
+        .logSystem(
+            "Config", "loadModule: " + module.getLabel() + " from " + file.getAbsolutePath());
+
     if (!file.exists()) {
+      DebugLogger.get().logSystem("Config", "  file does not exist, skipping");
       return;
     }
-    try {
-      FileReader reader = new FileReader(file);
-      JsonElement root;
-      try {
-        root = JsonParser.parseReader(reader);
-      } finally {
-        reader.close();
-      }
-      if (root == null || !root.isJsonObject()) {
-        return;
-      }
-      JsonObject data = root.getAsJsonObject();
 
+    try {
+      Map<String, Object> data = tomlReader.read(file).toMap();
+      DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
+
+      // Load module state (enabled, keybind). The enabled flag is applied after
+      // settings are loaded so onEnable() observes the restored property values.
       boolean restoreEnabled = false;
       boolean hasEnabledState = false;
-      if (module instanceof Toggleable && data.has("module")) {
-        JsonObject moduleData = data.getAsJsonObject("module");
-        if (moduleData.has("enabled")) {
-          restoreEnabled = moduleData.get("enabled").getAsBoolean();
+      if (module instanceof Toggleable && data.containsKey("module")) {
+        Map<String, Object> moduleData = (Map<String, Object>) data.get("module");
+        ToggleableModule toggleable = (ToggleableModule) module;
+        DebugLogger.get().logSystem("Config", "  module data = " + moduleData);
+
+        if (moduleData.containsKey("enabled")) {
+          Object enabledVal = moduleData.get("enabled");
+          boolean enabled;
+          if (enabledVal instanceof Boolean) {
+            enabled = ((Boolean) enabledVal).booleanValue();
+          } else if (enabledVal instanceof Number) {
+            enabled = ((Number) enabledVal).intValue() != 0;
+          } else {
+            enabled = Boolean.parseBoolean(String.valueOf(enabledVal));
+          }
+          restoreEnabled = enabled;
           hasEnabledState = true;
         }
-        if (moduleData.has("keybind")) {
-          int keybind = moduleData.get("keybind").getAsInt();
+
+        if (moduleData.containsKey("keybind")) {
+          int keybind = ((Number) moduleData.get("keybind")).intValue();
           Keybind kb =
-              Exeter.getInstance().getKeybindManager().getKeybindByLabel(module.getLabel());
+              Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
           if (kb != null && keybind != 0) {
             kb.setKey(keybind);
           }
         }
       }
 
-      if (data.has("settings")) {
-        JsonObject settings = data.getAsJsonObject("settings");
+      // Load properties
+      if (data.containsKey("settings")) {
+        Map<String, Object> settings = (Map<String, Object>) data.get("settings");
+
+        // Strip TOML quotes from map keys (toml4j includes them)
+        Map<String, Object> cleaned = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> entry : settings.entrySet()) {
+          String k = entry.getKey();
+          if (k.startsWith("\"") && k.endsWith("\"")) {
+            k = k.substring(1, k.length() - 1);
+          }
+          cleaned.put(k, entry.getValue());
+        }
+
         for (Property<?> property : module.getProperties()) {
           if (property instanceof ActionProperty || property instanceof PopupProperty) {
             continue;
           }
           String key = property.getAliases()[0];
-          if (settings.has(key)) {
-            applyPropertyValue(property, settings.get(key));
+          if (!cleaned.containsKey(key)) {
+            continue;
+          }
+          Object value = cleaned.get(key);
+          if (value instanceof Map) {
+            Map<String, Object> childMap = (Map<String, Object>) value;
+            for (Property<?> child : property.getChildren()) {
+              String childKey = child.getAliases()[0];
+              if (childMap.containsKey(childKey)) {
+                applyPropertyValue(child, childMap.get(childKey));
+              }
+            }
+          } else {
+            applyPropertyValue(property, value);
+          }
+        }
+
+        // Second pass: handle __ separated child keys
+        for (Property<?> property : module.getProperties()) {
+          String parentKey = property.getAliases()[0];
+          for (Property<?> child : property.getChildren()) {
+            String childFlatKey = parentKey + "__" + child.getAliases()[0];
+            if (cleaned.containsKey(childFlatKey)) {
+              applyPropertyValue(child, cleaned.get(childFlatKey));
+            }
           }
         }
       }
 
+      // Apply enabled state after settings so onEnable() observes restored values.
       if (hasEnabledState && module instanceof ToggleableModule) {
         ((ToggleableModule) module).setRunning(restoreEnabled);
       }
 
-      // Load HUD module position and corner.
-      if (module instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudModule
-          && data.has("hud")) {
-        me.friendly.exeter.module.impl.toggle.render.hud.HudModule hudModule =
-            (me.friendly.exeter.module.impl.toggle.render.hud.HudModule) module;
-        JsonObject hudData = data.getAsJsonObject("hud");
-        if (hudData.has("x")) {
-          hudModule.setX(hudData.get("x").getAsInt());
+      // Load HUD module position and corner
+      if (module instanceof HudModule && data.containsKey("hud")) {
+        HudModule hudModule = (HudModule) module;
+        Map<String, Object> hudData = (Map<String, Object>) data.get("hud");
+
+        if (hudData.containsKey("x")) {
+          hudModule.setX(((Number) hudData.get("x")).intValue());
         }
-        if (hudData.has("y")) {
-          hudModule.setY(hudData.get("y").getAsInt());
+        if (hudData.containsKey("y")) {
+          hudModule.setY(((Number) hudData.get("y")).intValue());
         }
-        if (hudData.has("corner")) {
+        if (hudData.containsKey("corner")) {
+          String cornerName = hudData.get("corner").toString();
           try {
-            hudModule.setCorner(
-                me.friendly.exeter.module.impl.toggle.render.hud.HudModule.Corner.valueOf(
-                    hudData.get("corner").getAsString()));
-          } catch (IllegalArgumentException ignored) {
+            hudModule.setCorner(HudModule.Corner.valueOf(cornerName));
+          } catch (IllegalArgumentException e) {
+            DebugLogger.get().logSystem("Config", "  invalid corner value: " + cornerName);
           }
         }
       }
 
-      if (module
-              instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule
-          && data.has("windows")) {        JsonObject windowsData = data.getAsJsonObject("windows");
+      // Load saved window positions (applied when the Windows screen opens)
+      if (module instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule
+          && data.containsKey("windows")) {
+        Map<String, Object> windowsData = (Map<String, Object>) data.get("windows");
         Map<String, int[]> positions = new HashMap<String, int[]>();
-        for (Map.Entry<String, JsonElement> entry : windowsData.entrySet()) {
-          int[] pos = readPosition(entry.getValue());
-          if (pos != null) {
-            positions.put(entry.getKey(), pos);
+        for (Map.Entry<String, Object> entry : windowsData.entrySet()) {
+          if (entry.getValue() instanceof Map) {
+            int[] pos = readPosition((Map<String, Object>) entry.getValue());
+            if (pos != null) {
+              positions.put(entry.getKey(), pos);
+            }
           }
         }
         ((me.friendly.exeter.module.impl.toggle.client.WindowsModule) module)
             .setPendingPositions(positions);
       }
 
+      // Load ClickGUI panel positions
       if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui
-          && data.has("panels")) {
-        JsonObject panelsData = data.getAsJsonObject("panels");
+          && data.containsKey("panels")) {
+        Map<String, Object> panelsData = (Map<String, Object>) data.get("panels");
         Map<String, int[]> positions = new HashMap<String, int[]>();
-        for (Map.Entry<String, JsonElement> entry : panelsData.entrySet()) {
-          int[] pos = readPosition(entry.getValue());
-          if (pos != null) {
-            positions.put(entry.getKey(), pos);
+        for (Map.Entry<String, Object> entry : panelsData.entrySet()) {
+          if (entry.getValue() instanceof Map) {
+            int[] pos = readPosition((Map<String, Object>) entry.getValue());
+            if (pos != null) {
+              positions.put(entry.getKey(), pos);
+            }
           }
         }
         ((me.friendly.exeter.module.impl.toggle.render.ClickGui) module)
@@ -170,143 +247,166 @@ public class ExeterConfig {
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to load config for " + module.getLabel() + ": " + e.getMessage());
+      e.printStackTrace();
     }
   }
 
-  private int[] readPosition(JsonElement element) {
+  /** Reads an {x, y} position table, or null when malformed. */
+  private static int[] readPosition(Map<String, Object> table) {
     try {
-      if (element != null && element.isJsonObject()) {
-        JsonObject table = element.getAsJsonObject();
-        if (table.has("x") && table.has("y")) {
-          return new int[] {table.get("x").getAsInt(), table.get("y").getAsInt()};
-        }
+      Object x = table.get("x");
+      Object y = table.get("y");
+      if (x instanceof Number && y instanceof Number) {
+        return new int[] {((Number) x).intValue(), ((Number) y).intValue()};
       }
     } catch (Exception ignored) {
     }
     return null;
   }
 
-  /** Saves a single module's configuration to its JSON file. */
+  /** Saves a single module's configuration to its TOML file. */
   public void saveModule(Module module) {
-    try {
-      JsonObject data = new JsonObject();
+    String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
+    File file = new File(configDir, fileName);
+    DebugLogger.get()
+        .logFile("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
 
+    try {
+      Map<String, Object> data = new HashMap<String, Object>();
+
+      // Save module state
       if (module instanceof Toggleable) {
         ToggleableModule toggleable = (ToggleableModule) module;
-        JsonObject moduleData = new JsonObject();
-        moduleData.addProperty("enabled", toggleable.isRunning());
-        Keybind kb =
+        Map<String, Object> moduleData = new HashMap<String, Object>();
+        moduleData.put("enabled", Boolean.valueOf(toggleable.isRunning()));
+        Keybind keybind =
             Exeter.getInstance().getKeybindManager().getKeybindByLabel(toggleable.getLabel());
-        moduleData.addProperty("keybind", kb != null ? kb.getKey() : 0);
-        data.add("module", moduleData);
+        moduleData.put("keybind", Long.valueOf(keybind != null ? keybind.getKey() : 0));
+        data.put("module", moduleData);
       }
 
-      JsonObject settings = new JsonObject();
-      for (Property<?> property : module.getProperties()) {
-        if (property instanceof ActionProperty || property instanceof PopupProperty) {
-          continue;
+      // Save properties (including children)
+      if (!module.getProperties().isEmpty()) {
+        Map<String, Object> settings = new HashMap<String, Object>();
+        for (Property<?> property : module.getProperties()) {
+          if (property instanceof ActionProperty || property instanceof PopupProperty) {
+            continue;
+          }
+          savePropertyRecursive(property, settings);
         }
-        saveProperty(property, settings);
-      }
-      if (settings.size() > 0) {
-        data.add("settings", settings);
+        if (!settings.isEmpty()) {
+          data.put("settings", settings);
+        }
       }
 
+      // Save HUD module position and corner
+      if (module instanceof HudModule) {
+        HudModule hudModule = (HudModule) module;
+        Map<String, Object> hudData = new HashMap<String, Object>();
+        hudData.put("x", Long.valueOf(hudModule.getX()));
+        hudData.put("y", Long.valueOf(hudModule.getY()));
+        hudData.put("corner", hudModule.getCorner().name());
+        data.put("hud", hudData);
+      }
+
+      // Save window positions
       if (module instanceof me.friendly.exeter.module.impl.toggle.client.WindowsModule) {
-        Map<String, int[]> positions =
-            ((me.friendly.exeter.module.impl.toggle.client.WindowsModule) module)
-                .getPendingPositions();
-        JsonObject windowsData = new JsonObject();
-        for (Map.Entry<String, int[]> entry : positions.entrySet()) {
-          JsonObject pos = new JsonObject();
-          pos.addProperty("x", entry.getValue()[0]);
-          pos.addProperty("y", entry.getValue()[1]);
-          windowsData.add(entry.getKey(), pos);
+        me.friendly.exeter.module.impl.toggle.client.WindowsModule windowsModule =
+            (me.friendly.exeter.module.impl.toggle.client.WindowsModule) module;
+        Map<String, Object> windowsData = new HashMap<String, Object>();
+        for (Map.Entry<String, int[]> entry : windowsModule.getPendingPositions().entrySet()) {
+          Map<String, Object> pos = new HashMap<String, Object>();
+          pos.put("x", Long.valueOf(entry.getValue()[0]));
+          pos.put("y", Long.valueOf(entry.getValue()[1]));
+          windowsData.put(entry.getKey(), pos);
         }
-        data.add("windows", windowsData);
+        data.put("windows", windowsData);
       }
 
-      if (module instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudModule) {
-        me.friendly.exeter.module.impl.toggle.render.hud.HudModule hudModule =
-            (me.friendly.exeter.module.impl.toggle.render.hud.HudModule) module;
-        JsonObject hudData = new JsonObject();
-        hudData.addProperty("x", hudModule.getX());
-        hudData.addProperty("y", hudModule.getY());
-        hudData.addProperty("corner", hudModule.getCorner().name());
-        data.add("hud", hudData);
-      }
-
+      // Save ClickGUI panel positions
       if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
-        Map<String, int[]> positions =
-            ((me.friendly.exeter.module.impl.toggle.render.ClickGui) module).getPendingPanels();
-        JsonObject panelsData = new JsonObject();
-        for (Map.Entry<String, int[]> entry : positions.entrySet()) {
-          JsonObject pos = new JsonObject();
-          pos.addProperty("x", entry.getValue()[0]);
-          pos.addProperty("y", entry.getValue()[1]);
-          panelsData.add(entry.getKey(), pos);
+        me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule =
+            (me.friendly.exeter.module.impl.toggle.render.ClickGui) module;
+        Map<String, Object> panelsData = new HashMap<String, Object>();
+        for (Map.Entry<String, int[]> entry : clickGuiModule.getPendingPanels().entrySet()) {
+          Map<String, Object> pos = new HashMap<String, Object>();
+          pos.put("x", Long.valueOf(entry.getValue()[0]));
+          pos.put("y", Long.valueOf(entry.getValue()[1]));
+          panelsData.put(entry.getKey(), pos);
         }
-        data.add("panels", panelsData);
+        data.put("panels", panelsData);
       }
 
-      FileWriter writer = new FileWriter(fileFor(module));
-      try {
-        writer.write(gson.toJson(data));
-      } finally {
-        writer.close();
-      }
+      tomlWriter.write(data, file);
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to save config for " + module.getLabel() + ": " + e.getMessage());
+      e.printStackTrace();
     }
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private void saveProperty(Property<?> property, JsonObject settings) {
+  private void applyPropertyValue(Property<?> property, Object value) {
+    if (property instanceof EnumProperty) {
+      ((EnumProperty) property).setValue(value.toString());
+    } else if (property instanceof NumberProperty) {
+      if (property.getValue() instanceof Integer) {
+        ((NumberProperty) property).setValue(Integer.valueOf(((Number) value).intValue()));
+      } else if (property.getValue() instanceof Float) {
+        ((NumberProperty) property).setValue(Float.valueOf(((Number) value).floatValue()));
+      } else if (property.getValue() instanceof Double) {
+        ((NumberProperty) property).setValue(Double.valueOf(((Number) value).doubleValue()));
+      } else if (property.getValue() instanceof Long) {
+        ((NumberProperty) property).setValue(Long.valueOf(((Number) value).longValue()));
+      }
+    } else if (property.getValue() instanceof Boolean) {
+      if (value instanceof Boolean) {
+        ((Property<Boolean>) property).setValue((Boolean) value);
+      } else if (value instanceof String) {
+        ((Property<Boolean>) property).setValue(Boolean.parseBoolean((String) value));
+      } else if (value instanceof Number) {
+        ((Property<Boolean>) property).setValue(
+            Boolean.valueOf(((Number) value).intValue() != 0));
+      }
+    } else if (property.getValue() instanceof String) {
+      ((Property<Object>) property).setValue(value);
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void savePropertyRecursive(Property<?> property, Map<String, Object> settings) {
+    if (property instanceof ActionProperty || property instanceof PopupProperty) {
+      return;
+    }
     String key = property.getAliases()[0];
     Object value = property.getValue();
     if (value instanceof Enum) {
-      settings.addProperty(key, ((Enum<?>) value).name());
-    } else if (value instanceof Number) {
-      settings.addProperty(key, (Number) value);
-    } else if (value instanceof Boolean) {
-      settings.addProperty(key, ((Boolean) value).booleanValue());
-    } else if (value instanceof String) {
-      settings.addProperty(key, (String) value);
+      settings.put(key, ((Enum<?>) value).name());
+    } else if (value instanceof Float) {
+      settings.put(key, Double.valueOf(((Float) value).doubleValue()));
+    } else if (value instanceof Integer) {
+      settings.put(key, Long.valueOf(((Integer) value).longValue()));
+    } else {
+      settings.put(key, value);
     }
-  }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private void applyPropertyValue(Property<?> property, JsonElement value) {
-    if (value == null || value.isJsonNull()) {
-      return;
-    }
-    try {
-      if (property instanceof EnumProperty) {
-        ((EnumProperty) property).setValue(value.getAsString());
-      } else if (property instanceof NumberProperty) {
-        Object current = property.getValue();
-        if (current instanceof Integer) {
-          ((NumberProperty) property).setValue(Integer.valueOf(value.getAsInt()));
-        } else if (current instanceof Float) {
-          ((NumberProperty) property).setValue(Float.valueOf(value.getAsFloat()));
-        } else if (current instanceof Double) {
-          ((NumberProperty) property).setValue(Double.valueOf(value.getAsDouble()));
-        } else if (current instanceof Long) {
-          ((NumberProperty) property).setValue(Long.valueOf(value.getAsLong()));
-        }
-      } else if (property.getValue() instanceof Boolean) {
-        ((Property<Boolean>) property).setValue(Boolean.valueOf(value.getAsBoolean()));
-      } else if (property.getValue() instanceof String) {
-        ((Property<Object>) property).setValue(value.getAsString());
+    for (Property<?> child : property.getChildren()) {
+      String childKey = key + "__" + child.getAliases()[0];
+      Object childValue = child.getValue();
+      if (childValue instanceof Enum) {
+        settings.put(childKey, ((Enum<?>) childValue).name());
+      } else if (childValue instanceof Float) {
+        settings.put(childKey, Double.valueOf(((Float) childValue).doubleValue()));
+      } else if (childValue instanceof Integer) {
+        settings.put(childKey, Long.valueOf(((Integer) childValue).longValue()));
+      } else {
+        settings.put(childKey, childValue);
       }
-    } catch (Exception e) {
-      System.err.println(
-          "[Exeter] Bad value for " + property.getAliases()[0] + ": " + e.getMessage());
     }
   }
 
   private File fileFor(Module module) {
-    return new File(configDir, module.getLabel().toLowerCase().replaceAll(" ", "") + ".json");
+    return new File(
+        configDir, module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml");
   }
 }
