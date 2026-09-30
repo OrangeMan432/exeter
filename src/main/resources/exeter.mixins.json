@@ -6,11 +6,14 @@
   "mixins": [
   ],
   "client": [
+    "EntityAccessor",
     "MinecraftAccessor",
     "MixinMinecraftTick",
     "MixinInGameHud",
     "MixinChatSend",
-    "MixinChatSendSP"
+    "MixinChatSendSP",
+    "MixinFreeLook",
+    "MixinVelocity"
   ],
   "injectors": {
     "defaultRequire": 1

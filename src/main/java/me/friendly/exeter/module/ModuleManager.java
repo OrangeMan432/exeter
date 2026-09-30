@@ -8,14 +8,26 @@ import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.client.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.client.Notifier;
 import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
+import me.friendly.exeter.module.impl.toggle.combat.AutoArmor;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.movement.FastFall;
+import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
+import me.friendly.exeter.module.impl.toggle.movement.NoFall;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
+import me.friendly.exeter.module.impl.toggle.movement.Step;
+import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
+import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import org.lwjgl.input.Keyboard;
 
@@ -26,9 +38,15 @@ public final class ModuleManager extends ListRegistry<Module> {
     this.registry = new ArrayList<Module>();
 
     register(new ClickGui());
+    register(new FreeLook());
     register(new HudRenderer());
     register(new WatermarkHud());
     register(new CoordsHud());
+    register(new DirectionHud());
+    register(new SpeedHud());
+    register(new TimeHud());
+    register(new TextRadarHud());
+    register(new ArmorHud());
     register(new ArrayListHud());
     register(new NotificationHud());
     register(new Debug());
@@ -37,7 +55,13 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new HUDEditor());
     register(new Colors());
     register(new Speed());
+    register(new FastFall());
+    register(new NoFall());
+    register(new NoAccel());
+    register(new Step());
+    register(new Velocity());
     register(new KillAura());
+    register(new AutoArmor());
 
     for (Module m : registry) {
       if (m instanceof Debug) {
