@@ -36,7 +36,7 @@ public final class ArmorHud extends HudModule {
       return new ItemStack[0];
     }
     ItemStack[] armor = mc.player.inventory.armor;
-    if (equippedCount() == 0 && mc.currentScreen instanceof HudEditorScreen) {
+    if (equippedCount(armor) == 0 && mc.currentScreen instanceof HudEditorScreen) {
       // Editor preview when naked: full diamond for positioning.
       return new ItemStack[] {
         new ItemStack(313, 1, 0),
@@ -49,8 +49,12 @@ public final class ArmorHud extends HudModule {
   }
 
   private int equippedCount() {
+    return equippedCount(armor());
+  }
+
+  private static int equippedCount(ItemStack[] armor) {
     int count = 0;
-    for (ItemStack stack : armor()) {
+    for (ItemStack stack : armor) {
       if (stack != null && stack.count > 0) count++;
     }
     return count;
