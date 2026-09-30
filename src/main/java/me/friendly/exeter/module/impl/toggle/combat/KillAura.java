@@ -23,12 +23,19 @@ public class KillAura extends ToggleableModule {
   private final Property<Boolean> passive = new Property<Boolean>(false, "Passive", "passive");
   private final Property<Boolean> hostile = new Property<Boolean>(true, "Hostile", "hostile");
 
+  private float preYaw;
+  private float prePitch;
+  private boolean rotated;
+
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("killaura_tick") {
         @Override
         public void call(TickEvent event) {
-          if (event.getStage() != Stage.PRE) return;
-          KillAura.this.onTick();
+          if (event.getStage() == Stage.PRE) {
+            KillAura.this.onTick();
+          } else if (event.getStage() == Stage.POST) {
+            KillAura.this.onPost();
+          }
         }
       };
 
@@ -40,6 +47,7 @@ public class KillAura extends ToggleableModule {
   }
 
   private void onTick() {
+    rotated = false;
     if (minecraft() == null || minecraft().player == null || minecraft().world == null) {
       return;
     }
@@ -47,10 +55,32 @@ public class KillAura extends ToggleableModule {
     if (target == null) {
       return;
     }
+    // Silent rotate: face the target for this tick (the player tick sends the
+    // aimed look packet) and restore afterwards so the view never snaps.
+    preYaw = minecraft().player.yaw;
+    prePitch = minecraft().player.pitch;
     double dx = target.x - minecraft().player.x;
     double dz = target.z - minecraft().player.z;
+    double dy = (target.y + 1.0) - (minecraft().player.y + 1.62);
+    double horizontal = Math.sqrt(dx * dx + dz * dz);
     minecraft().player.yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
+    minecraft().player.pitch = (float) -Math.toDegrees(Math.atan2(dy, horizontal));
+    rotated = true;
     minecraft().interactionManager.attackEntity(minecraft().player, target);
+  }
+
+  private void onPost() {
+    if (!rotated) {
+      return;
+    }
+    rotated = false;
+    if (minecraft() == null || minecraft().player == null) {
+      return;
+    }
+    minecraft().player.yaw = preYaw;
+    minecraft().player.pitch = prePitch;
+    minecraft().player.prevYaw = preYaw;
+    minecraft().player.prevPitch = prePitch;
   }
 
   private Entity findTarget() {
