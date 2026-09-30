@@ -10,6 +10,7 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import org.lwjgl.input.Keyboard;
 
 public final class HudEditorScreen extends Screen {
   private static HudEditorScreen instance;
@@ -83,7 +84,19 @@ public final class HudEditorScreen extends Screen {
     String hint = "Drag elements to move. ESC to close.";
     FontUtil.drawString(hint, 4.0f, (float) (this.height - 12), 0xFF888888);
 
+    drawSnapGuides(this.width, this.height);
+
     hudPanel.drawScreen(mouseX, mouseY, partialTicks);
+  }
+
+  private void drawSnapGuides(int scaledWidth, int scaledHeight) {
+    int snapMargin = 5;
+    int half = scaledWidth / 2;
+    fill(snapMargin, 0, snapMargin + 1, scaledHeight, 0x40FFFF00);
+    fill(scaledWidth - snapMargin, 0, scaledWidth - snapMargin + 1, scaledHeight, 0x40FFFF00);
+    fill(half, 0, half + 1, scaledHeight, 0x40FFFF00);
+    fill(0, snapMargin, scaledWidth, snapMargin + 1, 0x40FFFF00);
+    fill(0, scaledHeight - snapMargin, scaledWidth, scaledHeight - snapMargin + 1, 0x40FFFF00);
   }
 
   @Override
@@ -110,12 +123,30 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   protected void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    if (releaseButton == 0) {
+    if (releaseButton == 0 && dragging != null) {
+      if (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
+          && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+        snapToNearest(dragging);
+        HudModule.layoutByCorner(HudModule.getActive(), this.width, this.height);
+      }
       dragging = null;
     }
     ensurePanel();
     hudPanel.mouseReleased(mouseX, mouseY, releaseButton);
     super.mouseReleased(mouseX, mouseY, releaseButton);
+  }
+
+  private void snapToNearest(HudModule m) {
+    int centerX = this.width / 2;
+    int centerY = this.height / 2;
+    boolean right = m.getX() + m.getWidth() / 2 > centerX;
+    boolean bottom = m.getY() + m.getHeight() / 2 > centerY;
+    HudModule.Corner bestCorner;
+    if (right && bottom) bestCorner = HudModule.Corner.BOTTOM_RIGHT;
+    else if (right) bestCorner = HudModule.Corner.TOP_RIGHT;
+    else if (bottom) bestCorner = HudModule.Corner.BOTTOM_LEFT;
+    else bestCorner = HudModule.Corner.TOP_LEFT;
+    m.setCorner(bestCorner);
   }
 
   @Override
