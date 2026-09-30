@@ -8,21 +8,19 @@ import net.minecraft.client.Minecraft;
 public final class CoordsHud extends HudModule {
 
   public CoordsHud() {
-    super("Coords", new String[] {"coords", "pos"}, Corner.BOTTOM_LEFT);
+    super("Coords", new String[] {"coords", "coord", "c", "cord"}, Corner.BOTTOM_RIGHT);
+    setDescription("Displays your current coordinates.");
     offerProperties();
   }
 
   private String text() {
     Minecraft mc = MinecraftAccessor.getMinecraft();
     if (mc == null || mc.player == null) {
-      return "XYZ: --";
+      return String.format("\u00a77XYZ: \u00a7f%s, %s, %s", 0, 0, 0);
     }
-    return "XYZ: "
-        + (int) mc.player.x
-        + " / "
-        + (int) mc.player.y
-        + " / "
-        + (int) mc.player.z;
+    return String.format(
+        "\u00a77XYZ: \u00a7f%s, %s, %s",
+        (int) mc.player.x, (int) mc.player.y, (int) mc.player.z);
   }
 
   @Override
@@ -37,6 +35,6 @@ public final class CoordsHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    FontUtil.drawString(text(), (float) getX(), (float) getY(), 0xFFAAAAAA);
+    FontUtil.drawString(text(), (float) getX(), (float) getY(), 0xFFFFFFFF);
   }
 }
