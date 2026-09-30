@@ -1,10 +1,8 @@
 package me.friendly.exeter.beta.mixin;
 
 import me.friendly.exeter.beta.mixin.MinecraftAccessor;
-import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.logging.DebugLogger;
-import me.friendly.exeter.module.Module;
-import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.ClientNetworkHandler;
 import net.minecraft.class_119;
@@ -27,11 +25,7 @@ public class MixinVelocity {
 
   @Inject(method = "method_1443(Lnet/minecraft/class_119;)V", at = @At("HEAD"), cancellable = true)
   private void onEntityVelocity(class_119 packet, CallbackInfo info) {
-    if (Exeter.getInstance() == null) {
-      return;
-    }
-    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("velocity");
-    if (!(module instanceof ToggleableModule) || !((ToggleableModule) module).isRunning()) {
+    if (!Velocity.isActive()) {
       return;
     }
     Minecraft mc = MinecraftAccessor.getMinecraft();
@@ -53,14 +47,6 @@ public class MixinVelocity {
     }
   }
 
-  private static boolean velocityRunning() {
-    if (Exeter.getInstance() == null) {
-      return false;
-    }
-    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("velocity");
-    return module instanceof ToggleableModule && ((ToggleableModule) module).isRunning();
-  }
-
   /**
    * Local knockback (singleplayer mob attacks and anything else applied without packets).
    * Cancels LivingEntity knockback for the player while Velocity is enabled.
@@ -73,7 +59,7 @@ public class MixinVelocity {
         at = @At("HEAD"),
         cancellable = true)
     private void onKnockback(Entity attacker, int damage, double x, double z, CallbackInfo info) {
-      if (!MixinVelocity.velocityRunning()) {
+      if (!Velocity.isActive()) {
         return;
       }
       Minecraft mc = MinecraftAccessor.getMinecraft();
@@ -103,7 +89,7 @@ public class MixinVelocity {
     @Inject(method = "method_1196(Z)V", at = @At("HEAD"))
     private void onExplosionStart(boolean particles, CallbackInfo info) {
       savedBlast = false;
-      if (!MixinVelocity.velocityRunning()) {
+      if (!Velocity.isActive()) {
         return;
       }
       Minecraft mc = MinecraftAccessor.getMinecraft();
