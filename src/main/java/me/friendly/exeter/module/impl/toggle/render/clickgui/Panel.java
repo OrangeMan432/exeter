@@ -101,10 +101,11 @@ public class Panel extends DrawableHelper implements Labeled {
     }
 
     if (showArrow) {
-      float rotation = (180 - this.angle) * 0.5f;
-      me.friendly.api.minecraft.render.GuiTextures.drawIcon(
-          me.friendly.api.minecraft.render.GuiTextures.arrowId(),
-          this.x + this.width - 8.0f, this.y + 6.0f, 10.0f, rotation);
+      if (this.open) {
+        drawDownChevron(this.x + this.width - 8, this.y + 2, 0xFFCCCCCC);
+      } else {
+        drawRightChevron(this.x + this.width - 8, this.y + 2, 0xFFCCCCCC);
+      }
     }
 
     if (this.open) {
@@ -127,6 +128,20 @@ public class Panel extends DrawableHelper implements Labeled {
       fill(this.x - 1, (int) top, this.x, (int) bottom, accent);
       fill(this.x + this.width, (int) top, this.x + this.width + 1, (int) bottom, accent);
     }
+  }
+
+  private void drawDownChevron(int cx, int cy, int color) {
+    fill(cx - 3, cy, cx + 4, cy + 1, color);
+    fill(cx - 2, cy + 1, cx + 3, cy + 2, color);
+    fill(cx - 1, cy + 2, cx + 2, cy + 3, color);
+    fill(cx, cy + 3, cx + 1, cy + 4, color);
+  }
+
+  private void drawRightChevron(int cx, int cy, int color) {
+    fill(cx - 1, cy - 3, cx, cy + 4, color);
+    fill(cx, cy - 2, cx + 1, cy + 3, color);
+    fill(cx + 1, cy - 1, cx + 2, cy + 2, color);
+    fill(cx + 2, cy, cx + 3, cy + 1, color);
   }
 
   public boolean matchesSearch(Item item) {

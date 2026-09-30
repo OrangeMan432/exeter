@@ -77,10 +77,11 @@ public class ModuleButton extends Button {
     super.drawScreen(mouseX, mouseY, partialTicks);
 
     if (!topLevelItems.isEmpty()) {
-      this.gearRotation += 0.5f;
-      me.friendly.api.minecraft.render.GuiTextures.drawIcon(
-          me.friendly.api.minecraft.render.GuiTextures.gearId(),
-          this.x + this.width - 7.0f, this.y + 7.5f, 10.0f, this.gearRotation);
+      int gx = (int) (this.x + this.width - 7.0f);
+      int gy = (int) (this.y + 7.5f);
+      int color = subOpen ? 0xFFFFFFFF : 0xFFCCCCCC;
+      fill(gx - 1, gy - 4, gx + 2, gy + 5, color);
+      fill(gx - 4, gy - 1, gx + 5, gy + 2, color);
     }
 
     if (this.subOpen) {

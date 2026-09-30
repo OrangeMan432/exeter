@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.combat;
 
+import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
@@ -8,6 +9,7 @@ import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -17,6 +19,8 @@ public class KillAura extends ToggleableModule {
 
   private final NumberProperty<Double> range =
       new NumberProperty<Double>(4.0, 1.0, 6.0, "Range", "range");
+  private final Property<Boolean> players = new Property<Boolean>(true, "Players", "players");
+  private final Property<Boolean> mobs = new Property<Boolean>(true, "Mobs", "mobs");
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("killaura_tick") {
@@ -30,7 +34,7 @@ public class KillAura extends ToggleableModule {
   public KillAura() {
     super("KillAura", new String[] {"killaura", "aura"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Attacks the nearest enemy in range.");
-    offerProperties(range);
+    offerProperties(range, players, mobs);
     this.listeners.add(tickListener);
   }
 
@@ -38,7 +42,7 @@ public class KillAura extends ToggleableModule {
     if (minecraft() == null || minecraft().player == null || minecraft().world == null) {
       return;
     }
-    PlayerEntity target = findTarget();
+    Entity target = findTarget();
     if (target == null) {
       return;
     }
@@ -48,14 +52,15 @@ public class KillAura extends ToggleableModule {
     minecraft().interactionManager.attackEntity(minecraft().player, target);
   }
 
-  private PlayerEntity findTarget() {
-    List<PlayerEntity> players = PlayerUtil.players();
-    PlayerEntity closest = null;
+  private Entity findTarget() {
+    boolean wantPlayers = players.getValue().booleanValue();
+    boolean wantMobs = mobs.getValue().booleanValue();
+    Entity closest = null;
     double closestDist = range.getValue().doubleValue();
-    for (int i = 0; i < players.size(); i++) {
-      PlayerEntity player = players.get(i);
+    for (PlayerEntity player : PlayerUtil.players()) {
       if (player == minecraft().player) continue;
-      if (player instanceof LivingEntity && ((LivingEntity) player).health <= 0) continue;
+      if (!wantPlayers) continue;
+      if (player.health <= 0) continue;
       if (!Exeter.getInstance().getFriendManager().isTargetable(player.name)) {
         continue;
       }
@@ -65,6 +70,38 @@ public class KillAura extends ToggleableModule {
         closest = player;
       }
     }
+    if (wantMobs) {
+      for (LivingEntity entity : livingEntities()) {
+        if (entity instanceof PlayerEntity) continue;
+        if (entity.health <= 0) continue;
+        double dist = PlayerUtil.distanceTo(entity);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = entity;
+        }
+      }
+    }
     return closest;
+  }
+
+  private List<LivingEntity> livingEntities() {
+    List<LivingEntity> result = new ArrayList<LivingEntity>();
+    if (minecraft() == null || minecraft().world == null) {
+      return result;
+    }
+    net.minecraft.world.World world = minecraft().world;
+    java.util.List[] lists =
+        new java.util.List[] {world.field_198, world.field_199, world.field_200, world.field_201};
+    for (int i = 0; i < lists.length; i++) {
+      java.util.List list = lists[i];
+      if (list == null) continue;
+      Object[] copy = list.toArray();
+      for (int j = 0; j < copy.length; j++) {
+        if (copy[j] instanceof LivingEntity) {
+          result.add((LivingEntity) copy[j]);
+        }
+      }
+    }
+    return result;
   }
 }

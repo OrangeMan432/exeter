@@ -29,7 +29,13 @@ public abstract class Window extends DrawableHelper {
       y = mouseY - dragOffsetY;
     }
 
-    fill(x, y, x + width, y + TITLE_HEIGHT, 0xDD222222);
+    int headerColor =
+        focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
+    int headerColorEnd =
+        focused
+            ? Colors.getDarkerClientColorCustomAlpha(220)
+            : Colors.getDarkerClientColorCustomAlpha(150);
+    fillGradient(x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
     FontUtil.drawString(title, x + 4.0f, y + 4.0f, 0xFFFFFFFF);
 
     int closeX = x + width - 13;

@@ -19,7 +19,7 @@ public final class ClickGui extends ToggleableModule {
   public final Property<Boolean> showBorder = new Property<Boolean>(true, "Border", "border");
 
   public ClickGui() {
-    super("ClickGui", new String[] {"clickgui", "gui"}, 0xFFAA55, ModuleType.RENDER);
+    super("ClickGui", new String[] {"clickgui", "gui"}, 0xFFAA55, ModuleType.CLIENT);
     setDescription("Opens the module configuration panel.");
     offerProperties(
         showBackground, showDescriptions, showArrow, showGradient, searchEnabled, showBorder);

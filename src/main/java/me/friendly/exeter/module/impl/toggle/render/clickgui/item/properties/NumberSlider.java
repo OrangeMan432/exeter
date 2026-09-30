@@ -82,7 +82,9 @@ public class NumberSlider extends Button {
 
   @Override
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    dragging = false;
+    if (releaseButton == 0) {
+      dragging = false;
+    }
   }
 
   @Override

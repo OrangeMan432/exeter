@@ -110,7 +110,9 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   protected void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    dragging = null;
+    if (releaseButton == 0) {
+      dragging = null;
+    }
     ensurePanel();
     hudPanel.mouseReleased(mouseX, mouseY, releaseButton);
     super.mouseReleased(mouseX, mouseY, releaseButton);
