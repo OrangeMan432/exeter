@@ -110,6 +110,9 @@ public final class ClickGuiScreen extends Screen {
 
   private void addModuleButtons(Panel panel, ModuleType type) {
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer) {
+        continue;
+      }
       if (module instanceof ToggleableModule) {
         ToggleableModule toggleable = (ToggleableModule) module;
         if (toggleable.getModuleType() == type) {
