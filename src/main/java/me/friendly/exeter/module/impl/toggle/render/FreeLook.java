@@ -120,6 +120,9 @@ public final class FreeLook extends ToggleableModule {
     prePitch = mc.player.pitch;
     mc.player.yaw = cameraYaw;
     mc.player.pitch = cameraPitch;
+    // Camera setup interpolates prev -> current; sync both so it does not jitter.
+    mc.player.prevYaw = cameraYaw;
+    mc.player.prevPitch = cameraPitch;
   }
 
   /** Restores the player angles after camera setup. */
