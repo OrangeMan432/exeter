@@ -21,7 +21,6 @@ public class ModuleButton extends Button {
   private boolean subOpen;
   private int gearAnimFrame = 2;
   private int gearAnimTimer = 0;
-  private float gearRotation;
 
   public ModuleButton(Module module) {
     super(module.getLabel());
@@ -77,11 +76,26 @@ public class ModuleButton extends Button {
     super.drawScreen(mouseX, mouseY, partialTicks);
 
     if (!topLevelItems.isEmpty()) {
-      int gx = (int) (this.x + this.width - 7.0f);
-      int gy = (int) (this.y + 7.5f);
-      int color = subOpen ? 0xFFFFFFFF : 0xFFCCCCCC;
-      fill(gx - 1, gy - 4, gx + 2, gy + 5, color);
-      fill(gx - 4, gy - 1, gx + 5, gy + 2, color);
+      this.gearAnimTimer++;
+      if (this.gearAnimTimer >= 4) {
+        this.gearAnimTimer = 0;
+        if (this.subOpen && this.gearAnimFrame > 0) {
+          this.gearAnimFrame--;
+        } else if (!this.subOpen && this.gearAnimFrame < 2) {
+          this.gearAnimFrame++;
+        }
+      }
+      String dots;
+      if (this.gearAnimFrame == 2) {
+        dots = "...";
+      } else if (this.gearAnimFrame == 1) {
+        dots = "..";
+      } else {
+        dots = ".";
+      }
+      int textW = FontUtil.getStringWidth(dots);
+      FontUtil.drawString(
+          dots, this.x + this.width - textW - 2.0f, this.y + 4.0f, 0xFFCCCCCC);
     }
 
     if (this.subOpen) {

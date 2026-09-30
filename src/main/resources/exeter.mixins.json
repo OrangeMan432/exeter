@@ -8,7 +8,9 @@
   "client": [
     "MinecraftAccessor",
     "MixinMinecraftTick",
-    "MixinInGameHud"
+    "MixinInGameHud",
+    "MixinChatSend",
+    "MixinChatSendSP"
   ],
   "injectors": {
     "defaultRequire": 1

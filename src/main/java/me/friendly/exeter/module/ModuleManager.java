@@ -51,6 +51,16 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindByLabel("ClickGui")
         .setKey(Keyboard.KEY_RSHIFT);
 
+    Exeter.getInstance()
+        .getKeybindManager()
+        .getKeybindByLabel("Windows")
+        .setKey(Keyboard.KEY_GRAVE);
+
+    Exeter.getInstance()
+        .getKeybindManager()
+        .getKeybindByLabel("HUDEditor")
+        .setKey(Keyboard.KEY_COMMA);
+
     new Config("module_configurations") {
 
       @Override

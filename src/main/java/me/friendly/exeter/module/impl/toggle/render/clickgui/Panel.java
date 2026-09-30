@@ -101,11 +101,16 @@ public class Panel extends DrawableHelper implements Labeled {
     }
 
     if (showArrow) {
-      if (this.open) {
-        drawDownChevron(this.x + this.width - 8, this.y + 2, 0xFFCCCCCC);
-      } else {
-        drawRightChevron(this.x + this.width - 8, this.y + 2, 0xFFCCCCCC);
-      }
+      String countStr = "[" + getItems().size() + "]";
+      int textW = FontUtil.getStringWidth(countStr);
+      FontUtil.drawString("[", (float) (this.x + this.width) - textW - 3.0f,
+          (float) this.y + 1.5f, 0xFF888888);
+      String num = String.valueOf(getItems().size());
+      FontUtil.drawString(num,
+          (float) (this.x + this.width) - textW - 3.0f + FontUtil.getStringWidth("["),
+          (float) this.y + 1.5f, 0xFFFFFFFF);
+      FontUtil.drawString("]", (float) (this.x + this.width) - FontUtil.getStringWidth("]") - 3.0f,
+          (float) this.y + 1.5f, 0xFF888888);
     }
 
     if (this.open) {
@@ -128,20 +133,6 @@ public class Panel extends DrawableHelper implements Labeled {
       fill(this.x - 1, (int) top, this.x, (int) bottom, accent);
       fill(this.x + this.width, (int) top, this.x + this.width + 1, (int) bottom, accent);
     }
-  }
-
-  private void drawDownChevron(int cx, int cy, int color) {
-    fill(cx - 3, cy, cx + 4, cy + 1, color);
-    fill(cx - 2, cy + 1, cx + 3, cy + 2, color);
-    fill(cx - 1, cy + 2, cx + 2, cy + 3, color);
-    fill(cx, cy + 3, cx + 1, cy + 4, color);
-  }
-
-  private void drawRightChevron(int cx, int cy, int color) {
-    fill(cx - 1, cy - 3, cx, cy + 4, color);
-    fill(cx, cy - 2, cx + 1, cy + 3, color);
-    fill(cx + 1, cy - 1, cx + 2, cy + 2, color);
-    fill(cx + 2, cy, cx + 3, cy + 1, color);
   }
 
   public boolean matchesSearch(Item item) {

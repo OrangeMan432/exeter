@@ -20,7 +20,8 @@ public class KillAura extends ToggleableModule {
   private final NumberProperty<Double> range =
       new NumberProperty<Double>(4.0, 1.0, 6.0, "Range", "range");
   private final Property<Boolean> players = new Property<Boolean>(true, "Players", "players");
-  private final Property<Boolean> mobs = new Property<Boolean>(true, "Mobs", "mobs");
+  private final Property<Boolean> passive = new Property<Boolean>(false, "Passive", "passive");
+  private final Property<Boolean> hostile = new Property<Boolean>(true, "Hostile", "hostile");
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("killaura_tick") {
@@ -34,7 +35,7 @@ public class KillAura extends ToggleableModule {
   public KillAura() {
     super("KillAura", new String[] {"killaura", "aura"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Attacks the nearest enemy in range.");
-    offerProperties(range, players, mobs);
+    offerProperties(range, players, passive, hostile);
     this.listeners.add(tickListener);
   }
 
@@ -54,7 +55,8 @@ public class KillAura extends ToggleableModule {
 
   private Entity findTarget() {
     boolean wantPlayers = players.getValue().booleanValue();
-    boolean wantMobs = mobs.getValue().booleanValue();
+    boolean wantPassive = passive.getValue().booleanValue();
+    boolean wantHostile = hostile.getValue().booleanValue();
     Entity closest = null;
     double closestDist = range.getValue().doubleValue();
     for (PlayerEntity player : PlayerUtil.players()) {
@@ -70,10 +72,17 @@ public class KillAura extends ToggleableModule {
         closest = player;
       }
     }
-    if (wantMobs) {
+    if (wantPassive || wantHostile) {
       for (LivingEntity entity : livingEntities()) {
         if (entity instanceof PlayerEntity) continue;
         if (entity.health <= 0) continue;
+        if (isHostile(entity)) {
+          if (!wantHostile) continue;
+        } else if (isPassive(entity)) {
+          if (!wantPassive) continue;
+        } else {
+          continue;
+        }
         double dist = PlayerUtil.distanceTo(entity);
         if (dist < closestDist) {
           closestDist = dist;
@@ -82,6 +91,23 @@ public class KillAura extends ToggleableModule {
       }
     }
     return closest;
+  }
+
+  /**
+   * Barn names almost no mob classes, so this is decoded from the entity list instead: hostile
+   * mobs live under class_146 (zombie/skeleton/spider/creeper/giant family) plus slime
+   * (class_451) and ghast (class_364); passives live under class_258 (pig/sheep/cow/chicken/wolf
+   * family) plus squid (WaterCreatureEntity).
+   */
+  private boolean isHostile(LivingEntity entity) {
+    return entity instanceof net.minecraft.class_146
+        || entity instanceof net.minecraft.class_451
+        || entity instanceof net.minecraft.class_364;
+  }
+
+  private boolean isPassive(LivingEntity entity) {
+    return entity instanceof net.minecraft.class_258
+        || entity instanceof net.minecraft.entity.mob.WaterCreatureEntity;
   }
 
   private List<LivingEntity> livingEntities() {
