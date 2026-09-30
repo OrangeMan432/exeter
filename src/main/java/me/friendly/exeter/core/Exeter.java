@@ -20,6 +20,9 @@ import me.friendly.exeter.module.ModuleManager;
 public final class Exeter {
   private static Exeter instance = null;
   public static final String TITLE = "Exeter";
+  public static final String HASH = me.friendly.exeter.BuildInfo.HASH;
+  public static final String BUILD = me.friendly.exeter.BuildInfo.BUILD;
+  public static final boolean DIRTY = me.friendly.exeter.BuildInfo.DIRTY;
   private BasicEventManager eventManager;
   private KeybindManager keybindManager;
   private ModuleManager moduleManager;
