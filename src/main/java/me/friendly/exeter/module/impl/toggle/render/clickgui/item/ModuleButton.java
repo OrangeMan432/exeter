@@ -8,6 +8,7 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.Act
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.EnumButton;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.NumberSlider;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.PopupButton;
 import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
@@ -37,7 +38,7 @@ public class ModuleButton extends Button {
       return new ActionButton((ActionProperty) property);
     }
     if (property instanceof PopupProperty) {
-      return null;
+      return new PopupButton((PopupProperty) property);
     }
     if (property instanceof EnumProperty) {
       return new EnumButton((EnumProperty<?>) property);
@@ -64,8 +65,10 @@ public class ModuleButton extends Button {
   }
 
   private boolean isRunning() {
-    return module instanceof me.friendly.api.interfaces.Toggleable
-        && ((me.friendly.api.interfaces.Toggleable) module).isRunning();
+    if (module instanceof me.friendly.api.interfaces.Toggleable) {
+      return ((me.friendly.api.interfaces.Toggleable) module).isRunning();
+    }
+    return true;
   }
 
   @Override

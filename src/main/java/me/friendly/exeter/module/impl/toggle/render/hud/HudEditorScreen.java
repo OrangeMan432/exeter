@@ -89,7 +89,7 @@ public final class HudEditorScreen extends Screen {
   @Override
   protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     ensurePanel();
-    if (mouseButton == 0) {
+    if (mouseButton == 0 && dragging == null) {
       List<HudModule> modules = HudModule.getActive();
       for (int i = modules.size() - 1; i >= 0; i--) {
         HudModule m = modules.get(i);

@@ -5,6 +5,7 @@ import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.friend.Friend;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.window.Window;
 
 public class FriendsWindow extends Window {
@@ -27,7 +28,7 @@ public class FriendsWindow extends Window {
   protected void renderContent(int mouseX, int mouseY, float partialTicks) {
     int contentY = y + TITLE_HEIGHT;
     int listY = contentY + 2;
-    int barY = y + height - 30;
+    int barY = y + height - 34;
     int listH = barY - listY;
 
     List<Friend> friends = new ArrayList<Friend>(Exeter.getInstance().getFriendManager().getRegistry());
@@ -113,7 +114,11 @@ public class FriendsWindow extends Window {
         mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT;
     boolean enabled = isButtonEnabled(id);
     int color =
-        !enabled ? 0xFF333333 : hovered ? 0xFFAA3333 : 0xFF771111;
+        !enabled
+            ? 0xFF333333
+            : hovered
+                ? Colors.getClientColorCustomAlpha(200)
+                : Colors.getClientColorCustomAlpha(120);
     fill(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
     FontUtil.drawString(
         label,
@@ -129,7 +134,12 @@ public class FriendsWindow extends Window {
     boolean hovered =
         mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT;
     String label = "Override: " + (override ? "ON" : "OFF");
-    int color = override ? (hovered ? 0xFFDD3333 : 0xFF992222) : (hovered ? 0xFFAA3333 : 0xFF771111);
+    int color =
+        override
+            ? (hovered ? 0xFFDD3333 : 0xFF992222)
+            : (hovered
+                ? Colors.getClientColorCustomAlpha(200)
+                : Colors.getClientColorCustomAlpha(120));
     fill(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
     FontUtil.drawString(
         label, bx + bw / 2.0f - FontUtil.getStringWidth(label) / 2.0f, btnY + 2.0f, 0xFFFFFFFF);
@@ -150,7 +160,7 @@ public class FriendsWindow extends Window {
     }
     int contentY = y + TITLE_HEIGHT;
     int listY = contentY + 2;
-    int barY = y + height - 30;
+    int barY = y + height - 34;
     int listH = barY - listY;
 
     List<Friend> friends = new ArrayList<Friend>(Exeter.getInstance().getFriendManager().getRegistry());

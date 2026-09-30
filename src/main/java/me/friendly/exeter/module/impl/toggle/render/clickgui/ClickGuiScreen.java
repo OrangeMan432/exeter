@@ -8,6 +8,7 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -15,6 +16,7 @@ import net.minecraft.client.gui.screen.Screen;
 public final class ClickGuiScreen extends Screen {
   private static ClickGuiScreen instance;
   private final List<Panel> panels = new ArrayList<Panel>();
+  private SearchSelectPopup popup;
   private String search = "";
 
   public ClickGuiScreen() {
@@ -34,14 +36,30 @@ public final class ClickGuiScreen extends Screen {
     return instance;
   }
 
+  public void openPopup(SearchSelectPopup popup) {
+    this.popup = popup;
+  }
+
+  public void closePopup() {
+    this.popup = null;
+  }
+
+  public SearchSelectPopup getPopup() {
+    return this.popup;
+  }
+
   public void reload() {
     panels.clear();
     int panelWidth = 90;
-    int totalPanels = ModuleType.values().length;
+    int totalPanels = 0;
+    for (ModuleType type : ModuleType.values()) {
+      if (type != ModuleType.HUD) totalPanels++;
+    }
     int totalGuiWidth = totalPanels * panelWidth;
     int x = (this.width / 2) - (totalGuiWidth / 2) - panelWidth;
     int y = 40;
     for (ModuleType type : ModuleType.values()) {
+      if (type == ModuleType.HUD) continue;
       Panel panel = new Panel(type.getLabel(), x += panelWidth, y, true);
       for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
         if (module instanceof ToggleableModule) {
@@ -51,7 +69,21 @@ public final class ClickGuiScreen extends Screen {
           }
         }
       }
+      sortPanelItems(panel);
       panels.add(panel);
+    }
+  }
+
+  private void sortPanelItems(Panel panel) {
+    List<Item> items = panel.getItems();
+    for (int i = 0; i < items.size(); i++) {
+      for (int j = i + 1; j < items.size(); j++) {
+        if (items.get(j).getLabel().compareTo(items.get(i).getLabel()) < 0) {
+          Item tmp = items.get(i);
+          items.set(i, items.get(j));
+          items.set(j, tmp);
+        }
+      }
     }
   }
 
@@ -89,6 +121,10 @@ public final class ClickGuiScreen extends Screen {
         FontUtil.drawString(hoveredDesc, (float) (this.width / 2 - textWidth / 2), 2.0f, 0xFFCCCCCC);
       }
     }
+
+    if (popup != null) {
+      popup.render(mouseX, mouseY, partialTicks, this.width, this.height);
+    }
   }
 
   private String findHoveredDescription(int mouseX, int mouseY) {
@@ -110,6 +146,11 @@ public final class ClickGuiScreen extends Screen {
 
   @Override
   protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    if (popup != null) {
+      if (popup.mouseClicked(mouseX, mouseY, mouseButton)) {
+        return;
+      }
+    }
     for (int i = panels.size() - 1; i >= 0; i--) {
       Panel panel = panels.get(i);
       if (panel.containsMouse(mouseX, mouseY)) {
@@ -130,7 +171,10 @@ public final class ClickGuiScreen extends Screen {
 
   @Override
   protected void keyPressed(char typedChar, int keyCode) {
-    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    if (popup != null) {
+      popup.keyPressed(typedChar, keyCode);
+      return;
+    }    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
     boolean searchOn = guiMod == null || guiMod.searchEnabled.getValue().booleanValue();
     if (searchOn) {
       if (keyCode == 14 && search.length() > 0) {

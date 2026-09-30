@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.NumberProperty;
 
@@ -36,7 +37,8 @@ public class NumberSlider extends Button {
     fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
         hovered ? 0xFF333333 : 0xFF222222);
     int fillX = (int) (this.x + this.width * fraction);
-    fill((int) this.x, (int) this.y, fillX, (int) (this.y + this.height), 0xFF771111);
+    fill((int) this.x, (int) this.y, fillX, (int) (this.y + this.height),
+        Colors.getClientColorCustomAlpha(120));
     FontUtil.drawString(
         this.getLabel() + ": " + property.getValue(), this.x + 2.0f, this.y + 2.0f, -1);
   }

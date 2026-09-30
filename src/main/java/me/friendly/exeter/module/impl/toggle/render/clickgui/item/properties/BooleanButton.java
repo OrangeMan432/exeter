@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.Property;
 
@@ -20,7 +21,9 @@ public class BooleanButton extends Button {
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     boolean on = getState();
     boolean hovered = isHovering(mouseX, mouseY);
-    int bg = on ? (hovered ? 0xFFAA3333 : 0xFF771111) : (hovered ? 0xFF444444 : 0xFF222222);
+    int bg = on
+        ? (hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120))
+        : (hovered ? 0xFF444444 : 0xFF222222);
     fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
     FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, on ? -1 : -5592406);
   }

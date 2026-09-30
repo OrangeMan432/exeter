@@ -30,7 +30,7 @@ public final class WindowsModule extends ToggleableModule {
       } catch (Exception ignored) {
       }
     }
-    screen.addWindow(new FriendsWindow(screenWidth - 220, 20, 200, 200));
+    screen.addWindow(new FriendsWindow(screenWidth - 280, 20, 260, 200));
     if (mc != null) {
       mc.setScreen(screen);
     }

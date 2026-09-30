@@ -9,11 +9,13 @@ import me.friendly.exeter.module.impl.toggle.client.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.client.Notifier;
 import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
 import org.lwjgl.input.Keyboard;
 
@@ -24,15 +26,16 @@ public final class ModuleManager extends ListRegistry<Module> {
     this.registry = new ArrayList<Module>();
 
     register(new ClickGui());
-    register(new HUDEditor());
     register(new HudRenderer());
     register(new WatermarkHud());
     register(new CoordsHud());
     register(new ArrayListHud());
+    register(new NotificationHud());
     register(new Debug());
     register(new Notifier());
     register(new WindowsModule());
     register(new HUDEditor());
+    register(new Colors());
     register(new Speed());
     register(new KillAura());
 

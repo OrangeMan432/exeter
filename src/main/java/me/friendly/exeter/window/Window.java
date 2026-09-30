@@ -1,6 +1,7 @@
 package me.friendly.exeter.window;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import net.minecraft.client.gui.DrawableHelper;
 
 public abstract class Window extends DrawableHelper {
@@ -42,7 +43,7 @@ public abstract class Window extends DrawableHelper {
     renderContent(mouseX, mouseY, partialTicks);
 
     if (focused) {
-      int accent = 0xFFAA2222;
+      int accent = Colors.getClientColor();
       fill(x - 1, y - 1, x + width + 1, y, accent);
       fill(x - 1, y + height, x + width + 1, y + height + 1, accent);
       fill(x - 1, y, x, y + height, accent);

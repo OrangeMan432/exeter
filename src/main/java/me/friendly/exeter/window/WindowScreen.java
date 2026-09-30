@@ -3,6 +3,9 @@ package me.friendly.exeter.window;
 import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.module.Module;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import net.minecraft.client.gui.screen.Screen;
 
 public final class WindowScreen extends Screen {
@@ -19,6 +22,19 @@ public final class WindowScreen extends Screen {
 
   public List<Window> getWindows() {
     return windows;
+  }
+
+  private static boolean isBackgroundEnabled() {
+    if (Exeter.getInstance() == null) {
+      return true;
+    }
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (!(module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui)) {
+      return true;
+    }
+    me.friendly.exeter.module.impl.toggle.render.ClickGui gui =
+        (me.friendly.exeter.module.impl.toggle.render.ClickGui) module;
+    return gui.showBackground.getValue().booleanValue();
   }
 
   @Override
@@ -50,7 +66,10 @@ public final class WindowScreen extends Screen {
 
       int bgColor;
       if (isActive) {
-        bgColor = hovered ? 0xFF661111 : 0xFF3A1111;
+        bgColor =
+            hovered
+                ? Colors.getClientColorCustomAlpha(200)
+                : Colors.getClientColorCustomAlpha(140);
       } else {
         bgColor = hovered ? 0xFF444444 : 0xFF2A2A2A;
       }

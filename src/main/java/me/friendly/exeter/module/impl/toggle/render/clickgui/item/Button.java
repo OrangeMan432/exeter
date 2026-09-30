@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.active.render.Colors;
 
 public class Button extends Item implements Labeled {
   private boolean state;
