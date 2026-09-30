@@ -23,13 +23,24 @@ public class AutoArmor extends ToggleableModule {
     {1, 1, 2, 3, 1}
   };
 
+  // Beta has no shift-click quick-move: equip via pickup/place clicks.
+  // Player container layout (verified): 0 craft result, 1-4 craft grid,
+  // 5-8 armor (5 helmet .. 8 boots), 9-35 main, 36-44 hotbar.
+  private static final int ARMOR_SLOT_BASE = 5;
+  private static final int INV_SLOT_START = 9;
+  private static final int INV_SLOT_END = 44;
+
   private final NumberProperty<Integer> delay =
-      new NumberProperty<Integer>(1, 1, 10, "Delay", "delay");
+      new NumberProperty<Integer>(2, 1, 20, "Delay", "delay");
   private final Property<Boolean> armorSaver = new Property<Boolean>(false, "Armor Saver", "saver");
   private final NumberProperty<Integer> depletion =
       new NumberProperty<Integer>(20, 0, 99, "Depletion", "depletion");
 
   private int tickCounter;
+  private int pendingSource = -1;
+  private int pendingArmorSlot = -1;
+  private int pendingReturnSlot = -1;
+  private int pendingType = -1;
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("autoarmor_tick") {
@@ -51,6 +62,14 @@ public class AutoArmor extends ToggleableModule {
   protected void onDisable() {
     super.onDisable();
     tickCounter = 0;
+    clearPending();
+  }
+
+  private void clearPending() {
+    pendingSource = -1;
+    pendingArmorSlot = -1;
+    pendingReturnSlot = -1;
+    pendingType = -1;
   }
 
   private static boolean isArmor(ItemStack stack) {
@@ -72,24 +91,42 @@ public class AutoArmor extends ToggleableModule {
     return defense * 100 + remaining;
   }
 
+  private Slot containerSlot(PlayerEntity player, int id) {
+    List slots = player.playerContainer.slots;
+    if (id < 0 || id >= slots.size()) return null;
+    return (Slot) slots.get(id);
+  }
+
+  private void click(PlayerEntity player, int slotId) {
+    minecraft().interactionManager.clickSlot(
+        player.playerContainer.syncId, slotId, 0, false, player);
+  }
+
   private void onTick() {
     if (minecraft() == null || minecraft().player == null || minecraft().world == null) {
       return;
     }
     PlayerEntity player = minecraft().player;
     if (player.dead) {
+      clearPending();
       return;
     }
     if (player.container != player.playerContainer) {
       // A chest/crafting GUI is open; only manage the closed player container.
+      clearPending();
       return;
     }
     tickCounter++;
     if (tickCounter % Math.max(1, delay.getValue().intValue()) != 0) {
       return;
     }
+    if (pendingSource != -1) {
+      finishPending(player);
+      return;
+    }
     // armor[3] helmet, armor[2] chest, armor[1] legs, armor[0] boots.
     for (int type = 0; type < 4; type++) {
+      int armorSlot = ARMOR_SLOT_BASE + type;
       int armorIndex = 3 - type;
       ItemStack current =
           armorIndex < player.inventory.armor.length ? player.inventory.armor[armorIndex] : null;
@@ -100,41 +137,66 @@ public class AutoArmor extends ToggleableModule {
         int remaining =
             (current.getMaxDamage() - current.getDamage()) * 100 / current.getMaxDamage();
         if (remaining <= depletion.getValue().intValue()) {
-          unequip(player, current);
+          if (startUnequip(player, armorSlot)) return;
           continue;
         }
       }
       int currentScore = isArmor(current) ? score(current) : -1;
-      Slot best = null;
+      int bestSlot = -1;
       int bestScore = currentScore;
-      List slots = player.playerContainer.slots;
-      for (int i = 0; i < slots.size(); i++) {
-        Slot slot = (Slot) slots.get(i);
+      for (int slotId = INV_SLOT_START; slotId <= INV_SLOT_END; slotId++) {
+        Slot slot = containerSlot(player, slotId);
+        if (slot == null) continue;
         ItemStack stack = slot.getStack();
         if (!isArmor(stack) || armorType(stack) != type) continue;
         int s = score(stack);
         if (s > bestScore) {
           bestScore = s;
-          best = slot;
+          bestSlot = slotId;
         }
       }
-      if (best != null) {
-        // Vanilla shift-click equips (and swaps) armor automatically.
-        minecraft().interactionManager.clickSlot(
-            player.playerContainer.syncId, best.id, 0, true, player);
+      if (bestSlot != -1) {
+        // Step 1: pick up the better piece. Step 2 (next ticks): place into
+        // the armor slot, then return any swapped-out piece to the source.
+        pendingSource = bestSlot;
+        pendingArmorSlot = armorSlot;
+        pendingType = type;
+        Slot armor = containerSlot(player, armorSlot);
+        pendingReturnSlot = (armor != null && isArmor(armor.getStack())) ? bestSlot : -1;
+        click(player, bestSlot);
+        return;
       }
     }
   }
 
-  private void unequip(PlayerEntity player, ItemStack current) {
-    List slots = player.playerContainer.slots;
-    for (int i = 0; i < slots.size(); i++) {
-      Slot slot = (Slot) slots.get(i);
-      if (slot.getStack() == current) {
-        minecraft().interactionManager.clickSlot(
-            player.playerContainer.syncId, slot.id, 0, true, player);
-        return;
+  private void finishPending(PlayerEntity player) {
+    if (pendingArmorSlot != -1) {
+      click(player, pendingArmorSlot);
+      pendingArmorSlot = -1;
+      if (pendingReturnSlot == -1) {
+        clearPending();
       }
+      return;
     }
+    if (pendingReturnSlot != -1) {
+      click(player, pendingReturnSlot);
+      clearPending();
+    }
+  }
+
+  private boolean startUnequip(PlayerEntity player, int armorSlot) {
+    for (int slotId = INV_SLOT_START; slotId <= INV_SLOT_END; slotId++) {
+      Slot slot = containerSlot(player, slotId);
+      if (slot == null) continue;
+      ItemStack stack = slot.getStack();
+      if (stack == null || stack.count > 0) continue;
+      pendingSource = armorSlot;
+      pendingArmorSlot = slotId;
+      pendingReturnSlot = -1;
+      pendingType = -1;
+      click(player, armorSlot);
+      return true;
+    }
+    return false;
   }
 }
