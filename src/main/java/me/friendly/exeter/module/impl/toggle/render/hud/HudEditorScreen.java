@@ -72,6 +72,7 @@ public final class HudEditorScreen extends Screen {
       int my = m.getY();
       int mw = Math.max(m.getWidth(), 20);
       int mh = Math.max(m.getHeight(), 10);
+      FontUtil.drawString(m.getLabel(), (float) (mx + 2), (float) (my + 2), 0xFFFFFFFF);
       boolean hovered =
           mouseX >= mx && mouseX <= mx + mw && mouseY >= my && mouseY <= my + mh;
       int outline = hovered ? 0xFFFFFFFF : 0x80FFFFFF;
