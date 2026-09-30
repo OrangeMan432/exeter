@@ -20,11 +20,8 @@ public class NumberSlider extends Button {
       applyDrag(mouseX);
     }
     if (property.getMinimum() == null || property.getMaximum() == null) {
-      boolean hovered = isHovering(mouseX, mouseY);
-      fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
-          hovered ? 0xFF444444 : 0xFF222222);
       FontUtil.drawString(
-          this.getLabel() + ": " + property.getValue(), this.x + 2.0f, this.y + 2.0f, -1);
+          this.getLabel() + ": " + property.getValue(), this.x + 2.0f, this.y + 4.0f, -1);
       return;
     }
     double min = property.getMinimum().doubleValue();
@@ -33,14 +30,16 @@ public class NumberSlider extends Button {
     double fraction = max > min ? (value - min) / (max - min) : 0.0;
     if (fraction < 0.0) fraction = 0.0;
     if (fraction > 1.0) fraction = 1.0;
-    boolean hovered = isHovering(mouseX, mouseY);
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
-        hovered ? 0xFF333333 : 0xFF222222);
-    int fillX = (int) (this.x + this.width * fraction);
-    fill((int) this.x, (int) this.y, fillX, (int) (this.y + this.height),
-        Colors.getClientColorCustomAlpha(120));
+    float h = (float) this.getHeight();
+    int barX = (int) this.x;
+    int barEnd =
+        value <= min ? (int) this.x : (int) (this.x + this.width * fraction);
+    fill(barX, (int) (this.y + h - 1.0f), barEnd, (int) (this.y + h),
+        !isHovering(mouseX, mouseY) && !dragging
+            ? Colors.getClientColorCustomAlpha(77)
+            : Colors.getClientColorCustomAlpha(55));
     FontUtil.drawString(
-        this.getLabel() + ": " + property.getValue(), this.x + 2.0f, this.y + 2.0f, -1);
+        this.getLabel() + ": " + property.getValue(), this.x + 2.0f, this.y + 4.0f, -1);
   }
 
   private void applyDrag(int mouseX) {

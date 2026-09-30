@@ -3,6 +3,7 @@ package me.friendly.exeter.window.impl;
 import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.logging.LogEntry;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.window.Window;
@@ -75,6 +76,13 @@ public class ConsoleWindow extends Window {
     }
   }
 
+  private void addLine(String text, LogEntry.Level level) {
+    staticEntries.add(new LogEntry(text, level));
+    while (staticEntries.size() > MAX_ENTRIES) {
+      staticEntries.remove(0);
+    }
+  }
+
   @Override
   protected boolean consumeClick(int mouseX, int mouseY, int button) {
     return true;
@@ -86,9 +94,16 @@ public class ConsoleWindow extends Window {
       String input = inputBuffer.toString().trim();
       inputBuffer.setLength(0);
       if (!input.isEmpty()) {
-        staticEntries.add(new LogEntry("> " + input, LogEntry.Level.OUTPUT));
-        while (staticEntries.size() > MAX_ENTRIES) {
-          staticEntries.remove(0);
+        addLine("> " + input, LogEntry.Level.OUTPUT);
+        if (Exeter.getInstance() != null) {
+          String prefix = Exeter.getInstance().getCommandManager().getPrefix();
+          if (input.startsWith(prefix)) {
+            String response =
+                Exeter.getInstance().getCommandManager().dispatchDirect(input);
+            if (response != null && !response.isEmpty()) {
+              addLine(response, LogEntry.Level.INFO);
+            }
+          }
         }
         scrollOffset = Math.max(0, staticEntries.size() - 1);
       }

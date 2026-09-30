@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.event.Listener;
 import me.friendly.api.registry.ListRegistry;
+import me.friendly.exeter.beta.mixin.MinecraftAccessor;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.api.event.Stage;
+import net.minecraft.client.Minecraft;
 import org.lwjgl.input.Keyboard;
 
 /**
@@ -33,6 +35,10 @@ public final class KeybindManager extends ListRegistry<Keybind> {
   }
 
   private void poll() {
+    Minecraft mc = MinecraftAccessor.getMinecraft();
+    if (mc != null && mc.currentScreen != null) {
+      return;
+    }
     for (Keybind keybind : getRegistry()) {
       int key = keybind.getKey();
       if (key == 0) continue;
