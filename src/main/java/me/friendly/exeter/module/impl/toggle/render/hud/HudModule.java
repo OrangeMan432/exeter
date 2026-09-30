@@ -101,6 +101,24 @@ public abstract class HudModule extends ToggleableModule {
     int topRightY = 4;
     int bottomLeftY = scaledHeight - 4;
     int bottomRightY = scaledHeight - 4;
+    // Manually placed elements occupy space; stack the rest around them so
+    // snapped elements land in the corner flow instead of overlapping.
+    for (HudModule module : modules) {
+      if (!module.isPositioned()) continue;
+      if (module.getCorner() == Corner.TOP_LEFT) {
+        int end = module.getY() + module.getHeight() + 2;
+        if (end > topLeftY) topLeftY = end;
+      } else if (module.getCorner() == Corner.TOP_RIGHT) {
+        int end = module.getY() + module.getHeight() + 2;
+        if (end > topRightY) topRightY = end;
+      } else if (module.getCorner() == Corner.BOTTOM_LEFT) {
+        int start = module.getY() - 2;
+        if (start < bottomLeftY) bottomLeftY = start;
+      } else {
+        int start = module.getY() - 2;
+        if (start < bottomRightY) bottomRightY = start;
+      }
+    }
     for (HudModule module : modules) {
       if (!module.isPositioned()) {
         if (module.getCorner() == Corner.TOP_LEFT) {
