@@ -8,6 +8,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.ClientNetworkHandler;
 import net.minecraft.class_119;
+import net.minecraft.class_382;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,5 +48,55 @@ public class MixinVelocity {
                   + packet.field_367);
       info.cancel();
     }
+  }
+
+  private double savedVelX;
+  private double savedVelY;
+  private double savedVelZ;
+  private boolean savedBlast;
+
+  private boolean velocityRunning() {
+    if (Exeter.getInstance() == null) {
+      return false;
+    }
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("velocity");
+    return module instanceof ToggleableModule && ((ToggleableModule) module).isRunning();
+  }
+
+  /**
+   * Explosions apply player knockback client-side from the explosion packet, so there is
+   * no velocity packet to cancel. Snapshot the player velocity around it instead;
+   * particles, sound and block effects still play.
+   */
+  @Inject(method = "method_1458(Lnet/minecraft/class_382;)V", at = @At("HEAD"))
+  private void onExplosionStart(class_382 packet, CallbackInfo info) {
+    savedBlast = false;
+    if (!velocityRunning()) {
+      return;
+    }
+    Minecraft mc = MinecraftAccessor.getMinecraft();
+    if (mc == null || mc.player == null) {
+      return;
+    }
+    savedVelX = mc.player.velocityX;
+    savedVelY = mc.player.velocityY;
+    savedVelZ = mc.player.velocityZ;
+    savedBlast = true;
+  }
+
+  @Inject(method = "method_1458(Lnet/minecraft/class_382;)V", at = @At("RETURN"))
+  private void onExplosionEnd(class_382 packet, CallbackInfo info) {
+    if (!savedBlast) {
+      return;
+    }
+    savedBlast = false;
+    Minecraft mc = MinecraftAccessor.getMinecraft();
+    if (mc == null || mc.player == null) {
+      return;
+    }
+    mc.player.velocityX = savedVelX;
+    mc.player.velocityY = savedVelY;
+    mc.player.velocityZ = savedVelZ;
+    DebugLogger.get().logSystem("Velocity", "Nulled explosion knockback");
   }
 }
