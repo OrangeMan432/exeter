@@ -1,10 +1,14 @@
 package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
+import java.util.ArrayList;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.beta.mixin.MinecraftAccessor;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.util.NotificationManager;
 import me.friendly.exeter.util.NotificationManager.Notification;
+import net.minecraft.client.Minecraft;
 
 public final class NotificationHud extends HudModule {
 
@@ -13,10 +17,23 @@ public final class NotificationHud extends HudModule {
     offerProperties();
   }
 
+  private List<Notification> entries() {
+    List<Notification> notifications = NotificationManager.getNotifications();
+    if (!notifications.isEmpty()) return notifications;
+    Minecraft mc = MinecraftAccessor.getMinecraft();
+    if (mc != null && mc.currentScreen instanceof HudEditorScreen) {
+      // Editor preview is a real notification through the normal render path.
+      List<Notification> preview = new ArrayList<Notification>();
+      preview.add(new Notification("Example notification", "", 5000L));
+      return preview;
+    }
+    return notifications;
+  }
+
   @Override
   public int getWidth() {
     int width = 0;
-    List<Notification> notifications = NotificationManager.getNotifications();
+    List<Notification> notifications = entries();
     int count = Math.min(notifications.size(), 5);
     for (int i = 0; i < count; i++) {
       int w = FontUtil.getStringWidth(notifications.get(i).text());
@@ -29,7 +46,7 @@ public final class NotificationHud extends HudModule {
 
   @Override
   public int getHeight() {
-    int count = Math.min(NotificationManager.getNotifications().size(), 5);
+    int count = Math.min(entries().size(), 5);
     if (count == 0) {
       return 0;
     }
@@ -38,7 +55,7 @@ public final class NotificationHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    List<Notification> notifications = NotificationManager.getNotifications();
+    List<Notification> notifications = entries();
     int count = Math.min(notifications.size(), 5);
     int y = getY();
     for (int i = 0; i < count; i++) {

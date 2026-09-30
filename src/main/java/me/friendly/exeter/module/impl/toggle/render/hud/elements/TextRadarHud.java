@@ -46,6 +46,10 @@ public final class TextRadarHud extends ListHudModule {
       int dist = (int) Math.round(PlayerUtil.distanceTo(player));
       result.add(new PlayerEntry(player.name, player.health, dist));
     }
+    if (result.isEmpty() && isInEditor() && mc.player != null) {
+      // Editor preview shows real data for yourself instead of nearby players.
+      result.add(new PlayerEntry(mc.player.name, mc.player.health, 0));
+    }
     Collections.sort(
         result,
         new Comparator<PlayerEntry>() {
