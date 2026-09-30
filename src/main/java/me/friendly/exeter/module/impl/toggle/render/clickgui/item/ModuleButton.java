@@ -13,6 +13,7 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.ClientColors;
 
 public class ModuleButton extends Button {
   private final Module module;
@@ -61,19 +62,51 @@ public class ModuleButton extends Button {
     this.subOpen = open;
   }
 
+  private boolean isRunning() {
+    return module instanceof me.friendly.api.interfaces.Toggleable
+        && ((me.friendly.api.interfaces.Toggleable) module).isRunning();
+  }
+
+  private boolean useGradient() {
+    if (me.friendly.exeter.core.Exeter.getInstance() == null) return true;
+    me.friendly.exeter.module.Module mod =
+        me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (mod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+      return ((me.friendly.exeter.module.impl.toggle.render.ClickGui) mod).showGradient.getValue()
+          .booleanValue();
+    }
+    return true;
+  }
+
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-    boolean running =
-        module instanceof me.friendly.api.interfaces.Toggleable
-            && ((me.friendly.api.interfaces.Toggleable) module).isRunning();
+    boolean running = isRunning();
     boolean hovered = isHovering(mouseX, mouseY);
-    int bg;
+    int topColor;
+    int bottomColor;
     if (running) {
-      bg = hovered ? 0xFFAA3333 : 0xFF771111;
+      if (hovered) {
+        topColor = ClientColors.getClientColorCustomAlpha(88);
+        bottomColor = ClientColors.getClientColorCustomAlpha(77);
+      } else {
+        topColor = ClientColors.getClientColorCustomAlpha(55);
+        bottomColor = ClientColors.getClientColorCustomAlpha(44);
+      }
+    } else if (hovered) {
+      topColor = 0xFF555555;
+      bottomColor = 0xFF333333;
     } else {
-      bg = hovered ? 0xFF444444 : 0xFF222222;
+      topColor = 0xFF333333;
+      bottomColor = 0xFF222222;
     }
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
+    if (useGradient()) {
+      fillGradient(
+          (int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+          topColor, bottomColor);
+    } else {
+      fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+          topColor);
+    }
     FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, running ? -1 : -5592406);
 
     if (!topLevelItems.isEmpty()) {
@@ -136,7 +169,6 @@ public class ModuleButton extends Button {
 
   @Override
   public boolean getState() {
-    return module instanceof me.friendly.api.interfaces.Toggleable
-        && ((me.friendly.api.interfaces.Toggleable) module).isRunning();
+    return isRunning();
   }
 }

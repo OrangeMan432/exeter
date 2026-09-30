@@ -7,12 +7,14 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 
 public final class ClickGuiScreen extends Screen {
   private final List<Panel> panels = new ArrayList<Panel>();
+  private String search = "";
 
   public ClickGuiScreen() {
     super();
@@ -22,7 +24,7 @@ public final class ClickGuiScreen extends Screen {
   public void reload() {
     panels.clear();
     int x = 10;
-    int y = 20;
+    int y = 30;
     for (ModuleType type : ModuleType.values()) {
       Panel panel = new Panel(type.getLabel(), x, y, true);
       for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
@@ -42,15 +44,58 @@ public final class ClickGuiScreen extends Screen {
     }
   }
 
+  private me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule() {
+    if (Exeter.getInstance() == null) return null;
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+      return (me.friendly.exeter.module.impl.toggle.render.ClickGui) module;
+    }
+    return null;
+  }
+
   @Override
   public void render(int mouseX, int mouseY, float partialTicks) {
     super.render(mouseX, mouseY, partialTicks);
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    if (guiMod == null || guiMod.showBackground.getValue().booleanValue()) {
+      fillGradient(0, 0, this.width, this.height, 0x80000000, 0x40000000);
+    }
     for (Panel panel : panels) {
       panel.onMouseMove(mouseX, mouseY);
       panel.drawScreen(mouseX, mouseY, partialTicks);
     }
-    String hint = "Right-click a module for settings. Right-click a header to collapse.";
-    FontUtil.drawString(hint, 4.0f, (float) (this.height - 12), 0xFF888888);
+
+    boolean searchOn = guiMod == null || guiMod.searchEnabled.getValue().booleanValue();
+    if (searchOn && !search.isEmpty()) {
+      int queryWidth = FontUtil.getStringWidth(search);
+      FontUtil.drawString(search, (float) (this.width / 2 - queryWidth / 2), 15.0f, 0xFFFFFFFF);
+    }
+
+    boolean showDesc = guiMod == null || guiMod.showDescriptions.getValue().booleanValue();
+    if (showDesc) {
+      String hoveredDesc = findHoveredDescription(mouseX, mouseY);
+      if (hoveredDesc != null && !hoveredDesc.isEmpty()) {
+        int textWidth = FontUtil.getStringWidth(hoveredDesc);
+        FontUtil.drawString(hoveredDesc, (float) (this.width / 2 - textWidth / 2), 2.0f, 0xFFCCCCCC);
+      }
+    }
+  }
+
+  private String findHoveredDescription(int mouseX, int mouseY) {
+    for (Panel panel : panels) {
+      if (!panel.getOpen()) continue;
+      for (Item item : panel.getItems()) {
+        if (item instanceof ModuleButton) {
+          ModuleButton button = (ModuleButton) item;
+          float ix = button.getX();
+          float iy = button.getY();
+          if (mouseX >= ix && mouseX <= ix + button.getWidth() && mouseY >= iy && mouseY <= iy + 12) {
+            return button.getModule().getDescription();
+          }
+        }
+      }
+    }
+    return null;
   }
 
   @Override
@@ -75,6 +120,27 @@ public final class ClickGuiScreen extends Screen {
 
   @Override
   protected void keyPressed(char typedChar, int keyCode) {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = guiModule();
+    boolean searchOn = guiMod == null || guiMod.searchEnabled.getValue().booleanValue();
+    if (searchOn) {
+      if (keyCode == 14 && search.length() > 0) {
+        search = search.substring(0, search.length() - 1);
+        return;
+      }
+      if (keyCode == 1 && search.length() > 0) {
+        search = "";
+        return;
+      }
+      if (search.length() < 24) {
+        char lower = Character.toLowerCase(typedChar);
+        if ((lower >= 'a' && lower <= 'z')
+            || (lower >= '0' && lower <= '9')
+            || lower == ' ') {
+          search += lower;
+          return;
+        }
+      }
+    }
     if (keyCode == 1) {
       Minecraft mc = this.minecraft;
       if (mc != null) {
@@ -92,5 +158,9 @@ public final class ClickGuiScreen extends Screen {
 
   public List<Panel> getPanels() {
     return this.panels;
+  }
+
+  public String getSearch() {
+    return this.search;
   }
 }
