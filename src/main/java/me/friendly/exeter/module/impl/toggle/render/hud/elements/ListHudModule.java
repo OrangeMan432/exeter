@@ -81,7 +81,10 @@ public abstract class ListHudModule extends HudModule {
     int line = FontUtil.getFontHeight();
 
     int py = top ? getY() : getY() + getHeight() - line;
-    for (TextEntry entry : entries) {
+    // Bottom-anchored lists grow upward, so iterate in reverse to keep the
+    // first entry on top like top-anchored lists.
+    for (int i = 0; i < entries.size(); i++) {
+      TextEntry entry = top ? entries.get(i) : entries.get(entries.size() - 1 - i);
       int lw = FontUtil.getStringWidth(entry.text());
       int px = right ? getX() + width - lw : getX();
       FontUtil.drawString(entry.text(), (float) px, (float) py, entry.color());
