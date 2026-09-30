@@ -12,7 +12,6 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoArmor;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
-import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
 import me.friendly.exeter.module.impl.toggle.movement.NoFall;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
@@ -57,7 +56,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Speed());
     register(new FastFall());
     register(new NoFall());
-    register(new NoAccel());
     register(new Step());
     register(new Velocity());
     register(new KillAura());
