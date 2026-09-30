@@ -13,8 +13,9 @@ import org.lwjgl.input.Keyboard;
 
 public class NoAccel extends ToggleableModule {
 
+  // Beta walk speed is 4.317 m/s with no sprint; cap at walk pace.
   private final NumberProperty<Double> speed =
-      new NumberProperty<Double>(0.22, 0.1, 0.5, "Speed", "speed");
+      new NumberProperty<Double>(0.2158, 0.1, 0.22, "Speed", "speed");
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("noaccel_tick") {
