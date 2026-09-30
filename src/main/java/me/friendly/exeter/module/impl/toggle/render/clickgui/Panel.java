@@ -1,7 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
 import java.util.ArrayList;
-import java.util.List;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
@@ -10,34 +9,29 @@ import net.minecraft.client.gui.DrawableHelper;
 
 public class Panel extends DrawableHelper implements Labeled {
   private final String label;
+  private int angle;
   private int x;
   private int y;
-  private final int width;
-  private final int height = 18;
+  private int x2;
+  private int y2;
+  private int width;
+  private int height;
   private boolean open;
-  private boolean dragging;
-  private int dragOffsetX;
-  private int dragOffsetY;
-  private final List<Item> items = new ArrayList<Item>();
+  public boolean drag;
+  private final ArrayList<Item> items = new ArrayList<Item>();
 
   public Panel(String label, int x, int y, boolean open) {
     this.label = label;
     this.x = x;
     this.y = y;
-    this.width = 90;
+    this.angle = 180;
+    this.width = 88;
+    this.height = 18;
     this.open = open;
   }
 
   public void addButton(Item item) {
     this.items.add(item);
-  }
-
-  public List<Item> getItems() {
-    return this.items;
-  }
-
-  public boolean getOpen() {
-    return this.open;
   }
 
   @Override
@@ -57,61 +51,46 @@ public class Panel extends DrawableHelper implements Labeled {
     return this.width;
   }
 
-  public void setX(int x) {
-    this.x = x;
+  public int getHeight() {
+    return this.height;
   }
 
-  public void setY(int y) {
-    this.y = y;
+  public boolean getOpen() {
+    return this.open;
   }
 
-  public boolean containsMouse(int mouseX, int mouseY) {
-    return mouseX >= this.x
-        && mouseX <= this.x + this.width
-        && mouseY >= this.y
-        && mouseY <= this.y + getTotalHeight();
-  }
-
-  public boolean titleHovered(int mouseX, int mouseY) {
-    return mouseX >= this.x
-        && mouseX <= this.x + this.width
-        && mouseY >= this.y
-        && mouseY <= this.y + this.headerHeight();
-  }
-
-  private int headerHeight() {
-    return 12;
-  }
-
-  private int getTotalHeight() {
-    int total = headerHeight();
-    if (open) {
-      for (Item item : items) {
-        total += item.getHeight() + 1;
-      }
-    }
-    return total;
-  }
-
-  private int getVisibleItemHeight() {
-    int total = 0;
-    for (Item item : items) {
-      total += item.getHeight() + 1;
-    }
-    return total;
+  public final ArrayList<Item> getItems() {
+    return this.items;
   }
 
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+    this.drag(mouseX, mouseY);
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
-    boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
+    boolean showArrow = guiMod == null || guiMod.showArrow.getValue().booleanValue();
 
-    int headerAccent = ClientColors.getClientColorCustomAlpha(77);
-    fillGradient(this.x, this.y - 1, this.x + this.width, this.y + this.headerHeight() - 6,
-        headerAccent, headerAccent);
-    fill(this.x, this.y + this.headerHeight(),
-        this.x + this.width, this.y + this.height + (this.open ? getVisibleItemHeight() - 2 : -1),
+    float totalItemHeight = this.open ? (float) this.getTotalItemHeight() - 2.0f : 0.0f;
+    fillGradient(
+        this.x,
+        (int) ((float) this.y - 1.5f),
+        this.x + this.width,
+        this.y + this.height - 6,
+        ClientColors.getClientColorCustomAlpha(77),
+        ClientColors.getClientColorCustomAlpha(77));
+    fill(
+        this.x,
+        this.y + 12,
+        this.x + this.width,
+        this.y + this.height + (this.open ? (int) totalItemHeight : -1),
         0x77000000);
-    FontUtil.drawString(this.label, this.x + 3.0f, (float) this.y + 1.5f, -1);
+    FontUtil.drawString(this.getLabel(), (float) this.x + 3.0f, (float) this.y + 1.5f, -1);
+
+    if (!open) {
+      if (this.angle > 0) {
+        this.angle -= 3;
+      }
+    } else if (this.angle < 180) {
+      this.angle += 3;
+    }
 
     if (showArrow) {
       String arrow = this.open ? "v" : "^";
@@ -120,8 +99,9 @@ public class Panel extends DrawableHelper implements Labeled {
     }
 
     if (this.open) {
-      int itemY = this.getY() + this.headerHeight() - 1;
+      int itemY = this.getY() + this.getHeight() - 3;
       for (Item item : getItems()) {
+        if (!matchesSearch(item)) continue;
         item.setLocation((float) this.x + 2.0f, (float) itemY);
         item.setWidth(this.getWidth() - 4);
         item.drawScreen(mouseX, mouseY, partialTicks);
@@ -129,16 +109,23 @@ public class Panel extends DrawableHelper implements Labeled {
       }
     }
 
-    if (guiMod == null || guiMod.showBorder.getValue()) {
-      float top = (float) this.y - 1.0f;
-      float bottom =
-          (float) this.y + this.height + (this.open ? getVisibleItemHeight() - 2 : -1);
+    if (guiMod == null || guiMod.showBorder.getValue().booleanValue()) {
+      float top = (float) this.y - 1.5f;
+      float bottom = (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1);
       int accent = ClientColors.getClientColorCustomAlpha(77);
       fill(this.x - 1, (int) top - 1, this.x + this.width + 1, (int) top, accent);
       fill(this.x - 1, (int) bottom, this.x + this.width + 1, (int) bottom + 1, accent);
       fill(this.x - 1, (int) top, this.x, (int) bottom, accent);
       fill(this.x + this.width, (int) top, this.x + this.width + 1, (int) bottom, accent);
     }
+  }
+
+  public boolean matchesSearch(Item item) {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
+    if (guiMod != null && !guiMod.searchEnabled.getValue().booleanValue()) return true;
+    String query = ClickGuiScreen.getInstance().getSearch();
+    if (query == null || query.isEmpty()) return true;
+    return FuzzySearch.score(query, item.getLabel()) >= 0;
   }
 
   private static me.friendly.exeter.module.impl.toggle.render.ClickGui getClickGuiModule() {
@@ -151,37 +138,73 @@ public class Panel extends DrawableHelper implements Labeled {
     return null;
   }
 
-  public void onMouseMove(int mouseX, int mouseY) {
-    if (dragging) {
-      this.x = mouseX - dragOffsetX;
-      this.y = mouseY - dragOffsetY;
+  private void drag(int mouseX, int mouseY) {
+    if (!this.drag) {
+      return;
     }
+    this.x = this.x2 + mouseX;
+    this.y = this.y2 + mouseY;
   }
 
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (mouseButton == 0 && titleHovered(mouseX, mouseY)) {
-      dragging = true;
-      dragOffsetX = mouseX - this.x;
-      dragOffsetY = mouseY - this.y;
-      return;
-    }
-    if (mouseButton == 1 && titleHovered(mouseX, mouseY)) {
-      open = !open;
-      return;
-    }
-    if (open) {
-      for (Item item : items) {
-        item.mouseClicked(mouseX, mouseY, mouseButton);
+    if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+      this.x2 = this.x - mouseX;
+      this.y2 = this.y - mouseY;
+      ClickGuiScreen.getInstance().getPanels();
+      for (Panel panel : ClickGuiScreen.getInstance().getPanels()) {
+        if (panel.drag) {
+          panel.drag = false;
+        }
       }
+      this.drag = true;
+      return;
+    }
+    if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
+      this.open = !this.open;
+      return;
+    }
+    if (!this.open) {
+      return;
+    }
+    for (Item item : this.getItems()) {
+      if (!matchesSearch(item)) continue;
+      item.mouseClicked(mouseX, mouseY, mouseButton);
     }
   }
 
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    dragging = false;
-    if (open) {
-      for (Item item : items) {
-        item.mouseReleased(mouseX, mouseY, releaseButton);
-      }
+    if (releaseButton == 0) {
+      this.drag = false;
     }
+    if (!this.open) {
+      return;
+    }
+    for (Item item : this.getItems()) {
+      if (!matchesSearch(item)) continue;
+      item.mouseReleased(mouseX, mouseY, releaseButton);
+    }
+  }
+
+  public boolean containsMouse(int mouseX, int mouseY) {
+    return mouseX >= this.getX()
+        && mouseX <= this.getX() + this.getWidth()
+        && mouseY >= this.getY()
+        && mouseY <= this.getY() + this.getHeight() + (this.open ? this.getTotalItemHeight() : 0);
+  }
+
+  private boolean isHovering(int mouseX, int mouseY) {
+    return mouseX >= this.getX()
+        && mouseX <= this.getX() + this.getWidth()
+        && mouseY >= this.getY()
+        && mouseY <= this.getY() + this.getHeight() - (this.open ? 2 : 0);
+  }
+
+  private int getTotalItemHeight() {
+    int height = 0;
+    for (Item item : getItems()) {
+      if (!matchesSearch(item)) continue;
+      height += item.getHeight() + 1;
+    }
+    return height;
   }
 }

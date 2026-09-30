@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 
 public final class ClickGuiScreen extends Screen {
+  private static ClickGuiScreen instance;
   private final List<Panel> panels = new ArrayList<Panel>();
   private String search = "";
 
@@ -21,12 +22,26 @@ public final class ClickGuiScreen extends Screen {
     reload();
   }
 
+  public static ClickGuiScreen getInstance() {
+    if (instance == null) {
+      instance = new ClickGuiScreen();
+    }
+    return instance;
+  }
+
   public void reload() {
     panels.clear();
-    int x = 10;
-    int y = 30;
+    int panelWidth = 90;
+    int totalPanels = ModuleType.values().length;
+    int totalGuiWidth = totalPanels * panelWidth;
+    int x = (this.width / 2) - (totalGuiWidth / 2) - panelWidth;
+    int y = 40;
+    if (this.width == 0) {
+      x = 4 - panelWidth;
+      y = 4;
+    }
     for (ModuleType type : ModuleType.values()) {
-      Panel panel = new Panel(type.getLabel(), x, y, true);
+      Panel panel = new Panel(type.getLabel(), x += panelWidth, y, true);
       for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
         if (module instanceof ToggleableModule) {
           ToggleableModule toggleable = (ToggleableModule) module;
@@ -36,11 +51,6 @@ public final class ClickGuiScreen extends Screen {
         }
       }
       panels.add(panel);
-      x += 100;
-      if (x > 600) {
-        x = 10;
-        y += 60;
-      }
     }
   }
 
@@ -61,7 +71,6 @@ public final class ClickGuiScreen extends Screen {
       fillGradient(0, 0, this.width, this.height, 0x80000000, 0x40000000);
     }
     for (Panel panel : panels) {
-      panel.onMouseMove(mouseX, mouseY);
       panel.drawScreen(mouseX, mouseY, partialTicks);
     }
 

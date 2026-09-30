@@ -13,12 +13,13 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
-import me.friendly.exeter.util.ClientColors;
 
 public class ModuleButton extends Button {
   private final Module module;
   private final List<Item> topLevelItems = new ArrayList<Item>();
   private boolean subOpen;
+  private int gearAnimFrame = 2;
+  private int gearAnimTimer = 0;
 
   public ModuleButton(Module module) {
     super(module.getLabel());
@@ -67,62 +68,38 @@ public class ModuleButton extends Button {
         && ((me.friendly.api.interfaces.Toggleable) module).isRunning();
   }
 
-  private boolean useGradient() {
-    if (me.friendly.exeter.core.Exeter.getInstance() == null) return true;
-    me.friendly.exeter.module.Module mod =
-        me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
-    if (mod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
-      return ((me.friendly.exeter.module.impl.toggle.render.ClickGui) mod).showGradient.getValue()
-          .booleanValue();
-    }
-    return true;
-  }
-
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-    boolean running = isRunning();
-    boolean hovered = isHovering(mouseX, mouseY);
-    int topColor;
-    int bottomColor;
-    if (running) {
-      if (hovered) {
-        topColor = ClientColors.getClientColorCustomAlpha(88);
-        bottomColor = ClientColors.getClientColorCustomAlpha(77);
-      } else {
-        topColor = ClientColors.getClientColorCustomAlpha(55);
-        bottomColor = ClientColors.getClientColorCustomAlpha(44);
-      }
-    } else if (hovered) {
-      topColor = 0xFF555555;
-      bottomColor = 0xFF333333;
-    } else {
-      topColor = 0xFF333333;
-      bottomColor = 0xFF222222;
-    }
-    if (useGradient()) {
-      fillGradient(
-          (int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
-          topColor, bottomColor);
-    } else {
-      fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
-          topColor);
-    }
-    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, running ? -1 : -5592406);
+    super.drawScreen(mouseX, mouseY, partialTicks);
 
     if (!topLevelItems.isEmpty()) {
-      String gear = subOpen ? "-" : "+";
+      this.gearAnimTimer++;
+      if (this.gearAnimTimer >= 4) {
+        this.gearAnimTimer = 0;
+        if (this.subOpen && this.gearAnimFrame > 0) {
+          this.gearAnimFrame--;
+        } else if (!this.subOpen && this.gearAnimFrame < 2) {
+          this.gearAnimFrame++;
+        }
+      }
+      String dots;
+      if (this.gearAnimFrame == 2) {
+        dots = "...";
+      } else if (this.gearAnimFrame == 1) {
+        dots = "..";
+      } else {
+        dots = ".";
+      }
+      int textW = FontUtil.getStringWidth(dots);
       FontUtil.drawString(
-          gear,
-          this.x + this.width - FontUtil.getStringWidth(gear) - 3.0f,
-          this.y + 2.0f,
-          0xFFCCCCCC);
+          dots, this.x + this.width - textW - 2.0f, this.y + 4.0f, 0xFFCCCCCC);
     }
 
-    if (subOpen) {
-      float cy = this.y + this.height + 1;
+    if (this.subOpen) {
+      float cy = this.y + 16.0f;
       for (Item child : topLevelItems) {
-        child.setLocation(this.x + 2, cy);
-        child.setWidth(this.width - 4);
+        child.setLocation(this.x + 1.0f, cy);
+        child.setWidth(this.width - 9);
         child.drawScreen(mouseX, mouseY, partialTicks);
         cy += child.getHeight() + 1;
       }
@@ -131,40 +108,45 @@ public class ModuleButton extends Button {
 
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    if (subOpen) {
-      for (Item child : topLevelItems) {
-        child.mouseClicked(mouseX, mouseY, mouseButton);
+    super.mouseClicked(mouseX, mouseY, mouseButton);
+    if (!this.topLevelItems.isEmpty()) {
+      if (mouseButton == 1 && this.isHovering(mouseX, mouseY)) {
+        this.subOpen = !this.subOpen;
+        this.gearAnimTimer = 0;
+        if (this.subOpen) {
+          this.gearAnimFrame = 2;
+        } else {
+          this.gearAnimFrame = 0;
+        }
       }
-    }
-    if (!isHovering(mouseX, mouseY)) {
-      return;
-    }
-    if (mouseButton == 0) {
-      if (module instanceof me.friendly.api.interfaces.Toggleable) {
-        ((me.friendly.api.interfaces.Toggleable) module).toggle();
+      if (this.subOpen) {
+        for (Item child : topLevelItems) {
+          child.mouseClicked(mouseX, mouseY, mouseButton);
+        }
       }
-    } else if (mouseButton == 1 && !topLevelItems.isEmpty()) {
-      subOpen = !subOpen;
     }
   }
 
   @Override
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    for (Item child : topLevelItems) {
-      child.mouseReleased(mouseX, mouseY, releaseButton);
+    super.mouseReleased(mouseX, mouseY, releaseButton);
+    if (this.subOpen) {
+      for (Item child : topLevelItems) {
+        child.mouseReleased(mouseX, mouseY, releaseButton);
+      }
     }
   }
 
   @Override
   public int getHeight() {
-    if (!subOpen) {
-      return 12;
+    if (this.subOpen) {
+      int height = 15;
+      for (Item child : topLevelItems) {
+        height += child.getHeight() + 1;
+      }
+      return height + 2;
     }
-    int h = 12;
-    for (Item child : topLevelItems) {
-      h += child.getHeight() + 1;
-    }
-    return h;
+    return 15;
   }
 
   @Override

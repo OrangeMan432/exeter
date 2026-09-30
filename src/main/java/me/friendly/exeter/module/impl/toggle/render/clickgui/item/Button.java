@@ -2,27 +2,58 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.util.ClientColors;
 
 public class Button extends Item implements Labeled {
   private boolean state;
 
   public Button(String label) {
     super(label);
-    this.height = 12;
+    this.height = 15;
+  }
+
+  protected boolean useGradient() {
+    if (me.friendly.exeter.core.Exeter.getInstance() == null) return true;
+    me.friendly.exeter.module.Module module =
+        me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+      return ((me.friendly.exeter.module.impl.toggle.render.ClickGui) module)
+          .showGradient.getValue().booleanValue();
+    }
+    return true;
   }
 
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-    boolean active = getState();
-    boolean hovered = isHovering(mouseX, mouseY);
-    int bg;
-    if (active) {
-      bg = hovered ? 0xFFAA3333 : 0xFF771111;
+    int topColor;
+    int bottomColor;
+    if (this.getState()) {
+      if (!this.isHovering(mouseX, mouseY)) {
+        topColor = ClientColors.getClientColorCustomAlpha(88);
+        bottomColor = ClientColors.getClientColorCustomAlpha(55);
+      } else {
+        topColor = ClientColors.getClientColorCustomAlpha(44);
+        bottomColor = ClientColors.getClientColorCustomAlpha(77);
+      }
+    } else if (!this.isHovering(mouseX, mouseY)) {
+      topColor = ClientColors.getDarkerClientColorCustomAlpha(77);
+      bottomColor = ClientColors.getDarkerClientColorCustomAlpha(55);
     } else {
-      bg = hovered ? 0xFF444444 : 0xFF222222;
+      topColor = ClientColors.getDarkerClientColorCustomAlpha(33);
+      bottomColor = ClientColors.getDarkerClientColorCustomAlpha(66);
     }
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
-    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, active ? -1 : -5592406);
+
+    if (useGradient()) {
+      fillGradient(
+          (int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+          topColor, bottomColor);
+    } else {
+      fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+          topColor);
+    }
+
+    FontUtil.drawString(
+        this.getLabel(), this.x + 2.0f, this.y + 4.0f, this.getState() ? -1 : -5592406);
   }
 
   @Override
@@ -41,6 +72,6 @@ public class Button extends Item implements Labeled {
 
   @Override
   public int getHeight() {
-    return 12;
+    return 15;
   }
 }

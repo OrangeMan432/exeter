@@ -18,8 +18,6 @@ public final class ClickGui extends ToggleableModule {
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
   public final Property<Boolean> showBorder = new Property<Boolean>(true, "Border", "border");
 
-  private ClickGuiScreen screen;
-
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui", "gui"}, 0xFFAA55, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
@@ -31,13 +29,9 @@ public final class ClickGui extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     Minecraft mc = MinecraftAccessor.getMinecraft();
-    if (screen == null) {
-      screen = new ClickGuiScreen();
-    } else {
-      screen.reload();
-    }
+    ClickGuiScreen.getInstance().reload();
     if (mc != null) {
-      mc.setScreen(screen);
+      mc.setScreen(ClickGuiScreen.getInstance());
     }
     setRunning(false);
   }
