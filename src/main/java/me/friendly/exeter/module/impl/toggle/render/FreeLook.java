@@ -132,5 +132,8 @@ public final class FreeLook extends ToggleableModule {
     if (mc == null || mc.player == null) return;
     mc.player.yaw = preYaw;
     mc.player.pitch = prePitch;
+    // Head rendering interpolates prev -> current; leave both on the player.
+    mc.player.prevYaw = preYaw;
+    mc.player.prevPitch = prePitch;
   }
 }
