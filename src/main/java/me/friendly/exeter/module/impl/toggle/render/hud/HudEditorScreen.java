@@ -7,6 +7,7 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -84,6 +85,45 @@ public final class HudEditorScreen extends Screen {
     drawSnapGuides(this.width, this.height);
 
     hudPanel.drawScreen(mouseX, mouseY, partialTicks);
+
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = clickGuiModule();
+    boolean showDesc = guiMod == null || guiMod.showDescriptions.getValue().booleanValue();
+    if (showDesc) {
+      String hoveredDesc = findHoveredDescription(mouseX, mouseY);
+      if (hoveredDesc != null && !hoveredDesc.isEmpty()) {
+        int textWidth = FontUtil.getStringWidth(hoveredDesc);
+        FontUtil.drawString(
+            hoveredDesc, (float) (this.width / 2 - textWidth / 2), 2.0f, 0xFFCCCCCC);
+      }
+    }
+  }
+
+  private me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule() {
+    if (Exeter.getInstance() == null) return null;
+    Module module =
+        Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
+      return (me.friendly.exeter.module.impl.toggle.render.ClickGui) module;
+    }
+    return null;
+  }
+
+  private String findHoveredDescription(int mouseX, int mouseY) {
+    if (hudPanel == null || !hudPanel.getOpen()) return null;
+    for (Item item : hudPanel.getItems()) {
+      if (item instanceof ModuleButton) {
+        ModuleButton button = (ModuleButton) item;
+        float ix = button.getX();
+        float iy = button.getY();
+        if (mouseX >= ix
+            && mouseX <= ix + button.getWidth()
+            && mouseY >= iy
+            && mouseY <= iy + 12) {
+          return button.getModule().getDescription();
+        }
+      }
+    }
+    return null;
   }
 
   private void drawSnapGuides(int scaledWidth, int scaledHeight) {
