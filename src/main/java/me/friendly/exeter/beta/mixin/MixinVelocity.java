@@ -2,6 +2,7 @@ package me.friendly.exeter.beta.mixin;
 
 import me.friendly.exeter.beta.mixin.MinecraftAccessor;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ToggleableModule;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,15 @@ public class MixinVelocity {
     }
     // field_364 is the entity id.
     if (packet.field_364 == mc.player.id) {
+      DebugLogger.get()
+          .logFile(
+              "Velocity",
+              "Canceled entity velocity "
+                  + packet.field_365
+                  + "/"
+                  + packet.field_366
+                  + "/"
+                  + packet.field_367);
       info.cancel();
     }
   }
