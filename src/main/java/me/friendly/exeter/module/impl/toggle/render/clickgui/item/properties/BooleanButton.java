@@ -21,11 +21,27 @@ public class BooleanButton extends Button {
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     boolean on = getState();
     boolean hovered = isHovering(mouseX, mouseY);
-    int bg = on
-        ? (hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120))
-        : (hovered ? 0xFF444444 : 0xFF222222);
-    fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
-    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, on ? -1 : -5592406);
+    int topColor;
+    int bottomColor;
+    if (on) {
+      if (!hovered) {
+        topColor = Colors.getClientColorCustomAlpha(88);
+        bottomColor = Colors.getClientColorCustomAlpha(55);
+      } else {
+        topColor = Colors.getClientColorCustomAlpha(44);
+        bottomColor = Colors.getClientColorCustomAlpha(77);
+      }
+    } else if (!hovered) {
+      topColor = Colors.getDarkerClientColorCustomAlpha(77);
+      bottomColor = Colors.getDarkerClientColorCustomAlpha(55);
+    } else {
+      topColor = Colors.getDarkerClientColorCustomAlpha(33);
+      bottomColor = Colors.getDarkerClientColorCustomAlpha(66);
+    }
+    fillGradient(
+        (int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
+        topColor, bottomColor);
+    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 4.0f, on ? -1 : -5592406);
   }
 
   @Override

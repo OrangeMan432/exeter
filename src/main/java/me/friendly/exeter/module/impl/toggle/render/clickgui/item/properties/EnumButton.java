@@ -20,7 +20,7 @@ public class EnumButton extends Button {
     FontUtil.drawString(
         this.getLabel() + ": " + property.getFixedValue(),
         this.x + 2.0f,
-        this.y + 2.0f,
+        this.y + 4.0f,
         -1);
   }
 

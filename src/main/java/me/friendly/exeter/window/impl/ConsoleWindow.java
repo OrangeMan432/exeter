@@ -17,7 +17,6 @@ public class ConsoleWindow extends Window {
   private static boolean listenerRegistered = false;
 
   private final StringBuilder inputBuffer = new StringBuilder();
-  private int scrollOffset = 0;
   private boolean cursorVisible = true;
   private long lastBlinkTime = System.currentTimeMillis();
 
@@ -61,19 +60,61 @@ public class ConsoleWindow extends Window {
     }
 
     int maxLines = Math.max(1, contentHeight / LINE_HEIGHT);
-    int startIndex = Math.max(0, Math.min(scrollOffset, Math.max(0, staticEntries.size() - 1)));
-    int endIndex = Math.min(staticEntries.size(), startIndex + maxLines);
-
-    int lineY = contentY + 2;
-    for (int i = startIndex; i < endIndex; i++) {
+    List<String> wrapped = new ArrayList<String>();
+    List<Integer> colors = new ArrayList<Integer>();
+    int maxWidth = width - 6;
+    for (int i = 0; i < staticEntries.size(); i++) {
       String line = staticEntries.get(i).getMessage();
       int color = 0xFFAAAAAA;
       if (line.contains("[WARNING]")) color = 0xFFFFFF55;
       if (line.contains("[ERROR]")) color = 0xFFFF5555;
       if (line.startsWith(">")) color = 0xFF55FF55;
-      FontUtil.drawString(line, x + 3.0f, (float) lineY, color);
+      List<String> parts = wrapLine(line, maxWidth);
+      for (int j = 0; j < parts.size(); j++) {
+        wrapped.add(parts.get(j));
+        colors.add(Integer.valueOf(color));
+      }
+    }
+
+    int startIndex = Math.max(0, wrapped.size() - maxLines);
+    int endIndex = wrapped.size();
+
+    int lineY = contentY + 2;
+    for (int i = startIndex; i < endIndex; i++) {
+      FontUtil.drawString(wrapped.get(i), x + 3.0f, (float) lineY,
+          colors.get(i).intValue());
       lineY += LINE_HEIGHT;
     }
+  }
+
+  private List<String> wrapLine(String text, int maxWidth) {
+    List<String> lines = new ArrayList<String>();
+    String[] words = text.split(" ", -1);
+    StringBuilder current = new StringBuilder();
+    for (int i = 0; i < words.length; i++) {
+      String word = words[i];
+      String candidate =
+          current.length() == 0 ? word : current.toString() + " " + word;
+      if (FontUtil.getStringWidth(candidate) <= maxWidth || current.length() == 0) {
+        current.setLength(0);
+        current.append(candidate);
+      } else {
+        lines.add(current.toString());
+        current.setLength(0);
+        current.append(word);
+      }
+    }
+    String rest = current.toString();
+    while (!rest.isEmpty() && FontUtil.getStringWidth(rest) > maxWidth) {
+      int cut = rest.length() - 1;
+      while (cut > 1 && FontUtil.getStringWidth(rest.substring(0, cut)) > maxWidth) {
+        cut--;
+      }
+      lines.add(rest.substring(0, cut));
+      rest = rest.substring(cut);
+    }
+    lines.add(rest);
+    return lines;
   }
 
   private void addLine(String text, LogEntry.Level level) {
@@ -109,7 +150,6 @@ public class ConsoleWindow extends Window {
             }
           }
         }
-        scrollOffset = Math.max(0, staticEntries.size() - 1);
       }
       return true;
     }

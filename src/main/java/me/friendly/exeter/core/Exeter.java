@@ -2,6 +2,7 @@ package me.friendly.exeter.core;
 
 import java.io.File;
 import me.friendly.api.event.basic.BasicEventManager;
+import me.friendly.exeter.account.AccountManager;
 import me.friendly.exeter.command.CommandManager;
 import me.friendly.exeter.config.ConfigManager;
 import me.friendly.exeter.config.ExeterConfig;
@@ -24,6 +25,7 @@ public final class Exeter {
   private ModuleManager moduleManager;
   private CommandManager commandManager;
   private FriendManager friendManager;
+  private AccountManager accountManager;
   private ConfigManager configManager;
   private ExeterConfig exeterConfig;
   private File directory;
@@ -44,6 +46,7 @@ public final class Exeter {
     this.configManager = new ConfigManager();
     this.exeterConfig = new ExeterConfig();
     this.friendManager = new FriendManager();
+    this.accountManager = new AccountManager();
     this.keybindManager = new KeybindManager();
     this.commandManager = new CommandManager();
     this.moduleManager = new ModuleManager();
@@ -80,6 +83,10 @@ public final class Exeter {
 
   public FriendManager getFriendManager() {
     return this.friendManager;
+  }
+
+  public AccountManager getAccountManager() {
+    return this.accountManager;
   }
 
   public BasicEventManager getEventManager() {

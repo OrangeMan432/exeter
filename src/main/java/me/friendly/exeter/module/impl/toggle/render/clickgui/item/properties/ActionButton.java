@@ -18,7 +18,7 @@ public class ActionButton extends Button {
     boolean hovered = isHovering(mouseX, mouseY);
     fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height),
         hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120));
-    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, -1);
+    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 4.0f, -1);
   }
 
   @Override
