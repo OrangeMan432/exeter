@@ -73,26 +73,9 @@ public class ModuleButton extends Button {
     super.drawScreen(mouseX, mouseY, partialTicks);
 
     if (!topLevelItems.isEmpty()) {
-      this.gearAnimTimer++;
-      if (this.gearAnimTimer >= 4) {
-        this.gearAnimTimer = 0;
-        if (this.subOpen && this.gearAnimFrame > 0) {
-          this.gearAnimFrame--;
-        } else if (!this.subOpen && this.gearAnimFrame < 2) {
-          this.gearAnimFrame++;
-        }
-      }
-      String dots;
-      if (this.gearAnimFrame == 2) {
-        dots = "...";
-      } else if (this.gearAnimFrame == 1) {
-        dots = "..";
-      } else {
-        dots = ".";
-      }
-      int textW = FontUtil.getStringWidth(dots);
-      FontUtil.drawString(
-          dots, this.x + this.width - textW - 2.0f, this.y + 4.0f, 0xFFCCCCCC);
+      me.friendly.api.minecraft.render.GlShapes.drawRing(
+          this.x + this.width - 7.0f, this.y + 7.5f, 4.0f,
+          subOpen ? 0xFFFFFFFF : 0xFFCCCCCC);
     }
 
     if (this.subOpen) {

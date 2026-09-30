@@ -92,10 +92,18 @@ public class Panel extends DrawableHelper implements Labeled {
       this.angle += 3;
     }
 
+    if (!open) {
+      if (this.angle > 0) {
+        this.angle -= 3;
+      }
+    } else if (this.angle < 180) {
+      this.angle += 3;
+    }
+
     if (showArrow) {
-      String arrow = this.open ? "v" : "^";
-      FontUtil.drawString(
-          arrow, (float) (this.x + this.width - 10), (float) this.y + 1.5f, 0xFFCCCCCC);
+      float rotation = (180 - this.angle) * 0.5f;
+      me.friendly.api.minecraft.render.GlShapes.drawTriangle(
+          this.x + this.width - 8, this.y + 6, 3.5f, rotation, 0xFFCCCCCC);
     }
 
     if (this.open) {

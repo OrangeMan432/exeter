@@ -19,6 +19,11 @@ public final class ClickGuiScreen extends Screen {
 
   public ClickGuiScreen() {
     super();
+  }
+
+  @Override
+  public void init() {
+    super.init();
     reload();
   }
 
@@ -36,10 +41,6 @@ public final class ClickGuiScreen extends Screen {
     int totalGuiWidth = totalPanels * panelWidth;
     int x = (this.width / 2) - (totalGuiWidth / 2) - panelWidth;
     int y = 40;
-    if (this.width == 0) {
-      x = 4 - panelWidth;
-      y = 4;
-    }
     for (ModuleType type : ModuleType.values()) {
       Panel panel = new Panel(type.getLabel(), x += panelWidth, y, true);
       for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {

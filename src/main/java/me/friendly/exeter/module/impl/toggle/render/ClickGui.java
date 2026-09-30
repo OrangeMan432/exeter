@@ -29,7 +29,6 @@ public final class ClickGui extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     Minecraft mc = MinecraftAccessor.getMinecraft();
-    ClickGuiScreen.getInstance().reload();
     if (mc != null) {
       mc.setScreen(ClickGuiScreen.getInstance());
     }
