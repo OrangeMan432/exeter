@@ -41,6 +41,9 @@ public final class WindowScreen extends Screen {
   @Override
   public void render(int mouseX, int mouseY, float partialTicks) {
     super.render(mouseX, mouseY, partialTicks);
+    if (isBackgroundEnabled()) {
+      fillGradient(0, 0, this.width, this.height, 0x80000000, 0x40000000);
+    }
 
     for (Window window : windows) {
       if (!window.isHidden()) {

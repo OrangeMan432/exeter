@@ -57,6 +57,9 @@ public final class HudEditorScreen extends Screen {
   @Override
   public void render(int mouseX, int mouseY, float partialTicks) {
     super.render(mouseX, mouseY, partialTicks);
+    if (isBackgroundEnabled()) {
+      fillGradient(0, 0, this.width, this.height, 0x80000000, 0x40000000);
+    }
     ensurePanel();
     rebuildItems();
 
@@ -98,8 +101,12 @@ public final class HudEditorScreen extends Screen {
     }
   }
 
-  private me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule() {
-    if (Exeter.getInstance() == null) return null;
+  private boolean isBackgroundEnabled() {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = clickGuiModule();
+    return guiMod == null || guiMod.showBackground.getValue().booleanValue();
+  }
+
+  private me.friendly.exeter.module.impl.toggle.render.ClickGui clickGuiModule() {    if (Exeter.getInstance() == null) return null;
     Module module =
         Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
     if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui) {
