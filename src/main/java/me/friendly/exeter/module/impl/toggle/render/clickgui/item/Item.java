@@ -1,0 +1,63 @@
+package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
+
+import me.friendly.api.interfaces.Labeled;
+import net.minecraft.client.gui.DrawableHelper;
+
+public class Item extends DrawableHelper implements Labeled {
+  private final String label;
+  protected float x;
+  protected float y;
+  protected int width;
+  protected int height;
+
+  public Item(String label) {
+    this.label = label;
+  }
+
+  public void setLocation(float x, float y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public void drawScreen(int mouseX, int mouseY, float partialTicks) {}
+
+  public void mouseClicked(int mouseX, int mouseY, int mouseButton) {}
+
+  public void mouseReleased(int mouseX, int mouseY, int releaseButton) {}
+
+  @Override
+  public final String getLabel() {
+    return this.label;
+  }
+
+  public float getX() {
+    return this.x;
+  }
+
+  public float getY() {
+    return this.y;
+  }
+
+  public int getWidth() {
+    return this.width;
+  }
+
+  public int getHeight() {
+    return this.height;
+  }
+
+  public void setWidth(int width) {
+    this.width = width;
+  }
+
+  public void setHeight(int height) {
+    this.height = height;
+  }
+
+  protected boolean isHovering(int mouseX, int mouseY) {
+    return (float) mouseX >= this.x
+        && (float) mouseX <= this.x + (float) this.width
+        && (float) mouseY >= this.y
+        && (float) mouseY <= this.y + (float) this.height;
+  }
+}

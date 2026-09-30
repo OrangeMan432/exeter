@@ -7,7 +7,8 @@
   ],
   "client": [
     "MinecraftAccessor",
-    "MixinMinecraftTick"
+    "MixinMinecraftTick",
+    "MixinInGameHud"
   ],
   "injectors": {
     "defaultRequire": 1

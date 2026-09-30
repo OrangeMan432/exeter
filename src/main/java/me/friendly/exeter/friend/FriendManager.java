@@ -125,4 +125,12 @@ public final class FriendManager extends ListRegistry<Friend> {
   public void save() {
     config.save(new Object[0]);
   }
+
+  /**
+   * True when the given player may be targeted: anyone not friended. An override flag arrives
+   * with the friends window.
+   */
+  public boolean isTargetable(String aliasOrLabel) {
+    return !isFriend(aliasOrLabel);
+  }
 }
