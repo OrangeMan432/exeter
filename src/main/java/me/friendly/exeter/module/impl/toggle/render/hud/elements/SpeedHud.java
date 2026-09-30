@@ -15,7 +15,7 @@ public final class SpeedHud extends HudModule {
   private final Deque<Double> samples = new ArrayDeque<Double>();
 
   public SpeedHud() {
-    super("Speed", new String[] {"speedhud", "speed"}, Corner.BOTTOM_RIGHT);
+    super("SpeedHud", new String[] {"speedhud", "speed"}, Corner.BOTTOM_RIGHT);
     setDescription("Displays your current movement speed.");
     offerProperties(averagingTime);
   }
