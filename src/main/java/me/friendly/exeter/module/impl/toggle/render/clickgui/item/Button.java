@@ -2,7 +2,7 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui.item;
 
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.font.FontUtil;
-import me.friendly.exeter.util.ClientColors;
+import me.friendly.exeter.module.impl.active.render.Colors;
 
 public class Button extends Item implements Labeled {
   private boolean state;
@@ -29,18 +29,18 @@ public class Button extends Item implements Labeled {
     int bottomColor;
     if (this.getState()) {
       if (!this.isHovering(mouseX, mouseY)) {
-        topColor = ClientColors.getClientColorCustomAlpha(88);
-        bottomColor = ClientColors.getClientColorCustomAlpha(55);
+        topColor = Colors.getClientColorCustomAlpha(88);
+        bottomColor = Colors.getClientColorCustomAlpha(55);
       } else {
-        topColor = ClientColors.getClientColorCustomAlpha(44);
-        bottomColor = ClientColors.getClientColorCustomAlpha(77);
+        topColor = Colors.getClientColorCustomAlpha(44);
+        bottomColor = Colors.getClientColorCustomAlpha(77);
       }
     } else if (!this.isHovering(mouseX, mouseY)) {
-      topColor = ClientColors.getDarkerClientColorCustomAlpha(77);
-      bottomColor = ClientColors.getDarkerClientColorCustomAlpha(55);
+      topColor = Colors.getDarkerClientColorCustomAlpha(77);
+      bottomColor = Colors.getDarkerClientColorCustomAlpha(55);
     } else {
-      topColor = ClientColors.getDarkerClientColorCustomAlpha(33);
-      bottomColor = ClientColors.getDarkerClientColorCustomAlpha(66);
+      topColor = Colors.getDarkerClientColorCustomAlpha(33);
+      bottomColor = Colors.getDarkerClientColorCustomAlpha(66);
     }
 
     if (useGradient()) {

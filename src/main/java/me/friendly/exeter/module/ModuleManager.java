@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.module.impl.toggle.client.Debug;
+import me.friendly.exeter.module.impl.toggle.client.HUDEditor;
+import me.friendly.exeter.module.impl.toggle.client.Notifier;
+import me.friendly.exeter.module.impl.toggle.client.WindowsModule;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
-import me.friendly.exeter.module.impl.toggle.render.HUDEditor;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
@@ -26,8 +29,19 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new WatermarkHud());
     register(new CoordsHud());
     register(new ArrayListHud());
+    register(new Debug());
+    register(new Notifier());
+    register(new WindowsModule());
+    register(new HUDEditor());
     register(new Speed());
     register(new KillAura());
+
+    for (Module m : registry) {
+      if (m instanceof Debug) {
+        ((Debug) m).initModuleToggles(registry);
+        break;
+      }
+    }
 
     Exeter.getInstance()
         .getKeybindManager()

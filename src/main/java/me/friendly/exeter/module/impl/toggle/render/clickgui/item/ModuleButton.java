@@ -46,7 +46,7 @@ public class ModuleButton extends Button {
       return new NumberSlider((NumberProperty<?>) property);
     }
     if (property.getValue() instanceof Boolean) {
-      return new BooleanButton((Property<Boolean>) property);
+      return new BooleanButton((Property<Boolean>) property, module);
     }
     return null;
   }
@@ -112,11 +112,15 @@ public class ModuleButton extends Button {
 
   @Override
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {
-    super.mouseReleased(mouseX, mouseY, releaseButton);
-    if (this.subOpen) {
-      for (Item child : topLevelItems) {
-        child.mouseReleased(mouseX, mouseY, releaseButton);
-      }
+    for (Item child : topLevelItems) {
+      child.mouseReleased(mouseX, mouseY, releaseButton);
+    }
+  }
+
+  @Override
+  public void toggle() {
+    if (module instanceof me.friendly.exeter.module.ToggleableModule) {
+      ((me.friendly.exeter.module.ToggleableModule) module).toggle();
     }
   }
 

@@ -16,6 +16,7 @@ import me.friendly.exeter.config.Config;
 public final class FriendManager extends ListRegistry<Friend> {
 
   private final Config config;
+  private boolean overrideAttack = false;
 
   /**
    * Creates a new Config instance, and overrides load, and save methods, to setup the friend
@@ -48,11 +49,23 @@ public final class FriendManager extends ListRegistry<Friend> {
               e.printStackTrace();
               return;
             }
-            if (!(root instanceof JsonArray)) {
+            if (!(root instanceof JsonArray) && !(root instanceof JsonObject)) {
               return;
             }
-            FriendManager.this.getRegistry().clear();
-            JsonArray friends = (JsonArray) root;
+            JsonArray friends;
+            if (root instanceof JsonObject) {
+              JsonObject object = (JsonObject) root;
+              JsonElement flag = object.get("overrideAttack");
+              FriendManager.this.overrideAttack =
+                  flag != null && !flag.isJsonNull() && flag.getAsBoolean();
+              JsonElement list = object.get("friends");
+              if (!(list instanceof JsonArray)) {
+                return;
+              }
+              friends = (JsonArray) list;
+            } else {
+              friends = (JsonArray) root;
+            }
             for (int i = 0; i < friends.size(); i++) {
               JsonElement node = friends.get(i);
               if (!(node instanceof JsonObject)) {
@@ -89,8 +102,12 @@ public final class FriendManager extends ListRegistry<Friend> {
             try {
               FileWriter writer = new FileWriter(this.getFile());
               try {
+                JsonObject root = new JsonObject();
+                root.add("friends", friends);
+                root.addProperty(
+                    "overrideAttack", FriendManager.this.overrideAttack);
                 writer.write(
-                    new GsonBuilder().setPrettyPrinting().create().toJson(friends));
+                    new GsonBuilder().setPrettyPrinting().create().toJson(root));
               } finally {
                 writer.close();
               }
@@ -126,11 +143,21 @@ public final class FriendManager extends ListRegistry<Friend> {
     config.save(new Object[0]);
   }
 
+  /** When true, combat modules treat friends as valid targets. */
+  public boolean isOverride() {
+    return overrideAttack;
+  }
+
+  public void setOverride(boolean override) {
+    this.overrideAttack = override;
+    save();
+  }
+
   /**
-   * True when the given player may be targeted: anyone not friended. An override flag arrives
-   * with the friends window.
+   * True when the given player may be targeted: anyone when override is on, non-friends
+   * otherwise.
    */
   public boolean isTargetable(String aliasOrLabel) {
-    return !isFriend(aliasOrLabel);
+    return overrideAttack || !isFriend(aliasOrLabel);
   }
 }

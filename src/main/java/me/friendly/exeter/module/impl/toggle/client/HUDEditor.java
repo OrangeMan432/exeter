@@ -1,4 +1,4 @@
-package me.friendly.exeter.module.impl.toggle.render;
+package me.friendly.exeter.module.impl.toggle.client;
 
 import me.friendly.exeter.beta.mixin.MinecraftAccessor;
 import me.friendly.exeter.module.ModuleType;

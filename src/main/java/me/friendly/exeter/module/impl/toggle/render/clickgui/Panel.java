@@ -3,8 +3,8 @@ package me.friendly.exeter.module.impl.toggle.render.clickgui;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
-import me.friendly.exeter.util.ClientColors;
 import net.minecraft.client.gui.DrawableHelper;
 
 public class Panel extends DrawableHelper implements Labeled {
@@ -74,8 +74,8 @@ public class Panel extends DrawableHelper implements Labeled {
         (int) ((float) this.y - 1.5f),
         this.x + this.width,
         this.y + this.height - 6,
-        ClientColors.getClientColorCustomAlpha(77),
-        ClientColors.getClientColorCustomAlpha(77));
+        Colors.getClientColorCustomAlpha(77),
+        Colors.getClientColorCustomAlpha(77));
     fill(
         this.x,
         this.y + 12,
@@ -120,7 +120,7 @@ public class Panel extends DrawableHelper implements Labeled {
     if (guiMod == null || guiMod.showBorder.getValue().booleanValue()) {
       float top = (float) this.y - 1.5f;
       float bottom = (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1);
-      int accent = ClientColors.getClientColorCustomAlpha(77);
+      int accent = Colors.getClientColorCustomAlpha(77);
       fill(this.x - 1, (int) top - 1, this.x + this.width + 1, (int) top, accent);
       fill(this.x - 1, (int) bottom, this.x + this.width + 1, (int) bottom + 1, accent);
       fill(this.x - 1, (int) top, this.x, (int) bottom, accent);

@@ -1,15 +1,19 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.Module;
+import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.Property;
 
 public class BooleanButton extends Button {
   private final Property<Boolean> property;
+  private final Module module;
 
-  public BooleanButton(Property<Boolean> property) {
+  public BooleanButton(Property<Boolean> property, Module module) {
     super(property.getAliases()[0]);
     this.property = property;
+    this.module = module;
   }
 
   @Override
@@ -18,11 +22,7 @@ public class BooleanButton extends Button {
     boolean hovered = isHovering(mouseX, mouseY);
     int bg = on ? (hovered ? 0xFFAA3333 : 0xFF771111) : (hovered ? 0xFF444444 : 0xFF222222);
     fill((int) this.x, (int) this.y, (int) (this.x + this.width), (int) (this.y + this.height), bg);
-    FontUtil.drawString(
-        this.getLabel() + ": " + (on ? "ON" : "OFF"),
-        this.x + 2.0f,
-        this.y + 2.0f,
-        on ? -1 : -5592406);
+    FontUtil.drawString(this.getLabel(), this.x + 2.0f, this.y + 2.0f, on ? -1 : -5592406);
   }
 
   @Override
@@ -35,6 +35,9 @@ public class BooleanButton extends Button {
   @Override
   public void toggle() {
     this.property.setValue(Boolean.valueOf(!this.property.getValue().booleanValue()));
+    if (this.module instanceof Debug) {
+      ((Debug) this.module).syncSettings();
+    }
   }
 
   @Override
