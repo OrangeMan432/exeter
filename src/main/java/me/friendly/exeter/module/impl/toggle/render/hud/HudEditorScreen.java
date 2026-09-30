@@ -81,9 +81,6 @@ public final class HudEditorScreen extends Screen {
       drawVOutline(mx + mw, my - 1, my + mh, outline);
     }
 
-    String hint = "Drag elements to move. ESC to close.";
-    FontUtil.drawString(hint, 4.0f, (float) (this.height - 12), 0xFF888888);
-
     drawSnapGuides(this.width, this.height);
 
     hudPanel.drawScreen(mouseX, mouseY, partialTicks);
