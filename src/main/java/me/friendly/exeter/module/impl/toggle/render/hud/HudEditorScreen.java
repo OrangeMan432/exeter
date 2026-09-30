@@ -72,7 +72,6 @@ public final class HudEditorScreen extends Screen {
       int my = m.getY();
       int mw = Math.max(m.getWidth(), 20);
       int mh = Math.max(m.getHeight(), 10);
-      FontUtil.drawString(m.getLabel(), (float) (mx + 2), (float) (my + 2), 0xFFFFFFFF);
       boolean hovered =
           mouseX >= mx && mouseX <= mx + mw && mouseY >= my && mouseY <= my + mh;
       int outline = hovered ? 0xFFFFFFFF : 0x80FFFFFF;
@@ -148,6 +147,9 @@ public final class HudEditorScreen extends Screen {
     else if (bottom) bestCorner = HudModule.Corner.BOTTOM_LEFT;
     else bestCorner = HudModule.Corner.TOP_LEFT;
     m.setCorner(bestCorner);
+    // layoutByCorner skips manually positioned elements; clear the dragged
+    // position so the new corner stack actually applies.
+    m.resetPosition();
   }
 
   @Override
