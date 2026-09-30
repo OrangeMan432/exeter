@@ -63,11 +63,16 @@ public final class ArrayListHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    int y = getY();
-    for (Module module : modules()) {
+    List<Module> modules = modules();
+    int line = FontUtil.getFontHeight() + 1;
+    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
+    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+    int y = top ? getY() : getY() + getHeight() - FontUtil.getFontHeight();
+    for (int i = 0; i < modules.size(); i++) {
+      Module module = top ? modules.get(i) : modules.get(modules.size() - 1 - i);
       int w = FontUtil.getStringWidth(module.getLabel());
       int x = getX();
-      if (getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT) {
+      if (right) {
         x = getX() + getWidth() - w;
       }
       int color = 0xFFFFFFFF;
@@ -78,7 +83,7 @@ public final class ArrayListHud extends HudModule {
         }
       }
       FontUtil.drawString(module.getLabel(), (float) x, (float) y, color);
-      y += FontUtil.getFontHeight() + 1;
+      y += top ? line : -line;
     }
   }
 }
