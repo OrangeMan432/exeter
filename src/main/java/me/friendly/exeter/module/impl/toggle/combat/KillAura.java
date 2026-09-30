@@ -6,6 +6,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
@@ -25,6 +26,7 @@ public class KillAura extends ToggleableModule {
 
   private float preYaw;
   private float prePitch;
+  private float aimYaw;
   private boolean rotated;
 
   private final Listener<TickEvent> tickListener =
@@ -46,6 +48,24 @@ public class KillAura extends ToggleableModule {
     this.listeners.add(tickListener);
   }
 
+  public static KillAura get() {
+    if (Exeter.getInstance() == null) return null;
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("killaura");
+    return module instanceof KillAura ? (KillAura) module : null;
+  }
+
+  public static boolean isAiming() {
+    KillAura aura = get();
+    return aura != null && aura.isRunning() && aura.rotated;
+  }
+
+  /** Yaw delta (aim - real) in radians for strafing compensation. */
+  public static double aimDelta() {
+    KillAura aura = get();
+    if (aura == null) return 0.0;
+    return Math.toRadians(aura.aimYaw - aura.preYaw);
+  }
+
   private void onTick() {
     rotated = false;
     if (minecraft() == null || minecraft().player == null || minecraft().world == null) {
@@ -65,6 +85,7 @@ public class KillAura extends ToggleableModule {
     double horizontal = Math.sqrt(dx * dx + dz * dz);
     minecraft().player.yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
     minecraft().player.pitch = (float) -Math.toDegrees(Math.atan2(dy, horizontal));
+    aimYaw = minecraft().player.yaw;
     rotated = true;
     minecraft().interactionManager.attackEntity(minecraft().player, target);
   }
