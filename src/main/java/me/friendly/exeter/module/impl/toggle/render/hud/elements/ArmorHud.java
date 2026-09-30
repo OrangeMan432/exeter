@@ -45,9 +45,30 @@ public final class ArmorHud extends HudModule {
     return count;
   }
 
-  private String durabilityText(ItemStack stack) {
+  private static String durabilityText(ItemStack stack) {
     int remaining = stack.getMaxDamage() - stack.getDamage();
-    return remaining + "/" + stack.getMaxDamage();
+    float percentage = (float) remaining / stack.getMaxDamage() * 100.0F;
+    return String.format("%.1f%%", Float.valueOf(percentage));
+  }
+
+  private static int durabilityColor(ItemStack stack) {
+    int remaining = stack.getMaxDamage() - stack.getDamage();
+    float percentage = (float) remaining / stack.getMaxDamage() * 100.0F;
+    int bucket = Math.round(percentage / (100.0F / 6));
+    switch (bucket) {
+      case 0:
+        return 0xFFFF4444;
+      case 1:
+        return 0xFFCC6644;
+      case 2:
+        return 0xFFCC9944;
+      case 3:
+        return 0xFFCCCC44;
+      case 4:
+        return 0xFF44CC44;
+      default:
+        return 0xFF22AA22;
+    }
   }
 
   @Override
@@ -133,7 +154,8 @@ public final class ArmorHud extends HudModule {
       ItemStack stack = armor[i];
       if (stack == null || stack.count <= 0) continue;
       if (stack.isDamageable()) {
-        FontUtil.drawString(durabilityText(stack), (float) (x + 18), (float) (y + 5), 0xFFFFFFFF);
+        FontUtil.drawString(
+            durabilityText(stack), (float) (x + 18), (float) (y + 5), durabilityColor(stack));
       }
       y += 18;
     }
