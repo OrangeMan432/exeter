@@ -39,15 +39,16 @@ public final class FreeLook extends ToggleableModule {
   protected void onEnable() {
     super.onEnable();
     Minecraft mc = MinecraftAccessor.getMinecraft();
-    if (mc != null && mc.player != null) {
+    if (mc == null) return;
+    if (mc.player != null) {
       cameraYaw = mc.player.yaw;
       cameraPitch = mc.player.pitch;
     }
-    if (mc != null) {
-      prePerspective = mc.options.thirdPerson;
-      if (togglePerspective.getValue().booleanValue() && !prePerspective) {
-        mc.options.thirdPerson = true;
-      }
+    // mc.options is null during early config load; perspective applies on next enable.
+    if (mc.options == null) return;
+    prePerspective = mc.options.thirdPerson;
+    if (togglePerspective.getValue().booleanValue() && !prePerspective) {
+      mc.options.thirdPerson = true;
     }
   }
 
@@ -55,8 +56,8 @@ public final class FreeLook extends ToggleableModule {
   protected void onDisable() {
     super.onDisable();
     Minecraft mc = MinecraftAccessor.getMinecraft();
-    if (mc != null
-        && togglePerspective.getValue().booleanValue()
+    if (mc == null || mc.options == null) return;
+    if (togglePerspective.getValue().booleanValue()
         && mc.options.thirdPerson != prePerspective) {
       mc.options.thirdPerson = prePerspective;
     }
