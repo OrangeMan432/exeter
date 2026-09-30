@@ -1,0 +1,138 @@
+package me.friendly.exeter.module;
+
+import java.util.ArrayList;
+import java.util.List;
+import me.friendly.api.event.Listener;
+import me.friendly.api.interfaces.Toggleable;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.keybind.Keybind;
+import me.friendly.exeter.properties.Property;
+
+/** A Module implementation of Toggleable. */
+public class ToggleableModule extends Module implements Toggleable {
+
+  private boolean running;
+  private final int color;
+  private final ModuleType moduleType;
+  protected final List<Listener<?>> listeners = new ArrayList<Listener<?>>();
+
+  /**
+   * Creates a new Module. It's important that the given label does not contain any whitespaces and
+   * that no modules with the same name exist. A modules name is its unique identifier.
+   *
+   * @param label the label for the new module.
+   * @param aliases the aliases of the new module.
+   * @param drawn whether or not the module will be drawn in the module list.
+   * @param color the color the module will be in the module list.
+   * @param moduleType the ModuleType this module belongs to.
+   */
+  private ToggleableModule(
+      String label, String[] aliases, boolean drawn, int color, ModuleType moduleType) {
+    super(label, aliases);
+    this.color = color;
+    this.moduleType = moduleType;
+    this.properties.add(new Property<Boolean>(drawn, "Drawn"));
+    Exeter.getInstance()
+        .getKeybindManager()
+        .register(
+            new Keybind(label, 0) {
+              @Override
+              public void onPressed() {
+                ToggleableModule.this.toggle();
+              }
+            });
+  }
+
+  /**
+   * Creates a new Module. It's important that the given label does not contain any whitespaces and
+   * that no modules with the same name exist. A modules name is its unique identifier.
+   *
+   * @param label the label for the new module.
+   * @param aliases the aliases of the new module.
+   * @param color the color the module will be in the module list.
+   * @param moduleType the ModuleType this module belongs to.
+   */
+  protected ToggleableModule(String label, String[] aliases, int color, ModuleType moduleType) {
+    this(label, aliases, true, color, moduleType);
+  }
+
+  /**
+   * Creates a new Module. It's important that the given label does not contain any whitespaces and
+   * that no modules with the same name exist. A modules name is its unique identifier.
+   *
+   * @param label the label for the new module.
+   * @param aliases the aliases of the new module.
+   * @param moduleType the ModuleType this module belongs to.
+   */
+  protected ToggleableModule(String label, String[] aliases, ModuleType moduleType) {
+    this(label, aliases, false, -2366720, moduleType);
+  }
+
+  @Override
+  public boolean isRunning() {
+    return this.running;
+  }
+
+  @Override
+  public void setRunning(boolean running) {
+    this.running = running;
+    if (this.isRunning()) {
+      this.onEnable();
+    } else {
+      this.onDisable();
+    }
+  }
+
+  @Override
+  public void toggle() {
+    this.setRunning(!this.running);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean isDrawn() {
+    Property<Boolean> drawnProp = getDrawnProperty();
+    return drawnProp != null && drawnProp.getValue().booleanValue();
+  }
+
+  @SuppressWarnings("unchecked")
+  public void setDrawn(boolean drawn) {
+    Property<Boolean> drawnProp = getDrawnProperty();
+    if (drawnProp != null) {
+      drawnProp.setValue(Boolean.valueOf(drawn));
+    }
+  }
+
+  public void toggleDrawn() {
+    this.setDrawn(!this.isDrawn());
+  }
+
+  @SuppressWarnings("unchecked")
+  private Property<Boolean> getDrawnProperty() {
+    for (Property<?> p : this.properties) {
+      if (p.getAliases()[0].equals("Drawn")) {
+        return (Property<Boolean>) p;
+      }
+    }
+    return null;
+  }
+
+  public int getColor() {
+    return this.color;
+  }
+
+  public ModuleType getModuleType() {
+    return this.moduleType;
+  }
+
+  protected void onEnable() {
+    for (Listener<?> listener : this.listeners) {
+      Exeter.getInstance().getEventManager().register(listener);
+    }
+  }
+
+  protected void onDisable() {
+    for (Listener<?> listener : this.listeners) {
+      Exeter.getInstance().getEventManager().unregister(listener);
+    }
+  }
+}

@@ -4,9 +4,10 @@
   "package": "me.friendly.exeter.beta.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MinecraftAccessor"
   ],
   "client": [
+    "MinecraftAccessor",
+    "MixinMinecraftTick"
   ],
   "injectors": {
     "defaultRequire": 1
