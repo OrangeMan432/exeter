@@ -37,7 +37,7 @@ public class MixinVelocity {
     // field_364 is the entity id.
     if (packet.field_364 == mc.player.id) {
       DebugLogger.get()
-          .logFile(
+          .logSystem(
               "Velocity",
               "Canceled entity velocity "
                   + packet.field_365
