@@ -2,6 +2,7 @@ package me.friendly.exeter.module;
 
 import java.util.ArrayList;
 import me.friendly.api.registry.ListRegistry;
+import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.toggle.combat.KillAura;
 import me.friendly.exeter.module.impl.toggle.movement.Speed;
@@ -24,6 +25,19 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindManager()
         .getKeybindByLabel("ClickGui")
         .setKey(Keyboard.KEY_RSHIFT);
+
+    new Config("module_configurations") {
+
+      @Override
+      public void load(Object... source) {
+        Exeter.getInstance().getExeterConfig().loadAll();
+      }
+
+      @Override
+      public void save(Object... destination) {
+        Exeter.getInstance().getExeterConfig().saveAll();
+      }
+    };
   }
 
   public Module getModuleByAlias(String alias) {
