@@ -8,8 +8,11 @@ import me.friendly.exeter.module.ToggleableModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.ClientNetworkHandler;
 import net.minecraft.class_119;
-import net.minecraft.class_382;
+import net.minecraft.class_60;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -50,12 +53,7 @@ public class MixinVelocity {
     }
   }
 
-  private double savedVelX;
-  private double savedVelY;
-  private double savedVelZ;
-  private boolean savedBlast;
-
-  private boolean velocityRunning() {
+  private static boolean velocityRunning() {
     if (Exeter.getInstance() == null) {
       return false;
     }
@@ -64,39 +62,74 @@ public class MixinVelocity {
   }
 
   /**
-   * Explosions apply player knockback client-side from the explosion packet, so there is
-   * no velocity packet to cancel. Snapshot the player velocity around it instead;
-   * particles, sound and block effects still play.
+   * Local knockback (singleplayer mob attacks and anything else applied without packets).
+   * Cancels LivingEntity knockback for the player while Velocity is enabled.
    */
-  @Inject(method = "method_1458(Lnet/minecraft/class_382;)V", at = @At("HEAD"))
-  private void onExplosionStart(class_382 packet, CallbackInfo info) {
-    savedBlast = false;
-    if (!velocityRunning()) {
-      return;
+  @Mixin(LivingEntity.class)
+  public abstract static class LocalKnockback {
+
+    @Inject(
+        method = "method_925(Lnet/minecraft/entity/Entity;IDD)V",
+        at = @At("HEAD"),
+        cancellable = true)
+    private void onKnockback(Entity attacker, int damage, double x, double z, CallbackInfo info) {
+      if (!MixinVelocity.velocityRunning()) {
+        return;
+      }
+      Minecraft mc = MinecraftAccessor.getMinecraft();
+      if (mc == null || mc.player == null) {
+        return;
+      }
+      if ((Object) this == mc.player) {
+        DebugLogger.get().logSystem("Velocity", "Canceled local knockback");
+        info.cancel();
+      }
     }
-    Minecraft mc = MinecraftAccessor.getMinecraft();
-    if (mc == null || mc.player == null) {
-      return;
-    }
-    savedVelX = mc.player.velocityX;
-    savedVelY = mc.player.velocityY;
-    savedVelZ = mc.player.velocityZ;
-    savedBlast = true;
   }
 
-  @Inject(method = "method_1458(Lnet/minecraft/class_382;)V", at = @At("RETURN"))
-  private void onExplosionEnd(class_382 packet, CallbackInfo info) {
-    if (!savedBlast) {
-      return;
+  /**
+   * Explosions apply player knockback inside the shared explosion routine, reached from the
+   * explosion packet in multiplayer and directly in singleplayer. Snapshot the player
+   * velocity around it instead; particles, sound and block effects still play.
+   */
+  @Mixin(class_60.class)
+  public abstract static class ExplosionKnockback {
+
+    @Unique private double savedVelX;
+    @Unique private double savedVelY;
+    @Unique private double savedVelZ;
+    @Unique private boolean savedBlast;
+
+    @Inject(method = "method_1196(Z)V", at = @At("HEAD"))
+    private void onExplosionStart(boolean particles, CallbackInfo info) {
+      savedBlast = false;
+      if (!MixinVelocity.velocityRunning()) {
+        return;
+      }
+      Minecraft mc = MinecraftAccessor.getMinecraft();
+      if (mc == null || mc.player == null) {
+        return;
+      }
+      savedVelX = mc.player.velocityX;
+      savedVelY = mc.player.velocityY;
+      savedVelZ = mc.player.velocityZ;
+      savedBlast = true;
     }
-    savedBlast = false;
-    Minecraft mc = MinecraftAccessor.getMinecraft();
-    if (mc == null || mc.player == null) {
-      return;
+
+    @Inject(method = "method_1196(Z)V", at = @At("RETURN"))
+    private void onExplosionEnd(boolean particles, CallbackInfo info) {
+      if (!savedBlast) {
+        return;
+      }
+      savedBlast = false;
+      Minecraft mc = MinecraftAccessor.getMinecraft();
+      if (mc == null || mc.player == null) {
+        return;
+      }
+      mc.player.velocityX = savedVelX;
+      mc.player.velocityY = savedVelY;
+      mc.player.velocityZ = savedVelZ;
+      DebugLogger.get().logSystem("Velocity", "Nulled explosion knockback");
     }
-    mc.player.velocityX = savedVelX;
-    mc.player.velocityY = savedVelY;
-    mc.player.velocityZ = savedVelZ;
-    DebugLogger.get().logSystem("Velocity", "Nulled explosion knockback");
   }
 }

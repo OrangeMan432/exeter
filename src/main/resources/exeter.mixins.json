@@ -14,7 +14,9 @@
     "MixinChatSendSP",
     "MixinFreeLook",
     "MixinKillAuraStrafe",
-    "MixinVelocity"
+    "MixinVelocity",
+    "MixinVelocity$LocalKnockback",
+    "MixinVelocity$ExplosionKnockback"
   ],
   "injectors": {
     "defaultRequire": 1
