@@ -87,8 +87,8 @@ public class AccountWindow extends Window {
         contentY + 3,
         0xFFFFFFFF);
 
-    int listY = contentY + 16;
-    int listHeight = height - TITLE_HEIGHT - 16 - 30;
+    int listY = contentY + 12;
+    int listHeight = (y + height - 18) - (contentY + 12);
     int maxVisible = Math.max(1, listHeight / ENTRY_HEIGHT);
     scrollOffset = Math.min(scrollOffset, Math.max(0, accounts.size() - maxVisible));
 
@@ -124,7 +124,7 @@ public class AccountWindow extends Window {
           "Token, Session or Offline.", x + width / 2 - 80, listY + listHeight / 2 + 6, 0xFF888888);
     }
 
-    int barY = contentY + height - TITLE_HEIGHT - 28;
+    int barY = y + height - 18;
     RenderMethods.drawRect(x, barY, x + width, y + height, 0x77111111);
     drawButton(0, barY + 3, mouseX, mouseY, "Login");
     drawButton(1, barY + 3, mouseX, mouseY, "MS Auth");
@@ -132,7 +132,7 @@ public class AccountWindow extends Window {
     drawButton(3, barY + 3, mouseX, mouseY, "Session");
     drawButton(4, barY + 3, mouseX, mouseY, "Offline");
     drawButton(5, barY + 3, mouseX, mouseY, "Delete");
-    drawStatus(barY - 14);
+    drawStatus(barY - 12);
   }
 
   private void renderBrowser(int mouseX, int mouseY, int contentY) {
@@ -144,7 +144,7 @@ public class AccountWindow extends Window {
       FontUtil.drawString(
           current, x + width / 2 - FontUtil.getStringWidth(current) / 2, contentY + 62, 0xFFFFFFFF);
     }
-    int barY = contentY + height - TITLE_HEIGHT - 28;
+    int barY = y + height - 18;
     RenderMethods.drawRect(x, barY, x + width, y + height, 0x77111111);
     drawButton(6, barY + 3, mouseX, mouseY, "Open Link");
     drawButton(7, barY + 3, mouseX, mouseY, "Cancel");
@@ -172,7 +172,7 @@ public class AccountWindow extends Window {
       FontUtil.drawString(
           current, x + width / 2 - FontUtil.getStringWidth(current) / 2, fieldY + 34, 0xFFFFFFFF);
     }
-    int barY = contentY + height - TITLE_HEIGHT - 28;
+    int barY = y + height - 18;
     RenderMethods.drawRect(x, barY, x + width, y + height, 0x77111111);
     drawButton(8, barY + 3, mouseX, mouseY, "Confirm");
     drawButton(7, barY + 3, mouseX, mouseY, "Cancel");
@@ -276,11 +276,11 @@ public class AccountWindow extends Window {
       return false;
     }
     int contentY = y + TITLE_HEIGHT;
-    int barY = contentY + height - TITLE_HEIGHT - 28;
+    int barY = y + height - 18;
 
     if (mode == Mode.LIST) {
-      int listY = contentY + 16;
-      int listHeight = height - TITLE_HEIGHT - 16 - 30;
+      int listY = contentY + 12;
+      int listHeight = (y + height - 18) - (contentY + 12);
       int maxVisible = Math.max(1, listHeight / ENTRY_HEIGHT);
       List<Account> accounts = accounts();
 
@@ -379,7 +379,8 @@ public class AccountWindow extends Window {
     if (mode != Mode.LIST) {
       return false;
     }
-    int listHeight = height - TITLE_HEIGHT - 16 - 30;
+    int contentY = y + TITLE_HEIGHT;
+    int listHeight = (y + height - 18) - (contentY + 12);
     int maxVisible = Math.max(1, listHeight / ENTRY_HEIGHT);
     int maxScroll = Math.max(0, accounts().size() - maxVisible);
     if (scrollDelta < 0) {

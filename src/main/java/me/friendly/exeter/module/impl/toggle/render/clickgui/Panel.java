@@ -139,6 +139,17 @@ public abstract class Panel implements Labeled {
         y += item.getHeight() + 1;
       }
     }
+
+    me.friendly.exeter.module.impl.toggle.render.ClickGui borderMod = getClickGuiModule();
+    if (borderMod == null || borderMod.showBorder.getValue()) {
+      float top = (float) this.y - 1.5f;
+      float bottom = (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1);
+      int accent = Colors.getClientColorCustomAlpha(77);
+      RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, accent);
+      RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, accent);
+      RenderMethods.drawRect(this.x - 1, top, this.x, bottom, accent);
+      RenderMethods.drawRect(this.x + this.width, top, this.x + this.width + 1, bottom, accent);
+    }
   }
 
   public boolean matchesSearch(Item item) {
