@@ -100,6 +100,19 @@ public class MixinVelocity {
       savedVelY = mc.player.velocityY;
       savedVelZ = mc.player.velocityZ;
       savedBlast = true;
+      DebugLogger.get()
+          .logFile(
+              "Velocity",
+              String.format(
+                  "blast start pos=%.2f,%.2f,%.2f vel=%.3f,%.3f,%.3f hurt=%d hp=%d",
+                  mc.player.x,
+                  mc.player.y,
+                  mc.player.z,
+                  mc.player.velocityX,
+                  mc.player.velocityY,
+                  mc.player.velocityZ,
+                  mc.player.hurtTime,
+                  mc.player.health));
     }
 
     @Inject(method = "method_1196(Z)V", at = @At("RETURN"))
@@ -115,6 +128,19 @@ public class MixinVelocity {
       mc.player.velocityX = savedVelX;
       mc.player.velocityY = savedVelY;
       mc.player.velocityZ = savedVelZ;
+      DebugLogger.get()
+          .logFile(
+              "Velocity",
+              String.format(
+                  "blast end pos=%.2f,%.2f,%.2f vel=%.3f,%.3f,%.3f hurt=%d hp=%d",
+                  mc.player.x,
+                  mc.player.y,
+                  mc.player.z,
+                  mc.player.velocityX,
+                  mc.player.velocityY,
+                  mc.player.velocityZ,
+                  mc.player.hurtTime,
+                  mc.player.health));
       DebugLogger.get().logSystem("Velocity", "Nulled explosion knockback");
     }
   }
