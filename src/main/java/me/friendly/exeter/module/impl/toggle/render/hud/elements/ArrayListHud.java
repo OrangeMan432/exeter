@@ -7,6 +7,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.properties.EnumProperty;
 
 public final class ArrayListHud extends ListHudModule {
@@ -23,14 +24,21 @@ public final class ArrayListHud extends ListHudModule {
     CUB
   }
 
+  public enum ColorMode {
+    DEFAULT,
+    CLIENT
+  }
+
   public final EnumProperty<Organize> organize =
       new EnumProperty<>(Organize.LENGTH, "Organize", "o");
   public final EnumProperty<Look> look = new EnumProperty<>(Look.DEFAULT, "Casing", "c");
+  public final EnumProperty<ColorMode> colorMode =
+      new EnumProperty<>(ColorMode.DEFAULT, "Color", "color");
 
   public ArrayListHud() {
     super("ArrayList", new String[] {"arraylist", "array", "al"}, Corner.TOP_RIGHT);
     setDescription("Displays active modules in a list.");
-    this.offerProperties(organize, look);
+    this.offerProperties(organize, look, colorMode);
   }
 
   @Override
@@ -51,11 +59,12 @@ public final class ArrayListHud extends ListHudModule {
     modules.sort(cmp);
 
     List<TextEntry> entries = new ArrayList<>();
+    boolean syncClient = colorMode.getValue() == ColorMode.CLIENT;
     for (Module module : modules) {
       if (!(module instanceof ToggleableModule tm)) continue;
       if (!tm.isRunning() || !tm.isDrawn()) continue;
       if (tm.getModuleType() == ModuleType.HUD) continue;
-      int color = tm.getColor() | 0xFF000000;
+      int color = syncClient ? Colors.getHudMain() : tm.getColor() | 0xFF000000;
       entries.add(new TextEntry(getTag(tm.getLabel()), color));
     }
     return entries;
