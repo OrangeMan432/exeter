@@ -69,7 +69,7 @@ public class ColorPickerPopup implements ClickPopup {
   }
 
   private int hexX() {
-    return hueX();
+    return popupX + POPUP_W - 4 - hexW();
   }
 
   private int hexY() {
