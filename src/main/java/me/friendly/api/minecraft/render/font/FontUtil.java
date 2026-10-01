@@ -90,8 +90,8 @@ public class FontUtil {
     try {
       Identifier location =
           face == CustomFont.Face.LEXEND_DECA
-              ? Identifier.fromNamespaceAndPath("exeter", "fonts/LexendDeca.ttf")
-              : Identifier.fromNamespaceAndPath("exeter", "fonts/JetBrainsMono-Regular.ttf");
+              ? Identifier.fromNamespaceAndPath("exeter", "LexendDeca.ttf")
+              : Identifier.fromNamespaceAndPath("exeter", "JetBrainsMono-Regular.ttf");
       Font built = TtfFont.fromResource(location, TTF_SIZE, TTF_OVERSAMPLE);
       CACHE.put(face, built);
       return built;
