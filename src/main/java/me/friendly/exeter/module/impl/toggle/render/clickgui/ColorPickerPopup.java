@@ -163,7 +163,7 @@ public class ColorPickerPopup implements ClickPopup {
         hexX() + hexW(),
         hexY() + 14,
         hexFocused ? 0xFF444444 : (hexHover ? 0xFF3A3A3A : 0xFF2A2A2A));
-    String shown = hex.isEmpty() ? currentHex() : hex;
+    String shown = (!hexFocused && hex.isEmpty()) ? currentHex() : hex;
     FontUtil.drawString("#" + shown, hexX() + 4, hexY() + 3, 0xFFCCCCCC);
     if (hexFocused) {
       long now = System.currentTimeMillis();
