@@ -127,7 +127,12 @@ public final class Colors extends Module {
     if (hudColorMode.getValue() == HudColorMode.DEFAULT) {
       return 0xFFAAAAAA;
     }
-    return getDarkerClientColorCustomAlpha(255);
+    return new Color(
+            Color.HSBtoRGB(
+                hue.getValue(),
+                saturation.getValue() / 100f,
+                lightness.getValue() / 100f * 0.55f))
+        .getRGB();
   }
 
   public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {
