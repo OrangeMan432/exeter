@@ -17,6 +17,7 @@ import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
+import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
@@ -37,6 +38,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     this.registry = new ArrayList<Module>();
 
     register(new ClickGui());
+    register(new EntityEsp());
     register(new FreeLook());
     register(new HudRenderer());
     register(new WatermarkHud());
