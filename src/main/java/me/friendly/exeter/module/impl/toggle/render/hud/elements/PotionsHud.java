@@ -14,7 +14,8 @@ public final class PotionsHud extends ListHudModule {
 
   public enum ColorMode {
     DEFAULT,
-    CLIENT
+    CLIENT,
+    CLIENT_ACCENT
   }
 
   public final EnumProperty<ColorMode> colorMode =
@@ -34,11 +35,15 @@ public final class PotionsHud extends ListHudModule {
     return 100;
   }
 
+  private int themedColor(int fallback) {
+    if (colorMode.getValue() == ColorMode.CLIENT) return Colors.getHudMain();
+    if (colorMode.getValue() == ColorMode.CLIENT_ACCENT) return Colors.getHudAccent();
+    return fallback;
+  }
+
   @Override
   protected List<TextEntry> getDummyEntries() {
-    int color =
-        colorMode.getValue() == ColorMode.CLIENT ? Colors.getHudMain() : 0xFF7CAFC6;
-    return List.of(new TextEntry("Speed II (01:23)", color));
+    return List.of(new TextEntry("Speed II (01:23)", themedColor(0xFF7CAFC6)));
   }
 
   @Override
@@ -47,7 +52,6 @@ public final class PotionsHud extends ListHudModule {
     if (minecraft.player == null) return entries;
     Collection<MobEffectInstance> effects = minecraft.player.getActiveEffects();
     if (effects == null || effects.isEmpty()) return entries;
-    boolean syncClient = colorMode.getValue() == ColorMode.CLIENT;
     float tickRate = minecraft.level.tickRateManager().tickrate();
     for (MobEffectInstance effect : effects) {
       if (effect == null) continue;
@@ -56,8 +60,7 @@ public final class PotionsHud extends ListHudModule {
       String name = net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
       String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
       String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
-      int color = syncClient ? Colors.getHudMain() : 0xFF000000 | mobEffect.getColor();
-      entries.add(new TextEntry(text, color));
+      entries.add(new TextEntry(text, themedColor(0xFF000000 | mobEffect.getColor())));
     }
     return entries;
   }

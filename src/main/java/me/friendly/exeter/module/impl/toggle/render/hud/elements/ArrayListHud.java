@@ -26,7 +26,8 @@ public final class ArrayListHud extends ListHudModule {
 
   public enum ColorMode {
     DEFAULT,
-    CLIENT
+    CLIENT,
+    CLIENT_ACCENT
   }
 
   public final EnumProperty<Organize> organize =
@@ -59,13 +60,15 @@ public final class ArrayListHud extends ListHudModule {
     modules.sort(cmp);
 
     List<TextEntry> entries = new ArrayList<>();
-    boolean syncClient = colorMode.getValue() == ColorMode.CLIENT;
+    ColorMode color = colorMode.getValue();
     for (Module module : modules) {
       if (!(module instanceof ToggleableModule tm)) continue;
       if (!tm.isRunning() || !tm.isDrawn()) continue;
       if (tm.getModuleType() == ModuleType.HUD) continue;
-      int color = syncClient ? Colors.getHudMain() : tm.getColor() | 0xFF000000;
-      entries.add(new TextEntry(getTag(tm.getLabel()), color));
+      int entryColor = tm.getColor() | 0xFF000000;
+      if (color == ColorMode.CLIENT) entryColor = Colors.getHudMain();
+      else if (color == ColorMode.CLIENT_ACCENT) entryColor = Colors.getHudAccent();
+      entries.add(new TextEntry(getTag(tm.getLabel()), entryColor));
     }
     return entries;
   }
