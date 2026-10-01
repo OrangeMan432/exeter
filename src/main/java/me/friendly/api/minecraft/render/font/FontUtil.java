@@ -1,18 +1,139 @@
 package me.friendly.api.minecraft.render.font;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.exeter.module.impl.toggle.client.FontRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.resources.Identifier;
 
 public class FontUtil {
 
+  private static final float TTF_SIZE = 12.0F;
+  private static final float TTF_OVERSAMPLE = 4.0F;
+
+  private static final Map<String, String> SYSTEM_FILES = new HashMap<String, String>();
+
+  static {
+    SYSTEM_FILES.put("arial", "arial.ttf");
+    SYSTEM_FILES.put("arial black", "ariblk.ttf");
+    SYSTEM_FILES.put("comic sans ms", "comic.ttf");
+    SYSTEM_FILES.put("courier new", "cour.ttf");
+    SYSTEM_FILES.put("georgia", "georgia.ttf");
+    SYSTEM_FILES.put("impact", "impact.ttf");
+    SYSTEM_FILES.put("lucida console", "lucon.ttf");
+    SYSTEM_FILES.put("tahoma", "tahoma.ttf");
+    SYSTEM_FILES.put("times new roman", "times.ttf");
+    SYSTEM_FILES.put("trebuchet ms", "trebuc.ttf");
+    SYSTEM_FILES.put("verdana", "verdana.ttf");
+    SYSTEM_FILES.put("calibri", "calibri.ttf");
+    SYSTEM_FILES.put("cambria", "cambria.ttc");
+    SYSTEM_FILES.put("consolas", "consola.ttf");
+    SYSTEM_FILES.put("segoe ui", "segoeui.ttf");
+  }
+
+  private static final Map<FontRenderer.Face, Font> CACHE = new HashMap<FontRenderer.Face, Font>();
+  private static Font systemFont;
+  private static String systemKey;
+
   public static void drawString(String text, float x, float y, int color) {
     if (RenderMethods.guiGraphics != null) {
-      RenderMethods.guiGraphics.text(
-          Minecraft.getInstance().font, text, (int) x, (int) y, color, true);
+      Font font = activeFont();
+      if (font != null) {
+        RenderMethods.guiGraphics.text(font, text, (int) x, (int) y, color, true);
+      } else {
+        RenderMethods.guiGraphics.text(
+            Minecraft.getInstance().font, text, (int) x, (int) y, color, true);
+      }
     }
   }
 
   public static int getStringWidth(String text) {
+    Font font = activeFont();
+    if (font != null) {
+      return font.width(text);
+    }
     return Minecraft.getInstance().font.width(text);
+  }
+
+  private static Font activeFont() {
+    FontRenderer module = FontRenderer.get();
+    if (module == null || !module.isRunning()) {
+      return null;
+    }
+    FontRenderer.Face face;
+    try {
+      face = module.face.getValue();
+    } catch (Exception e) {
+      return null;
+    }
+    if (face == null || face == FontRenderer.Face.VANILLA) {
+      return null;
+    }
+    if (face == FontRenderer.Face.SYSTEM) {
+      return systemFont();
+    }
+    Font cached = CACHE.get(face);
+    if (cached != null) {
+      return cached;
+    }
+    try {
+      Identifier location =
+          face == FontRenderer.Face.LEXEND_DECA
+              ? Identifier.fromNamespaceAndPath("exeter", "fonts/LexendDeca.ttf")
+              : Identifier.fromNamespaceAndPath("exeter", "fonts/JetBrainsMono-Regular.ttf");
+      Font built = TtfFont.fromResource(location, TTF_SIZE, TTF_OVERSAMPLE);
+      CACHE.put(face, built);
+      return built;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private static Font systemFont() {
+    FontRenderer module = FontRenderer.get();
+    if (module == null) {
+      return null;
+    }
+    String key = module.family.getValue();
+    if (key == null || key.isEmpty()) {
+      return null;
+    }
+    if (systemFont != null && key.equalsIgnoreCase(systemKey)) {
+      return systemFont;
+    }
+    File file = resolveSystemFont(key);
+    if (file == null || !file.isFile()) {
+      return null;
+    }
+    try {
+      Font built = TtfFont.fromFile(file, TTF_SIZE, TTF_OVERSAMPLE);
+      systemFont = built;
+      systemKey = key;
+      return built;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private static File resolveSystemFont(String key) {
+    File direct = new File(key);
+    if (direct.isFile()) {
+      return direct;
+    }
+    String mapped = SYSTEM_FILES.get(key.toLowerCase());
+    if (mapped != null) {
+      String windir = System.getenv("WINDIR");
+      if (windir == null || windir.isEmpty()) {
+        windir = "C:\\Windows";
+      }
+      File candidate = new File(windir + "\\Fonts\\" + mapped);
+      if (candidate.isFile()) {
+        return candidate;
+      }
+    }
+    return null;
   }
 }
