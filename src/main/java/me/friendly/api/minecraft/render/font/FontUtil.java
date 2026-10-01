@@ -134,12 +134,13 @@ public class FontUtil {
       if (glyph == null) {
         continue;
       }
+      float qx = cx - glyph.bearing * scale;
       int w = Math.max(1, Math.round(glyph.width * scale));
       int h = Math.max(1, Math.round(atlas.cellHeight * scale));
       RenderMethods.guiGraphics.blit(
           RenderPipelines.GUI_TEXTURED,
           atlas.textureId,
-          Math.round(cx),
+          Math.round(qx),
           Math.round(y + dy),
           glyph.u,
           glyph.v,

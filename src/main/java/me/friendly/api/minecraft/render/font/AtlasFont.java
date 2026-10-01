@@ -41,12 +41,14 @@ public final class AtlasFont {
     public final int v;
     public final int width;
     public final int advance;
+    public final int bearing;
 
-    Glyph(int u, int v, int width, int advance) {
+    Glyph(int u, int v, int width, int advance, int bearing) {
       this.u = u;
       this.v = v;
       this.width = width;
       this.advance = advance;
+      this.bearing = bearing;
     }
   }
 
@@ -98,6 +100,7 @@ public final class AtlasFont {
     int ascent = metrics.getAscent();
 
     AtlasFont atlas = new AtlasFont(textureId, ascent, metrics.charWidth(' '));
+    java.awt.font.FontRenderContext frc = g.getFontRenderContext();
     for (int i = 0; i < GLYPH_COUNT; i++) {
       int codepoint = FIRST_CODEPOINT + i;
       int col = i % COLS;
@@ -106,12 +109,20 @@ public final class AtlasFont {
       int cellY = row * CELL;
       String s = String.valueOf((char) codepoint);
       int advance = metrics.charWidth(codepoint);
+      int bearing = 0;
       if (codepoint != 32) {
+        try {
+          java.awt.font.GlyphVector gv = sized.createGlyphVector(frc, s);
+          double inkLeft = gv.getGlyphVisualBounds(0).getBounds2D().getMinX();
+          bearing = (int) Math.round(Math.max(0.0, Math.min(inkLeft, CELL / 2.0)));
+        } catch (Exception ignored) {
+        }
         g.drawString(s, cellX, cellY + ascent);
       }
       atlas.glyphs.put(
           Integer.valueOf(codepoint),
-          new Glyph(cellX, cellY, Math.min(Math.max(advance, 1), CELL), Math.max(advance, 1)));
+          new Glyph(
+              cellX, cellY, Math.min(Math.max(advance, 1), CELL), Math.max(advance, 1), bearing));
     }
     g.dispose();
 
