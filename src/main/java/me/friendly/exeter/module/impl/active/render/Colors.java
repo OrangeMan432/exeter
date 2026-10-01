@@ -42,7 +42,8 @@ public final class Colors extends Module {
           "Brighgrtnewss");
   private static final Property<Boolean> hudRainbow =
       new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
-  private static final NumberProperty<Float> rainbowSpeed =      new NumberProperty<>(
+  private static final NumberProperty<Float> rainbowSpeed =
+      new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
   private static final NumberProperty<Float> rainbowSaturation =
       new NumberProperty<>(0.5f, 0f, 1f, "Rainbow Saturation", "RainbowSaturation");
@@ -129,9 +130,7 @@ public final class Colors extends Module {
     }
     return new Color(
             Color.HSBtoRGB(
-                hue.getValue(),
-                saturation.getValue() / 100f,
-                lightness.getValue() / 100f * 0.55f))
+                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f * 0.55f))
         .getRGB();
   }
 
