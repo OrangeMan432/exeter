@@ -276,6 +276,8 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    System.err.println(
+        "[Picker] key code=" + keyCode + " scan=" + scanCode + " focused=" + hexFocused);
     if (keyCode == InputConstants.KEY_ESCAPE) {
       ClickGui.getClickGui().closePopup();
       return true;
