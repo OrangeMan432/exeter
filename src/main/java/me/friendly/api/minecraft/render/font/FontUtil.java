@@ -34,10 +34,73 @@ public class FontUtil {
     SYSTEM_FILES.put("segoe ui", "segoeui.ttf");
   }
 
-  private static final Map<String, Font> CACHE = new HashMap<String, Font>();
-  private static Font systemFont;
-  private static String systemKey;
+  private static final Map<String, TtfFont.Built> CACHE = new HashMap<String, TtfFont.Built>();
+  private static Font lastServed;
+  private static String lastServedKey;
   private static final java.util.Set<String> LOGGED = new java.util.HashSet<String>();
+
+  // Rebuilds are throttled: dragging the size slider must settle before a new
+  // GPU atlas is stitched, and replaced sets are closed to free their texture.
+  private static final long REBUILD_SETTLE_MS = 750L;
+  private static String pendingKey;
+  private static long pendingSince;
+
+  private interface Builder {
+    TtfFont.Built build() throws Exception;
+  }
+
+  private static String keyPrefix(String key) {
+    int end = key.length();
+    while (end > 0 && Character.isDigit(key.charAt(end - 1))) {
+      end--;
+    }
+    return key.substring(0, end);
+  }
+
+  private static Font staleFor(String key) {
+    if (lastServed != null
+        && lastServedKey != null
+        && keyPrefix(key).equals(keyPrefix(lastServedKey))) {
+      return lastServed;
+    }
+    return null;
+  }
+
+  private static Font request(final String key, Builder builder, String logKey) {
+    long now = System.currentTimeMillis();
+    TtfFont.Built hit = CACHE.get(key);
+    if (hit != null) {
+      pendingKey = null;
+      lastServed = hit.font;
+      lastServedKey = key;
+      return hit.font;
+    }
+    if (!key.equals(pendingKey)) {
+      pendingKey = key;
+      pendingSince = now;
+      return staleFor(key);
+    }
+    if (now - pendingSince < REBUILD_SETTLE_MS) {
+      return staleFor(key);
+    }
+    pendingKey = null;
+    try {
+      TtfFont.Built built = builder.build();
+      TtfFont.Built previous = CACHE.put(key, built);
+      if (previous != null) {
+        try {
+          previous.set.close();
+        } catch (Exception ignored) {
+        }
+      }
+      lastServed = built.font;
+      lastServedKey = key;
+      return built.font;
+    } catch (Exception e) {
+      logOnce(logKey, e);
+      return staleFor(key);
+    }
+  }
 
   private static void logOnce(String key, Exception e) {
     if (LOGGED.add(key)) {
@@ -98,22 +161,20 @@ public class FontUtil {
     if (face == CustomFont.Face.SYSTEM) {
       return systemFont();
     }
-    Font cached = CACHE.get(face.name() + fontSize());
-    if (cached != null) {
-      return cached;
-    }
-    try {
-      Identifier location =
-          face == CustomFont.Face.LEXEND_DECA
-              ? Identifier.fromNamespaceAndPath("exeter", "lexenddeca.ttf")
-              : Identifier.fromNamespaceAndPath("exeter", "jetbrainsmono-regular.ttf");
-      Font built = TtfFont.fromResource(location, (float) fontSize(), TTF_OVERSAMPLE);
-      CACHE.put(face.name() + fontSize(), built);
-      return built;
-    } catch (Exception e) {
-      logOnce(face.name(), e);
-      return null;
-    }
+    final Identifier location =
+        face == CustomFont.Face.LEXEND_DECA
+            ? Identifier.fromNamespaceAndPath("exeter", "lexenddeca.ttf")
+            : Identifier.fromNamespaceAndPath("exeter", "jetbrainsmono-regular.ttf");
+    final float size = (float) fontSize();
+    return request(
+        face.name() + fontSize(),
+        new Builder() {
+          @Override
+          public TtfFont.Built build() throws Exception {
+            return TtfFont.fromResource(location, size, TTF_OVERSAMPLE);
+          }
+        },
+        face.name());
   }
 
   private static Font systemFont() {
@@ -125,24 +186,21 @@ public class FontUtil {
     if (key == null || key.isEmpty()) {
       return null;
     }
-    String cacheKey = key.toLowerCase() + fontSize();
-    if (systemFont != null && cacheKey.equals(systemKey)) {
-      return systemFont;
-    }
-    File file = resolveSystemFont(key);
+    final File file = resolveSystemFont(key);
     if (file == null || !file.isFile()) {
       logOnce("system-missing-" + key, new IllegalStateException("no file"));
       return null;
     }
-    try {
-      Font built = TtfFont.fromFile(file, (float) fontSize(), TTF_OVERSAMPLE);
-      systemFont = built;
-      systemKey = cacheKey;
-      return built;
-    } catch (Exception e) {
-      logOnce("system-" + key, e);
-      return null;
-    }
+    final float size = (float) fontSize();
+    return request(
+        key.toLowerCase() + fontSize(),
+        new Builder() {
+          @Override
+          public TtfFont.Built build() throws Exception {
+            return TtfFont.fromFile(file, size, TTF_OVERSAMPLE);
+          }
+        },
+        "system-" + key);
   }
 
   private static File resolveSystemFont(String key) {

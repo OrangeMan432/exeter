@@ -30,9 +30,20 @@ import org.lwjgl.util.freetype.FreeType;
  * bytes with the same provider construction vanilla uses.
  */
 public final class TtfFont {
+
+  public static final class Built {
+    public final FontSet set;
+    public final Font font;
+
+    Built(FontSet set, Font font) {
+      this.set = set;
+      this.font = font;
+    }
+  }
+
   private TtfFont() {}
 
-  public static Font fromResource(Identifier location, float size, float oversample) {
+  public static Built fromResource(Identifier location, float size, float oversample) {
     TrueTypeGlyphProviderDefinition definition =
         new TrueTypeGlyphProviderDefinition(
             location,
@@ -55,7 +66,7 @@ public final class TtfFont {
     return build(provider, location);
   }
 
-  public static Font fromFile(java.io.File file, float size, float oversample) {
+  public static Built fromFile(java.io.File file, float size, float oversample) {
     ByteBuffer buffer;
     try (InputStream in = new FileInputStream(file)) {
       buffer = TextureUtil.readResource(in);
@@ -85,7 +96,7 @@ public final class TtfFont {
     return build(provider, Identifier.fromNamespaceAndPath("exeter", "fonts/system"));
   }
 
-  private static Font build(GlyphProvider provider, Identifier stitchId) {
+  private static Built build(GlyphProvider provider, Identifier stitchId) {
     Minecraft mc = Minecraft.getInstance();
     TextureManager textures = mc.getTextureManager();
     FontSet set = new FontSet(new GlyphStitcher(textures, stitchId));
@@ -94,17 +105,19 @@ public final class TtfFont {
             new GlyphProvider.Conditional(
                 provider, net.minecraft.client.gui.font.FontOption.Filter.ALWAYS_PASS)),
         Set.<FontOption>of());
-    return new Font(
-        new Font.Provider() {
-          @Override
-          public GlyphSource glyphs(FontDescription description) {
-            return set.source(false);
-          }
+    Font font =
+        new Font(
+            new Font.Provider() {
+              @Override
+              public GlyphSource glyphs(FontDescription description) {
+                return set.source(false);
+              }
 
-          @Override
-          public EffectGlyph effect() {
-            return set.whiteGlyph();
-          }
-        });
+              @Override
+              public EffectGlyph effect() {
+                return set.whiteGlyph();
+              }
+            });
+    return new Built(set, font);
   }
 }
