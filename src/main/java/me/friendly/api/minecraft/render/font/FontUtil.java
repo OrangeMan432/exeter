@@ -1,17 +1,17 @@
 package me.friendly.api.minecraft.render.font;
 
+import java.awt.Font;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 public class FontUtil {
 
-  private static final float TTF_OVERSAMPLE = 4.0F;
   private static final int DEFAULT_SIZE = 9;
 
   private static final Map<String, String> SYSTEM_FILES = new HashMap<String, String>();
@@ -34,132 +34,128 @@ public class FontUtil {
     SYSTEM_FILES.put("segoe ui", "segoeui.ttf");
   }
 
-  private static final Map<String, TtfFont.Built> CACHE = new HashMap<String, TtfFont.Built>();
-  private static Font lastServed;
+  private static final int[] SECTION_COLORS = {
+    0xFF000000,
+    0xFF0000AA,
+    0xFF00AA00,
+    0xFF00AAAA,
+    0xFFAA0000,
+    0xFFAA00AA,
+    0xFFFFAA00,
+    0xFFAAAAAA,
+    0xFF555555,
+    0xFF5555FF,
+    0xFF55FF55,
+    0xFF55FFFF,
+    0xFFFF5555,
+    0xFFFF55FF,
+    0xFFFFFF55,
+    0xFFFFFFFF
+  };
+
+  private static final Map<String, AtlasFont> CACHE = new HashMap<String, AtlasFont>();
+  private static AtlasFont lastServed;
   private static String lastServedKey;
-  private static boolean reloadHooked;
   private static final java.util.Set<String> LOGGED = new java.util.HashSet<String>();
 
-  // Rebuilds are throttled: dragging the size slider must settle before a new
-  // GPU atlas is stitched, and replaced sets are closed to free their texture.
+  // Rebuilds are throttled: the slider must settle before a new atlas bakes.
+  // Replaced atlases are intentionally never closed (bounded leak, no use-after-free).
   private static final long REBUILD_SETTLE_MS = 750L;
   private static String pendingKey;
   private static long pendingSince;
 
-  private interface Builder {
-    TtfFont.Built build() throws Exception;
-  }
-
-  private static void ensureReloadHook() {
-    if (reloadHooked) {
-      return;
-    }
-    reloadHooked = true;
-    try {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc == null) {
-        return;
-      }
-      net.minecraft.server.packs.resources.ResourceManager resources = mc.getResourceManager();
-      if (resources
-          instanceof net.minecraft.server.packs.resources.ReloadableResourceManager) {
-        net.minecraft.server.packs.resources.ReloadableResourceManager reloadable =
-            (net.minecraft.server.packs.resources.ReloadableResourceManager) resources;
-        reloadable.registerReloadListener(
-            new net.minecraft.server.packs.resources.PreparableReloadListener() {
-              @Override
-              public java.util.concurrent.CompletableFuture<Void> reload(
-                  net.minecraft.server.packs.resources.PreparableReloadListener.SharedState state,
-                  java.util.concurrent.Executor background,
-                  net.minecraft.server.packs.resources.PreparableReloadListener
-                          .PreparationBarrier barrier,
-                  java.util.concurrent.Executor game) {
-                CACHE.clear();
-                lastServed = null;
-                lastServedKey = null;
-                pendingKey = null;
-                return java.util.concurrent.CompletableFuture.completedFuture(null);
-              }
-            });
-      }
-    } catch (Exception e) {
-      logOnce("reload-hook", e);
-    }
-  }
-
-  private static String keyPrefix(String key) {
-    int end = key.length();
-    while (end > 0 && Character.isDigit(key.charAt(end - 1))) {
-      end--;
-    }
-    return key.substring(0, end);
-  }
-
-  private static Font staleFor(String key) {
-    if (lastServed != null
-        && lastServedKey != null
-        && keyPrefix(key).equals(keyPrefix(lastServedKey))) {
-      return lastServed;
-    }
-    return null;
-  }
-
-  private static Font request(final String key, Builder builder, String logKey) {
-    long now = System.currentTimeMillis();
-    TtfFont.Built hit = CACHE.get(key);
-    if (hit != null) {
-      pendingKey = null;
-      lastServed = hit.font;
-      lastServedKey = key;
-      return hit.font;
-    }
-    if (!key.equals(pendingKey)) {
-      pendingKey = key;
-      pendingSince = now;
-      return staleFor(key);
-    }
-    if (now - pendingSince < REBUILD_SETTLE_MS) {
-      return staleFor(key);
-    }
-    pendingKey = null;
-    try {
-      ensureReloadHook();
-      TtfFont.Built built = builder.build();
-      // Never closed: the render thread may still reference the previous atlas.
-      CACHE.put(key, built);
-      lastServed = built.font;
-      lastServedKey = key;
-      return built.font;
-    } catch (Exception e) {
-      logOnce(logKey, e);
-      return staleFor(key);
-    }
-  }
-
   private static void logOnce(String key, Exception e) {
     if (LOGGED.add(key)) {
-      System.err.println("[Exeter] TTF font failed (" + key + "): " + e);
+      System.err.println("[Exeter] Atlas font failed (" + key + "): " + e);
     }
   }
 
   public static void drawString(String text, float x, float y, int color) {
-    if (RenderMethods.guiGraphics != null) {
-      Font font = activeFont();
-      if (font != null) {
-        RenderMethods.guiGraphics.text(font, text, (int) x, (int) y, color, true);
-      } else {
-        RenderMethods.guiGraphics.text(
-            Minecraft.getInstance().font, text, (int) x, (int) y, color, true);
-      }
+    if (RenderMethods.guiGraphics == null || text == null) {
+      return;
     }
+    AtlasFont atlas = activeFont();
+    if (atlas == null) {
+      RenderMethods.guiGraphics.text(
+          Minecraft.getInstance().font, text, (int) x, (int) y, color, true);
+      return;
+    }
+    float scale = (float) fontSize() / (float) AtlasFont.BAKE_HEIGHT;
+    int shadow = shadowColor(color);
+    renderRun(text, x + 1.0F, y + 1.0F, shadow, scale, atlas);
+    renderRun(text, x, y, color, scale, atlas);
   }
 
   public static int getStringWidth(String text) {
-    Font font = activeFont();
-    if (font != null) {
-      return font.width(text);
+    AtlasFont atlas = activeFont();
+    if (atlas == null || text == null) {
+      return Minecraft.getInstance().font.width(text);
     }
-    return Minecraft.getInstance().font.width(text);
+    float scale = (float) fontSize() / (float) AtlasFont.BAKE_HEIGHT;
+    float width = 0.0F;
+    for (int i = 0; i < text.length(); i++) {
+      char c = text.charAt(i);
+      if (c == '\u00a7' && i + 1 < text.length()) {
+        i++;
+        continue;
+      }
+      width += atlas.advance(c) * scale;
+    }
+    return Math.round(width);
+  }
+
+  private static int shadowColor(int color) {
+    int alpha = color & 0xFF000000;
+    int rgb = (color & 0x00FCFCFC) >> 2;
+    return alpha | rgb;
+  }
+
+  private static void renderRun(
+      String text, float x, float y, int color, float scale, AtlasFont atlas) {
+    float cx = x;
+    int current = color;
+    for (int i = 0; i < text.length(); i++) {
+      char c = text.charAt(i);
+      if (c == '\u00a7' && i + 1 < text.length()) {
+        char code = Character.toLowerCase(text.charAt(i + 1));
+        i++;
+        if (code == 'r') {
+          current = color;
+        } else if (sectionIndex(code) != -1) {
+          current = applyAlpha(SECTION_COLORS[sectionIndex(code)], color);
+        }
+        continue;
+      }
+      AtlasFont.Glyph glyph = atlas.glyph(c);
+      if (glyph == null) {
+        continue;
+      }
+      int w = Math.max(1, Math.round(glyph.width * scale));
+      int h = Math.max(1, Math.round(atlas.cellHeight * scale));
+      RenderMethods.guiGraphics.blit(
+          RenderPipelines.GUI_TEXTURED,
+          atlas.textureId,
+          Math.round(cx),
+          Math.round(y),
+          glyph.u,
+          glyph.v,
+          w,
+          h,
+          1024,
+          1024,
+          current);
+      cx += glyph.advance * scale;
+    }
+  }
+
+  private static int sectionIndex(char code) {
+    if (code >= '0' && code <= '9') return code - '0';
+    if (code >= 'a' && code <= 'f') return 10 + (code - 'a');
+    return -1;
+  }
+
+  private static int applyAlpha(int section, int base) {
+    return (base & 0xFF000000) | (section & 0x00FFFFFF);
   }
 
   private static int fontSize() {
@@ -177,7 +173,97 @@ public class FontUtil {
     }
   }
 
-  private static Font activeFont() {
+  private static Font activeAwt(String kind, String family) {
+    try {
+      if ("lexend".equals(kind)) {
+        return AtlasFont.awtFromResource("/assets/exeter/font/lexenddeca.ttf");
+      }
+      if ("jetbrains".equals(kind)) {
+        return AtlasFont.awtFromResource("/assets/exeter/font/jetbrainsmono-regular.ttf");
+      }
+      if ("system".equals(kind)) {
+        if (family == null || family.isEmpty()) {
+          return null;
+        }
+        File direct = new File(family);
+        if (direct.isFile()) {
+          return AtlasFont.awtFromFile(direct);
+        }
+        String mapped = SYSTEM_FILES.get(family.toLowerCase());
+        if (mapped != null) {
+          String windir = System.getenv("WINDIR");
+          if (windir == null || windir.isEmpty()) {
+            windir = "C:\\Windows";
+          }
+          File candidate = new File(windir + "\\Fonts\\" + mapped);
+          if (candidate.isFile()) {
+            return AtlasFont.awtFromFile(candidate);
+          }
+          return AtlasFont.awtSystem(family);
+        }
+        return AtlasFont.awtSystem(family);
+      }
+    } catch (Exception e) {
+      logOnce("awt-" + kind, e);
+    }
+    return null;
+  }
+
+  private static AtlasFont request(String key, String kind, String family) {
+    long now = System.currentTimeMillis();
+    AtlasFont hit = CACHE.get(key);
+    if (hit != null) {
+      pendingKey = null;
+      lastServed = hit;
+      lastServedKey = key;
+      return hit;
+    }
+    if (!key.equals(pendingKey)) {
+      pendingKey = key;
+      pendingSince = now;
+      return staleFor(key);
+    }
+    if (now - pendingSince < REBUILD_SETTLE_MS) {
+      return staleFor(key);
+    }
+    pendingKey = null;
+    try {
+      Font awt = activeAwt(kind, family);
+      if (awt == null) {
+        return staleFor(key);
+      }
+      Identifier textureId =
+          Identifier.fromNamespaceAndPath(
+              "exeter", "font/" + key.toLowerCase().replaceAll("[^a-z0-9]", ""));
+      AtlasFont built = AtlasFont.bake(awt, textureId);
+      CACHE.put(key, built);
+      lastServed = built;
+      lastServedKey = key;
+      return built;
+    } catch (Exception e) {
+      logOnce(key, e);
+      return staleFor(key);
+    }
+  }
+
+  private static String keyPrefix(String key) {
+    int end = key.length();
+    while (end > 0 && Character.isDigit(key.charAt(end - 1))) {
+      end--;
+    }
+    return key.substring(0, end);
+  }
+
+  private static AtlasFont staleFor(String key) {
+    if (lastServed != null
+        && lastServedKey != null
+        && keyPrefix(key).equals(keyPrefix(lastServedKey))) {
+      return lastServed;
+    }
+    return null;
+  }
+
+  private static AtlasFont activeFont() {
     CustomFont module = CustomFont.get();
     if (module == null || !module.isRunning()) {
       return null;
@@ -193,66 +279,13 @@ public class FontUtil {
       return null;
     }
     if (face == CustomFont.Face.SYSTEM) {
-      return systemFont();
-    }
-    final Identifier location =
-        face == CustomFont.Face.LEXEND_DECA
-            ? Identifier.fromNamespaceAndPath("exeter", "lexenddeca.ttf")
-            : Identifier.fromNamespaceAndPath("exeter", "jetbrainsmono-regular.ttf");
-    final float size = (float) fontSize();
-    return request(
-        face.name() + fontSize(),
-        new Builder() {
-          @Override
-          public TtfFont.Built build() throws Exception {
-            return TtfFont.fromResource(location, size, TTF_OVERSAMPLE);
-          }
-        },
-        face.name());
-  }
-
-  private static Font systemFont() {
-    CustomFont module = CustomFont.get();
-    if (module == null) {
-      return null;
-    }
-    String key = module.family.getValue();
-    if (key == null || key.isEmpty()) {
-      return null;
-    }
-    final File file = resolveSystemFont(key);
-    if (file == null || !file.isFile()) {
-      logOnce("system-missing-" + key, new IllegalStateException("no file"));
-      return null;
-    }
-    final float size = (float) fontSize();
-    return request(
-        key.toLowerCase() + fontSize(),
-        new Builder() {
-          @Override
-          public TtfFont.Built build() throws Exception {
-            return TtfFont.fromFile(file, size, TTF_OVERSAMPLE);
-          }
-        },
-        "system-" + key);
-  }
-
-  private static File resolveSystemFont(String key) {
-    File direct = new File(key);
-    if (direct.isFile()) {
-      return direct;
-    }
-    String mapped = SYSTEM_FILES.get(key.toLowerCase());
-    if (mapped != null) {
-      String windir = System.getenv("WINDIR");
-      if (windir == null || windir.isEmpty()) {
-        windir = "C:\\Windows";
+      String family = module.family.getValue();
+      if (family == null || family.isEmpty()) {
+        return null;
       }
-      File candidate = new File(windir + "\\Fonts\\" + mapped);
-      if (candidate.isFile()) {
-        return candidate;
-      }
+      return request("system-" + family.toLowerCase() + fontSize(), "system", family);
     }
-    return null;
+    String kind = face == CustomFont.Face.LEXEND_DECA ? "lexend" : "jetbrains";
+    return request(face.name() + fontSize(), kind, null);
   }
 }
