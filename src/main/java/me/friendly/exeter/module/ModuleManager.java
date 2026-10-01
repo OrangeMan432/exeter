@@ -29,6 +29,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
+import me.friendly.exeter.module.impl.toggle.world.fakeplayer.FakePlayerModule;
 import org.lwjgl.input.Keyboard;
 
 /** Manages {@link Module}s for Exeter. */
@@ -62,6 +63,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Velocity());
     register(new KillAura());
     register(new AutoArmor());
+    register(new FakePlayerModule());
 
     for (Module m : registry) {
       if (m instanceof Debug) {
