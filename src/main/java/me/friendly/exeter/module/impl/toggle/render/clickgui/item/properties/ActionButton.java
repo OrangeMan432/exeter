@@ -14,6 +14,11 @@ public class ActionButton extends Button {
   }
 
   @Override
+  public boolean isVisible() {
+    return property == null || property.isVisible();
+  }
+
+  @Override
   public void toggle() {
     property.run();
   }

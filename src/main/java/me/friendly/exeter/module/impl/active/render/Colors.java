@@ -4,6 +4,7 @@ import java.awt.*;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.util.Mth;
 
@@ -20,8 +21,29 @@ public final class Colors extends Module {
     CLIENT
   }
 
+  public enum ColorMode {
+    RGB,
+    HSL
+  }
+
   private static final EnumProperty<HudColorMode> hudColorMode =
       new EnumProperty<>(HudColorMode.DEFAULT, "HUD Color", "HUDColor", "HUDMode");
+  private static final EnumProperty<ColorMode> colorMode =
+      new EnumProperty<>(ColorMode.HSL, "Color Mode", "colormode", "mode");
+  private static final NumberProperty<Integer> red =
+      new NumberProperty<>(162, 0, 255, "Red", "red", "r");
+  private static final NumberProperty<Integer> green =
+      new NumberProperty<>(232, 0, 255, "Green", "green", "g");
+  private static final NumberProperty<Integer> blue =
+      new NumberProperty<>(190, 0, 255, "Blue", "blue", "b");
+  private final PopupProperty pickColor =
+      new PopupProperty(
+          "Pick Color",
+          () ->
+              me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui()
+                  .openPopup(
+                      new me.friendly.exeter.module.impl.toggle.render.clickgui
+                          .ColorPickerPopup()));
   private static final NumberProperty<Float> hue =
       new NumberProperty<>(135.4f, 0f, 360f, "Hue", "RGB", "HSL");
   private static final NumberProperty<Float> saturation =
@@ -55,11 +77,23 @@ public final class Colors extends Module {
   public Colors() {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
+    red.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    green.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    blue.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    pickColor.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    hue.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
+    saturation.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
+    lightness.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
     offerProperties(
-        hudColorMode,
+        colorMode,
+        red,
+        green,
+        blue,
+        pickColor,
         hue,
         saturation,
         lightness,
+        hudColorMode,
         hudRainbow,
         rainbowSpeed,
         rainbowSaturation,
@@ -67,25 +101,25 @@ public final class Colors extends Module {
         espOutlineAlpha);
   }
 
+  private static Color baseColor() {
+    if (colorMode.getValue() == ColorMode.RGB) {
+      return new Color(red.getValue(), green.getValue(), blue.getValue());
+    }
+    return new Color(
+        Color.HSBtoRGB(hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f));
+  }
+
   public static int getClientColorCustomAlpha(int alpha) {
-    Color color =
-        setAlpha(
-            new Color(
-                Color.HSBtoRGB(
-                    hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f)),
-            alpha);
-    return color.getRGB();
+    return setAlpha(baseColor(), alpha).getRGB();
   }
 
   // used for clickgui
   public static int getDarkerClientColorCustomAlpha(int alpha) {
-    Color color =
-        setAlpha(
-            new Color(
-                Color.HSBtoRGB(
-                    hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 250f)),
-            alpha);
-    return color.getRGB();
+    Color base = baseColor();
+    float[] hsb = Color.RGBtoHSB(base.getRed(), base.getGreen(), base.getBlue(), null);
+    Color darker =
+        new Color(Color.HSBtoRGB(hsb[0], hsb[1], Math.max(0f, Math.min(1f, hsb[2] * 0.4f))));
+    return setAlpha(darker, alpha).getRGB();
   }
 
   public static final Color setAlpha(Color color, int alpha) {
@@ -99,10 +133,18 @@ public final class Colors extends Module {
     return Color.getHSBColor(hue, s, brightness);
   }
 
+  public static void setRgb(int r, int g, int b) {
+    red.setValue(Math.max(0, Math.min(255, r)));
+    green.setValue(Math.max(0, Math.min(255, g)));
+    blue.setValue(Math.max(0, Math.min(255, b)));
+  }
+
+  public static void useRgbMode() {
+    colorMode.setValue(ColorMode.RGB);
+  }
+
   public static int getClientColor() {
-    return Color.getHSBColor(
-            hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f)
-        .getRGB();
+    return baseColor().getRGB();
   }
 
   public static int getEspFillAlpha() {
@@ -128,17 +170,14 @@ public final class Colors extends Module {
     if (hudColorMode.getValue() == HudColorMode.DEFAULT) {
       return 0xFFAAAAAA;
     }
-    return new Color(
-            Color.HSBtoRGB(
-                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f * 0.55f))
+    Color base = baseColor();
+    float[] hsb = Color.RGBtoHSB(base.getRed(), base.getGreen(), base.getBlue(), null);
+    return new Color(Color.HSBtoRGB(hsb[0], hsb[1], Math.max(0f, Math.min(1f, hsb[2] * 0.55f))))
         .getRGB();
   }
 
   public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {
-    Color base =
-        new Color(
-            Color.HSBtoRGB(
-                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f));
+    Color base = baseColor();
     return setAlpha(base, fillAlpha).getRGB();
   }
 }

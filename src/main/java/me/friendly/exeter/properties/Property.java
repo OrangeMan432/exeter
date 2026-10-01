@@ -2,11 +2,13 @@ package me.friendly.exeter.properties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public class Property<T> {
   private final String[] aliases;
   protected T value;
   private final List<Property<?>> children = new ArrayList<>();
+  private BooleanSupplier visibleWhen = () -> true;
 
   public Property(T value, String... aliases) {
     this.value = value;
@@ -32,5 +34,18 @@ public class Property<T> {
   public Property<T> addChild(Property<?> child) {
     this.children.add(child);
     return this;
+  }
+
+  public Property<T> visibleWhen(BooleanSupplier visibleWhen) {
+    this.visibleWhen = visibleWhen;
+    return this;
+  }
+
+  public boolean isVisible() {
+    try {
+      return visibleWhen.getAsBoolean();
+    } catch (Exception e) {
+      return true;
+    }
   }
 }

@@ -28,6 +28,11 @@ public class NumberSlider extends Item {
   }
 
   @Override
+  public boolean isVisible() {
+    return numberProperty == null || numberProperty.isVisible();
+  }
+
+  @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     dragSetting(mouseX, mouseY);
     float offsetX = child ? CHILD_OFFSET : 0.0f;

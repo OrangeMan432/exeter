@@ -7,7 +7,7 @@ import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
 
-public class SearchSelectPopup {
+public class SearchSelectPopup implements ClickPopup {
 
   public interface ToggleItem {
     String getLabel();

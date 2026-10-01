@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component;
 public final class ClickGui extends Screen {
   private static ClickGui clickGui;
   private final ArrayList<Panel> panels = new ArrayList();
-  private SearchSelectPopup popup;
+  private ClickPopup popup;
   private String search = "";
 
   // Expansion state kept in memory so reopening the GUI restores it. Never persisted to disk.
@@ -41,7 +41,7 @@ public final class ClickGui extends Screen {
     return clickGui == null ? (clickGui = new ClickGui()) : clickGui;
   }
 
-  public void openPopup(SearchSelectPopup popup) {
+  public void openPopup(ClickPopup popup) {
     this.popup = popup;
   }
 
@@ -49,7 +49,7 @@ public final class ClickGui extends Screen {
     this.popup = null;
   }
 
-  public SearchSelectPopup getPopup() {
+  public ClickPopup getPopup() {
     return this.popup;
   }
 
