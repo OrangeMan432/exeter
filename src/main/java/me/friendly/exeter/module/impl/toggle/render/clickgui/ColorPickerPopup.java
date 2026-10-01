@@ -29,6 +29,7 @@ public class ColorPickerPopup implements ClickPopup {
   private boolean draggingSv;
   private boolean draggingHue;
   private boolean hexFocused;
+  private boolean freshFocus;
   private String hex = "";
   private long lastCursorBlink;
   private boolean cursorVisible;
@@ -239,7 +240,8 @@ public class ColorPickerPopup implements ClickPopup {
         && mouseY >= hexY()
         && mouseY <= hexY() + 14) {
       hexFocused = true;
-      hex = "";
+      hex = currentHex();
+      freshFocus = true;
       return true;
     }
     hexFocused = false;
@@ -276,8 +278,6 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-    System.err.println(
-        "[Picker] key code=" + keyCode + " scan=" + scanCode + " focused=" + hexFocused);
     if (keyCode == InputConstants.KEY_ESCAPE) {
       ClickGui.getClickGui().closePopup();
       return true;
@@ -286,19 +286,26 @@ public class ColorPickerPopup implements ClickPopup {
       return false;
     }
     if (keyCode == InputConstants.KEY_BACKSPACE) {
+      freshFocus = false;
       if (!hex.isEmpty()) {
         hex = hex.substring(0, hex.length() - 1);
         applyHex();
       }
       return true;
     }
-    if (hex.length() < 6 && scanCode >= 32 && scanCode < 127) {
+    if (scanCode >= 32 && scanCode < 127) {
       char c = Character.toUpperCase((char) scanCode);
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
-        hex += c;
-        applyHex();
-        return true;
+        if (freshFocus) {
+          hex = "";
+          freshFocus = false;
+        }
+        if (hex.length() < 6) {
+          hex += c;
+          applyHex();
+        }
       }
+      return true;
     }
     return false;
   }
