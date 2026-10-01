@@ -201,6 +201,15 @@ public final class ClickGui extends Screen {
               Colors.getClientColorCustomAlpha(77));
           RenderMethods.drawRect(
               descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
+          if (guiModule == null || guiModule.showBorder.getValue()) {
+            int accent = Colors.getClientColorCustomAlpha(77);
+            float top = descY - 1.5f;
+            float bottom = (float) (descY + descH);
+            RenderMethods.drawRect(descX - 1, top - 1, descX + descW + 1, top, accent);
+            RenderMethods.drawRect(descX - 1, bottom, descX + descW + 1, bottom + 1, accent);
+            RenderMethods.drawRect(descX - 1, top, descX, bottom, accent);
+            RenderMethods.drawRect(descX + descW, top, descX + descW + 1, bottom, accent);
+          }
           FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
           FontUtil.drawString(
               hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
