@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.active.render;
 
 import java.awt.*;
 import me.friendly.exeter.module.Module;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.util.Mth;
@@ -14,6 +15,14 @@ import net.minecraft.util.Mth;
  */
 public final class Colors extends Module {
 
+  public enum HudColorMode {
+    DEFAULT,
+    CLIENT,
+    RAINBOW
+  }
+
+  private static final EnumProperty<HudColorMode> hudColorMode =
+      new EnumProperty<>(HudColorMode.DEFAULT, "HUD Color", "HUDColor", "HUDMode");
   private static final NumberProperty<Float> hue =
       new NumberProperty<>(135.4f, 0f, 360f, "Hue", "RGB", "HSL");
   private static final NumberProperty<Float> saturation =
@@ -49,6 +58,7 @@ public final class Colors extends Module {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
     offerProperties(
+        hudColorMode,
         hue,
         saturation,
         lightness,
@@ -106,13 +116,20 @@ public final class Colors extends Module {
   }
 
   public static int getHudMain() {
-    if (hudRainbow.getValue()) {
+    if (hudColorMode.getValue() == HudColorMode.RAINBOW
+        || (hudColorMode.getValue() == HudColorMode.CLIENT && hudRainbow.getValue())) {
       return getRainbow(1000, 0, 0.5f, 1.0f).getRGB();
     }
-    return getClientColor();
+    if (hudColorMode.getValue() == HudColorMode.CLIENT) {
+      return getClientColor();
+    }
+    return 0xFFFFFFFF;
   }
 
   public static int getHudAccent() {
+    if (hudColorMode.getValue() == HudColorMode.DEFAULT) {
+      return 0xFFAAAAAA;
+    }
     return getDarkerClientColorCustomAlpha(255);
   }
 
