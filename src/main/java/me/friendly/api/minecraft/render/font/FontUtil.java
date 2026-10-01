@@ -11,7 +11,7 @@ import net.minecraft.resources.Identifier;
 
 public class FontUtil {
 
-  private static final float TTF_SIZE = 12.0F;
+  private static final float TTF_SIZE = 9.0F;
   private static final float TTF_OVERSAMPLE = 4.0F;
 
   private static final Map<String, String> SYSTEM_FILES = new HashMap<String, String>();
