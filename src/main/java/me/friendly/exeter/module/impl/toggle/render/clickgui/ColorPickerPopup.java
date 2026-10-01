@@ -28,6 +28,10 @@ public class ColorPickerPopup implements ClickPopup {
   private float value;
   private boolean draggingSv;
   private boolean draggingHue;
+  private boolean hexFocused;
+  private String hex = "";
+  private long lastCursorBlink;
+  private boolean cursorVisible;
 
   public ColorPickerPopup() {
     float[] hsb = currentHsb();
@@ -61,6 +65,39 @@ public class ColorPickerPopup implements ClickPopup {
 
   private int previewY() {
     return svY() + SV_SIZE + 8;
+  }
+
+  private int hexX() {
+    return hueX();
+  }
+
+  private int hexY() {
+    return previewY();
+  }
+
+  private int hexW() {
+    return 54;
+  }
+
+  private String currentHex() {
+    int picked = Color.HSBtoRGB(hue / 360f, saturation, value);
+    return String.format("%02X%02X%02X", (picked >> 16) & 0xFF, (picked >> 8) & 0xFF, picked & 0xFF);
+  }
+
+  private void applyHex() {
+    if (hex.length() != 6) {
+      return;
+    }
+    try {
+      int rgb = Integer.parseInt(hex, 16);
+      float[] hsb =
+          Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
+      hue = hsb[0] * 360f;
+      saturation = hsb[1];
+      value = hsb[2];
+      apply();
+    } catch (NumberFormatException ignored) {
+    }
   }
 
   @Override
@@ -111,9 +148,33 @@ public class ColorPickerPopup implements ClickPopup {
 
     int picked = Color.HSBtoRGB(hue / 360f, saturation, value) | 0xFF000000;
     RenderMethods.drawRect(svX(), previewY(), svX() + SV_SIZE, previewY() + 14, picked);
-    String hex =
-        String.format("#%02X%02X%02X", (picked >> 16) & 0xFF, (picked >> 8) & 0xFF, picked & 0xFF);
-    FontUtil.drawString(hex, hueX(), previewY() + 3, 0xFFCCCCCC);
+    if (!hexFocused) {
+      hex = currentHex();
+    }
+    boolean hexHover =
+        mouseX >= hexX()
+            && mouseX <= hexX() + hexW()
+            && mouseY >= hexY()
+            && mouseY <= hexY() + 14;
+    RenderMethods.drawRect(
+        hexX(),
+        hexY(),
+        hexX() + hexW(),
+        hexY() + 14,
+        hexFocused ? 0xFF444444 : (hexHover ? 0xFF3A3A3A : 0xFF2A2A2A));
+    String shown = hex.isEmpty() ? currentHex() : hex;
+    FontUtil.drawString("#" + shown, hexX() + 4, hexY() + 3, 0xFFCCCCCC);
+    if (hexFocused) {
+      long now = System.currentTimeMillis();
+      if (now - lastCursorBlink > 500) {
+        cursorVisible = !cursorVisible;
+        lastCursorBlink = now;
+      }
+      if (cursorVisible) {
+        int hexCursorX = hexX() + 4 + FontUtil.getStringWidth("#" + shown);
+        RenderMethods.drawRect(hexCursorX, hexY() + 2, hexCursorX + 1, hexY() + 12, 0xFFFFFFFF);
+      }
+    }
 
     int doneX = popupX + POPUP_W - 59;
     int doneY = popupY + POPUP_H - BUTTON_AREA_H;
@@ -163,14 +224,25 @@ public class ColorPickerPopup implements ClickPopup {
     }
     if (inSv(mouseX, mouseY)) {
       draggingSv = true;
+      hexFocused = false;
       updateSv(mouseX, mouseY);
       return true;
     }
     if (inHue(mouseX, mouseY)) {
       draggingHue = true;
+      hexFocused = false;
       updateHue(mouseY);
       return true;
     }
+    if (mouseX >= hexX()
+        && mouseX <= hexX() + hexW()
+        && mouseY >= hexY()
+        && mouseY <= hexY() + 14) {
+      hexFocused = true;
+      hex = "";
+      return true;
+    }
+    hexFocused = false;
     return mouseX >= popupX
         && mouseX <= popupX + POPUP_W
         && mouseY >= popupY
@@ -204,6 +276,28 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    if (keyCode == InputConstants.KEY_ESCAPE) {
+      ClickGui.getClickGui().closePopup();
+      return true;
+    }
+    if (!hexFocused) {
+      return false;
+    }
+    if (keyCode == InputConstants.KEY_BACKSPACE) {
+      if (!hex.isEmpty()) {
+        hex = hex.substring(0, hex.length() - 1);
+        applyHex();
+      }
+      return true;
+    }
+    if (hex.length() < 6 && scanCode >= 32 && scanCode < 127) {
+      char c = Character.toUpperCase((char) scanCode);
+      if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+        hex += c;
+        applyHex();
+        return true;
+      }
+    }
     return false;
   }
 }

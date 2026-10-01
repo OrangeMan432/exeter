@@ -85,7 +85,6 @@ public final class Colors extends Module {
     saturation.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
     lightness.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
     offerProperties(
-        hudColorMode,
         colorMode,
         red,
         green,
@@ -94,6 +93,7 @@ public final class Colors extends Module {
         hue,
         saturation,
         lightness,
+        hudColorMode,
         hudRainbow,
         rainbowSpeed,
         rainbowSaturation,
