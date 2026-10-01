@@ -9,7 +9,6 @@
     "EntityAccessor",
     "MinecraftAccessor",
     "MixinEntityEsp",
-    "MixinFakePlayerAttack",
     "MixinMinecraftTick",
     "MixinInGameHud",
     "MixinChatSend",

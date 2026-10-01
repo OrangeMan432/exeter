@@ -31,7 +31,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
-import me.friendly.exeter.module.impl.toggle.world.fakeplayer.FakePlayerModule;
+import me.friendly.exeter.module.impl.toggle.world.NoWeather;
 import org.lwjgl.input.Keyboard;
 
 /** Manages {@link Module}s for Exeter. */
@@ -59,6 +59,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Notifier());
     register(new WindowsModule());
     register(new HUDEditor());
+    register(new NoWeather());
     register(new Colors());
     register(new Speed());
     register(new FastFall());
@@ -67,7 +68,6 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Velocity());
     register(new KillAura());
     register(new AutoArmor());
-    register(new FakePlayerModule());
 
     for (Module m : registry) {
       if (m instanceof Debug) {
