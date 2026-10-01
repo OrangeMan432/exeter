@@ -37,6 +37,7 @@ public class FontUtil {
   private static final Map<String, TtfFont.Built> CACHE = new HashMap<String, TtfFont.Built>();
   private static Font lastServed;
   private static String lastServedKey;
+  private static boolean reloadHooked;
   private static final java.util.Set<String> LOGGED = new java.util.HashSet<String>();
 
   // Rebuilds are throttled: dragging the size slider must settle before a new
@@ -47,6 +48,43 @@ public class FontUtil {
 
   private interface Builder {
     TtfFont.Built build() throws Exception;
+  }
+
+  private static void ensureReloadHook() {
+    if (reloadHooked) {
+      return;
+    }
+    reloadHooked = true;
+    try {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc == null) {
+        return;
+      }
+      net.minecraft.server.packs.resources.ResourceManager resources = mc.getResourceManager();
+      if (resources
+          instanceof net.minecraft.server.packs.resources.ReloadableResourceManager) {
+        net.minecraft.server.packs.resources.ReloadableResourceManager reloadable =
+            (net.minecraft.server.packs.resources.ReloadableResourceManager) resources;
+        reloadable.registerReloadListener(
+            new net.minecraft.server.packs.resources.PreparableReloadListener() {
+              @Override
+              public java.util.concurrent.CompletableFuture<Void> reload(
+                  net.minecraft.server.packs.resources.PreparableReloadListener.SharedState state,
+                  java.util.concurrent.Executor background,
+                  net.minecraft.server.packs.resources.PreparableReloadListener
+                          .PreparationBarrier barrier,
+                  java.util.concurrent.Executor game) {
+                CACHE.clear();
+                lastServed = null;
+                lastServedKey = null;
+                pendingKey = null;
+                return java.util.concurrent.CompletableFuture.completedFuture(null);
+              }
+            });
+      }
+    } catch (Exception e) {
+      logOnce("reload-hook", e);
+    }
   }
 
   private static String keyPrefix(String key) {
@@ -85,6 +123,7 @@ public class FontUtil {
     }
     pendingKey = null;
     try {
+      ensureReloadHook();
       TtfFont.Built built = builder.build();
       // Never closed: the render thread may still reference the previous atlas.
       CACHE.put(key, built);
