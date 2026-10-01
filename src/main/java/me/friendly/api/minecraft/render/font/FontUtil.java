@@ -112,6 +112,9 @@ public class FontUtil {
 
   private static void renderRun(
       String text, float x, float y, int color, float scale, AtlasFont atlas) {
+    // Align baselines with vanilla: vanilla sits on ~7px of a 9px line.
+    float size = (float) fontSize();
+    float dy = 7.0F * (size / 9.0F) - atlas.ascent * scale;
     float cx = x;
     int current = color;
     for (int i = 0; i < text.length(); i++) {
@@ -136,7 +139,7 @@ public class FontUtil {
           RenderPipelines.GUI_TEXTURED,
           atlas.textureId,
           Math.round(cx),
-          Math.round(y),
+          Math.round(y + dy),
           glyph.u,
           glyph.v,
           w,
