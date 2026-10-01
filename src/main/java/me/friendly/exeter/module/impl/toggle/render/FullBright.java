@@ -2,7 +2,9 @@ package me.friendly.exeter.module.impl.toggle.render;
 
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
@@ -17,12 +19,7 @@ public final class FullBright extends ToggleableModule {
     NIGHT_VISION
   }
 
-  private static final double BRIGHT_GAMMA = 16.0;
-
   private final EnumProperty<Mode> mode = new EnumProperty<>(Mode.GAMMA, "Mode", "mode");
-
-  private double savedGamma = 1.0;
-  private boolean savedGammaValid;
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("fullbright_tick") {
@@ -40,17 +37,20 @@ public final class FullBright extends ToggleableModule {
     listeners.add(tickListener);
   }
 
-  @Override
-  protected void onEnable() {
-    super.onEnable();
-    savedGammaValid = false;
-    applyGamma();
+  public static FullBright get() {
+    if (Exeter.getInstance() == null) return null;
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("fullbright");
+    return module instanceof FullBright ? (FullBright) module : null;
+  }
+
+  public static boolean isGammaActive() {
+    FullBright bright = get();
+    return bright != null && bright.isRunning() && bright.mode.getValue() == Mode.GAMMA;
   }
 
   @Override
   protected void onDisable() {
     super.onDisable();
-    restoreGamma();
     removeNightVision();
   }
 
@@ -59,31 +59,9 @@ public final class FullBright extends ToggleableModule {
     if (mc.player == null) return;
     if (mode.getValue() == Mode.GAMMA) {
       removeNightVision();
-      if (mc.options.gamma().get() != BRIGHT_GAMMA) {
-        applyGamma();
-      }
-    } else {
-      restoreGamma();
-      if (!mc.player.hasEffect(MobEffects.NIGHT_VISION)) {
-        mc.player.addEffect(
-            new MobEffectInstance(MobEffects.NIGHT_VISION, 1000000, 0, false, false));
-      }
+    } else if (!mc.player.hasEffect(MobEffects.NIGHT_VISION)) {
+      mc.player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 1000000, 0, false, false));
     }
-  }
-
-  private void applyGamma() {
-    Minecraft mc = Minecraft.getInstance();
-    if (!savedGammaValid) {
-      savedGamma = mc.options.gamma().get();
-      savedGammaValid = true;
-    }
-    mc.options.gamma().set(BRIGHT_GAMMA);
-  }
-
-  private void restoreGamma() {
-    if (!savedGammaValid) return;
-    savedGammaValid = false;
-    Minecraft.getInstance().options.gamma().set(savedGamma);
   }
 
   private void removeNightVision() {

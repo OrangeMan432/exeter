@@ -13,6 +13,7 @@
       "MixinLivingEntity",
       "MixinMinecraft",
       "MixinMouseHandler",
-      "MixinCamera"
+      "MixinCamera",
+      "MixinLightmap"
   ]
 }
