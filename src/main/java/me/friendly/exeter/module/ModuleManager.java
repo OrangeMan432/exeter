@@ -26,6 +26,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.TabGui;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TextRadarHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.TimeHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.WatermarkHud;
@@ -48,6 +49,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new SpeedHud());
     register(new TimeHud());
     register(new TextRadarHud());
+    register(new TabGui());
     register(new ArmorHud());
     register(new ArrayListHud());
     register(new NotificationHud());
