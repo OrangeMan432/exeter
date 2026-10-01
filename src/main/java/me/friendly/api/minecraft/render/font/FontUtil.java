@@ -9,7 +9,6 @@ import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.opengl.GL11;
 
 public class FontUtil {
 
@@ -83,8 +82,6 @@ public class FontUtil {
     }
     float scale = (float) fontSize() / (float) AtlasFont.BAKE_HEIGHT;
     int shadow = shadowColor(color);
-    GL11.glEnable(GL11.GL_BLEND);
-    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     renderRun(text, x + 1.0F, y + 1.0F, shadow, scale, atlas);
     renderRun(text, x, y, color, scale, atlas);
   }
@@ -144,6 +141,8 @@ public class FontUtil {
           glyph.v,
           w,
           h,
+          glyph.width,
+          atlas.cellHeight,
           1024,
           1024,
           current);
