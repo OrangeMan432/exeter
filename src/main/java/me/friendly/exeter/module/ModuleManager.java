@@ -47,6 +47,7 @@ import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.FpsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.PotionsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
@@ -106,6 +107,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new ArmorHud());
     register(new PotionsHud());
     register(new CoordsHud());
+    register(new FpsHud());
     register(new TimeHud());
     register(new DirectionHud());
     register(new SpeedHud());
