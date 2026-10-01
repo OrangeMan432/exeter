@@ -18,8 +18,7 @@ public class CustomFont extends ToggleableModule {
   }
 
   public final EnumProperty<Face> face = new EnumProperty<>(Face.VANILLA, "Face", "face", "font");
-  public final Property<String> family =
-      new Property<>("Arial", "Family", "family", "systemfont");
+  public final Property<String> family = new Property<>("Arial", "Family", "family", "systemfont");
   public final NumberProperty<Integer> size =
       new NumberProperty<>(9, 8, 24, "Size", "size", "fontsize");
 

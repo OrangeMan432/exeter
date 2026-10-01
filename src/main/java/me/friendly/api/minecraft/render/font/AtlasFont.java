@@ -16,9 +16,9 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 
 /**
- * Meteor-style self-owned font atlas: rasterizes a TrueType face with AWT into a single
- * texture we fully control (no vanilla stitcher involved). Glyphs bake white at a fixed
- * height and are tinted per draw.
+ * Meteor-style self-owned font atlas: rasterizes a TrueType face with AWT into a single texture we
+ * fully control (no vanilla stitcher involved). Glyphs bake white at a fixed height and are tinted
+ * per draw.
  */
 public final class AtlasFont {
   public static final int BAKE_HEIGHT = 48;
@@ -87,8 +87,7 @@ public final class AtlasFont {
 
   public static AtlasFont bake(Font awt, Identifier textureId) {
     Font sized = awt.deriveFont(Font.PLAIN, (float) BAKE_HEIGHT);
-    BufferedImage image =
-        new BufferedImage(ATLAS_SIZE, ATLAS_SIZE, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage image = new BufferedImage(ATLAS_SIZE, ATLAS_SIZE, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g = image.createGraphics();
     g.setRenderingHint(
         RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
@@ -127,7 +126,8 @@ public final class AtlasFont {
     }
     g.dispose();
 
-    NativeImage nativeImage = new NativeImage(NativeImage.Format.RGBA, ATLAS_SIZE, ATLAS_SIZE, false);
+    NativeImage nativeImage =
+        new NativeImage(NativeImage.Format.RGBA, ATLAS_SIZE, ATLAS_SIZE, false);
     for (int y = 0; y < ATLAS_SIZE; y++) {
       for (int x = 0; x < ATLAS_SIZE; x++) {
         int argb = image.getRGB(x, y);
