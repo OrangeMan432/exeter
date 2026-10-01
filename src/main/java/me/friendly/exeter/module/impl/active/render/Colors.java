@@ -44,9 +44,8 @@ public final class Colors extends Module {
       new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
   private static final NumberProperty<Float> rainbowSpeed =      new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
-  private static final NumberProperty<Float> rainbowHue =
-      new NumberProperty<>(
-          4f, 0f, 10f, "RainbowHue", "RainbowHueSpeed2", "RainbowSped2", "RrainbowSpeed2");
+  private static final NumberProperty<Float> rainbowSaturation =
+      new NumberProperty<>(0.5f, 0f, 1f, "Rainbow Saturation", "RainbowSaturation");
   private static final NumberProperty<Float> espFillAlpha =
       new NumberProperty<>(60f, 0f, 255f, "ESP Fill Alpha", "FillAlpha");
   private static final NumberProperty<Float> espOutlineAlpha =
@@ -62,7 +61,7 @@ public final class Colors extends Module {
         lightness,
         hudRainbow,
         rainbowSpeed,
-        rainbowHue,
+        rainbowSaturation,
         espFillAlpha,
         espOutlineAlpha);
   }
@@ -115,7 +114,8 @@ public final class Colors extends Module {
 
   public static int getHudMain() {
     if (hudRainbow.getValue()) {
-      return getRainbow(1000, 0, 0.5f, 1.0f).getRGB();
+      int cycleMs = Math.max(500, Math.round((6.0f - rainbowSpeed.getValue()) * 1000.0f));
+      return getRainbow(cycleMs, 0, rainbowSaturation.getValue(), 1.0f).getRGB();
     }
     if (hudColorMode.getValue() == HudColorMode.CLIENT) {
       return getClientColor();
