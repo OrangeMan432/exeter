@@ -12,6 +12,11 @@ public class PopupButton extends Button {
   }
 
   @Override
+  public boolean isVisible() {
+    return property == null || property.isVisible();
+  }
+
+  @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT && this.isHovering(mouseX, mouseY)) {
       this.property.getOpenAction().run();

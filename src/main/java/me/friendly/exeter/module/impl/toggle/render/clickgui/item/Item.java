@@ -24,6 +24,10 @@ public class Item implements Labeled {
 
   public void mouseReleased(int mouseX, int mouseY, int releaseButton) {}
 
+  public boolean isVisible() {
+    return true;
+  }
+
   @Override
   public final String getLabel() {
     return this.label;

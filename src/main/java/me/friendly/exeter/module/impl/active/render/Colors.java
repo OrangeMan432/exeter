@@ -77,6 +77,13 @@ public final class Colors extends Module {
   public Colors() {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
+    red.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    green.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    blue.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    pickColor.visibleWhen(() -> colorMode.getValue() == ColorMode.RGB);
+    hue.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
+    saturation.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
+    lightness.visibleWhen(() -> colorMode.getValue() == ColorMode.HSL);
     offerProperties(
         hudColorMode,
         colorMode,

@@ -55,6 +55,11 @@ public class BooleanButton extends Button {
   }
 
   @Override
+  public boolean isVisible() {
+    return property == null || property.isVisible();
+  }
+
+  @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     float offsetX = child ? CHILD_OFFSET : 0.0f;
     RenderMethods.drawRect(
@@ -97,6 +102,7 @@ public class BooleanButton extends Button {
     if (this.childrenOpen) {
       float cy = this.y + this.height + 1;
       for (Item childItem : this.children) {
+        if (!childItem.isVisible()) continue;
         childItem.setLocation(this.x + offsetX + CHILD_OFFSET, cy);
         childItem.setWidth(this.width - (int) CHILD_OFFSET * 2);
         childItem.drawScreen(mouseX, mouseY, partialTicks);
@@ -122,6 +128,7 @@ public class BooleanButton extends Button {
     super.mouseClicked(mouseX, mouseY, mouseButton);
     if (this.childrenOpen) {
       for (Item childItem : this.children) {
+        if (!childItem.isVisible()) continue;
         childItem.mouseClicked(mouseX, mouseY, mouseButton);
       }
     }
@@ -132,6 +139,7 @@ public class BooleanButton extends Button {
     if (this.childrenOpen) {
       int h = 15;
       for (Item childItem : this.children) {
+        if (!childItem.isVisible()) continue;
         h += childItem.getHeight() + 1;
       }
       return h;

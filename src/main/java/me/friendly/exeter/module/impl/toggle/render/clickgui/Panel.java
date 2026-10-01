@@ -132,7 +132,7 @@ public abstract class Panel implements Labeled {
     if (this.open) {
       int y = this.getY() + this.getHeight() - 3;
       for (Item item : getItems()) {
-        if (!matchesSearch(item)) continue;
+        if (!matchesSearch(item) || !item.isVisible()) continue;
         item.setLocation((float) this.x + 2.0f, (float) y);
         item.setWidth(this.getWidth() - 4);
         item.drawScreen(mouseX, mouseY, partialTicks);
@@ -194,6 +194,7 @@ public abstract class Panel implements Labeled {
     }
     this.getItems().stream()
         .filter(this::matchesSearch)
+        .filter(Item::isVisible)
         .forEach(item -> item.mouseClicked(mouseX, mouseY, mouseButton));
   }
 
@@ -210,6 +211,7 @@ public abstract class Panel implements Labeled {
     }
     this.getItems().stream()
         .filter(this::matchesSearch)
+        .filter(Item::isVisible)
         .forEach(item -> item.mouseReleased(mouseX, mouseY, releaseButton));
   }
 
@@ -291,7 +293,7 @@ public abstract class Panel implements Labeled {
   private int getTotalItemHeight() {
     int height = 0;
     for (Item item : getItems()) {
-      if (!matchesSearch(item)) continue;
+      if (!matchesSearch(item) || !item.isVisible()) continue;
       height += item.getHeight() + 1;
     }
     return height;

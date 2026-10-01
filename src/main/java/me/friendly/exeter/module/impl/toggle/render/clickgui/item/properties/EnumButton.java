@@ -19,6 +19,11 @@ public class EnumButton extends Button {
   }
 
   @Override
+  public boolean isVisible() {
+    return property == null || property.isVisible();
+  }
+
+  @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     float offsetX = child ? CHILD_OFFSET : 0.0f;
     RenderMethods.drawRect(
