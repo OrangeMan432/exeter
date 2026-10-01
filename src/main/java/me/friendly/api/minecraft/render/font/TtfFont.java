@@ -41,7 +41,14 @@ public final class TtfFont {
     }
   }
 
+  private static int buildCounter;
+
   private TtfFont() {}
+
+  private static synchronized Identifier stitchId(Identifier location, float size) {
+    return Identifier.fromNamespaceAndPath(
+        location.getNamespace(), "generated/" + location.getPath() + "-" + (int) size + "-" + (buildCounter++));
+  }
 
   public static Built fromResource(Identifier location, float size, float oversample) {
     TrueTypeGlyphProviderDefinition definition =
@@ -63,7 +70,7 @@ public final class TtfFont {
     } catch (Exception e) {
       throw new IllegalStateException("Failed to load TTF " + location, e);
     }
-    return build(provider, location);
+    return build(provider, stitchId(location, size));
   }
 
   public static Built fromFile(java.io.File file, float size, float oversample) {
@@ -93,7 +100,10 @@ public final class TtfFont {
                 buffer, face, size, oversample, 0.0F, 0.0F, "");
       }
     }
-    return build(provider, Identifier.fromNamespaceAndPath("exeter", "fonts/system"));
+    return build(
+        provider,
+        stitchId(
+            Identifier.fromNamespaceAndPath("exeter", "system.ttf"), size));
   }
 
   private static Built build(GlyphProvider provider, Identifier stitchId) {
