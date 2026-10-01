@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.awt.Color;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
@@ -151,18 +152,7 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) {
-    System.err.println(
-        "[Picker] click "
-            + mouseX
-            + ","
-            + mouseY
-            + " btn="
-            + mouseButton
-            + " popup="
-            + popupX
-            + ","
-            + popupY);
-    if (mouseButton != 0) {
+    if (mouseButton != InputConstants.MOUSE_BUTTON_LEFT) {
       return false;
     }
     int doneX = popupX + POPUP_W - 59;
