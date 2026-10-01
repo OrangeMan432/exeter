@@ -82,8 +82,8 @@ public class FontUtil {
     }
     float scale = (float) fontSize() / (float) AtlasFont.BAKE_HEIGHT;
     int shadow = shadowColor(color);
-    renderRun(text, x + 1.0F, y + 1.0F, shadow, scale, atlas);
-    renderRun(text, x, y, color, scale, atlas);
+    renderRun(text, x + 1.0F, y + 1.0F, shadow, scale, atlas, true);
+    renderRun(text, x, y, color, scale, atlas, false);
   }
 
   public static int getStringWidth(String text) {
@@ -111,7 +111,7 @@ public class FontUtil {
   }
 
   private static void renderRun(
-      String text, float x, float y, int color, float scale, AtlasFont atlas) {
+      String text, float x, float y, int color, float scale, AtlasFont atlas, boolean shadow) {
     // Align baselines with vanilla: vanilla sits on ~7px of a 9px line.
     float size = (float) fontSize();
     float dy = 7.0F * (size / 9.0F) - atlas.ascent * scale;
@@ -125,7 +125,8 @@ public class FontUtil {
         if (code == 'r') {
           current = color;
         } else if (sectionIndex(code) != -1) {
-          current = applyAlpha(SECTION_COLORS[sectionIndex(code)], color);
+          int section = applyAlpha(SECTION_COLORS[sectionIndex(code)], color);
+          current = shadow ? shadowColor(section) : section;
         }
         continue;
       }
