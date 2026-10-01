@@ -188,6 +188,7 @@ public class ModuleButton extends Button {
         float cy = this.y + 16.0f;
         ++progress;
         for (Item item : topLevelItems) {
+          if (!item.isVisible()) continue;
           item.setLocation(this.x + 1.0f, cy);
           item.setWidth(this.width - 9);
           item.drawScreen(mouseX, mouseY, partialTicks);
@@ -212,6 +213,7 @@ public class ModuleButton extends Button {
       }
       if (this.subOpen) {
         for (Item item : topLevelItems) {
+          if (!item.isVisible()) continue;
           item.mouseClicked(mouseX, mouseY, mouseButton);
         }
       }
@@ -223,6 +225,7 @@ public class ModuleButton extends Button {
     super.mouseReleased(mouseX, mouseY, releaseButton);
     if (this.subOpen) {
       for (Item item : topLevelItems) {
+        if (!item.isVisible()) continue;
         item.mouseReleased(mouseX, mouseY, releaseButton);
       }
     }
@@ -233,6 +236,7 @@ public class ModuleButton extends Button {
     if (this.subOpen) {
       int height = 15;
       for (Item item : topLevelItems) {
+        if (!item.isVisible()) continue;
         height += item.getHeight() + 1;
       }
       return height + 2;
