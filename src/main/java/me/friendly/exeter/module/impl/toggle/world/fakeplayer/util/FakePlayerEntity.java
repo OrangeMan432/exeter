@@ -18,6 +18,14 @@ public class FakePlayerEntity extends OtherPlayerEntity {
     super(world, "FakePlayer");
   }
 
+  /**
+   * Kills server-position smoothing: OtherPlayerEntity lerps toward its last server
+   * position (default 0,0,0), which would drag the dummy away. Record/playback and
+   * physics in tick() are unaffected.
+   */
+  @Override
+  public void method_937() {}
+
   private boolean damageAllowed() {
     if (Exeter.getInstance() == null) return true;
     Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("fakeplayer");
