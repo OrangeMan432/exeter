@@ -4,6 +4,7 @@ import java.awt.*;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.util.Mth;
 
@@ -35,6 +36,14 @@ public final class Colors extends Module {
       new NumberProperty<>(232, 0, 255, "Green", "green", "g");
   private static final NumberProperty<Integer> blue =
       new NumberProperty<>(190, 0, 255, "Blue", "blue", "b");
+  private final PopupProperty pickColor =
+      new PopupProperty(
+          "Pick Color",
+          () ->
+              me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui()
+                  .openPopup(
+                      new me.friendly.exeter.module.impl.toggle.render.clickgui
+                          .ColorPickerPopup()));
   private static final NumberProperty<Float> hue =
       new NumberProperty<>(135.4f, 0f, 360f, "Hue", "RGB", "HSL");
   private static final NumberProperty<Float> saturation =
@@ -74,6 +83,7 @@ public final class Colors extends Module {
         red,
         green,
         blue,
+        pickColor,
         hue,
         saturation,
         lightness,
@@ -114,6 +124,16 @@ public final class Colors extends Module {
     float hue = (System.currentTimeMillis() + offset) % speed;
     hue /= speed;
     return Color.getHSBColor(hue, s, brightness);
+  }
+
+  public static void setRgb(int r, int g, int b) {
+    red.setValue(Math.max(0, Math.min(255, r)));
+    green.setValue(Math.max(0, Math.min(255, g)));
+    blue.setValue(Math.max(0, Math.min(255, b)));
+  }
+
+  public static void useRgbMode() {
+    colorMode.setValue(ColorMode.RGB);
   }
 
   public static int getClientColor() {
