@@ -1,6 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 
 public final class CoordsHud extends HudModule {
@@ -13,8 +14,7 @@ public final class CoordsHud extends HudModule {
 
   @Override
   public int getWidth() {
-    String text = String.format("\u00a77XYZ: \u00a7f%s, %s, %s", 0, 0, 0);
-    return FontUtil.getStringWidth(text);
+    return FontUtil.getStringWidth("XYZ: ") + FontUtil.getStringWidth("0, 0, 0");
   }
 
   @Override
@@ -24,12 +24,14 @@ public final class CoordsHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    String text =
+    String coords =
         String.format(
-            "\u00a77XYZ: \u00a7f%s, %s, %s",
+            "%s, %s, %s",
             (int) minecraft.player.getX(),
             (int) minecraft.player.getY(),
             (int) minecraft.player.getZ());
-    FontUtil.drawString(text, getX(), getY(), -1);
+    FontUtil.drawString("XYZ: ", getX(), getY(), Colors.getHudAccent());
+    FontUtil.drawString(
+        coords, getX() + FontUtil.getStringWidth("XYZ: "), getY(), Colors.getHudMain());
   }
 }

@@ -4,16 +4,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.properties.EnumProperty;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 
 public final class PotionsHud extends ListHudModule {
 
+  public enum ColorMode {
+    DEFAULT,
+    CLIENT,
+    CLIENT_ACCENT
+  }
+
+  public final EnumProperty<ColorMode> colorMode =
+      new EnumProperty<>(ColorMode.DEFAULT, "Color", "color");
+
   public PotionsHud() {
     super("Potions", new String[] {"potions", "pots", "p"}, Corner.BOTTOM_LEFT);
     setDescription("Displays active potion effects.");
-    this.offerProperties();
+    this.offerProperties(colorMode);
   }
 
   @Override
@@ -24,9 +35,15 @@ public final class PotionsHud extends ListHudModule {
     return 100;
   }
 
+  private int themedColor(int fallback) {
+    if (colorMode.getValue() == ColorMode.CLIENT) return Colors.getHudMain();
+    if (colorMode.getValue() == ColorMode.CLIENT_ACCENT) return Colors.getHudAccent();
+    return fallback;
+  }
+
   @Override
   protected List<TextEntry> getDummyEntries() {
-    return List.of(new TextEntry("Speed II (01:23)", 0xFF7CAFC6));
+    return List.of(new TextEntry("Speed II (01:23)", themedColor(0xFF7CAFC6)));
   }
 
   @Override
@@ -43,7 +60,7 @@ public final class PotionsHud extends ListHudModule {
       String name = net.minecraft.client.resources.language.I18n.get(mobEffect.getDescriptionId());
       String duration = MobEffectUtil.formatDuration(effect, 1.0f, tickRate).getString();
       String text = String.format("%s %d (%s)", name, effect.getAmplifier() + 1, duration);
-      entries.add(new TextEntry(text, 0xFF000000 | mobEffect.getColor()));
+      entries.add(new TextEntry(text, themedColor(0xFF000000 | mobEffect.getColor())));
     }
     return entries;
   }

@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.active.render;
 
 import java.awt.*;
 import me.friendly.exeter.module.Module;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import net.minecraft.util.Mth;
@@ -14,6 +15,13 @@ import net.minecraft.util.Mth;
  */
 public final class Colors extends Module {
 
+  public enum HudColorMode {
+    DEFAULT,
+    CLIENT
+  }
+
+  private static final EnumProperty<HudColorMode> hudColorMode =
+      new EnumProperty<>(HudColorMode.DEFAULT, "HUD Color", "HUDColor", "HUDMode");
   private static final NumberProperty<Float> hue =
       new NumberProperty<>(135.4f, 0f, 360f, "Hue", "RGB", "HSL");
   private static final NumberProperty<Float> saturation =
@@ -32,14 +40,13 @@ public final class Colors extends Module {
           "Brigtness",
           "Brigntrnew",
           "Brighgrtnewss");
-  private final Property<Boolean> hudRainbow =
+  private static final Property<Boolean> hudRainbow =
       new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
-  private final NumberProperty<Float> rainbowSpeed =
+  private static final NumberProperty<Float> rainbowSpeed =
       new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
-  private final NumberProperty<Float> rainbowHue =
-      new NumberProperty<>(
-          4f, 0f, 10f, "RainbowHue", "RainbowHueSpeed2", "RainbowSped2", "RrainbowSpeed2");
+  private static final NumberProperty<Float> rainbowSaturation =
+      new NumberProperty<>(0.5f, 0f, 1f, "Rainbow Saturation", "RainbowSaturation");
   private static final NumberProperty<Float> espFillAlpha =
       new NumberProperty<>(60f, 0f, 255f, "ESP Fill Alpha", "FillAlpha");
   private static final NumberProperty<Float> espOutlineAlpha =
@@ -49,12 +56,13 @@ public final class Colors extends Module {
     super("Colors", new String[] {"Colors", "Color"});
     setDescription("Configures the client accent color and rainbow effects.");
     offerProperties(
+        hudColorMode,
         hue,
         saturation,
         lightness,
         hudRainbow,
         rainbowSpeed,
-        rainbowHue,
+        rainbowSaturation,
         espFillAlpha,
         espOutlineAlpha);
   }
@@ -103,6 +111,27 @@ public final class Colors extends Module {
 
   public static int getEspOutlineAlpha() {
     return Math.round(espOutlineAlpha.getValue());
+  }
+
+  public static int getHudMain() {
+    if (hudRainbow.getValue()) {
+      int cycleMs = Math.max(500, Math.round((6.0f - rainbowSpeed.getValue()) * 1000.0f));
+      return getRainbow(cycleMs, 0, rainbowSaturation.getValue(), 1.0f).getRGB();
+    }
+    if (hudColorMode.getValue() == HudColorMode.CLIENT) {
+      return getClientColor();
+    }
+    return 0xFFFFFFFF;
+  }
+
+  public static int getHudAccent() {
+    if (hudColorMode.getValue() == HudColorMode.DEFAULT) {
+      return 0xFFAAAAAA;
+    }
+    return new Color(
+            Color.HSBtoRGB(
+                hue.getValue(), saturation.getValue() / 100f, lightness.getValue() / 100f * 0.55f))
+        .getRGB();
   }
 
   public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {

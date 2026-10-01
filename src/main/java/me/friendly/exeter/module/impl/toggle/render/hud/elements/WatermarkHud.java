@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 
 public final class WatermarkHud extends HudModule {
@@ -12,12 +13,14 @@ public final class WatermarkHud extends HudModule {
     this.offerProperties();
   }
 
+  private String versionText() {
+    String dirty = Exeter.DIRTY ? " (dirty)" : "";
+    return String.format(" %s.%s%s", Exeter.BUILD, Exeter.HASH, dirty);
+  }
+
   @Override
   public int getWidth() {
-    String dirty = Exeter.DIRTY ? " (dirty)" : "";
-    String text =
-        String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
-    return FontUtil.getStringWidth(text);
+    return FontUtil.getStringWidth(Exeter.TITLE) + FontUtil.getStringWidth(versionText());
   }
 
   @Override
@@ -27,9 +30,11 @@ public final class WatermarkHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    String dirty = Exeter.DIRTY ? " (dirty)" : "";
-    String text =
-        String.format("%s \u00a77%s.%s%s", Exeter.TITLE, Exeter.BUILD, Exeter.HASH, dirty);
-    FontUtil.drawString(text, getX(), getY(), -1);
+    FontUtil.drawString(Exeter.TITLE, getX(), getY(), Colors.getHudMain());
+    FontUtil.drawString(
+        versionText(),
+        getX() + FontUtil.getStringWidth(Exeter.TITLE),
+        getY(),
+        Colors.getHudAccent());
   }
 }
