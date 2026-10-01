@@ -82,7 +82,8 @@ public class ColorPickerPopup implements ClickPopup {
 
   private String currentHex() {
     int picked = Color.HSBtoRGB(hue / 360f, saturation, value);
-    return String.format("%02X%02X%02X", (picked >> 16) & 0xFF, (picked >> 8) & 0xFF, picked & 0xFF);
+    return String.format(
+        "%02X%02X%02X", (picked >> 16) & 0xFF, (picked >> 8) & 0xFF, picked & 0xFF);
   }
 
   private void applyHex() {
@@ -91,8 +92,7 @@ public class ColorPickerPopup implements ClickPopup {
     }
     try {
       int rgb = Integer.parseInt(hex, 16);
-      float[] hsb =
-          Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
+      float[] hsb = Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
       hue = hsb[0] * 360f;
       saturation = hsb[1];
       value = hsb[2];
@@ -153,10 +153,7 @@ public class ColorPickerPopup implements ClickPopup {
       hex = currentHex();
     }
     boolean hexHover =
-        mouseX >= hexX()
-            && mouseX <= hexX() + hexW()
-            && mouseY >= hexY()
-            && mouseY <= hexY() + 14;
+        mouseX >= hexX() && mouseX <= hexX() + hexW() && mouseY >= hexY() && mouseY <= hexY() + 14;
     RenderMethods.drawRect(
         hexX(),
         hexY(),
