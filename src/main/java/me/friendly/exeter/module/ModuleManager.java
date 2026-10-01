@@ -7,6 +7,7 @@ import me.friendly.exeter.config.Config;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.client.DiscordRPC;
 import me.friendly.exeter.module.impl.toggle.client.HUDEditor;
@@ -70,6 +71,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new TabGui());
     register(new EatTimer());
     register(new Colors());
+    register(new CustomFont());
     register(new HUDEditor());
     register(new DiscordRPC());
     register(new AutoItemDupe());
