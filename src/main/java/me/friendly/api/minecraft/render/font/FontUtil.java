@@ -92,16 +92,16 @@ public class FontUtil {
       return Minecraft.getInstance().font.width(text);
     }
     float scale = (float) fontSize() / (float) AtlasFont.BAKE_HEIGHT;
-    float width = 0.0F;
+    int width = 0;
     for (int i = 0; i < text.length(); i++) {
       char c = text.charAt(i);
-      if (c == '\u00a7' && i + 1 < text.length()) {
+      if (c == '§' && i + 1 < text.length()) {
         i++;
         continue;
       }
-      width += atlas.advance(c) * scale;
+      width += Math.round(atlas.advance(c) * scale);
     }
-    return Math.round(width);
+    return width;
   }
 
   private static int shadowColor(int color) {
@@ -115,7 +115,7 @@ public class FontUtil {
     // Align baselines with vanilla: vanilla sits on ~7px of a 9px line.
     float size = (float) fontSize();
     float dy = 7.0F * (size / 9.0F) - atlas.ascent * scale;
-    float cx = x;
+    int cx = Math.round(x);
     int current = color;
     for (int i = 0; i < text.length(); i++) {
       char c = text.charAt(i);
@@ -134,7 +134,7 @@ public class FontUtil {
       if (glyph == null) {
         continue;
       }
-      float qx = cx - glyph.bearing * scale;
+      float qx = cx;
       int w = Math.max(1, Math.round(glyph.width * scale));
       int h = Math.max(1, Math.round(atlas.cellHeight * scale));
       RenderMethods.guiGraphics.blit(
@@ -151,7 +151,7 @@ public class FontUtil {
           1024,
           1024,
           current);
-      cx += glyph.advance * scale;
+      cx += Math.round(glyph.advance * scale);
     }
   }
 
