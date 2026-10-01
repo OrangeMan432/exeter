@@ -17,8 +17,7 @@ public final class Colors extends Module {
 
   public enum HudColorMode {
     DEFAULT,
-    CLIENT,
-    RAINBOW
+    CLIENT
   }
 
   private static final EnumProperty<HudColorMode> hudColorMode =
@@ -41,8 +40,9 @@ public final class Colors extends Module {
           "Brigtness",
           "Brigntrnew",
           "Brighgrtnewss");
-  private static final NumberProperty<Float> rainbowSpeed =
-      new NumberProperty<>(
+  private static final Property<Boolean> hudRainbow =
+      new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
+  private static final NumberProperty<Float> rainbowSpeed =      new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
   private static final NumberProperty<Float> rainbowHue =
       new NumberProperty<>(
@@ -60,6 +60,7 @@ public final class Colors extends Module {
         hue,
         saturation,
         lightness,
+        hudRainbow,
         rainbowSpeed,
         rainbowHue,
         espFillAlpha,
@@ -113,7 +114,7 @@ public final class Colors extends Module {
   }
 
   public static int getHudMain() {
-    if (hudColorMode.getValue() == HudColorMode.RAINBOW) {
+    if (hudRainbow.getValue()) {
       return getRainbow(1000, 0, 0.5f, 1.0f).getRGB();
     }
     if (hudColorMode.getValue() == HudColorMode.CLIENT) {
