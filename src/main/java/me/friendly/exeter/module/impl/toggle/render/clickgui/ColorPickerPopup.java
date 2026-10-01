@@ -151,6 +151,17 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    System.err.println(
+        "[Picker] click "
+            + mouseX
+            + ","
+            + mouseY
+            + " btn="
+            + mouseButton
+            + " popup="
+            + popupX
+            + ","
+            + popupY);
     if (mouseButton != 0) {
       return false;
     }
