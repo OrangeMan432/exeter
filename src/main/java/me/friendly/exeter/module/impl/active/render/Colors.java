@@ -41,8 +41,6 @@ public final class Colors extends Module {
           "Brigtness",
           "Brigntrnew",
           "Brighgrtnewss");
-  private static final Property<Boolean> hudRainbow =
-      new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
   private static final NumberProperty<Float> rainbowSpeed =
       new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
@@ -62,7 +60,6 @@ public final class Colors extends Module {
         hue,
         saturation,
         lightness,
-        hudRainbow,
         rainbowSpeed,
         rainbowHue,
         espFillAlpha,
@@ -116,8 +113,7 @@ public final class Colors extends Module {
   }
 
   public static int getHudMain() {
-    if (hudColorMode.getValue() == HudColorMode.RAINBOW
-        || (hudColorMode.getValue() == HudColorMode.CLIENT && hudRainbow.getValue())) {
+    if (hudColorMode.getValue() == HudColorMode.RAINBOW) {
       return getRainbow(1000, 0, 0.5f, 1.0f).getRGB();
     }
     if (hudColorMode.getValue() == HudColorMode.CLIENT) {
