@@ -21,7 +21,7 @@ public class CustomFont extends ToggleableModule {
   public final Property<String> family =
       new Property<>("Arial", "Family", "family", "systemfont");
   public final NumberProperty<Integer> size =
-      new NumberProperty<>(9, 6, 24, "Size", "size", "fontsize");
+      new NumberProperty<>(9, 8, 24, "Size", "size", "fontsize");
 
   public CustomFont() {
     super(

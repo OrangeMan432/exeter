@@ -86,13 +86,8 @@ public class FontUtil {
     pendingKey = null;
     try {
       TtfFont.Built built = builder.build();
-      TtfFont.Built previous = CACHE.put(key, built);
-      if (previous != null) {
-        try {
-          previous.set.close();
-        } catch (Exception ignored) {
-        }
-      }
+      // Never closed: the render thread may still reference the previous atlas.
+      CACHE.put(key, built);
       lastServed = built.font;
       lastServedKey = key;
       return built.font;
@@ -135,7 +130,7 @@ public class FontUtil {
     }
     try {
       int size = module.size.getValue().intValue();
-      if (size < 6) size = 6;
+      if (size < 8) size = 8;
       if (size > 32) size = 32;
       return size;
     } catch (Exception e) {
