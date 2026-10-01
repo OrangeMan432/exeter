@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import me.friendly.api.minecraft.render.RenderMethods;
-import me.friendly.exeter.module.impl.toggle.client.FontRenderer;
+import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.resources.Identifier;
@@ -34,9 +34,16 @@ public class FontUtil {
     SYSTEM_FILES.put("segoe ui", "segoeui.ttf");
   }
 
-  private static final Map<FontRenderer.Face, Font> CACHE = new HashMap<FontRenderer.Face, Font>();
+  private static final Map<CustomFont.Face, Font> CACHE = new HashMap<CustomFont.Face, Font>();
   private static Font systemFont;
   private static String systemKey;
+  private static final java.util.Set<String> LOGGED = new java.util.HashSet<String>();
+
+  private static void logOnce(String key, Exception e) {
+    if (LOGGED.add(key)) {
+      System.err.println("[Exeter] TTF font failed (" + key + "): " + e);
+    }
+  }
 
   public static void drawString(String text, float x, float y, int color) {
     if (RenderMethods.guiGraphics != null) {
@@ -59,20 +66,21 @@ public class FontUtil {
   }
 
   private static Font activeFont() {
-    FontRenderer module = FontRenderer.get();
+    CustomFont module = CustomFont.get();
     if (module == null || !module.isRunning()) {
       return null;
     }
-    FontRenderer.Face face;
+    CustomFont.Face face;
     try {
       face = module.face.getValue();
     } catch (Exception e) {
+      logOnce("face", e);
       return null;
     }
-    if (face == null || face == FontRenderer.Face.VANILLA) {
+    if (face == null || face == CustomFont.Face.VANILLA) {
       return null;
     }
-    if (face == FontRenderer.Face.SYSTEM) {
+    if (face == CustomFont.Face.SYSTEM) {
       return systemFont();
     }
     Font cached = CACHE.get(face);
@@ -81,19 +89,20 @@ public class FontUtil {
     }
     try {
       Identifier location =
-          face == FontRenderer.Face.LEXEND_DECA
+          face == CustomFont.Face.LEXEND_DECA
               ? Identifier.fromNamespaceAndPath("exeter", "fonts/LexendDeca.ttf")
               : Identifier.fromNamespaceAndPath("exeter", "fonts/JetBrainsMono-Regular.ttf");
       Font built = TtfFont.fromResource(location, TTF_SIZE, TTF_OVERSAMPLE);
       CACHE.put(face, built);
       return built;
     } catch (Exception e) {
+      logOnce(face.name(), e);
       return null;
     }
   }
 
   private static Font systemFont() {
-    FontRenderer module = FontRenderer.get();
+    CustomFont module = CustomFont.get();
     if (module == null) {
       return null;
     }
@@ -106,6 +115,7 @@ public class FontUtil {
     }
     File file = resolveSystemFont(key);
     if (file == null || !file.isFile()) {
+      logOnce("system-missing-" + key, new IllegalStateException("no file"));
       return null;
     }
     try {
@@ -114,6 +124,7 @@ public class FontUtil {
       systemKey = key;
       return built;
     } catch (Exception e) {
+      logOnce("system-" + key, e);
       return null;
     }
   }
