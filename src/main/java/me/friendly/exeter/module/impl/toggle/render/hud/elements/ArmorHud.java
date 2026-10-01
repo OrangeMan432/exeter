@@ -2,12 +2,15 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.Property;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public final class ArmorHud extends HudModule {
   private final EnumProperty<Orientation> orientation =
@@ -28,7 +31,7 @@ public final class ArmorHud extends HudModule {
       if (minecraft.player == null) return 0;
       for (int i = 3; i >= 0; --i) {
         EquipmentSlot slot = slotFromIndex(i);
-        ItemStack stack = minecraft.player.getItemBySlot(slot);
+        ItemStack stack = armorStack(slot);
         if (stack == null || stack.isEmpty()) continue;
         count++;
         if (showDurability.getValue() && stack.isDamageableItem()) {
@@ -48,7 +51,7 @@ public final class ArmorHud extends HudModule {
     if (minecraft.player != null) {
       for (int i = 3; i >= 0; --i) {
         EquipmentSlot slot = slotFromIndex(i);
-        ItemStack stack = minecraft.player.getItemBySlot(slot);
+        ItemStack stack = armorStack(slot);
         if (stack != null && !stack.isEmpty()) count++;
       }
     }
@@ -71,7 +74,7 @@ public final class ArmorHud extends HudModule {
       int textX = x + 18;
       for (int i = 3; i >= 0; --i) {
         EquipmentSlot slot = slotFromIndex(i);
-        ItemStack stack = minecraft.player.getItemBySlot(slot);
+        ItemStack stack = armorStack(slot);
         if (stack == null || stack.isEmpty()) continue;
         gui.item(stack, x, y);
         gui.itemDecorations(minecraft.font, stack, x, y);
@@ -81,7 +84,7 @@ public final class ArmorHud extends HudModule {
       y = getY();
       for (int i = 3; i >= 0; --i) {
         EquipmentSlot slot = slotFromIndex(i);
-        ItemStack stack = minecraft.player.getItemBySlot(slot);
+        ItemStack stack = armorStack(slot);
         if (stack == null || stack.isEmpty()) continue;
         if (showDurability.getValue() && stack.isDamageableItem()) {
           FontUtil.drawString(getDurabilityText(stack), textX, y + 5, getDurabilityColor(stack));
@@ -91,13 +94,40 @@ public final class ArmorHud extends HudModule {
     } else {
       for (int i = 3; i >= 0; --i) {
         EquipmentSlot slot = slotFromIndex(i);
-        ItemStack stack = minecraft.player.getItemBySlot(slot);
+        ItemStack stack = armorStack(slot);
         if (stack == null || stack.isEmpty()) continue;
         gui.item(stack, x, y);
         gui.itemDecorations(minecraft.font, stack, x, y);
         x += 18;
       }
     }
+  }
+
+  private boolean isInEditor() {
+    return Minecraft.getInstance().gui != null
+        && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
+  }
+
+  private int equippedCount() {
+    int count = 0;
+    if (minecraft.player == null) return 0;
+    for (int i = 3; i >= 0; --i) {
+      ItemStack stack = minecraft.player.getItemBySlot(slotFromIndex(i));
+      if (stack != null && !stack.isEmpty()) count++;
+    }
+    return count;
+  }
+
+  private ItemStack armorStack(EquipmentSlot slot) {
+    if (minecraft.player == null) return null;
+    ItemStack stack = minecraft.player.getItemBySlot(slot);
+    if ((stack == null || stack.isEmpty()) && equippedCount() == 0 && isInEditor()) {
+      if (slot == EquipmentSlot.HEAD) return new ItemStack(Items.NETHERITE_HELMET);
+      if (slot == EquipmentSlot.CHEST) return new ItemStack(Items.NETHERITE_CHESTPLATE);
+      if (slot == EquipmentSlot.LEGS) return new ItemStack(Items.NETHERITE_LEGGINGS);
+      return new ItemStack(Items.NETHERITE_BOOTS);
+    }
+    return stack;
   }
 
   private static EquipmentSlot slotFromIndex(int index) {
