@@ -11,8 +11,8 @@ import net.minecraft.resources.Identifier;
 
 public class FontUtil {
 
-  private static final float TTF_SIZE = 9.0F;
   private static final float TTF_OVERSAMPLE = 4.0F;
+  private static final int DEFAULT_SIZE = 9;
 
   private static final Map<String, String> SYSTEM_FILES = new HashMap<String, String>();
 
@@ -34,7 +34,7 @@ public class FontUtil {
     SYSTEM_FILES.put("segoe ui", "segoeui.ttf");
   }
 
-  private static final Map<CustomFont.Face, Font> CACHE = new HashMap<CustomFont.Face, Font>();
+  private static final Map<String, Font> CACHE = new HashMap<String, Font>();
   private static Font systemFont;
   private static String systemKey;
   private static final java.util.Set<String> LOGGED = new java.util.HashSet<String>();
@@ -65,6 +65,21 @@ public class FontUtil {
     return Minecraft.getInstance().font.width(text);
   }
 
+  private static int fontSize() {
+    CustomFont module = CustomFont.get();
+    if (module == null) {
+      return DEFAULT_SIZE;
+    }
+    try {
+      int size = module.size.getValue().intValue();
+      if (size < 6) size = 6;
+      if (size > 32) size = 32;
+      return size;
+    } catch (Exception e) {
+      return DEFAULT_SIZE;
+    }
+  }
+
   private static Font activeFont() {
     CustomFont module = CustomFont.get();
     if (module == null || !module.isRunning()) {
@@ -83,7 +98,7 @@ public class FontUtil {
     if (face == CustomFont.Face.SYSTEM) {
       return systemFont();
     }
-    Font cached = CACHE.get(face);
+    Font cached = CACHE.get(face.name() + fontSize());
     if (cached != null) {
       return cached;
     }
@@ -92,8 +107,8 @@ public class FontUtil {
           face == CustomFont.Face.LEXEND_DECA
               ? Identifier.fromNamespaceAndPath("exeter", "lexenddeca.ttf")
               : Identifier.fromNamespaceAndPath("exeter", "jetbrainsmono-regular.ttf");
-      Font built = TtfFont.fromResource(location, TTF_SIZE, TTF_OVERSAMPLE);
-      CACHE.put(face, built);
+      Font built = TtfFont.fromResource(location, (float) fontSize(), TTF_OVERSAMPLE);
+      CACHE.put(face.name() + fontSize(), built);
       return built;
     } catch (Exception e) {
       logOnce(face.name(), e);
@@ -110,7 +125,8 @@ public class FontUtil {
     if (key == null || key.isEmpty()) {
       return null;
     }
-    if (systemFont != null && key.equalsIgnoreCase(systemKey)) {
+    String cacheKey = key.toLowerCase() + fontSize();
+    if (systemFont != null && cacheKey.equals(systemKey)) {
       return systemFont;
     }
     File file = resolveSystemFont(key);
@@ -119,9 +135,9 @@ public class FontUtil {
       return null;
     }
     try {
-      Font built = TtfFont.fromFile(file, TTF_SIZE, TTF_OVERSAMPLE);
+      Font built = TtfFont.fromFile(file, (float) fontSize(), TTF_OVERSAMPLE);
       systemFont = built;
-      systemKey = key;
+      systemKey = cacheKey;
       return built;
     } catch (Exception e) {
       logOnce("system-" + key, e);

@@ -5,6 +5,7 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.EnumProperty;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 
 public class CustomFont extends ToggleableModule {
@@ -19,6 +20,8 @@ public class CustomFont extends ToggleableModule {
   public final EnumProperty<Face> face = new EnumProperty<>(Face.VANILLA, "Face", "face", "font");
   public final Property<String> family =
       new Property<>("Arial", "Family", "family", "systemfont");
+  public final NumberProperty<Integer> size =
+      new NumberProperty<>(9, 6, 24, "Size", "size", "fontsize");
 
   public CustomFont() {
     super(
@@ -27,7 +30,7 @@ public class CustomFont extends ToggleableModule {
         0xFFFFFFFF,
         ModuleType.CLIENT);
     setDescription("TrueType font for client text.");
-    offerProperties(face, family);
+    offerProperties(face, family, size);
   }
 
   public static CustomFont get() {
