@@ -185,15 +185,15 @@ public class ColorPickerPopup implements ClickPopup {
 
   @Override
   public boolean mouseDragged(int mouseX, int mouseY) {
-    if (draggingSv && inSv(mouseX, mouseY)) {
+    if (draggingSv) {
       updateSv(mouseX, mouseY);
       return true;
     }
-    if (draggingHue && inHue(mouseX, mouseY)) {
+    if (draggingHue) {
       updateHue(mouseY);
       return true;
     }
-    return draggingSv || draggingHue;
+    return false;
   }
 
   @Override
