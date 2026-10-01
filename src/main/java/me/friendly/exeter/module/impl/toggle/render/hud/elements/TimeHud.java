@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 
 public final class TimeHud extends HudModule {
@@ -27,7 +28,6 @@ public final class TimeHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
-    String text = String.format("\u00a77%s", dateFormat.format(new Date()));
-    FontUtil.drawString(text, getX(), getY(), -1);
+    FontUtil.drawString(dateFormat.format(new Date()), getX(), getY(), Colors.getHudMain());
   }
 }

@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.NumberProperty;
 
@@ -20,7 +21,7 @@ public final class SpeedHud extends HudModule {
 
   @Override
   public int getWidth() {
-    return FontUtil.getStringWidth("\u00a77Speed: \u00a7f0.000");
+    return FontUtil.getStringWidth("Speed: ") + FontUtil.getStringWidth("0.000");
   }
 
   @Override
@@ -52,7 +53,9 @@ public final class SpeedHud extends HudModule {
       display = avg;
     }
 
-    String text = String.format("\u00a77Speed: \u00a7f%.3f", display);
-    FontUtil.drawString(text, getX(), getY(), -1);
+    String value = String.format("%.3f", display);
+    FontUtil.drawString("Speed: ", getX(), getY(), Colors.getHudAccent());
+    FontUtil.drawString(
+        value, getX() + FontUtil.getStringWidth("Speed: "), getY(), Colors.getHudMain());
   }
 }

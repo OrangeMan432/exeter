@@ -32,12 +32,12 @@ public final class Colors extends Module {
           "Brigtness",
           "Brigntrnew",
           "Brighgrtnewss");
-  private final Property<Boolean> hudRainbow =
+  private static final Property<Boolean> hudRainbow =
       new Property<>(false, "HUD Rainbow", "HUDRainbow", "Rainbow", "Cycle");
-  private final NumberProperty<Float> rainbowSpeed =
+  private static final NumberProperty<Float> rainbowSpeed =
       new NumberProperty<>(
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
-  private final NumberProperty<Float> rainbowHue =
+  private static final NumberProperty<Float> rainbowHue =
       new NumberProperty<>(
           4f, 0f, 10f, "RainbowHue", "RainbowHueSpeed2", "RainbowSped2", "RrainbowSpeed2");
   private static final NumberProperty<Float> espFillAlpha =
@@ -103,6 +103,17 @@ public final class Colors extends Module {
 
   public static int getEspOutlineAlpha() {
     return Math.round(espOutlineAlpha.getValue());
+  }
+
+  public static int getHudMain() {
+    if (hudRainbow.getValue()) {
+      return getRainbow(1000, 0, 0.5f, 1.0f).getRGB();
+    }
+    return getClientColor();
+  }
+
+  public static int getHudAccent() {
+    return getDarkerClientColorCustomAlpha(255);
   }
 
   public static int getClientColorEsp(int fillAlpha, int outlineAlpha) {
