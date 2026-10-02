@@ -315,6 +315,38 @@ public class ProxyWindow extends Window {
     if (key == InputConstants.KEY_SPACE) {
       return true;
     }
+    if (appendProxyChar(inputBuffer, event)) {
+      return true;
+    }
     return appendKeyChar(inputBuffer, event, 64);
+  }
+
+  private static boolean appendProxyChar(StringBuilder buffer, KeyEvent event) {
+    if (buffer.length() >= 64) {
+      return false;
+    }
+    boolean shift = Minecraft.getInstance().hasShiftDown();
+    int code = event.key();
+    if (code == InputConstants.KEY_PERIOD) {
+      buffer.append('.');
+      return true;
+    }
+    if (code == InputConstants.KEY_SLASH) {
+      buffer.append('/');
+      return true;
+    }
+    if (code == InputConstants.KEY_EQUALS) {
+      buffer.append(shift ? '+' : '=');
+      return true;
+    }
+    if (code == InputConstants.KEY_SEMICOLON) {
+      buffer.append(shift ? ':' : ';');
+      return true;
+    }
+    if (code == InputConstants.KEY_2 && shift) {
+      buffer.append('@');
+      return true;
+    }
+    return false;
   }
 }
