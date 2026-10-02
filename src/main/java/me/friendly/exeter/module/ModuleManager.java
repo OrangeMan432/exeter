@@ -30,6 +30,7 @@ import me.friendly.exeter.module.impl.toggle.combat.SelfBed;
 import me.friendly.exeter.module.impl.toggle.misc.AutoFirework;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
+import me.friendly.exeter.module.impl.toggle.movement.ElytraFly;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
 import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
 import me.friendly.exeter.module.impl.toggle.movement.NoBedStep;
@@ -96,6 +97,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new FakePlayerModule());
     register(new Velocity());
     register(new FastFall());
+    register(new ElytraFly());
     register(new NoBedStep());
     register(new NoFall());
     register(new Step());
