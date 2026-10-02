@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Prepends a SOCKS5/HTTP proxy handler to every game connection when a proxy is
- * active. Netty diverts the connect through the proxy internally, so the vanilla
- * address and pipeline setup stay untouched.
+ * Prepends a SOCKS5/HTTP proxy handler to every game connection when a proxy is active. Netty
+ * diverts the connect through the proxy internally, so the vanilla address and pipeline setup stay
+ * untouched.
  */
 @Mixin(targets = "net.minecraft.network.Connection$1")
 public class MixinProxyInitializer {
@@ -37,8 +37,7 @@ public class MixinProxyInitializer {
         channel
             .pipeline()
             .addFirst(
-                new HttpProxyHandler(
-                    active.address(), active.getUsername(), active.getPassword()));
+                new HttpProxyHandler(active.address(), active.getUsername(), active.getPassword()));
       } else {
         channel.pipeline().addFirst(new HttpProxyHandler(active.address()));
       }

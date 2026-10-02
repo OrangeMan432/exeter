@@ -14,9 +14,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
 /**
- * Proxy list window. Type {@code [name=][user:pass@]host:port} then Add. Type
- * cycles the selected entry between SOCKS5 and HTTP. Use marks the active
- * proxy, On toggles proxying for game and auth traffic.
+ * Proxy list window. Type {@code [name=][user:pass@]host:port} then Add. Type cycles the selected
+ * entry between SOCKS5 and HTTP. Use marks the active proxy, On toggles proxying for game and auth
+ * traffic.
  */
 public class ProxyWindow extends Window {
   private static final int ENTRY_HEIGHT = 14;
@@ -63,7 +63,13 @@ public class ProxyWindow extends Window {
       }
       boolean isActive = entry.getName().equalsIgnoreCase(proxies().getActiveName());
       String display =
-          entry.getName() + " §8" + entry.getType().name() + " " + entry.getHost() + ":" + entry.getPort();
+          entry.getName()
+              + " §8"
+              + entry.getType().name()
+              + " "
+              + entry.getHost()
+              + ":"
+              + entry.getPort();
       FontUtil.drawString(display, x + 5, rowY + 2, isActive ? 0xFF55FF55 : 0xFFEEEEEE);
       ProxyManager.PingResult ping = proxies().ping(entry);
       String pingText;
@@ -164,7 +170,8 @@ public class ProxyWindow extends Window {
     int color =
         hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120);
     RenderMethods.drawRect(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
-    FontUtil.drawString(label, bx + bw / 2 - FontUtil.getStringWidth(label) / 2, btnY + 2, 0xFFFFFFFF);
+    FontUtil.drawString(
+        label, bx + bw / 2 - FontUtil.getStringWidth(label) / 2, btnY + 2, 0xFFFFFFFF);
   }
 
   private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {

@@ -21,10 +21,9 @@ import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
 
 /**
- * Manages SOCKS5/HTTP proxies for all client traffic: game connections go through a
- * Netty proxy handler (see MixinProxyInitializer), and JDK HTTP clients (account
- * manager auth) use a proxy selector. Passwords are stored in plaintext in
- * proxies.json like the rest of the client config.
+ * Manages SOCKS5/HTTP proxies for all client traffic: game connections go through a Netty proxy
+ * handler (see MixinProxyInitializer), and JDK HTTP clients (account manager auth) use a proxy
+ * selector. Passwords are stored in plaintext in proxies.json like the rest of the client config.
  */
 public final class ProxyManager extends ListRegistry<ProxyEntry> {
 
@@ -118,9 +117,7 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
         pings.put(entry.getName(), new PingResult(PingState.TESTING, -1, now));
         pingPool.submit(() -> test(entry));
       }
-      return cached == null
-          ? new PingResult(PingState.TESTING, -1, now)
-          : cached;
+      return cached == null ? new PingResult(PingState.TESTING, -1, now) : cached;
     }
     return cached;
   }
@@ -130,8 +127,7 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
     try (java.net.Socket socket = new java.net.Socket()) {
       socket.connect(entry.address(), PING_TIMEOUT_MS);
       pings.put(
-          entry.getName(),
-          new PingResult(PingState.OK, System.currentTimeMillis() - start, start));
+          entry.getName(), new PingResult(PingState.OK, System.currentTimeMillis() - start, start));
     } catch (Exception e) {
       pings.put(entry.getName(), new PingResult(PingState.FAIL, -1, start));
     }
@@ -235,8 +231,7 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
           new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-              if (getRequestingHost() != null
-                  && getRequestingHost().equalsIgnoreCase(host)) {
+              if (getRequestingHost() != null && getRequestingHost().equalsIgnoreCase(host)) {
                 return new PasswordAuthentication(user, pass);
               }
               return null;
