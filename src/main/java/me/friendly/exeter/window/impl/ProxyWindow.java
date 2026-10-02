@@ -61,10 +61,10 @@ public class ProxyWindow extends Window {
       if (hovered || i == selectedIndex) {
         RenderMethods.drawRect(x, rowY, x + width, rowY + ENTRY_HEIGHT, 0x20FFFFFF);
       }
-      String marker = entry.getName().equalsIgnoreCase(proxies().getActiveName()) ? "> " : "  ";
+      boolean isActive = entry.getName().equalsIgnoreCase(proxies().getActiveName());
       String display =
-          marker + entry.getName() + " §8" + entry.getType().name() + " " + entry.getHost() + ":" + entry.getPort();
-      FontUtil.drawString(display, x + 5, rowY + 2, 0xFFEEEEEE);
+          entry.getName() + " §8" + entry.getType().name() + " " + entry.getHost() + ":" + entry.getPort();
+      FontUtil.drawString(display, x + 5, rowY + 2, isActive ? 0xFF55FF55 : 0xFFEEEEEE);
       ProxyManager.PingResult ping = proxies().ping(entry);
       String pingText;
       int pingColor;
@@ -136,7 +136,7 @@ public class ProxyWindow extends Window {
     if (active == null) {
       return proxies().isEnabled() ? "Enabled, no proxy selected" : "Proxies disabled";
     }
-    return "> " + active.getName() + " (" + active.getType().name() + ")";
+    return active.getName() + " (" + active.getType().name() + ")";
   }
 
   private void setStatus(String message) {
