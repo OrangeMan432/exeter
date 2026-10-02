@@ -65,6 +65,21 @@ public class ProxyWindow extends Window {
       String display =
           marker + entry.getName() + " §8" + entry.getType().name() + " " + entry.getHost() + ":" + entry.getPort();
       FontUtil.drawString(display, x + 5, rowY + 2, 0xFFEEEEEE);
+      ProxyManager.PingResult ping = proxies().ping(entry);
+      String pingText;
+      int pingColor;
+      if (ping.state == ProxyManager.PingState.OK) {
+        pingText = "OK " + ping.ms + "ms";
+        pingColor = 0xFF55FF55;
+      } else if (ping.state == ProxyManager.PingState.FAIL) {
+        pingText = "FAIL";
+        pingColor = 0xFFFF5555;
+      } else {
+        pingText = "...";
+        pingColor = 0xFF888888;
+      }
+      FontUtil.drawString(
+          pingText, x + width - 5 - FontUtil.getStringWidth(pingText), rowY + 2, pingColor);
       rowY += ENTRY_HEIGHT;
     }
 

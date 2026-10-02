@@ -28,6 +28,37 @@ import me.friendly.exeter.core.Exeter;
  */
 public final class ProxyManager extends ListRegistry<ProxyEntry> {
 
+  public enum PingState {
+    UNTESTED,
+    TESTING,
+    OK,
+    FAIL
+  }
+
+  public static final class PingResult {
+    public final PingState state;
+    public final long ms;
+    public final long checkedAt;
+
+    PingResult(PingState state, long ms, long checkedAt) {
+      this.state = state;
+      this.ms = ms;
+      this.checkedAt = checkedAt;
+    }
+  }
+
+  private static final long PING_INTERVAL_MS = 30000L;
+  private static final int PING_TIMEOUT_MS = 5000;
+
+  private final java.util.concurrent.ExecutorService pingPool =
+      java.util.concurrent.Executors.newSingleThreadExecutor(
+          runnable -> {
+            Thread thread = new Thread(runnable, "Exeter-ProxyPing");
+            thread.setDaemon(true);
+            return thread;
+          });
+  private final java.util.Map<String, PingResult> pings = new java.util.HashMap<>();
+
   private final Config config;
   private boolean enabled;
   private String activeName = "";
@@ -76,6 +107,34 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
 
   public String getActiveName() {
     return activeName;
+  }
+
+  /** Cached ping, refreshing in the background when stale. Never blocks. */
+  public PingResult ping(ProxyEntry entry) {
+    long now = System.currentTimeMillis();
+    PingResult cached = pings.get(entry.getName());
+    if (cached == null || now - cached.checkedAt > PING_INTERVAL_MS) {
+      if (cached == null || cached.state != PingState.TESTING) {
+        pings.put(entry.getName(), new PingResult(PingState.TESTING, -1, now));
+        pingPool.submit(() -> test(entry));
+      }
+      return cached == null
+          ? new PingResult(PingState.TESTING, -1, now)
+          : cached;
+    }
+    return cached;
+  }
+
+  private void test(ProxyEntry entry) {
+    long start = System.currentTimeMillis();
+    try (java.net.Socket socket = new java.net.Socket()) {
+      socket.connect(entry.address(), PING_TIMEOUT_MS);
+      pings.put(
+          entry.getName(),
+          new PingResult(PingState.OK, System.currentTimeMillis() - start, start));
+    } catch (Exception e) {
+      pings.put(entry.getName(), new PingResult(PingState.FAIL, -1, start));
+    }
   }
 
   private void loadProxies() {
