@@ -13,6 +13,7 @@ import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.module.ModuleManager;
 import me.friendly.exeter.plugin.PluginManager;
+import me.friendly.exeter.proxy.ProxyManager;
 
 /**
  * Exeter client for Fabric 26.2
@@ -39,6 +40,7 @@ public final class Exeter {
   private ModuleManager moduleManager;
   private CommandManager commandManager;
   private FriendManager friendManager;
+  private ProxyManager proxyManager;
   private ConfigManager configManager;
   private ExeterConfig exeterConfig;
   private AccountManager accountManager;
@@ -63,6 +65,7 @@ public final class Exeter {
     this.eventManager = new BasicEventManager();
     this.configManager = new ConfigManager();
     this.friendManager = new FriendManager();
+    this.proxyManager = new ProxyManager();
     this.keybindManager = new KeybindManager();
     this.commandManager = new CommandManager();
     this.exeterConfig = new ExeterConfig();
@@ -115,6 +118,10 @@ public final class Exeter {
 
   public FriendManager getFriendManager() {
     return this.friendManager;
+  }
+
+  public ProxyManager getProxyManager() {
+    return this.proxyManager;
   }
 
   public BasicEventManager getEventManager() {

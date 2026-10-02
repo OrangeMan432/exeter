@@ -110,6 +110,9 @@ dependencies {
 
     implementation "meteordevelopment:discord-ipc:1.1"
     implementation "com.google.code.gson:gson:2.11.0"
+    // Pinned jar: the SOCKS/HTTP proxy handlers MC omits. Kept in-repo so
+    // flaky maven access never blocks the build.
+    implementation files("libs/netty-handler-proxy-4.2.15.Final.jar")
 }
 
 processResources {
