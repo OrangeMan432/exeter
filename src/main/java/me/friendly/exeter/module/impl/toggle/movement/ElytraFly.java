@@ -1,0 +1,344 @@
+package me.friendly.exeter.module.impl.toggle.movement;
+
+import me.friendly.api.event.Listener;
+import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.events.PacketEvent;
+import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.module.Module;
+import me.friendly.exeter.module.ModuleType;
+import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.EnumProperty;
+import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.NotificationManager;
+import me.friendly.exeter.util.PlayerUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
+
+/**
+ * Elytra flight modes ported from Meteor Client (MIT): Pitch40 oscillates pitch between height
+ * bounds, Bounce recasts the glide and holds forward. Only these two modes are ported;
+ * Vanilla/Packet need movement-packet control Exeter does not have.
+ */
+public class ElytraFly extends ToggleableModule {
+
+  public enum FlightMode {
+    PITCH40,
+    BOUNCE
+  }
+
+  public enum YawLock {
+    NONE,
+    SMART,
+    SIMPLE
+  }
+
+  private final EnumProperty<FlightMode> mode =
+      new EnumProperty<>(FlightMode.BOUNCE, "Mode", "mode");
+
+  private final NumberProperty<Double> pitch40LowerBounds =
+      new NumberProperty<>(180.0, -128.0, 360.0, "Lower Bounds", "lowerbounds");
+  private final NumberProperty<Double> pitch40UpperBounds =
+      new NumberProperty<>(220.0, -128.0, 360.0, "Upper Bounds", "upperbounds");
+  private final NumberProperty<Double> pitch40RotationSpeedUp =
+      new NumberProperty<>(5.45, 1.0, 20.0, "Rotate Speed Up", "rotatespeedup");
+  private final NumberProperty<Double> pitch40RotationSpeedDown =
+      new NumberProperty<>(0.90, 0.5, 2.0, "Rotate Speed Down", "rotatespeeddown");
+
+  private final Property<Boolean> autoJump = new Property<>(true, "Auto Jump", "autojump");
+  private final EnumProperty<YawLock> yawLockMode =
+      new EnumProperty<>(YawLock.SMART, "Yaw Lock", "yawlock");
+  private final NumberProperty<Double> yaw = new NumberProperty<>(0.0, 0.0, 360.0, "Yaw", "yaw");
+  private final Property<Boolean> lockPitch = new Property<>(true, "Pitch Lock", "pitchlock");
+  private final NumberProperty<Double> pitch =
+      new NumberProperty<>(85.0, 0.0, 90.0, "Pitch", "pitch");
+  private final Property<Boolean> restart = new Property<>(true, "Restart", "restart");
+  private final NumberProperty<Integer> restartDelay =
+      new NumberProperty<>(7, 0, 20, "Restart Delay", "restartdelay");
+  private final Property<Boolean> sprint = new Property<>(true, "Sprint", "sprint");
+  private final Property<Boolean> manualTakeoff =
+      new Property<>(false, "Manual Takeoff", "manualtakeoff");
+
+  private final Pitch40Mode pitch40 = new Pitch40Mode();
+  private final BounceMode bounce = new BounceMode();
+
+  private final Listener<TickEvent> tickListener =
+      new Listener<TickEvent>("elytrafly_tick") {
+        @Override
+        public void call(TickEvent event) {
+          if (event.getStage() != me.friendly.api.event.Stage.PRE) return;
+          ElytraFly.this.onTick();
+        }
+      };
+
+  private final Listener<PacketEvent> packetListener =
+      new Listener<PacketEvent>("elytrafly_packet") {
+        @Override
+        public void call(PacketEvent event) {
+          if (event.isSending()) return;
+          if (event.getPacket()
+              instanceof net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket) {
+            bounce.onRubberband();
+          }
+        }
+      };
+
+  public ElytraFly() {
+    super("ElytraFly", new String[] {"elytrafly", "efly"}, 0x88DDFF, ModuleType.MOVEMENT);
+    setDescription("Pitch40 and Bounce elytra flight, ported from Meteor.");
+    pitch40LowerBounds.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    pitch40UpperBounds.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    pitch40RotationSpeedUp.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    pitch40RotationSpeedDown.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    autoJump.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    yawLockMode.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    yaw.visibleWhen(
+        () -> mode.getValue() == FlightMode.BOUNCE && yawLockMode.getValue() == YawLock.SIMPLE);
+    lockPitch.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    pitch.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE && lockPitch.getValue());
+    restart.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    restartDelay.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE && restart.getValue());
+    sprint.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    manualTakeoff.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
+    offerProperties(
+        mode,
+        pitch40LowerBounds,
+        pitch40UpperBounds,
+        pitch40RotationSpeedUp,
+        pitch40RotationSpeedDown,
+        autoJump,
+        yawLockMode,
+        yaw,
+        lockPitch,
+        pitch,
+        restart,
+        restartDelay,
+        sprint,
+        manualTakeoff);
+    listeners.add(tickListener);
+    listeners.add(packetListener);
+  }
+
+  public static ElytraFly get() {
+    if (Exeter.getInstance() == null) return null;
+    Module module = Exeter.getInstance().getModuleManager().getModuleByAlias("elytrafly");
+    return module instanceof ElytraFly ? (ElytraFly) module : null;
+  }
+
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    if (mode.getValue() == FlightMode.PITCH40) {
+      pitch40.onActivate();
+    } else {
+      bounce.onActivate();
+    }
+  }
+
+  @Override
+  protected void onDisable() {
+    super.onDisable();
+    pitch40.onDeactivate();
+    bounce.onDeactivate();
+  }
+
+  @Override
+  public String getTag() {
+    return mode.getValue() == FlightMode.PITCH40 ? "Pitch40" : "Bounce";
+  }
+
+  private void onTick() {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.player == null || mc.level == null) return;
+    if (mode.getValue() == FlightMode.PITCH40) {
+      pitch40.onTick();
+    } else {
+      bounce.onTick();
+      bounce.onPreTick();
+    }
+  }
+
+  private static double randPitch(double pitch, double bound) {
+    return pitch + (bound * (Math.random() - 0.5));
+  }
+
+  private final class Pitch40Mode {
+    private boolean pitchingDown = true;
+    private float pitchValue = 37.72F;
+
+    void onActivate() {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player.getY() < pitch40UpperBounds.getValue()) {
+        NotificationManager.push("ElytraFly: must be above upper bounds", "error");
+        ElytraFly.this.setRunning(false);
+      } else if (mc.player.getY() - 40 < pitch40LowerBounds.getValue()) {
+        NotificationManager.push("ElytraFly: must be 40 above lower bounds", "error");
+        ElytraFly.this.setRunning(false);
+      }
+      pitchingDown = true;
+      pitchValue = 37.72F;
+    }
+
+    void onDeactivate() {}
+
+    void onTick() {
+      Minecraft mc = Minecraft.getInstance();
+      if (pitchingDown && mc.player.getY() <= pitch40LowerBounds.getValue()) {
+        pitchingDown = false;
+      } else if (!pitchingDown && mc.player.getY() >= pitch40UpperBounds.getValue()) {
+        pitchingDown = true;
+      }
+      if (!pitchingDown) {
+        pitchValue -= randPitch(pitch40RotationSpeedUp.getValue(), 1.0);
+        if (pitchValue < -54.77F) {
+          pitchValue = -54.77F;
+          pitchingDown = true;
+        }
+      } else if (pitchValue < 37.72F) {
+        pitchValue += randPitch(pitch40RotationSpeedDown.getValue(), 0.50);
+      }
+      PlayerUtil.setRotation(mc.player.getYRot(), pitchValue);
+    }
+  }
+
+  private final class BounceMode {
+    private boolean rubberbanded;
+    private int tickDelay;
+    private double prevFov;
+
+    void onActivate() {
+      Minecraft mc = Minecraft.getInstance();
+      prevFov = mc.options.fovEffectScale().get();
+      tickDelay = restartDelay.getValue();
+      rubberbanded = false;
+    }
+
+    void onDeactivate() {
+      unpress();
+      rubberbanded = false;
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player != null && prevFov != 0 && !sprint.getValue()) {
+        mc.options.fovEffectScale().set(prevFov);
+      }
+    }
+
+    void onRubberband() {
+      rubberbanded = true;
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player != null) {
+        mc.player.stopFallFlying();
+      }
+    }
+
+    void onPreTick() {
+      Minecraft mc = Minecraft.getInstance();
+      if (checkConditions(mc.player) && sprint.getValue()) {
+        mc.player.setSprinting(true);
+      }
+    }
+
+    void onTick() {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.options.keyJump.isDown() && !mc.player.isFallFlying() && !manualTakeoff.getValue()) {
+        mc.getConnection()
+            .send(
+                new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+                    mc.player,
+                    net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                        .START_FALL_FLYING));
+      }
+      if (!checkConditions(mc.player)) {
+        return;
+      }
+      if (!rubberbanded) {
+        if (prevFov != 0 && !sprint.getValue()) {
+          mc.options.fovEffectScale().set(0.0);
+        }
+        if (autoJump.getValue()) {
+          mc.options.keyJump.setDown(true);
+        }
+        mc.options.keyUp.setDown(true);
+        PlayerUtil.setRotation(getYawDirection(), mc.player.getXRot());
+        if (lockPitch.getValue()) {
+          PlayerUtil.setRotation(mc.player.getYRot(), pitch.getValue().floatValue());
+        }
+      }
+      if (!sprint.getValue()) {
+        if (mc.player.isFallFlying()) {
+          mc.player.setSprinting(mc.player.onGround());
+        } else {
+          mc.player.setSprinting(true);
+        }
+      }
+      if (rubberbanded && restart.getValue()) {
+        if (tickDelay > 0) {
+          tickDelay--;
+        } else {
+          mc.getConnection()
+              .send(
+                  new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+                      mc.player,
+                      net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                          .START_FALL_FLYING));
+          rubberbanded = false;
+          tickDelay = restartDelay.getValue();
+        }
+      }
+    }
+
+    private void unpress() {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc == null || mc.options == null) return;
+      mc.options.keyUp.setDown(false);
+      if (autoJump.getValue()) {
+        mc.options.keyJump.setDown(false);
+      }
+    }
+
+    private float getYawDirection() {
+      Minecraft mc = Minecraft.getInstance();
+      if (yawLockMode.getValue() == YawLock.SIMPLE) {
+        return yaw.getValue().floatValue();
+      }
+      if (yawLockMode.getValue() == YawLock.SMART) {
+        return Math.round((mc.player.getYRot() + 1f) / 45f) * 45f;
+      }
+      return mc.player.getYRot();
+    }
+
+    private boolean checkConditions(Player player) {
+      if (player == null) return false;
+      BlockState blockState = player.getInBlockState();
+      boolean climbing =
+          blockState.is(BlockTags.CLIMBABLE) && !blockState.is(BlockTags.CAN_GLIDE_THROUGH);
+      return !player.getAbilities().flying
+          && !player.isPassenger()
+          && !climbing
+          && !player.isInWater()
+          && !player.hasEffect(MobEffects.LEVITATION);
+    }
+
+    @SuppressWarnings("unused")
+    private boolean startGliding(Player player) {
+      for (EquipmentSlot slot : EquipmentSlot.values()) {
+        if (LivingEntity.canGlideUsing(player.getItemBySlot(slot), slot)) {
+          player.startFallFlying();
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  @SuppressWarnings("unused")
+  public static boolean recastElytra(Player player) {
+    ElytraFly fly = get();
+    if (fly == null) return false;
+    return fly.bounce.checkConditions(player) && fly.bounce.startGliding(player);
+  }
+}
