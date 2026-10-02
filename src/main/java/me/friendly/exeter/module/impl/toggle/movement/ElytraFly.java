@@ -186,13 +186,10 @@ public class ElytraFly extends ToggleableModule {
       Minecraft mc = Minecraft.getInstance();
       pitchingDown = true;
       pitchValue = 37.72F;
-      takingOff = false;
       takeoffTicks = 0;
       flyTicks = 0;
       outNotified = false;
-      if (mc.player.getY() < pitch40UpperBounds.getValue()) {
-        takingOff = true;
-      }
+      takingOff = !mc.player.isFallFlying();
     }
 
     void onDeactivate() {
@@ -206,9 +203,20 @@ public class ElytraFly extends ToggleableModule {
 
     void onTick() {
       Minecraft mc = Minecraft.getInstance();
-      if (takingOff) {
+      if (!mc.player.isFallFlying()) {
+        takingOff = true;
         takeoffTick();
         return;
+      }
+      if (takingOff) {
+        if (mc.player.getY() >= pitch40LowerBounds.getValue()) {
+          takingOff = false;
+          pitchingDown = false;
+          pitchValue = -54.77F;
+        } else {
+          takeoffTick();
+          return;
+        }
       }
       if (pitchingDown && mc.player.getY() <= pitch40LowerBounds.getValue()) {
         pitchingDown = false;
