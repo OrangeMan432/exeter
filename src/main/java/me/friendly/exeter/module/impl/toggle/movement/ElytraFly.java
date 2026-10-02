@@ -179,6 +179,7 @@ public class ElytraFly extends ToggleableModule {
     private boolean takingOff;
     private float pitchValue = 37.72F;
     private int takeoffTicks;
+    private int flyTicks;
     private boolean outNotified;
 
     void onActivate() {
@@ -187,6 +188,7 @@ public class ElytraFly extends ToggleableModule {
       pitchValue = 37.72F;
       takingOff = false;
       takeoffTicks = 0;
+      flyTicks = 0;
       outNotified = false;
       if (mc.player.getY() < pitch40UpperBounds.getValue()) {
         takingOff = true;
@@ -195,10 +197,7 @@ public class ElytraFly extends ToggleableModule {
 
     void onDeactivate() {
       takingOff = false;
-      Minecraft mc = Minecraft.getInstance();
-      if (mc != null && mc.options != null) {
-        mc.options.keyJump.setDown(false);
-      }
+      flyTicks = 0;
     }
 
     boolean isTakingOff() {
@@ -231,6 +230,7 @@ public class ElytraFly extends ToggleableModule {
     private void takeoffTick() {
       Minecraft mc = Minecraft.getInstance();
       if (!mc.player.isFallFlying()) {
+        flyTicks = 0;
         if (!airspaceClear()) {
           NotificationManager.push("ElytraFly: airspace blocked above", "error");
           ElytraFly.this.setRunning(false);
@@ -241,20 +241,27 @@ public class ElytraFly extends ToggleableModule {
           ElytraFly.this.setRunning(false);
           return;
         }
-        // Sprint-jump launch: holding jump input latches state vanilla never
-        // clears and jams manual takeoff, so jump from the ground directly.
+        // Relaunch with a sprint-jump: deploying with zero airspeed stalls out
+        // instantly (redeploy/land flap). Sprint is released once flight is set.
         if (mc.player.onGround()) {
           mc.player.setSprinting(true);
           mc.player.jumpFromGround();
           return;
         }
-        mc.player.setSprinting(false);
-        if (!mc.player.tryToStartFallFlying()) {
-          return;
+        if (mc.player.fallDistance > 0.0f && mc.player.tryToStartFallFlying()) {
+          mc.getConnection()
+              .send(
+                  new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(
+                      mc.player,
+                      net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action
+                          .START_FALL_FLYING));
         }
         return;
       }
-      mc.player.setSprinting(false);
+      flyTicks++;
+      if (flyTicks > 30) {
+        mc.player.setSprinting(false);
+      }
       PlayerUtil.setRotation(mc.player.getYRot(), -90.0);
       takeoffTicks++;
       if (takeoffTicks >= pitch40TakeoffDelay.getValue()) {
