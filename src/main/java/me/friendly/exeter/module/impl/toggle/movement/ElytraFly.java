@@ -236,17 +236,25 @@ public class ElytraFly extends ToggleableModule {
           ElytraFly.this.setRunning(false);
           return;
         }
-        mc.options.keyJump.setDown(!mc.player.onGround());
-        if (hasGlider()) {
-          mc.player.startFallFlying();
-        } else {
+        if (!hasGlider()) {
           NotificationManager.push("ElytraFly: no elytra equipped", "error");
           ElytraFly.this.setRunning(false);
           return;
         }
+        // Sprint-jump launch: holding jump input latches state vanilla never
+        // clears and jams manual takeoff, so jump from the ground directly.
+        if (mc.player.onGround()) {
+          mc.player.setSprinting(true);
+          mc.player.jumpFromGround();
+          return;
+        }
+        mc.player.setSprinting(false);
+        if (!mc.player.tryToStartFallFlying()) {
+          return;
+        }
         return;
       }
-      mc.options.keyJump.setDown(false);
+      mc.player.setSprinting(false);
       PlayerUtil.setRotation(mc.player.getYRot(), -90.0);
       takeoffTicks++;
       if (takeoffTicks >= pitch40TakeoffDelay.getValue()) {
