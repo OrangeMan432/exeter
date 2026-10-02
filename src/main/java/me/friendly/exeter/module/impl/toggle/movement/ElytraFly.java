@@ -181,6 +181,8 @@ public class ElytraFly extends ToggleableModule {
     private int takeoffTicks;
     private int flyTicks;
     private boolean outNotified;
+    private double lastY;
+    private int boostCooldown;
 
     void onActivate() {
       Minecraft mc = Minecraft.getInstance();
@@ -190,6 +192,8 @@ public class ElytraFly extends ToggleableModule {
       flyTicks = 0;
       outNotified = false;
       takingOff = !mc.player.isFallFlying();
+      lastY = mc.player.getY();
+      boostCooldown = 0;
     }
 
     void onDeactivate() {
@@ -213,6 +217,7 @@ public class ElytraFly extends ToggleableModule {
           takingOff = false;
           pitchingDown = false;
           pitchValue = -54.77F;
+          lastY = mc.player.getY();
         } else {
           takeoffTick();
           return;
@@ -220,10 +225,24 @@ public class ElytraFly extends ToggleableModule {
       }
       if (pitchingDown && mc.player.getY() <= pitch40LowerBounds.getValue()) {
         pitchingDown = false;
+        lastY = mc.player.getY();
       } else if (!pitchingDown && mc.player.getY() >= pitch40UpperBounds.getValue()) {
         pitchingDown = true;
       }
       if (!pitchingDown) {
+        if (boostCooldown > 0) {
+          boostCooldown--;
+        } else if (mc.player.getY() < lastY - 0.05
+            && mc.player.getY() < pitch40UpperBounds.getValue()) {
+          // Backsliding before the crest: boost once, then cool down.
+          if (fireRocket()) {
+            boostCooldown = 30;
+          } else if (!outNotified) {
+            outNotified = true;
+            NotificationManager.push("ElytraFly: out of fireworks", "warning");
+          }
+        }
+        lastY = mc.player.getY();
         pitchValue -= randPitch(pitch40RotationSpeedUp.getValue(), 1.0);
         if (pitchValue < -54.77F) {
           pitchValue = -54.77F;
