@@ -55,6 +55,8 @@ public class ElytraFly extends ToggleableModule {
   private final Property<Boolean> autoJump = new Property<>(true, "Auto Jump", "autojump");
   private final EnumProperty<YawLock> yawLockMode =
       new EnumProperty<>(YawLock.SMART, "Yaw Lock", "yawlock");
+  private final EnumProperty<YawLock> pitch40YawLock =
+      new EnumProperty<>(YawLock.NONE, "Pitch40 Yaw Lock", "pitch40yawlock");
   private final NumberProperty<Double> yaw = new NumberProperty<>(0.0, 0.0, 360.0, "Yaw", "yaw");
   private final Property<Boolean> lockPitch = new Property<>(true, "Pitch Lock", "pitchlock");
   private final NumberProperty<Double> pitch =
@@ -98,10 +100,14 @@ public class ElytraFly extends ToggleableModule {
     pitch40RotationSpeedUp.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     pitch40RotationSpeedDown.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     pitch40TakeoffDelay.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    pitch40YawLock.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     autoJump.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
     yawLockMode.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
     yaw.visibleWhen(
-        () -> mode.getValue() == FlightMode.BOUNCE && yawLockMode.getValue() == YawLock.SIMPLE);
+        () ->
+            (mode.getValue() == FlightMode.BOUNCE && yawLockMode.getValue() == YawLock.SIMPLE)
+                || (mode.getValue() == FlightMode.PITCH40
+                    && pitch40YawLock.getValue() == YawLock.SIMPLE));
     lockPitch.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
     pitch.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE && lockPitch.getValue());
     restart.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
@@ -115,6 +121,7 @@ public class ElytraFly extends ToggleableModule {
         pitch40RotationSpeedUp,
         pitch40RotationSpeedDown,
         pitch40TakeoffDelay,
+        pitch40YawLock,
         autoJump,
         yawLockMode,
         yaw,
@@ -172,6 +179,17 @@ public class ElytraFly extends ToggleableModule {
 
   private static double randPitch(double pitch, double bound) {
     return pitch + (bound * (Math.random() - 0.5));
+  }
+
+  private float resolveYaw(YawLock lock) {
+    Minecraft mc = Minecraft.getInstance();
+    if (lock == YawLock.SIMPLE) {
+      return yaw.getValue().floatValue();
+    }
+    if (lock == YawLock.SMART) {
+      return Math.round((mc.player.getYRot() + 1f) / 45f) * 45f;
+    }
+    return mc.player.getYRot();
   }
 
   private final class Pitch40Mode {
@@ -251,7 +269,7 @@ public class ElytraFly extends ToggleableModule {
       } else if (pitchValue < 37.72F) {
         pitchValue += randPitch(pitch40RotationSpeedDown.getValue(), 0.50);
       }
-      PlayerUtil.setRotation(mc.player.getYRot(), pitchValue);
+      PlayerUtil.setRotation(resolveYaw(pitch40YawLock.getValue()), pitchValue);
     }
 
     private void takeoffTick() {
@@ -289,7 +307,7 @@ public class ElytraFly extends ToggleableModule {
       if (flyTicks > 30) {
         mc.player.setSprinting(false);
       }
-      PlayerUtil.setRotation(mc.player.getYRot(), -90.0);
+      PlayerUtil.setRotation(resolveYaw(pitch40YawLock.getValue()), -90.0);
       takeoffTicks++;
       if (takeoffTicks >= pitch40TakeoffDelay.getValue()) {
         takeoffTicks = 0;
@@ -452,14 +470,7 @@ public class ElytraFly extends ToggleableModule {
     }
 
     private float getYawDirection() {
-      Minecraft mc = Minecraft.getInstance();
-      if (yawLockMode.getValue() == YawLock.SIMPLE) {
-        return yaw.getValue().floatValue();
-      }
-      if (yawLockMode.getValue() == YawLock.SMART) {
-        return Math.round((mc.player.getYRot() + 1f) / 45f) * 45f;
-      }
-      return mc.player.getYRot();
+      return resolveYaw(yawLockMode.getValue());
     }
 
     private boolean checkConditions(Player player) {

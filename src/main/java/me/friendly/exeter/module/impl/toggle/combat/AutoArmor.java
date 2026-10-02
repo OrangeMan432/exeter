@@ -38,6 +38,9 @@ public class AutoArmor extends ToggleableModule {
   private final Property<Boolean> packetSwitch = new Property<>(true, "Packet Switch");
   private final Property<Boolean> armorSaver = new Property<>(false, "Armor Saver");
   private final NumberProperty<Integer> depletion = new NumberProperty<>(20, 0, 99, "Depletion");
+  private final Property<Boolean> elytraSaver = new Property<>(true, "Elytra Saver");
+  private final NumberProperty<Integer> elytraDepletion =
+      new NumberProperty<>(5, 0, 99, "Elytra Depletion");
   private final Property<Boolean> pauseWhenSafe = new Property<>(false, "Pause When Safe");
   private final Property<Boolean> allowMend = new Property<>(false, "Allow Mend");
   private final NumberProperty<Integer> repairTo = new NumberProperty<>(80, 0, 100, "Repair To");
@@ -68,6 +71,8 @@ public class AutoArmor extends ToggleableModule {
         packetSwitch,
         armorSaver,
         depletion,
+        elytraSaver,
+        elytraDepletion,
         pauseWhenSafe,
         allowMend,
         repairTo);
@@ -133,6 +138,21 @@ public class AutoArmor extends ToggleableModule {
         continue;
       }
 
+      // Pull a worn elytra before it breaks so it never needs phantom-membrane
+      // repair, then equip the freshest unbroken elytra from the inventory.
+      if (equipSlot == EquipmentSlot.CHEST
+          && elytraSaver.getValue()
+          && mc.player.getItemBySlot(equipSlot).is(Items.ELYTRA)
+          && getDurabilityPercent(mc.player.getItemBySlot(equipSlot))
+              <= elytraDepletion.getValue()) {
+        if (hasEmptyInventorySlot()) {
+          quickMoveArmor(containerSlot);
+          sleep = true;
+        }
+        equipFreshElytra();
+        continue;
+      }
+
       ItemStack current = mc.player.getItemBySlot(equipSlot);
       boolean isEmpty = current.isEmpty();
 
@@ -168,6 +188,24 @@ public class AutoArmor extends ToggleableModule {
         }
         break;
       }
+    }
+  }
+
+  private void equipFreshElytra() {
+    int bestSlot = -1;
+    int bestRemaining = 0;
+    for (int i = 9; i < 45; i++) {
+      ItemStack stack = mc.player.containerMenu.getSlot(i).getItem();
+      if (stack.isEmpty() || !stack.is(Items.ELYTRA)) continue;
+      int remaining = stack.getMaxDamage() - stack.getDamageValue();
+      if (remaining > bestRemaining) {
+        bestRemaining = remaining;
+        bestSlot = i;
+      }
+    }
+    if (bestSlot != -1) {
+      quickMoveArmor(bestSlot);
+      sleep = true;
     }
   }
 
