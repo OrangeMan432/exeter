@@ -49,6 +49,8 @@ public class ElytraFly extends ToggleableModule {
       new NumberProperty<>(5.45, 1.0, 20.0, "Rotate Speed Up", "rotatespeedup");
   private final NumberProperty<Double> pitch40RotationSpeedDown =
       new NumberProperty<>(0.90, 0.5, 2.0, "Rotate Speed Down", "rotatespeeddown");
+  private final NumberProperty<Integer> pitch40TakeoffDelay =
+      new NumberProperty<>(25, 1, 100, "Takeoff Firework Delay", "takeoffdelay");
 
   private final Property<Boolean> autoJump = new Property<>(true, "Auto Jump", "autojump");
   private final EnumProperty<YawLock> yawLockMode =
@@ -95,6 +97,7 @@ public class ElytraFly extends ToggleableModule {
     pitch40UpperBounds.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     pitch40RotationSpeedUp.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     pitch40RotationSpeedDown.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
+    pitch40TakeoffDelay.visibleWhen(() -> mode.getValue() == FlightMode.PITCH40);
     autoJump.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
     yawLockMode.visibleWhen(() -> mode.getValue() == FlightMode.BOUNCE);
     yaw.visibleWhen(
@@ -111,6 +114,7 @@ public class ElytraFly extends ToggleableModule {
         pitch40UpperBounds,
         pitch40RotationSpeedUp,
         pitch40RotationSpeedDown,
+        pitch40TakeoffDelay,
         autoJump,
         yawLockMode,
         yaw,
@@ -149,7 +153,10 @@ public class ElytraFly extends ToggleableModule {
 
   @Override
   public String getTag() {
-    return mode.getValue() == FlightMode.PITCH40 ? "Pitch40" : "Bounce";
+    if (mode.getValue() == FlightMode.PITCH40) {
+      return pitch40.isTakingOff() ? "Takeoff" : "Pitch40";
+    }
+    return "Bounce";
   }
 
   private void onTick() {
@@ -169,25 +176,41 @@ public class ElytraFly extends ToggleableModule {
 
   private final class Pitch40Mode {
     private boolean pitchingDown = true;
+    private boolean takingOff;
     private float pitchValue = 37.72F;
+    private int takeoffTicks;
+    private boolean outNotified;
 
     void onActivate() {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.player.getY() < pitch40UpperBounds.getValue()) {
-        NotificationManager.push("ElytraFly: must be above upper bounds", "error");
-        ElytraFly.this.setRunning(false);
-      } else if (mc.player.getY() - 40 < pitch40LowerBounds.getValue()) {
-        NotificationManager.push("ElytraFly: must be 40 above lower bounds", "error");
-        ElytraFly.this.setRunning(false);
-      }
       pitchingDown = true;
       pitchValue = 37.72F;
+      takingOff = false;
+      takeoffTicks = 0;
+      outNotified = false;
+      if (mc.player.getY() < pitch40UpperBounds.getValue()) {
+        takingOff = true;
+      }
     }
 
-    void onDeactivate() {}
+    void onDeactivate() {
+      takingOff = false;
+      Minecraft mc = Minecraft.getInstance();
+      if (mc != null && mc.options != null) {
+        mc.options.keyJump.setDown(false);
+      }
+    }
+
+    boolean isTakingOff() {
+      return takingOff;
+    }
 
     void onTick() {
       Minecraft mc = Minecraft.getInstance();
+      if (takingOff) {
+        takeoffTick();
+        return;
+      }
       if (pitchingDown && mc.player.getY() <= pitch40LowerBounds.getValue()) {
         pitchingDown = false;
       } else if (!pitchingDown && mc.player.getY() >= pitch40UpperBounds.getValue()) {
@@ -203,6 +226,92 @@ public class ElytraFly extends ToggleableModule {
         pitchValue += randPitch(pitch40RotationSpeedDown.getValue(), 0.50);
       }
       PlayerUtil.setRotation(mc.player.getYRot(), pitchValue);
+    }
+
+    private void takeoffTick() {
+      Minecraft mc = Minecraft.getInstance();
+      if (!mc.player.isFallFlying()) {
+        if (!airspaceClear()) {
+          NotificationManager.push("ElytraFly: airspace blocked above", "error");
+          ElytraFly.this.setRunning(false);
+          return;
+        }
+        mc.options.keyJump.setDown(!mc.player.onGround());
+        if (hasGlider()) {
+          mc.player.startFallFlying();
+        } else {
+          NotificationManager.push("ElytraFly: no elytra equipped", "error");
+          ElytraFly.this.setRunning(false);
+          return;
+        }
+        return;
+      }
+      mc.options.keyJump.setDown(false);
+      PlayerUtil.setRotation(mc.player.getYRot(), -90.0);
+      takeoffTicks++;
+      if (takeoffTicks >= pitch40TakeoffDelay.getValue()) {
+        takeoffTicks = 0;
+        if (!fireRocket()) {
+          if (!outNotified) {
+            outNotified = true;
+            NotificationManager.push("ElytraFly: out of fireworks", "warning");
+          }
+        } else {
+          outNotified = false;
+        }
+      }
+      if (mc.player.getY() >= pitch40LowerBounds.getValue()) {
+        takingOff = false;
+        pitchingDown = false;
+        pitchValue = -54.77F;
+      }
+    }
+
+    private boolean hasGlider() {
+      Minecraft mc = Minecraft.getInstance();
+      return mc.player
+          .getItemBySlot(EquipmentSlot.CHEST)
+          .has(net.minecraft.core.component.DataComponents.GLIDER);
+    }
+
+    private boolean airspaceClear() {
+      Minecraft mc = Minecraft.getInstance();
+      int x = (int) Math.floor(mc.player.getX());
+      int z = (int) Math.floor(mc.player.getZ());
+      int baseY = (int) Math.floor(mc.player.getY());
+      for (int i = 1; i <= 45; i++) {
+        if (!mc.level.getBlockState(new net.minecraft.core.BlockPos(x, baseY + i, z)).isAir()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private boolean fireRocket() {
+      Minecraft mc = Minecraft.getInstance();
+      int slot =
+          PlayerUtil.findInHotbar(
+              stack ->
+                  !stack.isEmpty() && stack.is(net.minecraft.world.item.Items.FIREWORK_ROCKET));
+      if (slot == -1) {
+        return false;
+      }
+      boolean needSwitch = slot != mc.player.getInventory().getSelectedSlot();
+      if (needSwitch) {
+        PlayerUtil.swapTo(slot);
+      }
+      mc.getConnection()
+          .send(
+              new net.minecraft.network.protocol.game.ServerboundUseItemPacket(
+                  net.minecraft.world.InteractionHand.MAIN_HAND,
+                  0,
+                  mc.player.getYRot(),
+                  mc.player.getXRot()));
+      PlayerUtil.swingHand();
+      if (needSwitch) {
+        PlayerUtil.swapBack();
+      }
+      return true;
     }
   }
 
