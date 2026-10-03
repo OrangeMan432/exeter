@@ -38,7 +38,7 @@ public final class ClickGui extends ToggleableModule {
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
-  public final Property<Boolean> showBorder = new Property<Boolean>(true, "Border", "border");
+  public final Property<Boolean> showBorder = new Property<Boolean>(false, "Border", "border");
   public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
 
