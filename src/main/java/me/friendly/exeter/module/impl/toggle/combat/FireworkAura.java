@@ -31,6 +31,8 @@ public class FireworkAura extends ToggleableModule {
 
   private final NumberProperty<Double> targetRange =
       new NumberProperty<Double>(6.0, 0.0, 12.0, "Target Range");
+  private final NumberProperty<Double> placeRange =
+      new NumberProperty<Double>(4.5, 0.0, 6.0, "Place Range");
   private final NumberProperty<Integer> delay = new NumberProperty<Integer>(10, 0, 40, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -41,6 +43,7 @@ public class FireworkAura extends ToggleableModule {
   private int lastFireTick;
   private String lastTargetKey;
   private boolean noRocketLogged;
+  private boolean noReachLogged;
 
   public FireworkAura() {
     super(
@@ -49,7 +52,7 @@ public class FireworkAura extends ToggleableModule {
         0xFFAA55,
         ModuleType.COMBAT);
     setDescription("Fireworks players hiding under cover.");
-    offerProperties(targetRange, delay, rotate, swingHand, autoSwitch, switchBack);
+    offerProperties(targetRange, placeRange, delay, rotate, swingHand, autoSwitch, switchBack);
     this.listeners.add(
         new Listener<TickEvent>("fireworkaura_tick") {
           @Override
@@ -72,6 +75,7 @@ public class FireworkAura extends ToggleableModule {
     super.onEnable();
     lastTargetKey = null;
     noRocketLogged = false;
+    noReachLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -80,6 +84,7 @@ public class FireworkAura extends ToggleableModule {
     super.onDisable();
     lastTargetKey = null;
     noRocketLogged = false;
+    noReachLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
@@ -111,6 +116,21 @@ public class FireworkAura extends ToggleableModule {
 
     BlockPos ground = target.blockPosition().below();
     if (!PlayerUtil.inRange(ground, targetRange.getValue() + 2.0)) return;
+
+    // The server enforces interact reach on use-item packets; farther clicks are silently
+    // dropped, so hold fire instead of wasting rockets.
+    if (!PlayerUtil.inRange(ground, placeRange.getValue())) {
+      if (!noReachLogged) {
+        noReachLogged = true;
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "target out of place range (" + placeRange.getValue() + "m)");
+      }
+      return;
+    }
+    noReachLogged = false;
 
     int origSlot = minecraft.player.getInventory().getSelectedSlot();
     boolean needSwitch =
