@@ -17,8 +17,8 @@ import me.friendly.exeter.account.auth.MicrosoftAuth;
 import me.friendly.exeter.account.auth.SessionManager;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.logging.DebugLogger;
-import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.window.Window;
+import me.friendly.exeter.window.WindowButtons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
@@ -227,45 +227,36 @@ public class AccountWindow extends Window {
 
   // Buttons: equal columns on a single row.
 
+  private final WindowButtons buttons =
+      new WindowButtons(
+          this,
+          BUTTON_COUNT,
+          BUTTON_HEIGHT,
+          id ->
+              switch (id) {
+                case 0, 5 ->
+                    mode == Mode.LIST
+                        && selectedAccount >= 0
+                        && selectedAccount < accounts().size()
+                        && (task == null || task.isDone());
+                case 1, 2, 3, 4 -> mode == Mode.LIST && (task == null || task.isDone());
+                default -> true;
+              });
+
   private int buttonX(int id) {
-    int slot = id % BUTTON_COUNT;
-    return x + 3 + slot * ((width - 6) / BUTTON_COUNT);
+    return buttons.buttonX(id);
   }
 
-  private int buttonWidth() {
-    return (width - 6) / BUTTON_COUNT - 2;
+  private int buttonWidth(int id) {
+    return buttons.buttonWidth(id);
   }
 
   private void drawButton(int id, int btnY, int mouseX, int mouseY, String label) {
-    int bx = buttonX(id);
-    int bw = buttonWidth();
-    boolean hovered =
-        mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT;
-    boolean enabled = isButtonEnabled(id);
-    int color =
-        !enabled
-            ? 0xFF333333
-            : hovered
-                ? Colors.getClientColorCustomAlpha(200)
-                : Colors.getClientColorCustomAlpha(120);
-    RenderMethods.drawRect(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
-    FontUtil.drawString(
-        label,
-        bx + bw / 2 - FontUtil.getStringWidth(label) / 2,
-        btnY + 2,
-        enabled ? 0xFFFFFFFF : 0xFF777777);
+    buttons.drawButton(id, btnY, mouseX, mouseY, label);
   }
 
-  private boolean isButtonEnabled(int id) {
-    return switch (id) {
-      case 0, 5 ->
-          mode == Mode.LIST
-              && selectedAccount >= 0
-              && selectedAccount < accounts().size()
-              && (task == null || task.isDone());
-      case 1, 2, 3, 4 -> mode == Mode.LIST && (task == null || task.isDone());
-      default -> true;
-    };
+  private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {
+    return buttons.clickButton(id, btnY, mouseX, mouseY);
   }
 
   // Input
@@ -361,17 +352,6 @@ public class AccountWindow extends Window {
     mode = next;
     inputBuffer.setLength(0);
     setStatus(null, 0);
-  }
-
-  private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {
-    if (!isButtonEnabled(id)) {
-      return false;
-    }
-    int bx = buttonX(id);
-    return mouseX >= bx
-        && mouseX <= bx + buttonWidth()
-        && mouseY >= btnY
-        && mouseY <= btnY + BUTTON_HEIGHT;
   }
 
   @Override

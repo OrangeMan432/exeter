@@ -9,6 +9,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.friend.Friend;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.window.Window;
+import me.friendly.exeter.window.WindowButtons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
@@ -125,36 +126,27 @@ public class FriendsWindow extends Window {
 
   // Buttons: three equal columns.
 
+  private final WindowButtons buttons =
+      new WindowButtons(
+          this,
+          3,
+          BUTTON_HEIGHT,
+          id ->
+              id != 1
+                  || (selectedIndex >= 0
+                      && selectedIndex
+                          < Exeter.getInstance().getFriendManager().getRegistry().size()));
+
   private int buttonX(int id) {
-    return x + 3 + id * ((width - 6) / 3);
+    return buttons.buttonX(id);
   }
 
   private int buttonWidth(int id) {
-    // Last column stretches so its right edge sits flush with the text entry box.
-    if (id == 2) {
-      return x + width - 3 - buttonX(id);
-    }
-    return (width - 6) / 3 - 2;
+    return buttons.buttonWidth(id);
   }
 
   private void drawButton(int id, int btnY, int mouseX, int mouseY, String label) {
-    int bx = buttonX(id);
-    int bw = buttonWidth(id);
-    boolean hovered =
-        mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT;
-    boolean enabled = isButtonEnabled(id);
-    int color =
-        !enabled
-            ? 0xFF333333
-            : hovered
-                ? Colors.getClientColorCustomAlpha(200)
-                : Colors.getClientColorCustomAlpha(120);
-    RenderMethods.drawRect(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
-    FontUtil.drawString(
-        label,
-        bx + bw / 2 - FontUtil.getStringWidth(label) / 2,
-        btnY + 2,
-        enabled ? 0xFFFFFFFF : 0xFF777777);
+    buttons.drawButton(id, btnY, mouseX, mouseY, label);
   }
 
   private void drawOverrideButton(int id, int btnY, int mouseX, int mouseY) {
@@ -175,12 +167,8 @@ public class FriendsWindow extends Window {
         label, bx + bw / 2 - FontUtil.getStringWidth(label) / 2, btnY + 2, 0xFFFFFFFF);
   }
 
-  private boolean isButtonEnabled(int id) {
-    if (id == 1) {
-      return selectedIndex >= 0
-          && selectedIndex < Exeter.getInstance().getFriendManager().getRegistry().size();
-    }
-    return true;
+  private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {
+    return buttons.clickButton(id, btnY, mouseX, mouseY);
   }
 
   // Input
@@ -221,17 +209,6 @@ public class FriendsWindow extends Window {
       return true;
     }
     return true;
-  }
-
-  private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {
-    if (!isButtonEnabled(id)) {
-      return false;
-    }
-    int bx = buttonX(id);
-    return mouseX >= bx
-        && mouseX <= bx + buttonWidth(id)
-        && mouseY >= btnY
-        && mouseY <= btnY + BUTTON_HEIGHT;
   }
 
   @Override
