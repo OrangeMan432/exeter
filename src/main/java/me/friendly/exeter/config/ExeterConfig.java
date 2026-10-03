@@ -71,26 +71,20 @@ public class ExeterConfig {
 
   /** Loads all module configurations from TOML files. */
   public void loadAll() {
-    DebugLogger.get().logSystem("Config", "=== LOAD ALL START ===");
     int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      DebugLogger.get().logSystem("Config", "Loading module " + count + ": " + module.getLabel());
       loadModule(module);
       count++;
     }
-    DebugLogger.get().logSystem("Config", "=== LOAD ALL END (" + count + " modules) ===");
   }
 
   /** Saves all module configurations to TOML files. */
   public void saveAll() {
-    DebugLogger.get().logFile("Config", "=== SAVE ALL START ===");
     int count = 0;
     for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
-      DebugLogger.get().logFile("Config", "Saving module " + count + ": " + module.getLabel());
       saveModule(module);
       count++;
     }
-    DebugLogger.get().logFile("Config", "=== SAVE ALL END (" + count + " modules) ===");
   }
 
   /** Loads a single module's configuration from its TOML file. */
@@ -98,18 +92,13 @@ public class ExeterConfig {
   public void loadModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
     File file = configDir.resolve(fileName).toFile();
-    DebugLogger.get()
-        .logSystem(
-            "Config", "loadModule: " + module.getLabel() + " from " + file.getAbsolutePath());
 
     if (!file.exists()) {
-      DebugLogger.get().logSystem("Config", "  file does not exist, skipping");
       return;
     }
 
     try {
       Map<String, Object> data = tomlReader.read(file).toMap();
-      DebugLogger.get().logSystem("Config", "  raw TOML data keys = " + data.keySet());
 
       // Load module state (enabled, drawn, keybind). The enabled flag is applied after
       // settings are loaded so onEnable() observes the restored property values.
@@ -118,18 +107,9 @@ public class ExeterConfig {
       if (module instanceof Toggleable && data.containsKey("module")) {
         Map<String, Object> moduleData = (Map<String, Object>) data.get("module");
         ToggleableModule toggleable = (ToggleableModule) module;
-        DebugLogger.get().logSystem("Config", "  module data = " + moduleData);
 
         if (moduleData.containsKey("enabled")) {
           Object enabledVal = moduleData.get("enabled");
-          DebugLogger.get()
-              .logSystem(
-                  "Config",
-                  "  enabled raw = "
-                      + enabledVal
-                      + " (type="
-                      + (enabledVal != null ? enabledVal.getClass().getName() : "null")
-                      + ")");
           boolean enabled;
           if (enabledVal instanceof Boolean) {
             enabled = (boolean) enabledVal;
@@ -140,8 +120,6 @@ public class ExeterConfig {
           }
           restoreEnabled = enabled;
           hasEnabledState = true;
-          DebugLogger.get()
-              .logSystem("Config", "  parsed enabled = " + enabled + ", will apply after settings");
         }
 
         if (moduleData.containsKey("keybind")) {
@@ -177,7 +155,6 @@ public class ExeterConfig {
       // Load properties
       if (data.containsKey("settings")) {
         Map<String, Object> settings = (Map<String, Object>) data.get("settings");
-        DebugLogger.get().logSystem("Config", "  settings key set = " + settings.keySet());
 
         // Strip TOML quotes from map keys (toml4j includes them)
         Map<String, Object> cleaned = new HashMap<>();
@@ -192,54 +169,22 @@ public class ExeterConfig {
         for (Property<?> property : module.getProperties()) {
           String key = property.getAliases()[0];
           boolean hasKey = cleaned.containsKey(key);
-          DebugLogger.get()
-              .logSystem("Config", "  checking property '" + key + "' containsKey=" + hasKey);
           if (hasKey) {
             Object value = cleaned.get(key);
-            DebugLogger.get()
-                .logSystem(
-                    "Config",
-                    "    loading "
-                        + key
-                        + " = "
-                        + value
-                        + " (type="
-                        + (value != null ? value.getClass().getName() : "null")
-                        + ") current="
-                        + property.getValue());
 
             if (value instanceof Map) {
-              DebugLogger.get().logSystem("Config", "    value is nested map, loading children");
               Map<String, Object> childMap = (Map<String, Object>) value;
               for (Property<?> child : property.getChildren()) {
                 String childKey = child.getAliases()[0];
                 if (childMap.containsKey(childKey)) {
                   Object childValue = childMap.get(childKey);
-                  DebugLogger.get()
-                      .logSystem(
-                          "Config",
-                          "    loading child "
-                              + childKey
-                              + " = "
-                              + childValue
-                              + " (type="
-                              + (childValue != null ? childValue.getClass().getName() : "null")
-                              + ")");
                   applyPropertyValue(child, childValue);
-                  DebugLogger.get()
-                      .logSystem(
-                          "Config", "    after load child: " + childKey + " = " + child.getValue());
                 }
               }
             } else {
               applyPropertyValue(property, value);
-              DebugLogger.get()
-                  .logSystem("Config", "    after load: " + key + " = " + property.getValue());
             }
           } else {
-            DebugLogger.get()
-                .logSystem(
-                    "Config", "    NOT in settings file, keeping default: " + property.getValue());
           }
         }
 
@@ -250,38 +195,17 @@ public class ExeterConfig {
             String childFlatKey = parentKey + "__" + child.getAliases()[0];
             if (cleaned.containsKey(childFlatKey)) {
               Object childValue = cleaned.get(childFlatKey);
-              DebugLogger.get()
-                  .logSystem(
-                      "Config",
-                      "    loading child (flat key) "
-                          + childFlatKey
-                          + " = "
-                          + childValue
-                          + " (type="
-                          + (childValue != null ? childValue.getClass().getName() : "null")
-                          + ")");
               applyPropertyValue(child, childValue);
-              DebugLogger.get()
-                  .logSystem(
-                      "Config",
-                      "    after load child: " + child.getAliases()[0] + " = " + child.getValue());
             }
           }
         }
       } else {
-        DebugLogger.get().logSystem("Config", "  no [settings] section in file");
       }
 
       // Apply enabled state after settings so onEnable() observes restored values.
       if (hasEnabledState && module instanceof ToggleableModule) {
         ToggleableModule toggleable = (ToggleableModule) module;
-        DebugLogger.get()
-            .logSystem(
-                "Config",
-                "  setting enabled = " + restoreEnabled + " (was " + toggleable.isRunning() + ")");
         toggleable.setRunning(restoreEnabled);
-        DebugLogger.get()
-            .logSystem("Config", "  after setRunning: isRunning = " + toggleable.isRunning());
       }
 
       // Load HUD module position and corner
@@ -377,16 +301,6 @@ public class ExeterConfig {
     }
     String key = property.getAliases()[0];
     Object value = property.getValue();
-    DebugLogger.get()
-        .logFile(
-            "Config",
-            "  property: "
-                + key
-                + " = "
-                + value
-                + " (type="
-                + (value != null ? value.getClass().getName() : "null")
-                + ")");
     if (value instanceof Enum) {
       settings.put(key, ((Enum<?>) value).name());
     } else if (value instanceof Float) {
@@ -400,16 +314,6 @@ public class ExeterConfig {
     for (Property<?> child : property.getChildren()) {
       String childKey = key + "__" + child.getAliases()[0];
       Object childValue = child.getValue();
-      DebugLogger.get()
-          .logFile(
-              "Config",
-              "  child property: "
-                  + childKey
-                  + " = "
-                  + childValue
-                  + " (type="
-                  + (childValue != null ? childValue.getClass().getName() : "null")
-                  + ")");
       if (childValue instanceof Enum) {
         settings.put(childKey, ((Enum<?>) childValue).name());
       } else if (childValue instanceof Float) {
@@ -439,8 +343,6 @@ public class ExeterConfig {
   public void saveModule(Module module) {
     String fileName = module.getLabel().toLowerCase().replaceAll(" ", "") + ".toml";
     File file = configDir.resolve(fileName).toFile();
-    DebugLogger.get()
-        .logFile("Config", "saveModule: " + module.getLabel() + " -> " + file.getAbsolutePath());
 
     try {
       Map<String, Object> data = new HashMap<>();
@@ -455,10 +357,6 @@ public class ExeterConfig {
         moduleData.put("keybind", (long) (keybind != null ? keybind.getKey() : 0));
         moduleData.put("keycodes", "sdl");
         data.put("module", moduleData);
-        DebugLogger.get().logFile("Config", "  module.enabled = " + toggleable.isRunning());
-        DebugLogger.get()
-            .logFile(
-                "Config", "  module.keybind = " + (keybind != null ? keybind.getKey() : "NULL"));
       }
 
       // Save properties (including children)
@@ -469,7 +367,6 @@ public class ExeterConfig {
         }
         if (!settings.isEmpty()) {
           data.put("settings", settings);
-          DebugLogger.get().logFile("Config", "  settings map size = " + settings.size());
         }
       }
 
@@ -481,15 +378,6 @@ public class ExeterConfig {
         hudData.put("y", (long) hudModule.getY());
         hudData.put("corner", hudModule.getCorner().name());
         data.put("hud", hudData);
-        DebugLogger.get()
-            .logFile(
-                "Config",
-                "  HUD position: x="
-                    + hudModule.getX()
-                    + " y="
-                    + hudModule.getY()
-                    + " corner="
-                    + hudModule.getCorner());
       }
 
       // Save window positions
@@ -517,9 +405,7 @@ public class ExeterConfig {
         data.put("panels", panelsData);
       }
 
-      DebugLogger.get().logFile("Config", "  writing TOML to " + file.getAbsolutePath());
       tomlWriter.write(data, file);
-      DebugLogger.get().logFile("Config", "  write SUCCESS for " + module.getLabel());
     } catch (Exception e) {
       System.err.println(
           "[Exeter] Failed to save config for " + module.getLabel() + ": " + e.getMessage());
