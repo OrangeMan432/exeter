@@ -319,7 +319,6 @@ public class ExeterConfig {
           }
         }
         windowsModule.setPendingPositions(positions);
-        DebugLogger.get().logSystem("Config", "  loaded window positions: " + positions.keySet());
       }
 
       // Load saved ClickGUI panel positions (applied when the ClickGUI screen opens)
@@ -336,7 +335,6 @@ public class ExeterConfig {
           }
         }
         clickGuiModule.setPendingPanels(positions);
-        DebugLogger.get().logSystem("Config", "  loaded panel positions: " + positions.keySet());
       }
     } catch (Exception e) {
       System.err.println(

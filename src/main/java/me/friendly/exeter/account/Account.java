@@ -24,6 +24,9 @@ public class Account {
   private String username;
   private String uuid;
   private long unban;
+  private long expiresAt;
+  private boolean tokenDead;
+  private transient String lastAuthError;
   private String clientId;
   private String scope;
   private Type type;
@@ -73,6 +76,41 @@ public class Account {
 
   public long getUnban() {
     return unban;
+  }
+
+  /** Epoch millis when the access token expires, 0 when unknown. */
+  public long getExpiresAt() {
+    return expiresAt;
+  }
+
+  public void setExpiresAt(long expiresAt) {
+    this.expiresAt = expiresAt;
+  }
+
+  /** Offline accounts never expire; unknown expiries are treated as valid. */
+  public boolean isTokenExpired() {
+    if (type == Type.OFFLINE || expiresAt <= 0) {
+      return false;
+    }
+    return System.currentTimeMillis() > expiresAt;
+  }
+
+  /** True once a login or validation attempt has proven the token dead. */
+  public boolean isTokenDead() {
+    return tokenDead;
+  }
+
+  public void setTokenDead(boolean tokenDead) {
+    this.tokenDead = tokenDead;
+  }
+
+  /** Last auth attempt failure, cleared on success. Session-only, never persisted. */
+  public String getLastAuthError() {
+    return lastAuthError;
+  }
+
+  public void setLastAuthError(String lastAuthError) {
+    this.lastAuthError = lastAuthError;
   }
 
   public Type getType() {
