@@ -80,7 +80,7 @@ public final class AccountManager extends ListRegistry<Account> {
                 continue;
               }
               try {
-                AccountManager.this.register(
+                Account loaded =
                     new Account(
                         getString(object, "refreshToken"),
                         getString(object, "accessToken"),
@@ -89,7 +89,9 @@ public final class AccountManager extends ListRegistry<Account> {
                         getLong(object, "unban"),
                         getString(object, "clientId"),
                         getString(object, "scope"),
-                        parseType(getString(object, "type"))));
+                        parseType(getString(object, "type")));
+                loaded.setExpiresAt(getLong(object, "expiresAt"));
+                AccountManager.this.register(loaded);
               } catch (Exception e) {
                 DebugLogger.get()
                     .log(TAG, DebugLogger.Level.WARN, "Skipping malformed account entry");
@@ -109,6 +111,7 @@ public final class AccountManager extends ListRegistry<Account> {
               object.addProperty("username", account.getUsername());
               object.addProperty("uuid", account.getUuid());
               object.addProperty("unban", account.getUnban());
+              object.addProperty("expiresAt", account.getExpiresAt());
               object.addProperty("clientId", account.getClientId());
               object.addProperty("scope", account.getScope());
               object.addProperty("type", account.getType().name());

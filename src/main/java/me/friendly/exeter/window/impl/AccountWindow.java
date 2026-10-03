@@ -209,6 +209,9 @@ public class AccountWindow extends Window {
       return "§4§lBANNED";
     }
     if (unban <= now) {
+      if (account.isTokenExpired()) {
+        return "§c§lEXPIRED";
+      }
       return "§2§lOK";
     }
     long diff = unban - now;
@@ -601,6 +604,8 @@ public class AccountWindow extends Window {
             profile -> {
               account.setRefreshToken(newRefresh.get());
               account.setAccessToken(newAccess.get());
+              // Minecraft access tokens last 24 hours.
+              account.setExpiresAt(System.currentTimeMillis() + 86400000L);
               account.setUsername(profile.username());
               account.setUuid(profile.uuid().toString());
               save();
@@ -879,6 +884,7 @@ public class AccountWindow extends Window {
       if (existing.getUsername().equalsIgnoreCase(username) && existing.getType() == type) {
         existing.setRefreshToken(refreshToken);
         existing.setAccessToken(accessToken);
+        existing.setExpiresAt(System.currentTimeMillis() + 86400000L);
         existing.setUsername(username);
         existing.setUuid(uuid);
         existing.setClientId(clientId);
@@ -891,6 +897,7 @@ public class AccountWindow extends Window {
     }
     Account account =
         new Account(refreshToken, accessToken, username, uuid, 0L, clientId, scope, type);
+    account.setExpiresAt(System.currentTimeMillis() + 86400000L);
     Exeter.getInstance().getAccountManager().register(account);
     save();
     selectedAccount = Exeter.getInstance().getAccountManager().getRegistry().size() - 1;
