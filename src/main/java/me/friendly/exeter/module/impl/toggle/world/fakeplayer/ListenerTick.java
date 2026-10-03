@@ -93,9 +93,9 @@ public class ListenerTick extends Listener<TickEvent> {
   }
 
   /**
-   * Firework rockets hurt through direct hurt() calls with no explosion packet, so the
-   * explosion listener never sees them. A rocket that vanishes near the dummy detonated:
-   * apply falloff damage for it.
+   * Firework rockets hurt through direct hurt() calls with no explosion packet, so the explosion
+   * listener never sees them. A rocket that vanishes near the dummy detonated: apply falloff damage
+   * for it.
    */
   private void tickFireworks(FakePlayerEntity fp) {
     if (!module.isDamageEnabled()) {
@@ -125,7 +125,8 @@ public class ListenerTick extends Listener<TickEvent> {
     }
   }
 
-  private void tickRegen(FakePlayerEntity fp) {    MobEffectInstance regen = fp.getEffect(MobEffects.REGENERATION);
+  private void tickRegen(FakePlayerEntity fp) {
+    MobEffectInstance regen = fp.getEffect(MobEffects.REGENERATION);
     if (regen != null) {
       float healAmount =
           switch (regen.getAmplifier()) {

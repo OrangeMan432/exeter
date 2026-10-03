@@ -8,9 +8,9 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.EnumProperty;
@@ -27,9 +27,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Surrounds players with obsidian (or popup-selected blocks). Full mode cages feet,
- * head and top; Head mode only covers above the head. With AirPlace off every cell
- * needs a solid neighbour, so supports are pillared up from the ground first.
+ * Surrounds players with obsidian (or popup-selected blocks). Full mode cages feet, head and top;
+ * Head mode only covers above the head. With AirPlace off every cell needs a solid neighbour, so
+ * supports are pillared up from the ground first.
  */
 public class AutoTrap extends ToggleableModule {
 
@@ -131,7 +131,8 @@ public class AutoTrap extends ToggleableModule {
             })
         .forEach(
             block -> {
-              String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
+              String id =
+                  net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
               String displayName =
                   net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
               items.add(SelectionPopup.idItem(id, displayName, blockSelections.getSelected()));
@@ -163,8 +164,7 @@ public class AutoTrap extends ToggleableModule {
     if (blockSlot == -1) {
       if (!noBlockLogged) {
         noBlockLogged = true;
-        DebugLogger.get()
-            .log(getLabel(), DebugLogger.Level.WARN, "no trap blocks in hotbar");
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no trap blocks in hotbar");
       }
       return;
     }
@@ -219,10 +219,9 @@ public class AutoTrap extends ToggleableModule {
   }
 
   /**
-   * Finds a support to place first when air-place is off: climbs a single adjacent
-   * column from the ground, returning its lowest missing cell so the pillar towers
-   * before the cover goes on. Returns the cell itself when supported, null when no
-   * adjacent column can reach it.
+   * Finds a support to place first when air-place is off: climbs a single adjacent column from the
+   * ground, returning its lowest missing cell so the pillar towers before the cover goes on.
+   * Returns the cell itself when supported, null when no adjacent column can reach it.
    */
   private BlockPos findSupport(BlockPos cell, Player target) {
     if (hasSupport(cell)) return cell;
@@ -293,7 +292,8 @@ public class AutoTrap extends ToggleableModule {
         stack -> {
           if (!(stack.getItem() instanceof BlockItem)) return false;
           Block block = ((BlockItem) stack.getItem()).getBlock();
-          String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
+          String id =
+              net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
           return blockSelections.getSelected().contains(id);
         });
   }

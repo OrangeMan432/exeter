@@ -8,9 +8,9 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.PlayerUtil;
@@ -23,9 +23,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Fireworks;
 
 /**
- * Launches damaging fireworks at the feet of players fighting under a roof. Only
- * rockets carrying an explosion charge are used; blanks are skipped via NBT.
- * Shorter flight durations are preferred so the burst stays on the target.
+ * Launches damaging fireworks at the feet of players fighting under a roof. Only rockets carrying
+ * an explosion charge are used; blanks are skipped via NBT. Shorter flight durations are preferred
+ * so the burst stays on the target.
  */
 public class FireworkAura extends ToggleableModule {
 
@@ -43,9 +43,14 @@ public class FireworkAura extends ToggleableModule {
   private boolean noRocketLogged;
 
   public FireworkAura() {
-    super("FireworkAura", new String[] {"fireworkaura", "firework-aura"}, 0xFFAA55, ModuleType.COMBAT);
+    super(
+        "FireworkAura",
+        new String[] {"fireworkaura", "firework-aura"},
+        0xFFAA55,
+        ModuleType.COMBAT);
     setDescription("Fireworks players hiding under cover.");
-    offerProperties(targetRange, delay, rotate, swingHand, autoSwitch, switchBack);    this.listeners.add(
+    offerProperties(targetRange, delay, rotate, swingHand, autoSwitch, switchBack);
+    this.listeners.add(
         new Listener<TickEvent>("fireworkaura_tick") {
           @Override
           public void call(TickEvent event) {
@@ -92,15 +97,13 @@ public class FireworkAura extends ToggleableModule {
     if (!targetKey.equals(lastTargetKey)) {
       lastTargetKey = targetKey;
       noRocketLogged = false;
-      DebugLogger.get()
-          .log(getLabel(), DebugLogger.Level.INFO, "target=" + targetKey);
+      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "target=" + targetKey);
     }
     int rocketSlot = findRocketSlot();
     if (rocketSlot == -1) {
       if (!noRocketLogged) {
         noRocketLogged = true;
-        DebugLogger.get()
-            .log(getLabel(), DebugLogger.Level.WARN, "no damaging rockets in hotbar");
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no damaging rockets in hotbar");
       }
       return;
     }
