@@ -134,13 +134,9 @@ public class AutoTrap extends ToggleableModule {
     for (BlockPos cell : trapCells(target)) {
       if (!PlayerUtil.isAirOrReplaceable(cell)) continue;
       if (!PlayerUtil.inRange(cell, placeRange.getValue())) continue;
-      BlockPos support = airPlace.getValue() ? null : findSupport(cell, target);
-      if (!airPlace.getValue() && support == null && !hasSupport(cell)) continue;
-      if (support != null && !support.equals(cell)) {
-        placeCell(support, blockSlot);
-      } else {
-        placeCell(cell, blockSlot);
-      }
+      BlockPos support = airPlace.getValue() ? cell : findSupport(cell, target);
+      if (support == null) continue;
+      placeCell(support, blockSlot);
       lastAttemptTick = tickCounter;
       return;
     }
@@ -175,31 +171,33 @@ public class AutoTrap extends ToggleableModule {
   }
 
   /**
-   * Finds a support to place first when air-place is off: a pillar column next to the
-   * cell built up from the target's ground level. Returns the lowest missing pillar
-   * cell, or the cell itself when it already has support.
+   * Finds a support to place first when air-place is off: climbs a single adjacent
+   * column from the ground, returning its lowest missing cell so the pillar towers
+   * before the cover goes on. Returns the cell itself when supported, null when no
+   * adjacent column can reach it.
    */
   private BlockPos findSupport(BlockPos cell, Player target) {
     if (hasSupport(cell)) return cell;
     int groundY = target.blockPosition().getY();
     for (Direction dir : Direction.Plane.HORIZONTAL) {
-      BlockPos base = new BlockPos(cell.getX() + dir.getStepX(), groundY, cell.getZ() + dir.getStepZ());
-      boolean columnFree = true;
-      BlockPos lowestMissing = null;
+      BlockPos base =
+          new BlockPos(cell.getX() + dir.getStepX(), groundY, cell.getZ() + dir.getStepZ());
+      BlockPos candidate = null;
+      boolean columnOk = true;
       for (int y = groundY; y <= cell.getY(); y++) {
         BlockPos pillar = new BlockPos(base.getX(), y, base.getZ());
         if (!PlayerUtil.isAirOrReplaceable(pillar)) {
-          if (y == cell.getY()) {
-            return cell;
-          }
-          columnFree = false;
+          continue;
+        }
+        if (!PlayerUtil.inRange(pillar, placeRange.getValue())) {
+          columnOk = false;
           break;
         }
-        if (lowestMissing == null && PlayerUtil.inRange(pillar, placeRange.getValue())) {
-          lowestMissing = pillar;
+        if (candidate == null) {
+          candidate = pillar;
         }
       }
-      if (columnFree && lowestMissing != null) return lowestMissing;
+      if (columnOk && candidate != null) return candidate;
     }
     return null;
   }
