@@ -538,7 +538,8 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
-                  account.setTokenDead(false); account.setLastAuthError(null);
+                  account.setTokenDead(false);
+                  account.setLastAuthError(null);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -563,7 +564,8 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
-                  account.setTokenDead(false); account.setLastAuthError(null);
+                  account.setTokenDead(false);
+                  account.setLastAuthError(null);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -616,7 +618,8 @@ public class AccountWindow extends Window {
               account.setAccessToken(newAccess.get());
               // Minecraft access tokens last 24 hours.
               account.setExpiresAt(System.currentTimeMillis() + 86400000L);
-              account.setTokenDead(false); account.setLastAuthError(null);
+              account.setTokenDead(false);
+              account.setLastAuthError(null);
               account.setUsername(profile.username());
               account.setUuid(profile.uuid().toString());
               save();
@@ -627,8 +630,7 @@ public class AccountWindow extends Window {
             })
         .exceptionally(
             error -> {
-              String message =
-                  displayMessage(error);
+              String message = displayMessage(error);
               account.setLastAuthError(message);
               setStatus("§c" + message + " (" + username + ")", 8000);
               DebugLogger.get().logFile(TAG, "Login failed for " + username + ": " + message);
@@ -689,8 +691,7 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
-                  String message =
-                      displayMessage(error);
+                  String message = displayMessage(error);
                   setStatus("§c" + message, 8000);
                   DebugLogger.get().logFile(TAG, "Browser auth failed: " + message);
                   return null;
@@ -841,8 +842,7 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
-                  String message =
-                      displayMessage(error);
+                  String message = displayMessage(error);
                   setStatus("§c" + message, 8000);
                   DebugLogger.get().logFile(TAG, "Token import failed: " + message);
                   return null;
@@ -938,7 +938,8 @@ public class AccountWindow extends Window {
     return root.getClass().getSimpleName();
   }
 
-  private static UUID parseUuid(String value) {    try {
+  private static UUID parseUuid(String value) {
+    try {
       return UUID.fromString(value);
     } catch (Exception e) {
       return MicrosoftAuth.parseUndashedUuid(value);
