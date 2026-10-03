@@ -39,7 +39,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Piston-crystal port of Leonetics' Homovore PistonCrystalModule. Pushes an end crystal over a
  * holed player's head with a piston (side or top layout, best damage wins) and breaks it once the
- * piston extends. PistonPush instead displaces players directly with pistons.
+ * piston extends. PistonPush instead displaces players directly with pistons. Orphaned piston heads
+ * left behind when a blast takes the base are right-clicked away automatically so the cells become
+ * placeable again.
  */
 public class PistonCrystal extends ToggleableModule {
   private static final double TARGET_RANGE = 10.0;
@@ -53,6 +55,8 @@ public class PistonCrystal extends ToggleableModule {
       new NumberProperty<Double>(3.0, 0.0, 6.0, "Break Range");
   private final NumberProperty<Double> minDamage =
       new NumberProperty<Double>(6.0, 0.0, 36.0, "Min Damage");
+  private final NumberProperty<Double> maxSelfDamage =
+      new NumberProperty<Double>(8.0, 0.0, 36.0, "Max Self Damage");
   private final NumberProperty<Integer> delay = new NumberProperty<Integer>(10, 0, 40, "Delay");
   private final Property<Boolean> autoBase = new Property<Boolean>(true, "Auto Base");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
@@ -74,6 +78,8 @@ public class PistonCrystal extends ToggleableModule {
   private final List<CleanupEntry> cleanupQueue = new ArrayList<>();
   private float lastDamage;
   private ArmorProfile targetProfile;
+  private boolean noSelfDmgLogged;
+  private final java.util.Map<BlockPos, SuspectHead> suspectHeads = new java.util.LinkedHashMap<>();
   private net.minecraft.world.Difficulty targetDifficulty;
   private final BlockPos.MutableBlockPos rayCursor = new BlockPos.MutableBlockPos();
 
@@ -89,6 +95,7 @@ public class PistonCrystal extends ToggleableModule {
         placeRange,
         breakRange,
         minDamage,
+        maxSelfDamage,
         delay,
         autoBase,
         rotate,
@@ -133,9 +140,11 @@ public class PistonCrystal extends ToggleableModule {
     active = null;
     pending = null;
     cleanupQueue.clear();
+    suspectHeads.clear();
     PlayerUtil.clearSpoofedLook(getLabel());
     waitTicks = 0;
     lastDamage = 0;
+    noSelfDmgLogged = false;
     DebugLogger.get()
         .log(
             getLabel(),
@@ -152,6 +161,7 @@ public class PistonCrystal extends ToggleableModule {
     active = null;
     pending = null;
     cleanupQueue.clear();
+    suspectHeads.clear();
     PlayerUtil.clearSpoofedLook(getLabel());
     DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "disabled");
   }
@@ -163,6 +173,7 @@ public class PistonCrystal extends ToggleableModule {
     tickCounter++;
 
     runCleanup();
+    sweepSuspectHeads();
 
     if (active != null) {
       tickActive();
@@ -323,6 +334,9 @@ public class PistonCrystal extends ToggleableModule {
 
     active = setup;
     waitTicks = 0;
+    noSelfDmgLogged = false;
+    // Live cell again: whatever was suspected here belongs to this attempt now.
+    suspectHeads.remove(setup.crystal);
   }
 
   /**
@@ -382,6 +396,7 @@ public class PistonCrystal extends ToggleableModule {
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "piston extended, breaking");
       breakCrystalsAround(active.head);
       scheduleCleanup(active);
+      watchHead(active.crystal);
       active = null;
       return;
     }
@@ -392,6 +407,7 @@ public class PistonCrystal extends ToggleableModule {
               DebugLogger.Level.WARN,
               "piston never extended after " + waitTicks + " ticks, resetting");
       scheduleCleanup(active);
+      watchHead(active.crystal);
       active = null;
     }
   }
@@ -401,6 +417,92 @@ public class PistonCrystal extends ToggleableModule {
     int due = tickCounter + cleanupDelay.getValue();
     cleanupQueue.add(new CleanupEntry(setup.redstone, due, false));
     cleanupQueue.add(new CleanupEntry(setup.piston, due + 3, true));
+  }
+
+  /** Remembers a cell our piston just pushed into; a head stuck there later is ours to clear. */
+  private void watchHead(BlockPos pos) {
+    BlockPos key = pos.immutable();
+    suspectHeads.putIfAbsent(key, new SuspectHead(tickCounter));
+    while (suspectHeads.size() > 24) {
+      var oldest = suspectHeads.keySet().iterator();
+      oldest.next();
+      oldest.remove();
+    }
+  }
+
+  /**
+   * Right-clicks orphaned piston heads (base destroyed by a blast) so the cells become placeable
+   * again. Only cells from our own attempts are tracked, never foreign builds. Falls back to mining
+   * if clicking doesn't clear the head.
+   */
+  private void sweepSuspectHeads() {
+    if (suspectHeads.isEmpty() || tickCounter % 10 != 0) return;
+    var it = suspectHeads.entrySet().iterator();
+    int handled = 0;
+    while (it.hasNext() && handled < 2) {
+      var entry = it.next();
+      BlockPos pos = entry.getKey();
+      SuspectHead suspect = entry.getValue();
+      var state = minecraft.level.getBlockState(pos);
+      boolean isHead = state.is(Blocks.PISTON_HEAD);
+      boolean isMoving = state.is(Blocks.MOVING_PISTON);
+      if (!isHead && !isMoving) {
+        if (suspect.clicks > 0) {
+          DebugLogger.get()
+              .log(getLabel(), DebugLogger.Level.INFO, "cleared orphan piston head at " + pos);
+        }
+        it.remove();
+        continue;
+      }
+      // A head still attached to its extended base is a live piston, not an orphan.
+      if (isHead && !isOrphanHead(pos, state)) {
+        it.remove();
+        continue;
+      }
+      // In-flight pushes resolve on their own; only stuck ones get clicked.
+      if (isMoving && tickCounter - suspect.firstTick < 20) continue;
+      if (!PlayerUtil.inRange(pos, placeRange.getValue())) continue;
+      // Click while holding the end crystal: it can only land on obsidian/bedrock, so
+      // clicking a piston head is a guaranteed no-op everywhere else.
+      int crystalSlot = PlayerUtil.findInHotbar(stack -> stack.getItem() == Items.END_CRYSTAL);
+      if (crystalSlot == -1) continue;
+      if (suspect.clicks == 0) {
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.INFO, "clearing orphan piston head at " + pos);
+      }
+      int origSlot = minecraft.player.getInventory().getSelectedSlot();
+      swapTo(crystalSlot);
+      PlayerUtil.useItemOn(pos, Direction.UP);
+      if (swingHand.getValue()) PlayerUtil.swingHand();
+      swapBack();
+      if (autoSwitch.getValue() && switchBack.getValue()) {
+        minecraft.player.getInventory().setSelectedSlot(origSlot);
+      }
+      PlayerUtil.resyncSlot();
+      suspect.clicks++;
+      if (suspect.clicks > 3) {
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "head at " + pos + " survived clicking, handing off to mining");
+        PlayerUtil.breakBlock(pos, Direction.UP);
+        it.remove();
+      }
+      handled++;
+    }
+  }
+
+  /** A head whose base is gone (or faces elsewhere) can never retract on its own. */
+  private boolean isOrphanHead(BlockPos pos, BlockState state) {
+    if (!state.hasProperty(BlockStateProperties.FACING)) return true;
+    Direction facing = state.getValue(BlockStateProperties.FACING);
+    var base = minecraft.level.getBlockState(pos.relative(facing.getOpposite()));
+    if (!base.is(Blocks.PISTON) && !base.is(Blocks.STICKY_PISTON)) return true;
+    if (!base.hasProperty(BlockStateProperties.FACING)
+        || base.getValue(BlockStateProperties.FACING) != facing) return true;
+    return !base.hasProperty(BlockStateProperties.EXTENDED)
+        || !base.getValue(BlockStateProperties.EXTENDED);
   }
 
   /** Breaks crystals around the head position that are within break range. */
@@ -462,6 +564,30 @@ public class PistonCrystal extends ToggleableModule {
     }
     lastDamage = best != null ? best.damage : 0;
     if (best != null) {
+      // Same armored math as the target check, but against our own profile: the piston
+      // extends and the crystal breaks within a tick of placement, so this is imminent.
+      float selfDamage =
+          calcDamage(
+              minecraft.player,
+              best.explosionPos,
+              best.placeBase ? best.base : null,
+              profileOf(minecraft.player));
+      if (selfDamage > maxSelfDamage.getValue()) {
+        if (!noSelfDmgLogged) {
+          noSelfDmgLogged = true;
+          DebugLogger.get()
+              .log(
+                  getLabel(),
+                  DebugLogger.Level.WARN,
+                  "holding placement: self damage "
+                      + selfDamage
+                      + " exceeds cap "
+                      + maxSelfDamage.getValue());
+        }
+        lastDamage = 0;
+        return null;
+      }
+      noSelfDmgLogged = false;
       DebugLogger.get()
           .log(
               getLabel(),
@@ -552,12 +678,21 @@ public class PistonCrystal extends ToggleableModule {
             explosionPos.z + 1);
     double breakRangeSq = breakRange.getValue() * breakRange.getValue();
     if (distSqToBox(eye, crystalBox) > breakRangeSq) return null;
-    float damage = calcDamage(target, explosionPos, placeBase ? base : null);
+    float damage = calcDamage(target, explosionPos, placeBase ? base : null, targetProfile);
     if (damage < minDamage.getValue()) return null;
     RedstoneSpot redstone = findRedstoneSpot(pistonPos, dir, explosionPos, eye, rangeSq);
     if (redstone == null) return null;
     return new Setup(
-        dir, pistonPos, redstone.pos, crystalPos, base, head, redstone.place, placeBase, damage);
+        dir,
+        pistonPos,
+        redstone.pos,
+        crystalPos,
+        base,
+        head,
+        explosionPos,
+        redstone.place,
+        placeBase,
+        damage);
   }
 
   private RedstoneSpot findRedstoneSpot(
@@ -703,7 +838,8 @@ public class PistonCrystal extends ToggleableModule {
     return false;
   }
 
-  private float calcDamage(LivingEntity target, Vec3 explosionPos, BlockPos phantomBase) {
+  private float calcDamage(
+      LivingEntity target, Vec3 explosionPos, BlockPos phantomBase, ArmorProfile profile) {
     double distSq = target.position().distanceToSqr(explosionPos);
     if (distSq > 144.0) return 0;
     double exposure = calcExposure(explosionPos, target.getBoundingBox(), phantomBase);
@@ -716,7 +852,6 @@ public class PistonCrystal extends ToggleableModule {
       case HARD -> damage *= 1.5f;
       default -> {}
     }
-    ArmorProfile profile = targetProfile;
     float i = 2.0f + profile.toughness() / 4.0f;
     float j = Mth.clamp(profile.armor() - damage / i, profile.armor() * 0.2f, 20.0f);
     damage *= 1.0f - j / 25.0f;
@@ -788,6 +923,7 @@ public class PistonCrystal extends ToggleableModule {
     final BlockPos crystal;
     final BlockPos base;
     final BlockPos head;
+    final Vec3 explosionPos;
     final boolean placeRedstone;
     final boolean placeBase;
     final float damage;
@@ -799,6 +935,7 @@ public class PistonCrystal extends ToggleableModule {
         BlockPos crystal,
         BlockPos base,
         BlockPos head,
+        Vec3 explosionPos,
         boolean placeRedstone,
         boolean placeBase,
         float damage) {
@@ -808,6 +945,7 @@ public class PistonCrystal extends ToggleableModule {
       this.crystal = crystal;
       this.base = base;
       this.head = head;
+      this.explosionPos = explosionPos;
       this.placeRedstone = placeRedstone;
       this.placeBase = placeBase;
       this.damage = damage;
@@ -833,6 +971,16 @@ public class PistonCrystal extends ToggleableModule {
       this.pos = pos;
       this.dueTick = dueTick;
       this.piston = piston;
+    }
+  }
+
+  private static class SuspectHead {
+    final int firstTick;
+    int clicks;
+
+    SuspectHead(int firstTick) {
+      this.firstTick = firstTick;
+      this.clicks = 0;
     }
   }
 
