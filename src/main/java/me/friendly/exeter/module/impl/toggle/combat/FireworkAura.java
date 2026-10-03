@@ -93,6 +93,10 @@ public class FireworkAura extends ToggleableModule {
     } else {
       fire.run();
     }
+    if (autoSwitch.getValue() && switchBack.getValue()) {
+      minecraft.player.getInventory().setSelectedSlot(origSlot);
+    }
+    PlayerUtil.resyncSlot();
     lastFireTick = tickCounter;
   }
 

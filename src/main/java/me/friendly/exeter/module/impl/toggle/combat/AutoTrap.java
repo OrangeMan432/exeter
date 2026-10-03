@@ -225,6 +225,10 @@ public class AutoTrap extends ToggleableModule {
     } else {
       place.run();
     }
+    if (autoSwitch.getValue() && switchBack.getValue()) {
+      minecraft.player.getInventory().setSelectedSlot(origSlot);
+    }
+    PlayerUtil.resyncSlot();
   }
 
   private void clickPlace(BlockPos cell) {
