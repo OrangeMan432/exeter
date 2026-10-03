@@ -25,6 +25,7 @@ public class Account {
   private String uuid;
   private long unban;
   private long expiresAt;
+  private transient boolean tokenDead;
   private String clientId;
   private String scope;
   private Type type;
@@ -91,6 +92,15 @@ public class Account {
       return false;
     }
     return System.currentTimeMillis() > expiresAt;
+  }
+
+  /** True once a login or validation attempt has proven the token dead. */
+  public boolean isTokenDead() {
+    return tokenDead;
+  }
+
+  public void setTokenDead(boolean tokenDead) {
+    this.tokenDead = tokenDead;
   }
 
   public Type getType() {

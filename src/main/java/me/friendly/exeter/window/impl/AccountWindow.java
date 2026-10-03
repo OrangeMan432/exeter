@@ -209,8 +209,11 @@ public class AccountWindow extends Window {
       return "§4§lBANNED";
     }
     if (unban <= now) {
-      if (account.isTokenExpired()) {
+      if (account.isTokenDead()) {
         return "§c§lEXPIRED";
+      }
+      if (account.isTokenExpired()) {
+        return "§e§lSTALE?";
       }
       return "§2§lOK";
     }
@@ -532,6 +535,7 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
+                  account.setTokenDead(false);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -556,6 +560,7 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
+                  account.setTokenDead(false);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -564,6 +569,7 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
+                  account.setTokenDead(true);
                   setStatus("§cToken expired, re-add it (" + username + ")", 8000);
                   DebugLogger.get().logFile(TAG, "Session login failed for " + username);
                   return null;
@@ -606,6 +612,7 @@ public class AccountWindow extends Window {
               account.setAccessToken(newAccess.get());
               // Minecraft access tokens last 24 hours.
               account.setExpiresAt(System.currentTimeMillis() + 86400000L);
+              account.setTokenDead(false);
               account.setUsername(profile.username());
               account.setUuid(profile.uuid().toString());
               save();
