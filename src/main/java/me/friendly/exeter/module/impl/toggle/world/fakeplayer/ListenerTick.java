@@ -5,13 +5,11 @@ import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.impl.toggle.world.fakeplayer.util.FakePlayerEntity;
 import me.friendly.exeter.module.impl.toggle.world.fakeplayer.util.Position;
+import me.friendly.exeter.util.ExplosionUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ListenerTick extends Listener<TickEvent> {
@@ -127,8 +125,7 @@ public class ListenerTick extends Listener<TickEvent> {
   }
 
   private static int burstCount(FireworkRocketEntity rocket) {
-    var fireworks = rocket.getItem().get(DataComponents.FIREWORKS);
-    return fireworks == null ? 0 : fireworks.explosions().size();
+    return ExplosionUtil.fireworkBursts(rocket.getItem());
   }
 
   private void applyFireworkDamage(FakePlayerEntity fp, TrackedRocket rocket) {
@@ -137,32 +134,18 @@ public class ListenerTick extends Listener<TickEvent> {
         .logFile(
             "FakePlayer",
             "rocket vanished " + Math.round(distance) + "m from dummy hp=" + fp.getHealth());
-    if (distance > 5.0) return;
-    float base = 5.0F + 2.0F * rocket.bursts();
-    if (base <= 0.0F) return;
-    if (!hasLineOfSight(fp, rocket.pos())) {
+    if (distance > 5.0 || rocket.bursts() <= 0) return;
+    if (!ExplosionUtil.hasLineOfSight(mc.level, rocket.pos(), fp)) {
       me.friendly.exeter.logging.DebugLogger.get()
           .logFile("FakePlayer", "no line of sight, no damage (vanilla deals 0)");
       return;
     }
-    float damage = (float) (base * Math.sqrt((5.0 - distance) / 5.0));
+    float damage = ExplosionUtil.fireworkDamage(mc.level, rocket.pos(), rocket.bursts(), fp);
     if (damage > 0) {
       me.friendly.exeter.logging.DebugLogger.get()
           .logFile("FakePlayer", "applying " + damage + " firework damage (vanilla formula)");
       fp.applyDamage(damage);
     }
-  }
-
-  /** Vanilla checks feet and mid-body rays with COLLIDER blocks; either clear deals damage. */
-  private boolean hasLineOfSight(FakePlayerEntity fp, Vec3 from) {
-    for (double scale : new double[] {0.0, 0.5}) {
-      Vec3 to = new Vec3(fp.getX(), fp.getY(scale), fp.getZ());
-      var hit =
-          mc.level.clip(
-              new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, fp));
-      if (hit.getType() == HitResult.Type.MISS) return true;
-    }
-    return false;
   }
 
   private void tickRegen(FakePlayerEntity fp) {
