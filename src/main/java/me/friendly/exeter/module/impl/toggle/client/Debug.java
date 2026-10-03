@@ -3,6 +3,8 @@ package me.friendly.exeter.module.impl.toggle.client;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import me.friendly.api.event.Listener;
+import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.ModuleType;
@@ -11,6 +13,7 @@ import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 
 public class Debug extends ToggleableModule {
 
@@ -21,6 +24,8 @@ public class Debug extends ToggleableModule {
   private final Property<Boolean> showInfo = new Property<Boolean>(true, "Show Info");
   private final Property<Boolean> showWarn = new Property<Boolean>(true, "Show Warnings");
   private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
+  private final Property<Boolean> refillTotem =
+      new Property<Boolean>(false, "Refill Totem", "refilltotem");
   private final SelectionPopup.Toggles moduleToggles = new SelectionPopup.Toggles("Module Toggles");
   private final PopupProperty modulesPopup;
 
@@ -37,8 +42,16 @@ public class Debug extends ToggleableModule {
         showInfo,
         showWarn,
         showError,
+        refillTotem,
         moduleToggles.getProperty(),
         modulesPopup);
+    this.listeners.add(
+        new Listener<PacketEvent>("debug_totem_refill") {
+          @Override
+          public void call(PacketEvent event) {
+            onPacket(event);
+          }
+        });
   }
 
   public void initModuleToggles(Iterable<Module> modules) {
@@ -50,6 +63,17 @@ public class Debug extends ToggleableModule {
         moduleToggles.getToggles().putIfAbsent(module.getLabel(), false);
       }
     }
+  }
+
+  /** Test helper: hands the player a fresh totem via /give whenever they pop one. */
+  private void onPacket(PacketEvent event) {
+    if (!refillTotem.getValue()) return;
+    if (!(event.getPacket() instanceof ClientboundEntityEventPacket packet)) return;
+    if (packet.getEventId() != 35) return;
+    if (minecraft.level == null || minecraft.player == null) return;
+    if (packet.getEntity(minecraft.level) != minecraft.player) return;
+    minecraft.player.connection.sendCommand("give @s minecraft:totem_of_undying");
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "totem popped, refilled via /give");
   }
 
   private void openModulesPopup() {

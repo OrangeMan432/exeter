@@ -13,6 +13,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Launches damaging fireworks at the feet of players fighting under a roof. Only rockets carrying
@@ -33,6 +35,8 @@ public class FireworkAura extends ToggleableModule {
       new NumberProperty<Double>(6.0, 0.0, 12.0, "Target Range");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(4.5, 0.0, 6.0, "Place Range");
+  private final NumberProperty<Double> maxSelfDamage =
+      new NumberProperty<Double>(6.0, 0.0, 20.0, "Max Self Damage");
   private final NumberProperty<Integer> delay = new NumberProperty<Integer>(10, 0, 40, "Delay");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -44,6 +48,7 @@ public class FireworkAura extends ToggleableModule {
   private String lastTargetKey;
   private boolean noRocketLogged;
   private boolean noReachLogged;
+  private boolean noSelfDmgLogged;
 
   public FireworkAura() {
     super(
@@ -52,7 +57,8 @@ public class FireworkAura extends ToggleableModule {
         0xFFAA55,
         ModuleType.COMBAT);
     setDescription("Fireworks players hiding under cover.");
-    offerProperties(targetRange, placeRange, delay, rotate, swingHand, autoSwitch, switchBack);
+    offerProperties(
+        targetRange, placeRange, maxSelfDamage, delay, rotate, swingHand, autoSwitch, switchBack);
     this.listeners.add(
         new Listener<TickEvent>("fireworkaura_tick") {
           @Override
@@ -76,6 +82,7 @@ public class FireworkAura extends ToggleableModule {
     lastTargetKey = null;
     noRocketLogged = false;
     noReachLogged = false;
+    noSelfDmgLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -85,6 +92,7 @@ public class FireworkAura extends ToggleableModule {
     lastTargetKey = null;
     noRocketLogged = false;
     noReachLogged = false;
+    noSelfDmgLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
@@ -131,6 +139,32 @@ public class FireworkAura extends ToggleableModule {
       return;
     }
     noReachLogged = false;
+
+    // Detonation estimate: the rocket bursts within a block or two of the target's mid-body,
+    // so score vanilla firework damage against ourselves from there before firing.
+    Vec3 detonation = target.position().add(0.0, 1.0, 0.0);
+    var rocketStack = minecraft.player.getInventory().getItem(rocketSlot);
+    float selfDamage =
+        ExplosionUtil.fireworkDamage(
+            minecraft.level,
+            detonation,
+            ExplosionUtil.fireworkBursts(rocketStack),
+            minecraft.player);
+    if (selfDamage > maxSelfDamage.getValue()) {
+      if (!noSelfDmgLogged) {
+        noSelfDmgLogged = true;
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "holding fire: self damage "
+                    + selfDamage
+                    + " exceeds cap "
+                    + maxSelfDamage.getValue());
+      }
+      return;
+    }
+    noSelfDmgLogged = false;
 
     int origSlot = minecraft.player.getInventory().getSelectedSlot();
     boolean needSwitch =

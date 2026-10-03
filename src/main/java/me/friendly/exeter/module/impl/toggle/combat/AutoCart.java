@@ -9,6 +9,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.NotificationManager;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
@@ -34,6 +35,8 @@ public class AutoCart extends ToggleableModule {
   private final Property<Boolean> instaLight = new Property<Boolean>(false, "Insta Light");
   private final NumberProperty<Integer> breakDelay =
       new NumberProperty<Integer>(1, 0, 20, "Break Delay");
+  private final NumberProperty<Double> maxSelfDamage =
+      new NumberProperty<Double>(10.0, 0.0, 60.0, "Max Self Damage");
 
   private Player target;
   private BlockPos targetPos;
@@ -43,6 +46,7 @@ public class AutoCart extends ToggleableModule {
   private int lightStage;
   private boolean doneMessageSent;
   private boolean swapPending;
+  private boolean noSelfDmgLogged;
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("autocart_tick") {
@@ -60,6 +64,7 @@ public class AutoCart extends ToggleableModule {
         tntCarts,
         cartsPerTick,
         range,
+        maxSelfDamage,
         pullFromInventory,
         rotateRail,
         rotateMinecart,
@@ -79,6 +84,7 @@ public class AutoCart extends ToggleableModule {
     lightStage = 0;
     doneMessageSent = false;
     swapPending = false;
+    noSelfDmgLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -197,6 +203,24 @@ public class AutoCart extends ToggleableModule {
     PlayerUtil.swapBack();
 
     if (instaLight.getValue()) {
+      // Detonation is imminent: stationary TNT carts explode at power 4 around the rail.
+      // Hold here (keeping the placed carts) until we move clear instead of suiciding.
+      float selfDamage = predictedSelfDamage();
+      if (selfDamage > maxSelfDamage.getValue()) {
+        if (!noSelfDmgLogged) {
+          noSelfDmgLogged = true;
+          DebugLogger.get()
+              .log(
+                  getLabel(),
+                  DebugLogger.Level.WARN,
+                  "holding lighting: self damage "
+                      + selfDamage
+                      + " exceeds cap "
+                      + maxSelfDamage.getValue());
+        }
+        return;
+      }
+      noSelfDmgLogged = false;
       DebugLogger.get()
           .log(getLabel(), DebugLogger.Level.INFO, "entering instaLight break at " + targetPos);
       NotificationManager.push("AutoCart lighting", "flint_and_steel");
@@ -211,8 +235,30 @@ public class AutoCart extends ToggleableModule {
           .log(
               getLabel(), DebugLogger.Level.INFO, "done " + cartsPlaced + " carts at " + targetPos);
       NotificationManager.push("AutoCart done " + cartsPlaced + " carts", "tnt_minecart");
+      // Manual path: the user breaks the rail themselves, so this is advisory only.
+      float selfDamage = predictedSelfDamage();
+      if (selfDamage > maxSelfDamage.getValue()) {
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.WARN,
+                "predicted self damage "
+                    + selfDamage
+                    + " exceeds cap "
+                    + maxSelfDamage.getValue()
+                    + " if lit from here");
+      }
     }
     doneMessageSent = true;
+  }
+
+  /**
+   * Raw vanilla damage of a single stationary-cart blast (power 4) at the rail against ourselves. A
+   * lower bound: chained carts each explode separately.
+   */
+  private float predictedSelfDamage() {
+    Vec3 center = new Vec3(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+    return ExplosionUtil.explosionDamage(minecraft.level, center, 4.0F, minecraft.player);
   }
 
   private Player findTarget() {
