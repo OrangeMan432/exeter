@@ -125,11 +125,6 @@ public class AutoArmor extends ToggleableModule {
       EquipmentSlot equipSlot = slots[s];
       int containerSlot = containerSlots[s];
 
-      // Never touch the chest slot mid-flight: stripping a worn elytra kills.
-      if (equipSlot == EquipmentSlot.CHEST && mc.player.isFallFlying()) {
-        continue;
-      }
-
       // Leave a worn elytra alone while MaceDive is running, or the two modules swap
       // armor back and forth every tick and takeoff becomes impossible.
       if (equipSlot == EquipmentSlot.CHEST
@@ -140,16 +135,23 @@ public class AutoArmor extends ToggleableModule {
 
       // Pull a worn elytra before it breaks so it never needs phantom-membrane
       // repair, then equip the freshest unbroken elytra from the inventory.
+      // This runs mid-flight too: a broken elytra up here kills just the same,
+      // and plenty of anarchy servers never spawn Phantoms to repair with.
       if (equipSlot == EquipmentSlot.CHEST
           && elytraSaver.getValue()
           && mc.player.getItemBySlot(equipSlot).is(Items.ELYTRA)
           && getDurabilityPercent(mc.player.getItemBySlot(equipSlot))
               <= elytraDepletion.getValue()) {
-        if (hasEmptyInventorySlot()) {
+        if (!mc.player.isFallFlying() && hasEmptyInventorySlot()) {
           quickMoveArmor(containerSlot);
           sleep = true;
         }
         equipFreshElytra();
+        continue;
+      }
+
+      // Never touch a healthy chest slot mid-flight: stripping a worn elytra kills.
+      if (equipSlot == EquipmentSlot.CHEST && mc.player.isFallFlying()) {
         continue;
       }
 
