@@ -114,9 +114,20 @@ public class ListenerTick extends Listener<TickEvent> {
       if (seen.contains(entry.getKey())) continue;
       it.remove();
       double distance = entry.getValue().distanceTo(fp.position());
+      me.friendly.exeter.logging.DebugLogger.get()
+          .logFile(
+              "FakePlayer",
+              "rocket "
+                  + entry.getKey()
+                  + " vanished "
+                  + Math.round(distance)
+                  + "m from dummy hp="
+                  + fp.getHealth());
       if (distance > 8.0) continue;
       float damage = (float) ((1.0 - distance / 8.0) * 10.0);
       if (damage > 0) {
+        me.friendly.exeter.logging.DebugLogger.get()
+            .logFile("FakePlayer", "applying " + damage + " firework damage");
         fp.applyDamage(damage);
       }
     }
