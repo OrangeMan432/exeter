@@ -209,6 +209,15 @@ public class AccountWindow extends Window {
       return "§4§lBANNED";
     }
     if (unban <= now) {
+      if (account.getLastAuthError() != null) {
+        return "§c§lERROR";
+      }
+      if (account.isTokenDead()) {
+        return "§c§lEXPIRED";
+      }
+      if (account.isTokenExpired()) {
+        return "§e§lSTALE?";
+      }
       return "§2§lOK";
     }
     long diff = unban - now;
@@ -509,6 +518,8 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
+                  account.setTokenDead(false);
+                  account.setLastAuthError(null);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -533,6 +544,8 @@ public class AccountWindow extends Window {
                 profile -> {
                   account.setUsername(profile.username());
                   account.setUuid(profile.uuid().toString());
+                  account.setTokenDead(false);
+                  account.setLastAuthError(null);
                   save();
                   SessionManager.set(profile, account.getAccessToken());
                   setStatus("§aLogin successful! (" + account.getUsername() + ")", 5000);
@@ -541,6 +554,8 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
+                  account.setTokenDead(true);
+                  account.setLastAuthError(displayMessage(error));
                   setStatus("§cToken expired, re-add it (" + username + ")", 8000);
                   DebugLogger.get().logFile(TAG, "Session login failed for " + username);
                   return null;
@@ -581,6 +596,10 @@ public class AccountWindow extends Window {
             profile -> {
               account.setRefreshToken(newRefresh.get());
               account.setAccessToken(newAccess.get());
+              // Minecraft access tokens last 24 hours.
+              account.setExpiresAt(System.currentTimeMillis() + 86400000L);
+              account.setTokenDead(false);
+              account.setLastAuthError(null);
               account.setUsername(profile.username());
               account.setUuid(profile.uuid().toString());
               save();
@@ -591,8 +610,8 @@ public class AccountWindow extends Window {
             })
         .exceptionally(
             error -> {
-              String message =
-                  error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
+              String message = displayMessage(error);
+              account.setLastAuthError(message);
               setStatus("§c" + message + " (" + username + ")", 8000);
               DebugLogger.get().logFile(TAG, "Login failed for " + username + ": " + message);
               return null;
@@ -652,8 +671,7 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
-                  String message =
-                      error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
+                  String message = displayMessage(error);
                   setStatus("§c" + message, 8000);
                   DebugLogger.get().logFile(TAG, "Browser auth failed: " + message);
                   return null;
@@ -804,8 +822,7 @@ public class AccountWindow extends Window {
                 })
             .exceptionally(
                 error -> {
-                  String message =
-                      error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
+                  String message = displayMessage(error);
                   setStatus("§c" + message, 8000);
                   DebugLogger.get().logFile(TAG, "Token import failed: " + message);
                   return null;
@@ -859,6 +876,7 @@ public class AccountWindow extends Window {
       if (existing.getUsername().equalsIgnoreCase(username) && existing.getType() == type) {
         existing.setRefreshToken(refreshToken);
         existing.setAccessToken(accessToken);
+        existing.setExpiresAt(System.currentTimeMillis() + 86400000L);
         existing.setUsername(username);
         existing.setUuid(uuid);
         existing.setClientId(clientId);
@@ -871,6 +889,7 @@ public class AccountWindow extends Window {
     }
     Account account =
         new Account(refreshToken, accessToken, username, uuid, 0L, clientId, scope, type);
+    account.setExpiresAt(System.currentTimeMillis() + 86400000L);
     Exeter.getInstance().getAccountManager().register(account);
     save();
     selectedAccount = Exeter.getInstance().getAccountManager().getRegistry().size() - 1;
@@ -885,6 +904,18 @@ public class AccountWindow extends Window {
     Exeter.getInstance().getAccountManager().unregister(accounts.get(selectedAccount));
     save();
     selectedAccount = -1;
+  }
+
+  private static String displayMessage(Throwable error) {
+    Throwable cause = error.getCause() != null ? error.getCause() : error;
+    while (cause != null) {
+      if (cause.getMessage() != null && !cause.getMessage().isBlank()) {
+        return cause.getMessage();
+      }
+      cause = cause.getCause();
+    }
+    Throwable root = error.getCause() != null ? error.getCause() : error;
+    return root.getClass().getSimpleName();
   }
 
   private static UUID parseUuid(String value) {
