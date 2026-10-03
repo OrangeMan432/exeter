@@ -8,12 +8,15 @@ import me.friendly.exeter.module.impl.toggle.world.fakeplayer.util.Position;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class ListenerTick extends Listener<TickEvent> {
   private static final Minecraft mc = Minecraft.getInstance();
   private final FakePlayerModule module;
   private boolean wasRecording;
   private int ticks;
+  private final java.util.Map<Integer, Vec3> rockets = new java.util.HashMap<>();
 
   public ListenerTick(FakePlayerModule module) {
     super("fakeplayer_tick");
@@ -37,6 +40,7 @@ public class ListenerTick extends Listener<TickEvent> {
     FakePlayerEntity fp = module.getFakePlayer();
 
     tickRegen(fp);
+    tickFireworks(fp);
 
     boolean record = module.isRecording();
 
@@ -88,8 +92,40 @@ public class ListenerTick extends Listener<TickEvent> {
     }
   }
 
-  private void tickRegen(FakePlayerEntity fp) {
-    MobEffectInstance regen = fp.getEffect(MobEffects.REGENERATION);
+  /**
+   * Firework rockets hurt through direct hurt() calls with no explosion packet, so the
+   * explosion listener never sees them. A rocket that vanishes near the dummy detonated:
+   * apply falloff damage for it.
+   */
+  private void tickFireworks(FakePlayerEntity fp) {
+    if (!module.isDamageEnabled()) {
+      rockets.clear();
+      return;
+    }
+    java.util.Set<Integer> seen = new java.util.HashSet<>();
+    for (var entity : mc.level.entitiesForRendering()) {
+      if (!(entity instanceof FireworkRocketEntity)) continue;
+      seen.add(entity.getId());
+      rockets.put(entity.getId(), entity.position());
+    }
+    var it = rockets.entrySet().iterator();
+    while (it.hasNext()) {
+      var entry = it.next();
+      if (seen.contains(entry.getKey())) continue;
+      it.remove();
+      double distance = entry.getValue().distanceTo(fp.position());
+      if (distance > 8.0) continue;
+      float damage = (float) ((1.0 - distance / 8.0) * 10.0);
+      if (damage > 0) {
+        fp.applyDamage(damage);
+      }
+    }
+    if (rockets.size() > 64) {
+      rockets.clear();
+    }
+  }
+
+  private void tickRegen(FakePlayerEntity fp) {    MobEffectInstance regen = fp.getEffect(MobEffects.REGENERATION);
     if (regen != null) {
       float healAmount =
           switch (regen.getAmplifier()) {
