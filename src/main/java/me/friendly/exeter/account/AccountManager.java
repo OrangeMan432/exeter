@@ -91,6 +91,12 @@ public final class AccountManager extends ListRegistry<Account> {
                         getString(object, "scope"),
                         parseType(getString(object, "type")));
                 loaded.setExpiresAt(getLong(object, "expiresAt"));
+                if (object.has("tokenDead") && object.get("tokenDead").isJsonPrimitive()) {
+                  try {
+                    loaded.setTokenDead(object.get("tokenDead").getAsBoolean());
+                  } catch (Exception ignored) {
+                  }
+                }
                 AccountManager.this.register(loaded);
               } catch (Exception e) {
                 DebugLogger.get()
@@ -112,6 +118,7 @@ public final class AccountManager extends ListRegistry<Account> {
               object.addProperty("uuid", account.getUuid());
               object.addProperty("unban", account.getUnban());
               object.addProperty("expiresAt", account.getExpiresAt());
+              object.addProperty("tokenDead", account.isTokenDead());
               object.addProperty("clientId", account.getClientId());
               object.addProperty("scope", account.getScope());
               object.addProperty("type", account.getType().name());

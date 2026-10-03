@@ -25,7 +25,8 @@ public class Account {
   private String uuid;
   private long unban;
   private long expiresAt;
-  private transient boolean tokenDead;
+  private boolean tokenDead;
+  private transient String lastAuthError;
   private String clientId;
   private String scope;
   private Type type;
@@ -101,6 +102,15 @@ public class Account {
 
   public void setTokenDead(boolean tokenDead) {
     this.tokenDead = tokenDead;
+  }
+
+  /** Last auth attempt failure, cleared on success. Session-only, never persisted. */
+  public String getLastAuthError() {
+    return lastAuthError;
+  }
+
+  public void setLastAuthError(String lastAuthError) {
+    this.lastAuthError = lastAuthError;
   }
 
   public Type getType() {
