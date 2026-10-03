@@ -138,16 +138,15 @@ public class ListenerTick extends Listener<TickEvent> {
 
   private void tickRegen(FakePlayerEntity fp) {
     MobEffectInstance regen = fp.getEffect(MobEffects.REGENERATION);
-    if (regen != null) {
-      float healAmount =
-          switch (regen.getAmplifier()) {
-            case 0 -> 0.5F;
-            case 1 -> 1.0F;
-            default -> Math.min((float) (2 << regen.getAmplifier()), 20.0F);
-          };
-      float maxHealth = fp.getMaxHealth();
-      float newHealth = Math.min(fp.getHealth() + healAmount, maxHealth);
-      fp.setHealth(newHealth);
+    if (regen == null) {
+      return;
     }
+    // Vanilla intervals: 50 ticks per heart at I, halved per amplifier.
+    int interval = Math.max(1, 50 >> Math.min(regen.getAmplifier(), 5));
+    if (fp.tickCount % interval != 0) {
+      return;
+    }
+    float newHealth = Math.min(fp.getHealth() + 1.0F, fp.getMaxHealth());
+    fp.setHealth(newHealth);
   }
 }
