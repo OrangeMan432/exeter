@@ -263,9 +263,22 @@ public class PlayerUtil {
     return lastSpoofSendMs;
   }
 
+  /** Survival block-interact reach enforced by the server on use-item packets. */
+  public static final double INTERACT_RANGE = 4.5;
+
+  /**
+   * Clicks the surface of the block face, like vanilla. The server spawns fireworks at click +
+   * face*0.15 and places blocks against the clicked face, so a block-center click ends up inside
+   * solid geometry (rockets detonate embedded with all damage rays blocked).
+   */
   public static void useItemOn(BlockPos pos, Direction face) {
     if (mc.player == null || mc.gameMode == null) return;
-    BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), face, pos, false);
+    Vec3 click =
+        new Vec3(
+            pos.getX() + 0.5 + face.getStepX() * 0.5,
+            pos.getY() + 0.5 + face.getStepY() * 0.5,
+            pos.getZ() + 0.5 + face.getStepZ() * 0.5);
+    BlockHitResult hit = new BlockHitResult(click, face, pos, false);
     mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, hit);
   }
 
