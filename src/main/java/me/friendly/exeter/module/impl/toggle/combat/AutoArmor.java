@@ -125,11 +125,6 @@ public class AutoArmor extends ToggleableModule {
       EquipmentSlot equipSlot = slots[s];
       int containerSlot = containerSlots[s];
 
-      // Never touch the chest slot mid-flight: stripping a worn elytra kills.
-      if (equipSlot == EquipmentSlot.CHEST && mc.player.isFallFlying()) {
-        continue;
-      }
-
       // Leave a worn elytra alone while MaceDive is running, or the two modules swap
       // armor back and forth every tick and takeoff becomes impossible.
       if (equipSlot == EquipmentSlot.CHEST
@@ -140,16 +135,35 @@ public class AutoArmor extends ToggleableModule {
 
       // Pull a worn elytra before it breaks so it never needs phantom-membrane
       // repair, then equip the freshest unbroken elytra from the inventory.
+      // This runs mid-flight too: a broken elytra up here kills just the same,
+      // and plenty of anarchy servers never spawn Phantoms to repair with.
+      // Shift-clicking into an occupied armor slot just shuffles inventory, so
+      // mid-flight swaps go through the pickup path instead of quick-move.
       if (equipSlot == EquipmentSlot.CHEST
           && elytraSaver.getValue()
           && mc.player.getItemBySlot(equipSlot).is(Items.ELYTRA)
           && getDurabilityPercent(mc.player.getItemBySlot(equipSlot))
               <= elytraDepletion.getValue()) {
-        if (hasEmptyInventorySlot()) {
+        ItemStack worn = mc.player.getItemBySlot(equipSlot);
+        int wornRemaining = worn.getMaxDamage() - worn.getDamageValue();
+        int fresh = freshElytraSlot();
+        if (!mc.player.isFallFlying()
+            && wornRemaining > 0
+            && fresh == -1
+            && hasEmptyInventorySlot()) {
+          quickMoveArmor(containerSlot);
+          sleep = true;
+        } else if (fresh != -1) {
+          swap(fresh, containerSlot);
+        } else if (wornRemaining <= 0 && hasEmptyInventorySlot()) {
           quickMoveArmor(containerSlot);
           sleep = true;
         }
-        equipFreshElytra();
+        continue;
+      }
+
+      // Never touch a healthy chest slot mid-flight: stripping a worn elytra kills.
+      if (equipSlot == EquipmentSlot.CHEST && mc.player.isFallFlying()) {
         continue;
       }
 
@@ -191,7 +205,7 @@ public class AutoArmor extends ToggleableModule {
     }
   }
 
-  private void equipFreshElytra() {
+  private int freshElytraSlot() {
     int bestSlot = -1;
     int bestRemaining = 0;
     for (int i = 9; i < 45; i++) {
@@ -203,10 +217,7 @@ public class AutoArmor extends ToggleableModule {
         bestSlot = i;
       }
     }
-    if (bestSlot != -1) {
-      quickMoveArmor(bestSlot);
-      sleep = true;
-    }
+    return bestSlot;
   }
 
   private void swap(int source, int target) {
