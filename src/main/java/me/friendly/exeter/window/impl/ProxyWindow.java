@@ -6,10 +6,10 @@ import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.proxy.ProxyEntry;
 import me.friendly.exeter.proxy.ProxyManager;
 import me.friendly.exeter.window.Window;
+import me.friendly.exeter.window.WindowButtons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
@@ -150,36 +150,22 @@ public class ProxyWindow extends Window {
     statusExpiry = System.currentTimeMillis() + 2500;
   }
 
+  private final WindowButtons buttons = new WindowButtons(this, 5, BUTTON_HEIGHT);
+
   private int buttonWidth(int id) {
-    // Last column stretches so its right edge sits flush with the window.
-    if (id == 4) {
-      return x + width - 3 - buttonX(id);
-    }
-    return (width - 6) / 5 - 2;
+    return buttons.buttonWidth(id);
   }
 
   private int buttonX(int id) {
-    return x + 3 + id * (buttonWidth(0) + 2);
+    return buttons.buttonX(id);
   }
 
   private void drawButton(int id, int btnY, int mouseX, int mouseY, String label) {
-    int bx = buttonX(id);
-    int bw = buttonWidth(id);
-    boolean hovered =
-        mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT;
-    int color =
-        hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120);
-    RenderMethods.drawRect(bx, btnY, bx + bw, btnY + BUTTON_HEIGHT, color);
-    FontUtil.drawString(
-        label, bx + bw / 2 - FontUtil.getStringWidth(label) / 2, btnY + 2, 0xFFFFFFFF);
+    buttons.drawButton(id, btnY, mouseX, mouseY, label);
   }
 
   private boolean clickButton(int id, int btnY, int mouseX, int mouseY) {
-    int bx = buttonX(id);
-    return mouseX >= bx
-        && mouseX <= bx + buttonWidth(id)
-        && mouseY >= btnY
-        && mouseY <= btnY + BUTTON_HEIGHT;
+    return buttons.clickButton(id, btnY, mouseX, mouseY);
   }
 
   private ProxyEntry selected() {

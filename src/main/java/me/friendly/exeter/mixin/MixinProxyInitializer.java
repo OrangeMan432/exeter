@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.proxy.HttpProxyHandler;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.proxy.ProxyEntry;
 import me.friendly.exeter.proxy.ProxyManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +33,18 @@ public class MixinProxyInitializer {
     if (active == null) {
       return;
     }
+    DebugLogger.get()
+        .logSystem(
+            "Proxy",
+            "Routing game connection through "
+                + active.getName()
+                + " ("
+                + active.getType().name()
+                + " "
+                + active.getHost()
+                + ":"
+                + active.getPort()
+                + ")");
     if (active.getType() == ProxyEntry.Type.HTTP) {
       if (active.hasAuth()) {
         channel

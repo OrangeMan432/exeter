@@ -19,6 +19,7 @@ import java.util.List;
 import me.friendly.api.registry.ListRegistry;
 import me.friendly.exeter.config.Config;
 import me.friendly.exeter.core.Exeter;
+import me.friendly.exeter.logging.DebugLogger;
 
 /**
  * Manages SOCKS5/HTTP proxies for all client traffic: game connections go through a Netty proxy
@@ -84,6 +85,7 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+    DebugLogger.get().logSystem("Proxy", enabled ? "Proxies enabled" : "Proxies disabled");
     applyAuthenticator();
   }
 
@@ -101,6 +103,9 @@ public final class ProxyManager extends ListRegistry<ProxyEntry> {
 
   public void setActive(String name) {
     this.activeName = name == null ? "" : name;
+    if (!activeName.isEmpty()) {
+      DebugLogger.get().logSystem("Proxy", "Active proxy: " + activeName);
+    }
     applyAuthenticator();
   }
 

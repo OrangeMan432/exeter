@@ -209,9 +209,9 @@ public class ElytraFly extends ToggleableModule {
       takeoffTicks = 0;
       flyTicks = 0;
       outNotified = false;
-      takingOff = !mc.player.isFallFlying();
-      lastY = mc.player.getY();
+      lastY = 0.0;
       boostCooldown = 0;
+      takingOff = mc.player != null && !mc.player.isFallFlying();
     }
 
     void onDeactivate() {
