@@ -48,8 +48,9 @@ public final class MicrosoftAuth {
   // 25565 + 10
   private static final int PORT = 25575;
 
-  private static final HttpClient HTTP =
-      HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
+  private static HttpClient http() {
+    return me.friendly.exeter.proxy.ProxyManager.httpClient();
+  }
 
   private MicrosoftAuth() {}
 
@@ -309,7 +310,7 @@ public final class MicrosoftAuth {
                     .GET()
                     .build();
             HttpResponse<String> response =
-                HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+                http().send(request, HttpResponse.BodyHandlers.ofString());
             JsonObject json = new JsonParser().parse(response.body()).getAsJsonObject();
             String id =
                 Optional.ofNullable(json.get("id"))
@@ -379,7 +380,7 @@ public final class MicrosoftAuth {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build();
-    HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+    HttpResponse<String> response = http().send(request, HttpResponse.BodyHandlers.ofString());
     return new JsonParser().parse(response.body()).getAsJsonObject();
   }
 
@@ -392,7 +393,7 @@ public final class MicrosoftAuth {
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build();
-    HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+    HttpResponse<String> response = http().send(request, HttpResponse.BodyHandlers.ofString());
     return new JsonParser().parse(response.body()).getAsJsonObject();
   }
 
