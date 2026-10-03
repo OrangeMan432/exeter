@@ -10,6 +10,7 @@ import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
 import me.friendly.exeter.properties.EnumProperty;
@@ -54,6 +55,8 @@ public class AutoTrap extends ToggleableModule {
 
   private int tickCounter;
   private int lastAttemptTick;
+  private String lastTargetKey;
+  private boolean noBlockLogged;
 
   public AutoTrap() {
     super("AutoTrap", new String[] {"autotrap", "trap"}, 0x8844FF, ModuleType.COMBAT);
@@ -96,6 +99,21 @@ public class AutoTrap extends ToggleableModule {
     if (blockSelections.getSelected().isEmpty()) {
       blockSelections.getSelected().add("minecraft:obsidian");
     }
+    lastTargetKey = null;
+    noBlockLogged = false;
+    DebugLogger.get()
+        .log(
+            getLabel(),
+            DebugLogger.Level.INFO,
+            "enabled mode=" + mode.getValue() + " airplace=" + airPlace.getValue());
+  }
+
+  @Override
+  protected void onDisable() {
+    super.onDisable();
+    lastTargetKey = null;
+    noBlockLogged = false;
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
   private void openBlockPopup() {
@@ -127,9 +145,30 @@ public class AutoTrap extends ToggleableModule {
     if (tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
 
     Player target = findTarget();
-    if (target == null) return;
+    if (target == null) {
+      lastTargetKey = null;
+      return;
+    }
+    String targetKey = target.getName().getString() + " " + mode.getValue();
+    if (!targetKey.equals(lastTargetKey)) {
+      lastTargetKey = targetKey;
+      noBlockLogged = false;
+      DebugLogger.get()
+          .log(
+              getLabel(),
+              DebugLogger.Level.INFO,
+              "target=" + target.getName().getString() + " mode=" + mode.getValue());
+    }
     int blockSlot = findBlockSlot();
-    if (blockSlot == -1) return;
+    if (blockSlot == -1) {
+      if (!noBlockLogged) {
+        noBlockLogged = true;
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "no trap blocks in hotbar");
+      }
+      return;
+    }
+    noBlockLogged = false;
 
     for (BlockPos cell : trapCells(target)) {
       if (!PlayerUtil.isAirOrReplaceable(cell)) continue;
@@ -137,6 +176,15 @@ public class AutoTrap extends ToggleableModule {
       BlockPos support = airPlace.getValue() ? cell : findSupport(cell, target);
       if (support == null) continue;
       placeCell(support, blockSlot);
+      DebugLogger.get()
+          .logFile(
+              getLabel(),
+              "place "
+                  + support.toShortString()
+                  + " slot="
+                  + blockSlot
+                  + " target="
+                  + target.getName().getString());
       lastAttemptTick = tickCounter;
       return;
     }

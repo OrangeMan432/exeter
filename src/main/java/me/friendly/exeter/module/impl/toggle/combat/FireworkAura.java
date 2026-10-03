@@ -10,6 +10,7 @@ import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.PlayerUtil;
@@ -38,12 +39,13 @@ public class FireworkAura extends ToggleableModule {
 
   private int tickCounter;
   private int lastFireTick;
+  private String lastTargetKey;
+  private boolean noRocketLogged;
 
   public FireworkAura() {
     super("FireworkAura", new String[] {"fireworkaura", "firework-aura"}, 0xFFAA55, ModuleType.COMBAT);
     setDescription("Fireworks players hiding under cover.");
-    offerProperties(targetRange, delay, rotate, swingHand, autoSwitch, switchBack);
-    this.listeners.add(
+    offerProperties(targetRange, delay, rotate, swingHand, autoSwitch, switchBack);    this.listeners.add(
         new Listener<TickEvent>("fireworkaura_tick") {
           @Override
           public void call(TickEvent event) {
@@ -60,15 +62,49 @@ public class FireworkAura extends ToggleableModule {
         });
   }
 
+  @Override
+  protected void onEnable() {
+    super.onEnable();
+    lastTargetKey = null;
+    noRocketLogged = false;
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
+  }
+
+  @Override
+  protected void onDisable() {
+    super.onDisable();
+    lastTargetKey = null;
+    noRocketLogged = false;
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
+  }
+
   private void onTick() {
     tickCounter++;
     if (minecraft.player == null || minecraft.level == null) return;
     if (tickCounter - lastFireTick < delay.getValue()) return;
 
     Player target = findTarget();
-    if (target == null) return;
+    if (target == null) {
+      lastTargetKey = null;
+      return;
+    }
+    String targetKey = target.getName().getString();
+    if (!targetKey.equals(lastTargetKey)) {
+      lastTargetKey = targetKey;
+      noRocketLogged = false;
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "target=" + targetKey);
+    }
     int rocketSlot = findRocketSlot();
-    if (rocketSlot == -1) return;
+    if (rocketSlot == -1) {
+      if (!noRocketLogged) {
+        noRocketLogged = true;
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.WARN, "no damaging rockets in hotbar");
+      }
+      return;
+    }
+    noRocketLogged = false;
 
     BlockPos ground = target.blockPosition().below();
     if (!PlayerUtil.inRange(ground, targetRange.getValue() + 2.0)) return;
@@ -97,6 +133,15 @@ public class FireworkAura extends ToggleableModule {
       minecraft.player.getInventory().setSelectedSlot(origSlot);
     }
     PlayerUtil.resyncSlot();
+    DebugLogger.get()
+        .logFile(
+            getLabel(),
+            "fire slot="
+                + rocketSlot
+                + " at "
+                + ground.toShortString()
+                + " target="
+                + target.getName().getString());
     lastFireTick = tickCounter;
   }
 
