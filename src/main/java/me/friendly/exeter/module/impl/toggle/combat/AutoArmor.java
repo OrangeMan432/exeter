@@ -147,7 +147,10 @@ public class AutoArmor extends ToggleableModule {
         ItemStack worn = mc.player.getItemBySlot(equipSlot);
         int wornRemaining = worn.getMaxDamage() - worn.getDamageValue();
         int fresh = freshElytraSlot();
-        if (!mc.player.isFallFlying() && wornRemaining > 0 && fresh == -1 && hasEmptyInventorySlot()) {
+        if (!mc.player.isFallFlying()
+            && wornRemaining > 0
+            && fresh == -1
+            && hasEmptyInventorySlot()) {
           quickMoveArmor(containerSlot);
           sleep = true;
         } else if (fresh != -1) {
