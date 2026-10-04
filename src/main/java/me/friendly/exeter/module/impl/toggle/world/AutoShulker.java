@@ -52,6 +52,8 @@ public class AutoShulker extends ToggleableModule {
   private final Property<Boolean> placeSwing = new Property<Boolean>(true, "Place Swing");
   private final Property<Boolean> packetSwing = new Property<Boolean>(true, "Packet Swing");
   private final Property<Boolean> packetSwitch = new Property<Boolean>(true, "Packet Switch");
+  private final Property<Boolean> preferUnderneath =
+      new Property<Boolean>(true, "Prefer Underneath");
 
   private int delayTimeTicks;
   private BlockPos playerPos;
@@ -60,6 +62,8 @@ public class AutoShulker extends ToggleableModule {
   private int slotIndex;
   private boolean swapped;
   private int tick;
+  private boolean noShulkerLogged;
+  private boolean noPlaceLogged;
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("auto_shulker_tick") {
@@ -87,7 +91,8 @@ public class AutoShulker extends ToggleableModule {
         packetPlace,
         placeSwing,
         packetSwing,
-        packetSwitch);
+        packetSwitch,
+        preferUnderneath);
     this.listeners.add(tickListener);
   }
 
@@ -98,6 +103,8 @@ public class AutoShulker extends ToggleableModule {
     swapped = false;
     tick = 0;
     delayTimeTicks = 0;
+    noShulkerLogged = false;
+    noPlaceLogged = false;
     checkPos();
     super.onEnable();
   }
@@ -136,6 +143,7 @@ public class AutoShulker extends ToggleableModule {
     } else if (delayTimeTicks++ >= tickDelay.getValue()) {
       delayTimeTicks = 0;
       if ((slotIndex = getShulkerSlot()) != -1) {
+        noShulkerLogged = false;
         if (!once.getValue() && getEmptyCounts() < emptySlots.getValue()) {
           checkPos();
         } else if (blockAim == null) {
@@ -184,6 +192,9 @@ public class AutoShulker extends ToggleableModule {
             }
           }
         }
+      } else if (!noShulkerLogged) {
+        noShulkerLogged = true;
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no shulker box in inventory");
       }
     }
   }
@@ -236,33 +247,91 @@ public class AutoShulker extends ToggleableModule {
             minecraft.player.getEyePosition(), range.getValue() + 1.0, yRange.getValue() + 1.0);
     blocks.removeIf(p -> list.contains(p));
 
+    int scanned = blocks.size();
+    int rejectedEntity = 0;
+    int rejectedSolid = 0;
+    int rejectedFacing = 0;
+    int rejectedRange = 0;
+    int feetY = minecraft.player.blockPosition().getY();
     List<ShulkerPos> posList = new ArrayList<>();
     for (BlockPos pos : blocks) {
-      Direction facing = getFacing(pos);
-      if (facing != null) {
-        BlockPos neighbour = pos.relative(facing);
-        Direction opposite = facing.getOpposite();
-        Vec3 hitVec =
-            Vec3.atCenterOf(neighbour)
-                .add(Vec3.atLowerCornerOf(opposite.getUnitVec3i()).scale(0.5));
-        if (inRange(hitVec)) {
-          posList.add(new ShulkerPos(pos, facing, neighbour, opposite, hitVec));
-        }
+      if (intersectsWithEntity(pos)) {
+        rejectedEntity++;
+        continue;
       }
+      if (!canReplace(pos)
+          && !(minecraft.level.getBlockState(pos).getBlock() instanceof ShulkerBoxBlock)) {
+        rejectedSolid++;
+        continue;
+      }
+      // findFacing also requires the lid side (away from the attached face) to be free.
+      Direction facing = findFacing(pos);
+      if (facing == null) {
+        rejectedFacing++;
+        continue;
+      }
+      BlockPos neighbour = pos.relative(facing);
+      Direction opposite = facing.getOpposite();
+      Vec3 hitVec =
+          Vec3.atCenterOf(neighbour).add(Vec3.atLowerCornerOf(opposite.getUnitVec3i()).scale(0.5));
+      if (!inRange(hitVec)) {
+        rejectedRange++;
+        continue;
+      }
+      posList.add(new ShulkerPos(pos, facing, neighbour, opposite, hitVec));
     }
 
     var target = getNearestPlayer(12.0);
+    // Bedpvp preference: cells below our feet are bed-blast sheltered, so use them when any
+    // exist and only fall back to on-top placement otherwise.
+    List<ShulkerPos> under =
+        preferUnderneath.getValue()
+            ? posList.stream().filter(p -> p.pos.getY() < feetY).toList()
+            : List.of();
+    List<ShulkerPos> pool = under.isEmpty() ? posList : under;
     if (target == null) {
       blockAim =
-          posList.stream()
-              .min(Comparator.comparing(p -> p.getRange(minecraft.player)))
-              .orElse(null);
+          pool.stream().min(Comparator.comparing(p -> p.getRange(minecraft.player))).orElse(null);
     } else {
-      blockAim = posList.stream().max(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
+      blockAim = pool.stream().max(Comparator.comparing(p -> getWeight(p, target))).orElse(null);
     }
 
     if (blockAim != null) {
+      noPlaceLogged = false;
+      DebugLogger.get()
+          .log(
+              getLabel(),
+              DebugLogger.Level.INFO,
+              "aim at "
+                  + blockAim.pos
+                  + (blockAim.pos.getY() < feetY ? " (underneath)" : " (top fallback)")
+                  + " under="
+                  + under.size()
+                  + " total="
+                  + posList.size()
+                  + " feetY="
+                  + feetY);
       list.add(blockAim.pos);
+    } else if (!noPlaceLogged) {
+      noPlaceLogged = true;
+      DebugLogger.get()
+          .log(
+              getLabel(),
+              DebugLogger.Level.WARN,
+              "no place location: scanned="
+                  + scanned
+                  + " entity="
+                  + rejectedEntity
+                  + " solid="
+                  + rejectedSolid
+                  + " noFacingOrLidBlocked="
+                  + rejectedFacing
+                  + " outOfRange="
+                  + rejectedRange
+                  + " range="
+                  + range.getValue()
+                  + " yRange="
+                  + yRange.getValue());
     }
   }
 
@@ -280,17 +349,15 @@ public class AutoShulker extends ToggleableModule {
         .anyMatch(entity -> !(entity instanceof ItemEntity));
   }
 
-  private Direction getFacing(BlockPos pos) {
-    if (!intersectsWithEntity(pos)
-        && (canReplace(pos)
-            || minecraft.level.getBlockState(pos).getBlock() instanceof ShulkerBoxBlock)
-        && minecraft.level.getBlockState(pos.above()).isAir()) {
-      for (Direction facing : Direction.values()) {
-        BlockPos neighbour = pos.relative(facing);
-        if (canBeClicked(neighbour) && minecraft.level.getBlockState(neighbour.below()).isAir()) {
-          return facing;
-        }
-      }
+  private Direction findFacing(BlockPos pos) {
+    // Any solid neighbour works since the shulker lands in pos itself. The lid opens away
+    // from the attached face, so that cell must be free: air above a floor placement,
+    // air below an upside-down one under a sheet.
+    for (Direction facing : Direction.values()) {
+      BlockPos neighbour = pos.relative(facing);
+      if (!canBeClicked(neighbour)) continue;
+      if (!minecraft.level.getBlockState(pos.relative(facing.getOpposite())).isAir()) continue;
+      return facing;
     }
     return null;
   }
