@@ -87,7 +87,7 @@ public class PistonCrystal extends ToggleableModule {
         new String[] {"pistoncrystal", "piston-crystal"},
         0xFF0000,
         ModuleType.COMBAT);
-    setDescription("Pushes a crystal over a holed player with a piston, then breaks it.");
+    setDescription("Pushes a crystal over a player in a hole with a piston, then breaks it.");
     offerProperties(
         targetRange,
         placeRange,
