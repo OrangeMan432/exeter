@@ -1,20 +1,24 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.Arrays;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
+import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.properties.EnumProperty;
 
 public class EnumButton extends Button {
   private EnumProperty property;
+  private final Module module;
   private final boolean child;
   private static final float CHILD_OFFSET = 1.0f;
 
-  public EnumButton(EnumProperty property, boolean child) {
+  public EnumButton(EnumProperty property, Module module, boolean child) {
     super(property.getAliases()[0]);
     this.property = property;
+    this.module = module;
     this.child = child;
   }
 
@@ -51,6 +55,12 @@ public class EnumButton extends Button {
         this.property.increment();
       } else if (mouseButton == InputConstants.MOUSE_BUTTON_RIGHT) {
         this.property.decrement();
+      } else {
+        return;
+      }
+      if (this.module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod
+          && Arrays.asList(this.property.getAliases()).contains("Panel Alignment")) {
+        guiMod.onAlignmentChanged();
       }
     }
   }

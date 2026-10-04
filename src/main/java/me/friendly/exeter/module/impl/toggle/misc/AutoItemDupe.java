@@ -238,12 +238,6 @@ public class AutoItemDupe extends ToggleableModule {
         if (reqs.isEmpty()) continue;
         List<Ingredient> ingredients = reqs.get();
         if (ingredients.size() == 1 && isPlanksIngredient(ingredients.get(0))) {
-          // verify result is button by checking display id path contains button if available
-          try {
-            var disp = entry.display();
-            // if display is accessible, check result would be button; fallback to ingredient check
-          } catch (Exception ignored) {
-          }
           return entry.id().index();
         }
       }

@@ -18,8 +18,4 @@ public class StopWatch {
   public void reset() {
     lastMs = System.currentTimeMillis();
   }
-
-  public long getElapsed() {
-    return System.currentTimeMillis() - lastMs;
-  }
 }
