@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
@@ -162,9 +161,9 @@ public class PistonPush extends ToggleableModule {
     // The delay gate only starts new attempts; a held placement runs every tick.
     if (pending == null && tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
 
-    int pistonSlot = findBlock(Blocks.PISTON);
-    if (pistonSlot == -1) pistonSlot = findBlock(Blocks.STICKY_PISTON);
-    int redstoneSlot = findBlock(Blocks.REDSTONE_BLOCK);
+    int pistonSlot = PlayerUtil.findBlock(Blocks.PISTON);
+    if (pistonSlot == -1) pistonSlot = PlayerUtil.findBlock(Blocks.STICKY_PISTON);
+    int redstoneSlot = PlayerUtil.findBlock(Blocks.REDSTONE_BLOCK);
     if (pistonSlot == -1 || redstoneSlot == -1) {
       pending = null;
       PlayerUtil.clearSpoofedLook(getLabel());
@@ -236,7 +235,7 @@ public class PistonPush extends ToggleableModule {
     // same tick as the placement can be dropped server-side (e.g. while a teleport ack is
     // pending after a moved-wrongly rollback), so the look is held until it has gone out
     // repeatedly before anything is placed.
-    float pistonYaw = yawFor(setup.facing.getOpposite());
+    float pistonYaw = PlayerUtil.yawFor(setup.facing.getOpposite());
     PlayerUtil.setSpoofedLook(getLabel(), pistonYaw, 0f);
     holdTicks++;
     // Place only on a fresh spoof: a stall between hold and placement would otherwise place
@@ -281,7 +280,7 @@ public class PistonPush extends ToggleableModule {
             + ", "
             + minecraft.player.getXRot()
             + ") sentLook=("
-            + yawFor(setup.facing.getOpposite())
+            + PlayerUtil.yawFor(setup.facing.getOpposite())
             + ", 0.0) rotate="
             + rotate.getValue();
     DebugLogger.get().logFile(getLabel(), detail);
@@ -308,13 +307,13 @@ public class PistonPush extends ToggleableModule {
     // Single-tick client look so prediction renders the same facing the server places.
     // Restored synchronously before the frame renders, so the camera never visibly moves.
     // Without this the client predicts with the real look and every piston renders wrong.
-    float pistonYaw = yawFor(setup.facing.getOpposite());
+    float pistonYaw = PlayerUtil.yawFor(setup.facing.getOpposite());
     PlayerUtil.withRotation(
         pistonYaw,
         0f,
         () -> {
           // Silent: the placement look was spoofed server-side while holding, so the camera stays.
-          clickPlace(setup.pistonPos);
+          PlayerUtil.clickPlace(setup.pistonPos);
           if (swingHand.getValue()) PlayerUtil.swingHand();
           if (needPistonSwitch && switchBack.getValue()) PlayerUtil.swapBack();
 
@@ -325,7 +324,7 @@ public class PistonPush extends ToggleableModule {
             PlayerUtil.swapTo(redstoneSlot);
             minecraft.player.getInventory().setSelectedSlot(redstoneSlot);
           }
-          clickPlace(setup.redstonePos);
+          PlayerUtil.clickPlace(setup.redstonePos);
           if (swingHand.getValue()) PlayerUtil.swingHand();
           if (needRedstoneSwitch && switchBack.getValue()) PlayerUtil.swapBack();
         });
@@ -387,17 +386,6 @@ public class PistonPush extends ToggleableModule {
    * Clicks a solid neighbour when one exists so the block lands in the cell; otherwise clicks the
    * replaceable cell itself.
    */
-  private void clickPlace(BlockPos cell) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbour = cell.relative(dir);
-      var state = minecraft.level.getBlockState(neighbour);
-      if (state.isAir() || state.canBeReplaced()) continue;
-      PlayerUtil.useItemOn(neighbour, dir.getOpposite());
-      return;
-    }
-    PlayerUtil.useItemOn(cell, Direction.UP);
-  }
-
   private PushSetup findSetup(Player target) {
     BlockPos feet = target.blockPosition();
     List<PushSetup> options = new ArrayList<>();
@@ -489,16 +477,6 @@ public class PistonPush extends ToggleableModule {
     return false;
   }
 
-  private static float yawFor(Direction dir) {
-    return switch (dir) {
-      case NORTH -> 180f;
-      case SOUTH -> 0f;
-      case EAST -> -90f;
-      case WEST -> 90f;
-      default -> 0f;
-    };
-  }
-
   private Player findTarget() {
     List<Player> players = new ArrayList<>();
     for (Entity entity : minecraft.level.players()) {
@@ -514,13 +492,6 @@ public class PistonPush extends ToggleableModule {
     return players.stream()
         .min(Comparator.comparingDouble(p -> minecraft.player.distanceTo(p)))
         .orElse(null);
-  }
-
-  private int findBlock(net.minecraft.world.level.block.Block block) {
-    return PlayerUtil.findInHotbar(
-        stack ->
-            stack.getItem() instanceof BlockItem
-                && ((BlockItem) stack.getItem()).getBlock() == block);
   }
 
   private static class PushSetup {

@@ -90,6 +90,10 @@ public final class ClickGui extends ToggleableModule {
     }
   }
 
+  public void onAlignmentChanged() {
+    resetPositions();
+  }
+
   /** Panel positions loaded from clickgui.toml, applied when the screen opens. */
   public void setPendingPanels(Map<String, int[]> positions) {
     pendingPanels.clear();

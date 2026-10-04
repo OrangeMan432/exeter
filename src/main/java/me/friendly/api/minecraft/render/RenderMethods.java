@@ -175,32 +175,6 @@ public final class RenderMethods {
     }
   }
 
-  public static void drawBorderedRect(
-      float x, float y, float x1, float y1, float width, int internalColor, int borderColor) {
-    RenderMethods.enableGL2D();
-    RenderMethods.glColor(internalColor);
-    RenderMethods.drawRect(x + width, y + width, x1 - width, y1 - width);
-    RenderMethods.glColor(borderColor);
-    RenderMethods.drawRect(x + width, y, x1 - width, y + width);
-    RenderMethods.drawRect(x, y, x + width, y1);
-    RenderMethods.drawRect(x1 - width, y, x1, y1);
-    RenderMethods.drawRect(x + width, y1 - width, x1 - width, y1);
-    RenderMethods.disableGL2D();
-  }
-
-  public static void drawBorderedRect(
-      float x, float y, float x1, float y1, int insideC, int borderC) {
-    RenderMethods.enableGL2D();
-    GL11.glScalef((float) 0.5f, (float) 0.5f, (float) 0.5f);
-    RenderMethods.drawVLine(x *= 2.0f, y *= 2.0f, (y1 *= 2.0f) - 1.0f, borderC);
-    RenderMethods.drawVLine((x1 *= 2.0f) - 1.0f, y, y1, borderC);
-    RenderMethods.drawHLine(x, x1 - 1.0f, y, borderC);
-    RenderMethods.drawHLine(x, x1 - 2.0f, y1 - 1.0f, borderC);
-    RenderMethods.drawRect(x + 1.0f, y + 1.0f, x1 - 1.0f, y1 - 1.0f, insideC);
-    GL11.glScalef((float) 2.0f, (float) 2.0f, (float) 2.0f);
-    RenderMethods.disableGL2D();
-  }
-
   public static void drawBorderedRectReliant(
       float x, float y, float x1, float y1, float lineWidth, int inside, int border) {
     if (guiGraphics != null) {
@@ -233,61 +207,11 @@ public final class RenderMethods {
     }
   }
 
-  public static void drawRoundedRect(
-      float x, float y, float x1, float y1, int borderC, int insideC) {
-    RenderMethods.enableGL2D();
-    GL11.glScalef((float) 0.5f, (float) 0.5f, (float) 0.5f);
-    RenderMethods.drawVLine(x *= 2.0f, (y *= 2.0f) + 1.0f, (y1 *= 2.0f) - 2.0f, borderC);
-    RenderMethods.drawVLine((x1 *= 2.0f) - 1.0f, y + 1.0f, y1 - 2.0f, borderC);
-    RenderMethods.drawHLine(x + 2.0f, x1 - 3.0f, y, borderC);
-    RenderMethods.drawHLine(x + 2.0f, x1 - 3.0f, y1 - 1.0f, borderC);
-    RenderMethods.drawHLine(x + 1.0f, x + 1.0f, y + 1.0f, borderC);
-    RenderMethods.drawHLine(x1 - 2.0f, x1 - 2.0f, y + 1.0f, borderC);
-    RenderMethods.drawHLine(x1 - 2.0f, x1 - 2.0f, y1 - 2.0f, borderC);
-    RenderMethods.drawHLine(x + 1.0f, x + 1.0f, y1 - 2.0f, borderC);
-    RenderMethods.drawRect(x + 1.0f, y + 1.0f, x1 - 1.0f, y1 - 1.0f, insideC);
-    GL11.glScalef((float) 2.0f, (float) 2.0f, (float) 2.0f);
-    RenderMethods.disableGL2D();
-  }
-
-  public static void drawBorderedRect(
-      Rectangle rectangle, float width, int internalColor, int borderColor) {
-    float x = rectangle.x;
-    float y = rectangle.y;
-    float x1 = rectangle.x + rectangle.width;
-    float y1 = rectangle.y + rectangle.height;
-    RenderMethods.enableGL2D();
-    RenderMethods.glColor(internalColor);
-    RenderMethods.drawRect(x + width, y + width, x1 - width, y1 - width);
-    RenderMethods.glColor(borderColor);
-    RenderMethods.drawRect(x + 1.0f, y, x1 - 1.0f, y + width);
-    RenderMethods.drawRect(x, y, x + width, y1);
-    RenderMethods.drawRect(x1 - width, y, x1, y1);
-    RenderMethods.drawRect(x + 1.0f, y1 - width, x1 - 1.0f, y1);
-    RenderMethods.disableGL2D();
-  }
-
   public static void drawGradientRect(
       float x, float y, float x1, float y1, int topColor, int bottomColor) {
     if (guiGraphics != null) {
       guiGraphics.fillGradient((int) x, (int) y, (int) x1, (int) y1, topColor, bottomColor);
     }
-  }
-
-  public static void drawGradientHRect(
-      float x, float y, float x1, float y1, int topColor, int bottomColor) {
-    RenderMethods.enableGL2D();
-    GL11.glShadeModel((int) 7425);
-    GL11.glBegin((int) 7);
-    RenderMethods.glColor(topColor);
-    GL11.glVertex2f((float) x, (float) y);
-    GL11.glVertex2f((float) x, (float) y1);
-    RenderMethods.glColor(bottomColor);
-    GL11.glVertex2f((float) x1, (float) y1);
-    GL11.glVertex2f((float) x1, (float) y);
-    GL11.glEnd();
-    GL11.glShadeModel((int) 7424);
-    RenderMethods.disableGL2D();
   }
 
   public static void drawGradientRect(
@@ -394,41 +318,6 @@ public final class RenderMethods {
       guiGraphics.fill((int) x, (int) y, (int) x1, (int) y1, color);
     }
   }
-
-  public static void drawRect(float x, float y, float x1, float y1) {}
-
-  //    public static void rectangle(double left, double top, double right, double bottom, int
-  // color) {
-  //        double var5;
-  //        if (left < right) {
-  //            var5 = left;
-  //            left = right;
-  //            right = var5;
-  //        }
-  //        if (top < bottom) {
-  //            var5 = top;
-  //            top = bottom;
-  //            bottom = var5;
-  //        }
-  //        float alpha = (float)(color >> 24 & 0xFF) / 255.0f;
-  //        float red = (float)(color >> 16 & 0xFF) / 255.0f;
-  //        float green = (float)(color >> 8 & 0xFF) / 255.0f;
-  //        float blue = (float)(color & 0xFF) / 255.0f;
-  //        Tessellator var9 = Tessellator.getInstance();
-  //        WorldRenderer var10 = var9.getWorldRenderer();
-  //        RenderSystem.enableBlend();
-  //        RenderSystem.disableLighting();
-  //        RenderSystem.tryBlendFuncSeparate(770, 771, 1, 0);
-  //        RenderSystem.color(red, green, blue, alpha);
-  //        var10.startDrawingQuads();
-  //        var10.addVertex(left, bottom, 0.0);
-  //        var10.addVertex(right, bottom, 0.0);
-  //        var10.addVertex(right, top, 0.0);
-  //        var10.addVertex(left, top, 0.0);
-  //        var9.draw();
-  //        RenderSystem.enableLighting();
-  //        RenderSystem.disableBlend();
-  //    }
 
   public static void drawCircle(float cx, float cy, float r, int num_segments, int c) {
     cx *= 2.0f;

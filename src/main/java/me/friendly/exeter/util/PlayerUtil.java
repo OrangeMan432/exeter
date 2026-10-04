@@ -287,6 +287,41 @@ public class PlayerUtil {
     mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
   }
 
+  /**
+   * Clicks a solid neighbour when one exists so the block lands in the cell; otherwise clicks the
+   * replaceable cell itself.
+   */
+  public static void clickPlace(BlockPos cell) {
+    if (mc.player == null || mc.gameMode == null || mc.level == null) return;
+    for (Direction dir : Direction.values()) {
+      BlockPos neighbour = cell.relative(dir);
+      var state = mc.level.getBlockState(neighbour);
+      if (state.isAir() || state.canBeReplaced()) continue;
+      useItemOn(neighbour, dir.getOpposite());
+      return;
+    }
+    useItemOn(cell, Direction.UP);
+  }
+
+  /** Hotbar slot holding the given block, or -1. */
+  public static int findBlock(Block block) {
+    return findInHotbar(
+        stack ->
+            stack.getItem() instanceof BlockItem
+                && ((BlockItem) stack.getItem()).getBlock() == block);
+  }
+
+  /** Yaw facing a horizontal piston direction. */
+  public static float yawFor(Direction dir) {
+    return switch (dir) {
+      case NORTH -> 180f;
+      case SOUTH -> 0f;
+      case EAST -> -90f;
+      case WEST -> 90f;
+      default -> 0f;
+    };
+  }
+
   public static double getYaw(BlockPos pos) {
     if (mc.player == null) return 0;
     double dx = pos.getX() + 0.5 - mc.player.getX();

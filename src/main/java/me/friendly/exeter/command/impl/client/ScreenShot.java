@@ -12,14 +12,12 @@ import java.io.*;
 import java.net.*;
 import java.net.URL;
 import javax.imageio.ImageIO;
-import me.friendly.api.stopwatch.Stopwatch;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
 import me.friendly.exeter.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 
 public final class ScreenShot extends Command {
-  private final Stopwatch stopwatch = new Stopwatch();
 
   public ScreenShot() {
     super(new String[] {"screenshot"}, new Argument[0]);
@@ -28,22 +26,6 @@ public final class ScreenShot extends Command {
 
   @Override
   public String dispatch() {
-    //        ScreenShotHelper.saveScreenshot(this.minecraft.mcGameDir, this.minecraft.displayWidth,
-    // this.minecraft.displayHeight, this.minecraft.getFramebuffer());
-    //        File screenshots = new File("screenshots");
-    //        File[] files = screenshots.listFiles(File::isFile);
-    //        long timeModified = Long.MIN_VALUE;
-    //        File lastModified = null;
-    //        for (File file : files) {
-    //            if (file.lastModified() <= timeModified) continue;
-    //            lastModified = file;
-    //            timeModified = file.lastModified();
-    //        }
-    //        if (lastModified != null) {
-    //            this.uploadImage(lastModified);
-    //        } else {
-    //            Logger.getLogger().printToChat("Unable to locare screenshot.");
-    //        }
     return "Uploading screenshot!";
   }
 

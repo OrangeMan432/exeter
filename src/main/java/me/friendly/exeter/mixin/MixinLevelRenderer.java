@@ -14,6 +14,6 @@ public class MixinLevelRenderer {
 
   @Inject(method = "collectPerFrameRenderThreadGizmos", at = @At("RETURN"))
   private void onCollectGizmos(CallbackInfoReturnable<Gizmos.TemporaryCollection> cir) {
-    Exeter.getInstance().getEventManager().dispatch(new WorldRenderEvent(null, 0));
+    Exeter.getInstance().getEventManager().dispatch(new WorldRenderEvent());
   }
 }

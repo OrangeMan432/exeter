@@ -27,7 +27,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -76,7 +75,6 @@ public class PistonCrystal extends ToggleableModule {
   private int holdTicks;
   private int waitTicks;
   private final List<CleanupEntry> cleanupQueue = new ArrayList<>();
-  private float lastDamage;
   private ArmorProfile targetProfile;
   private boolean noSelfDmgLogged;
   private final java.util.Map<BlockPos, SuspectHead> suspectHeads = new java.util.LinkedHashMap<>();
@@ -143,7 +141,6 @@ public class PistonCrystal extends ToggleableModule {
     suspectHeads.clear();
     PlayerUtil.clearSpoofedLook(getLabel());
     waitTicks = 0;
-    lastDamage = 0;
     noSelfDmgLogged = false;
     DebugLogger.get()
         .log(
@@ -182,9 +179,9 @@ public class PistonCrystal extends ToggleableModule {
     // The delay gate only starts new attempts; a held placement runs every tick.
     if (pending == null && tickCounter - lastAttemptTick < delay.getValue()) return;
 
-    int pistonSlot = findBlock(Blocks.PISTON);
-    if (pistonSlot == -1) pistonSlot = findBlock(Blocks.STICKY_PISTON);
-    int redstoneSlot = findBlock(Blocks.REDSTONE_BLOCK);
+    int pistonSlot = PlayerUtil.findBlock(Blocks.PISTON);
+    if (pistonSlot == -1) pistonSlot = PlayerUtil.findBlock(Blocks.STICKY_PISTON);
+    int redstoneSlot = PlayerUtil.findBlock(Blocks.REDSTONE_BLOCK);
     int crystalSlot = PlayerUtil.findInHotbar(stack -> stack.getItem() == Items.END_CRYSTAL);
     if (pistonSlot == -1 || redstoneSlot == -1 || crystalSlot == -1) {
       pending = null;
@@ -233,7 +230,7 @@ public class PistonCrystal extends ToggleableModule {
     pending = setup;
     // Hold the piston look on client and server every tick; a rotation packet sent on the
     // same tick as the placement can be dropped server-side, facing the piston the wrong way.
-    float pistonYaw = yawFor(setup.dir);
+    float pistonYaw = PlayerUtil.yawFor(setup.dir);
     PlayerUtil.setSpoofedLook(getLabel(), pistonYaw, 0f);
     holdTicks++;
     // Place only on a fresh spoof: a stall between hold and placement would otherwise place
@@ -275,10 +272,10 @@ public class PistonCrystal extends ToggleableModule {
   private void place(Setup setup, int pistonSlot, int redstoneSlot, int crystalSlot) {
     int origSlot = minecraft.player.getInventory().getSelectedSlot();
     if (setup.placeBase) {
-      int obsidianSlot = findBlock(Blocks.OBSIDIAN);
+      int obsidianSlot = PlayerUtil.findBlock(Blocks.OBSIDIAN);
       if (obsidianSlot == -1) return;
       swapTo(obsidianSlot);
-      clickPlace(setup.base);
+      PlayerUtil.clickPlace(setup.base);
       if (swingHand.getValue()) PlayerUtil.swingHand();
       swapBack();
     }
@@ -291,17 +288,17 @@ public class PistonCrystal extends ToggleableModule {
     // Single-tick client look so prediction renders the same facing the server places.
     // Restored synchronously before the frame renders, so the camera never visibly moves.
     PlayerUtil.withRotation(
-        yawFor(setup.dir),
+        PlayerUtil.yawFor(setup.dir),
         0f,
         () -> {
-          clickPlace(setup.piston);
+          PlayerUtil.clickPlace(setup.piston);
           if (swingHand.getValue()) PlayerUtil.swingHand();
         });
     swapBack();
 
     if (setup.placeRedstone) {
       swapTo(redstoneSlot);
-      clickPlace(setup.redstone);
+      PlayerUtil.clickPlace(setup.redstone);
       if (swingHand.getValue()) PlayerUtil.swingHand();
       swapBack();
     }
@@ -530,7 +527,6 @@ public class PistonCrystal extends ToggleableModule {
   private Setup findSetup() {
     LivingEntity target = findTarget();
     if (target == null) {
-      lastDamage = 0;
       return null;
     }
     targetProfile = profileOf(target);
@@ -562,7 +558,6 @@ public class PistonCrystal extends ToggleableModule {
         }
       }
     }
-    lastDamage = best != null ? best.damage : 0;
     if (best != null) {
       // Same armored math as the target check, but against our own profile: the piston
       // extends and the crystal breaks within a tick of placement, so this is imminent.
@@ -584,7 +579,6 @@ public class PistonCrystal extends ToggleableModule {
                       + " exceeds cap "
                       + maxSelfDamage.getValue());
         }
-        lastDamage = 0;
         return null;
       }
       noSelfDmgLogged = false;
@@ -643,7 +637,7 @@ public class PistonCrystal extends ToggleableModule {
 
   private boolean canAutoBase(BlockPos base) {
     return autoBase.getValue()
-        && findBlock(Blocks.OBSIDIAN) >= 0
+        && PlayerUtil.findBlock(Blocks.OBSIDIAN) >= 0
         && PlayerUtil.isAirOrReplaceable(base)
         && PlayerUtil.inRange(base, placeRange.getValue())
         && !minecraft.level.getBlockState(base.below()).isAir();
@@ -878,27 +872,6 @@ public class PistonCrystal extends ToggleableModule {
    * Clicks a solid neighbour when one exists so the block lands in the cell; otherwise clicks the
    * replaceable cell itself.
    */
-  private void clickPlace(BlockPos cell) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbour = cell.relative(dir);
-      var state = minecraft.level.getBlockState(neighbour);
-      if (state.isAir() || state.canBeReplaced()) continue;
-      PlayerUtil.useItemOn(neighbour, dir.getOpposite());
-      return;
-    }
-    PlayerUtil.useItemOn(cell, Direction.UP);
-  }
-
-  private static float yawFor(Direction dir) {
-    return switch (dir) {
-      case NORTH -> 180f;
-      case SOUTH -> 0f;
-      case EAST -> -90f;
-      case WEST -> 90f;
-      default -> 0f;
-    };
-  }
-
   private static double distSqToBox(Vec3 point, AABB box) {
     double dx =
         point.x < box.minX ? box.minX - point.x : (point.x > box.maxX ? point.x - box.maxX : 0);
@@ -907,13 +880,6 @@ public class PistonCrystal extends ToggleableModule {
     double dz =
         point.z < box.minZ ? box.minZ - point.z : (point.z > box.maxZ ? point.z - box.maxZ : 0);
     return dx * dx + dy * dy + dz * dz;
-  }
-
-  private int findBlock(net.minecraft.world.level.block.Block block) {
-    return PlayerUtil.findInHotbar(
-        stack ->
-            stack.getItem() instanceof BlockItem
-                && ((BlockItem) stack.getItem()).getBlock() == block);
   }
 
   private static class Setup {

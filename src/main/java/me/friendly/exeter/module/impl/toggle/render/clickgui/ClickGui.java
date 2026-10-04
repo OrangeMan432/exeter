@@ -303,13 +303,33 @@ public final class ClickGui extends Screen {
     }
   }
 
-  /** Restores the default layout and persists it. */
+  /** Restores the default layout and persists it, keeping open panels and modules. */
   public void resetPanels() {
+    Map<String, Boolean> openPanels = new HashMap<>();
+    Map<String, Boolean> openModules = new HashMap<>();
+    for (Panel panel : panels) {
+      openPanels.put(panel.getLabel(), panel.getOpen());
+      for (var item : panel.getItems()) {
+        if (item instanceof ModuleButton moduleButton) {
+          openModules.put(moduleButton.getModule().getLabel(), moduleButton.isSubOpen());
+        }
+      }
+    }
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
     if (guiModule != null) {
       guiModule.getPendingPanels().clear();
     }
     this.load();
+    for (Panel panel : panels) {
+      Boolean open = openPanels.get(panel.getLabel());
+      if (open != null) panel.setOpen(open);
+      for (var item : panel.getItems()) {
+        if (item instanceof ModuleButton moduleButton) {
+          Boolean subOpen = openModules.get(moduleButton.getModule().getLabel());
+          if (subOpen != null) moduleButton.setSubOpen(subOpen);
+        }
+      }
+    }
     capturePositions();
     if (guiModule != null) {
       me.friendly.exeter.config.ExeterConfig.getInstance().saveModule(guiModule);
