@@ -119,7 +119,6 @@ public abstract class Panel implements Labeled {
       int textW = FontUtil.getStringWidth(countStr);
       float rx = (float) (this.x + this.width) - textW - 3.0f;
       FontUtil.drawString("[", rx, (float) this.y + 1.5f, 0xFF888888);
-      int numW = FontUtil.getStringWidth(String.valueOf(count));
       FontUtil.drawString(
           String.valueOf(count),
           rx + FontUtil.getStringWidth("["),

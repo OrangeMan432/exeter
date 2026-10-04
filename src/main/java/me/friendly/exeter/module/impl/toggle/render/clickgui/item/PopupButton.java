@@ -6,7 +6,7 @@ import me.friendly.exeter.properties.PopupProperty;
 public class PopupButton extends Button {
   private final PopupProperty property;
 
-  public PopupButton(PopupProperty property, boolean child) {
+  public PopupButton(PopupProperty property) {
     super(property.getAliases()[0] + "...");
     this.property = property;
   }

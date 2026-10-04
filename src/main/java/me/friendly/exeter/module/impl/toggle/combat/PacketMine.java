@@ -692,14 +692,6 @@ public final class PacketMine extends ToggleableModule {
       this.time = time;
     }
 
-    private long getStart() {
-      return start;
-    }
-
-    private long getTime() {
-      return time;
-    }
-
     private long getEnd() {
       return start + time;
     }

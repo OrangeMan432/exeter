@@ -45,7 +45,6 @@ public class AutoArmor extends ToggleableModule {
   private final Property<Boolean> allowMend = new Property<>(false, "Allow Mend");
   private final NumberProperty<Integer> repairTo = new NumberProperty<>(80, 0, 100, "Repair To");
 
-  private final StopWatch timer = new StopWatch();
   private final StopWatch rightClickTimer = new StopWatch();
   private boolean sleep;
 

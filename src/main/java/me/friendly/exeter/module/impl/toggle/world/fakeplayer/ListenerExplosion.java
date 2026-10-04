@@ -4,7 +4,6 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
 public class ListenerExplosion extends Listener<PacketEvent> {
@@ -47,7 +46,6 @@ public class ListenerExplosion extends Listener<PacketEvent> {
           float damage =
               (float) ((exposure * exposure + exposure) / 2.0 * 7.0 * strength * 2.0 + 1.0);
 
-          DamageSource source = mc.level.damageSources().explosion(null, null);
           module.getFakePlayer().applyDamage(damage);
         });
   }

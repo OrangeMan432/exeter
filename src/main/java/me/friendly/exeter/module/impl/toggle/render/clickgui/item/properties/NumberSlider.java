@@ -107,12 +107,6 @@ public class NumberSlider extends Item {
         && (float) mouseY <= this.getY() + (float) this.getHeight();
   }
 
-  private float getValueWidth() {
-    return ((Number) this.numberProperty.getMaximum()).floatValue()
-        - ((Number) this.numberProperty.getMinimum()).floatValue()
-        + ((Number) this.numberProperty.getValue()).floatValue();
-  }
-
   private float middle() {
     return max.floatValue() - min.floatValue();
   }
