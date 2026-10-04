@@ -260,7 +260,7 @@ public class AutoTrap extends ToggleableModule {
     PlayerUtil.sendSpoofTopUp();
     Runnable place =
         () -> {
-          clickPlace(cell);
+          PlayerUtil.clickPlace(cell);
           if (swingHand.getValue()) PlayerUtil.swingHand();
           if (needSwitch && switchBack.getValue()) PlayerUtil.swapBack();
         };
@@ -274,17 +274,6 @@ public class AutoTrap extends ToggleableModule {
       minecraft.player.getInventory().setSelectedSlot(origSlot);
     }
     PlayerUtil.resyncSlot();
-  }
-
-  private void clickPlace(BlockPos cell) {
-    for (Direction dir : Direction.values()) {
-      BlockPos neighbour = cell.relative(dir);
-      var state = minecraft.level.getBlockState(neighbour);
-      if (state.isAir() || state.canBeReplaced()) continue;
-      PlayerUtil.useItemOn(neighbour, dir.getOpposite());
-      return;
-    }
-    PlayerUtil.useItemOn(cell, Direction.UP);
   }
 
   private int findBlockSlot() {
