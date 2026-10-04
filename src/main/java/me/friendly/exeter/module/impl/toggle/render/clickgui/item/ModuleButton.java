@@ -89,10 +89,10 @@ public class ModuleButton extends Button {
       return new ActionButton(action);
     }
     if (property instanceof PopupProperty) {
-      return new PopupButton((PopupProperty) property, child);
+      return new PopupButton((PopupProperty) property);
     }
     if (property instanceof EnumProperty) {
-      return new EnumButton((EnumProperty) property, child);
+      return new EnumButton((EnumProperty) property, module, child);
     }
     if (property instanceof NumberProperty) {
       return new NumberSlider((NumberProperty) property, child);
