@@ -1,5 +1,6 @@
 package me.friendly.exeter.util;
 
+import java.util.List;
 import java.util.function.Predicate;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.logging.DebugLogger;
@@ -320,6 +321,47 @@ public class PlayerUtil {
       case WEST -> 90f;
       default -> 0f;
     };
+  }
+
+  /**
+   * Every block column at feet level touched by the entity's bounding box: one column when
+   * centered, up to 2x2 when off-center.
+   */
+  public static List<BlockPos> footprintColumns(
+      net.minecraft.world.entity.LivingEntity entity, int feetY) {
+    java.util.Set<BlockPos> footprint = new java.util.LinkedHashSet<>();
+    var box = entity.getBoundingBox();
+    int minX = net.minecraft.util.Mth.floor(box.minX);
+    int maxX = net.minecraft.util.Mth.floor(box.maxX - 1e-7);
+    int minZ = net.minecraft.util.Mth.floor(box.minZ);
+    int maxZ = net.minecraft.util.Mth.floor(box.maxZ - 1e-7);
+    for (int x = minX; x <= maxX; x++) {
+      for (int z = minZ; z <= maxZ; z++) {
+        footprint.add(new BlockPos(x, feetY, z));
+      }
+    }
+    return new java.util.ArrayList<>(footprint);
+  }
+
+  /**
+   * Horizontal ring around every column the entity's bounding box touches, stacked layers high from
+   * feetY. A centered entity gets the normal 1-wide ring, an off-center one a 2x2 ring.
+   */
+  public static List<BlockPos> ringCells(
+      net.minecraft.world.entity.LivingEntity entity, int feetY, int layers) {
+    List<BlockPos> footprint = footprintColumns(entity, feetY);
+    java.util.Set<BlockPos> footprintSet = new java.util.HashSet<>(footprint);
+    java.util.Set<BlockPos> ring = new java.util.LinkedHashSet<>();
+    for (BlockPos foot : footprint) {
+      for (Direction dir : Direction.Plane.HORIZONTAL) {
+        BlockPos side = foot.relative(dir);
+        if (footprintSet.contains(side)) continue;
+        for (int l = 0; l < layers; l++) {
+          ring.add(side.above(l));
+        }
+      }
+    }
+    return new java.util.ArrayList<>(ring);
   }
 
   public static double getYaw(BlockPos pos) {
