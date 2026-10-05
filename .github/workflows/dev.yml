@@ -36,6 +36,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create dev release
-        run: gh release create dev build/libs/*.jar --title "Dev Build" --generate-notes --latest=false
+        run: gh release create dev build/libs/*.jar --title "Dev Build" --generate-notes --latest=false --prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
