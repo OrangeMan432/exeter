@@ -45,6 +45,8 @@ public class AutoTrap extends ToggleableModule {
       new NumberProperty<Double>(5.0, 0.0, 10.0, "Place Range");
   private final NumberProperty<Integer> attemptDelay =
       new NumberProperty<Integer>(2, 0, 20, "Attempt Delay");
+  private final NumberProperty<Integer> blocksPerTick =
+      new NumberProperty<Integer>(1, 1, 8, "Blocks Per Tick");
   private final Property<Boolean> airPlace = new Property<Boolean>(true, "Air Place", "airplace");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
@@ -68,6 +70,7 @@ public class AutoTrap extends ToggleableModule {
         targetRange,
         placeRange,
         attemptDelay,
+        blocksPerTick,
         airPlace,
         rotate,
         swingHand,
@@ -170,7 +173,9 @@ public class AutoTrap extends ToggleableModule {
     }
     noBlockLogged = false;
 
+    int placed = 0;
     for (BlockPos cell : trapCells(target)) {
+      if (placed >= blocksPerTick.getValue()) break;
       if (!PlayerUtil.isAirOrReplaceable(cell)) continue;
       if (!PlayerUtil.inRange(cell, placeRange.getValue())) continue;
       BlockPos support = airPlace.getValue() ? cell : findSupport(cell, target);
@@ -185,8 +190,10 @@ public class AutoTrap extends ToggleableModule {
                   + blockSlot
                   + " target="
                   + target.getName().getString());
+      placed++;
+    }
+    if (placed > 0) {
       lastAttemptTick = tickCounter;
-      return;
     }
   }
 
@@ -194,14 +201,17 @@ public class AutoTrap extends ToggleableModule {
     BlockPos feet = target.blockPosition();
     List<BlockPos> cells = new ArrayList<>();
     if (mode.getValue() == TrapMode.HEAD) {
-      cells.add(feet.above(2));
+      for (BlockPos foot : PlayerUtil.footprintColumns(target, feet.getY())) {
+        cells.add(foot.above(2));
+      }
       return cells;
     }
-    for (Direction dir : Direction.Plane.HORIZONTAL) {
-      cells.add(feet.relative(dir));
-      cells.add(feet.above(1).relative(dir));
+    // 2-high ring around every column the target touches (2x2 when off-center),
+    // plus a roof over each column.
+    cells.addAll(PlayerUtil.ringCells(target, feet.getY(), 2));
+    for (BlockPos foot : PlayerUtil.footprintColumns(target, feet.getY())) {
+      cells.add(foot.above(2));
     }
-    cells.add(feet.above(2));
     // Closest first so the trap closes inward.
     cells.sort(
         Comparator.comparingDouble(
