@@ -42,8 +42,7 @@ public abstract class Panel implements Labeled {
       InputStream arrowStream = mc.getResourceManager().open(ARROW_ID);
       NativeImage arrowImg = NativeImage.read(arrowStream);
       mc.getTextureManager()
-          .register(
-              ARROW_ID, TextureResources.from2dImage(() -> "exeter:arrow", arrowImg));
+          .register(ARROW_ID, TextureResources.from2dImage(() -> "exeter:arrow", arrowImg));
 
       InputStream gearStream = mc.getResourceManager().open(GEAR_ID);
       NativeImage gearImg = NativeImage.read(gearStream);
