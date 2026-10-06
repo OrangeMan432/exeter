@@ -14,6 +14,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.util.MathUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -847,7 +848,7 @@ public class PistonCrystal extends ToggleableModule {
       default -> {}
     }
     float i = 2.0f + profile.toughness() / 4.0f;
-    float j = Mth.clamp(profile.armor() - damage / i, profile.armor() * 0.2f, 20.0f);
+    float j = MathUtil.clamp(profile.armor() - damage / i, profile.armor() * 0.2f, 20.0f);
     damage *= 1.0f - j / 25.0f;
     damage *= profile.resistanceMul();
     damage = CombatRules.getDamageAfterMagicAbsorb(damage, profile.protPoints());

@@ -6,7 +6,6 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.util.Mth;
 
 /**
  * This class is not present in the original Exeter 1.8 client. It was added as part of the Fabric
@@ -123,7 +122,7 @@ public final class Colors extends Module {
   }
 
   public static final Color setAlpha(Color color, int alpha) {
-    alpha = Mth.clamp(alpha, 0, 255);
+    alpha = Math.clamp(alpha, 0, 255);
     return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
   }
 

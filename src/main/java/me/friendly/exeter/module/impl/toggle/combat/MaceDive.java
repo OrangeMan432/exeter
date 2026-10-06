@@ -11,6 +11,7 @@ import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.util.MathUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
@@ -347,10 +348,10 @@ public class MaceDive extends ToggleableModule {
       aimInit = true;
     }
     float step = turnSpeed.getValue();
-    aimYaw += Mth.clamp(Mth.wrapDegrees(wantYaw - aimYaw), -step, step);
-    aimPitch += Mth.clamp(wantPitch - aimPitch, -step, step);
+    aimYaw += MathUtil.clamp(Mth.wrapDegrees(wantYaw - aimYaw), -step, step);
+    aimPitch += MathUtil.clamp(wantPitch - aimPitch, -step, step);
     aimYaw = Mth.wrapDegrees(aimYaw);
-    aimPitch = Mth.clamp(aimPitch, -90.0f, 90.0f);
+    aimPitch = MathUtil.clamp(aimPitch, -90.0f, 90.0f);
     PlayerUtil.setRotation(aimYaw, aimPitch);
   }
 

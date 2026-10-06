@@ -13,6 +13,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.util.MathUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -117,12 +118,12 @@ public class ElytraTarget extends ToggleableModule {
     }
     // Turn gradually: instant full snaps trip server rotation validation.
     float step = speed.getValue();
-    aimYaw += Mth.clamp(Mth.wrapDegrees(wantYaw - aimYaw), -step, step);
-    aimPitch += Mth.clamp(wantPitch - aimPitch, -step, step);
+    aimYaw += MathUtil.clamp(Mth.wrapDegrees(wantYaw - aimYaw), -step, step);
+    aimPitch += MathUtil.clamp(wantPitch - aimPitch, -step, step);
     // The server disconnects rotation outside vanilla's normalized range; atan2 math can
     // produce yaw down to -270, so wrap every tick (vanilla does this before sending).
     aimYaw = Mth.wrapDegrees(aimYaw);
-    aimPitch = Mth.clamp(aimPitch, -90.0f, 90.0f);
+    aimPitch = MathUtil.clamp(aimPitch, -90.0f, 90.0f);
     PlayerUtil.setRotation(aimYaw, aimPitch);
   }
 
