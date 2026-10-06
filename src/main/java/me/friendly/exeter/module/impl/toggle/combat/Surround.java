@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
-import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
@@ -13,34 +12,24 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SearchSelectPopup;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.SelectionPopup;
-import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Surrounds players with obsidian (or popup-selected blocks). Full mode cages feet, head and top;
- * Head mode only covers above the head. With AirPlace off every cell needs a solid neighbour, so
- * supports are pillared up from the ground first.
+ * Surrounds our own feet with blocks, AutoTrap-style but self-targeted. Height 2 walls the second
+ * layer too; the head is never covered (no roof cell is ever placed). Off-center players get a 2x2
+ * ring (4x4 safe area), and moving up more than a jump disables the module.
  */
-public class AutoTrap extends ToggleableModule {
+public class Surround extends ToggleableModule {
 
-  public enum TrapMode {
-    FULL,
-    HEAD
-  }
-
-  private final EnumProperty<TrapMode> mode = new EnumProperty<>(TrapMode.FULL, "Mode", "mode");
-  private final NumberProperty<Double> targetRange =
-      new NumberProperty<Double>(6.0, 0.0, 12.0, "Target Range");
+  private final NumberProperty<Integer> height = new NumberProperty<Integer>(1, 1, 2, "Height");
   private final NumberProperty<Double> placeRange =
       new NumberProperty<Double>(5.0, 0.0, 10.0, "Place Range");
   private final NumberProperty<Integer> attemptDelay =
@@ -52,26 +41,28 @@ public class AutoTrap extends ToggleableModule {
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
+  private final Property<Boolean> snapCenter =
+      new Property<Boolean>(false, "Snap Center", "snapcenter");
   private final PopupProperty selectBlocks;
-  private final SelectionPopup.Ids blockSelections = new SelectionPopup.Ids("Trap Blocks");
+  private final SelectionPopup.Ids blockSelections = new SelectionPopup.Ids("Surround Blocks");
 
   private int tickCounter;
   private int lastAttemptTick;
-  private String lastTargetKey;
   private boolean noBlockLogged;
+  private double startY = Double.NaN;
 
-  public AutoTrap() {
-    super("AutoTrap", new String[] {"autotrap", "trap"}, 0x8844FF, ModuleType.COMBAT);
-    setDescription("Traps players in obsidian.");
+  public Surround() {
+    super("Surround", new String[] {"surround", "self-trap"}, 0x44DDFF, ModuleType.COMBAT);
+    setDescription("Surrounds your feet with blocks, never covering your head.");
     this.selectBlocks = new PopupProperty("Select Blocks", this::openBlockPopup);
     blockSelections.getSelected().add("minecraft:obsidian");
     offerProperties(
-        mode,
-        targetRange,
+        height,
         placeRange,
         attemptDelay,
         blocksPerTick,
         airPlace,
+        snapCenter,
         rotate,
         swingHand,
         autoSwitch,
@@ -79,7 +70,7 @@ public class AutoTrap extends ToggleableModule {
         blockSelections.getProperty(),
         selectBlocks);
     this.listeners.add(
-        new Listener<TickEvent>("autotrap_tick") {
+        new Listener<TickEvent>("surround_tick") {
           @Override
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
@@ -87,7 +78,7 @@ public class AutoTrap extends ToggleableModule {
           }
         });
     this.listeners.add(
-        new Listener<PacketEvent>("autotrap_packet") {
+        new Listener<PacketEvent>("surround_packet") {
           @Override
           public void call(PacketEvent event) {
             PlayerUtil.spoofMovement(event);
@@ -102,19 +93,22 @@ public class AutoTrap extends ToggleableModule {
     if (blockSelections.getSelected().isEmpty()) {
       blockSelections.getSelected().add("minecraft:obsidian");
     }
-    lastTargetKey = null;
+    tickCounter = 0;
+    lastAttemptTick = 0;
     noBlockLogged = false;
+    startY = Double.NaN;
+    if (snapCenter.getValue() && minecraft.player != null) {
+      BlockPos feet = minecraft.player.blockPosition();
+      minecraft.player.setPos(feet.getX() + 0.5, minecraft.player.getY(), feet.getZ() + 0.5);
+      DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "snapped to block center");
+    }
     DebugLogger.get()
-        .log(
-            getLabel(),
-            DebugLogger.Level.INFO,
-            "enabled mode=" + mode.getValue() + " airplace=" + airPlace.getValue());
+        .log(getLabel(), DebugLogger.Level.INFO, "enabled height=" + height.getValue());
   }
 
   @Override
   protected void onDisable() {
     super.onDisable();
-    lastTargetKey = null;
     noBlockLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
@@ -140,56 +134,48 @@ public class AutoTrap extends ToggleableModule {
                   net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
               items.add(SelectionPopup.idItem(id, displayName, blockSelections.getSelected()));
             });
-    SelectionPopup.open("Trap Blocks", items, () -> blockSelections.save());
+    SelectionPopup.open("Surround Blocks", items, () -> blockSelections.save());
   }
 
   private void onTick() {
     tickCounter++;
     if (minecraft.player == null || minecraft.level == null) return;
-    if (tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
-
-    Player target = findTarget();
-    if (target == null) {
-      lastTargetKey = null;
-      return;
+    if (Double.isNaN(startY)) {
+      startY = minecraft.player.getY();
     }
-    String targetKey = target.getName().getString() + " " + mode.getValue();
-    if (!targetKey.equals(lastTargetKey)) {
-      lastTargetKey = targetKey;
-      noBlockLogged = false;
+    // Any ascent means leaving: jumps, steps and pillars all toggle off immediately.
+    if (minecraft.player.getY() > startY + 1e-3) {
       DebugLogger.get()
           .log(
               getLabel(),
-              DebugLogger.Level.INFO,
-              "target=" + target.getName().getString() + " mode=" + mode.getValue());
+              DebugLogger.Level.WARN,
+              "moved up (y=" + minecraft.player.getY() + " startY=" + startY + "), disabling");
+      toggle();
+      return;
     }
+    if (tickCounter - lastAttemptTick < attemptDelay.getValue()) return;
+
     int blockSlot = findBlockSlot();
     if (blockSlot == -1) {
       if (!noBlockLogged) {
         noBlockLogged = true;
-        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no trap blocks in hotbar");
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no surround blocks in hotbar");
       }
       return;
     }
     noBlockLogged = false;
 
+    BlockPos feet = minecraft.player.blockPosition();
     int placed = 0;
-    for (BlockPos cell : trapCells(target)) {
+    for (BlockPos cell : surroundCells(feet)) {
       if (placed >= blocksPerTick.getValue()) break;
       if (!PlayerUtil.isAirOrReplaceable(cell)) continue;
       if (!PlayerUtil.inRange(cell, placeRange.getValue())) continue;
-      BlockPos support = airPlace.getValue() ? cell : findSupport(cell, target);
+      BlockPos support = airPlace.getValue() ? cell : findSupport(cell, feet.getY());
       if (support == null) continue;
       placeCell(support, blockSlot);
       DebugLogger.get()
-          .logFile(
-              getLabel(),
-              "place "
-                  + support.toShortString()
-                  + " slot="
-                  + blockSlot
-                  + " target="
-                  + target.getName().getString());
+          .logFile(getLabel(), "place " + support.toShortString() + " slot=" + blockSlot);
       placed++;
     }
     if (placed > 0) {
@@ -197,22 +183,17 @@ public class AutoTrap extends ToggleableModule {
     }
   }
 
-  private List<BlockPos> trapCells(Player target) {
-    BlockPos feet = target.blockPosition();
-    List<BlockPos> cells = new ArrayList<>();
-    if (mode.getValue() == TrapMode.HEAD) {
-      for (BlockPos foot : PlayerUtil.footprintColumns(target, feet.getY())) {
-        cells.add(foot.above(2));
-      }
-      return cells;
-    }
-    // 2-high ring around every column the target touches (2x2 when off-center),
-    // plus a roof over each column.
-    cells.addAll(PlayerUtil.ringCells(target, feet.getY(), 2));
-    for (BlockPos foot : PlayerUtil.footprintColumns(target, feet.getY())) {
-      cells.add(foot.above(2));
-    }
-    // Closest first so the trap closes inward.
+  /**
+   * Ring around every column our bounding box touches: a centered player gets the normal 1-wide
+   * ring, an off-center one a 2x2 ring (4x4 safe area). Height 2 adds the second layer. Never a
+   * roof: the head stays open.
+   */
+  /**
+   * Ring around every column we touch (2x2 when off-center, see PlayerUtil), stacked to height.
+   * Never a roof: the head stays open.
+   */
+  private List<BlockPos> surroundCells(BlockPos feet) {
+    List<BlockPos> cells = PlayerUtil.ringCells(minecraft.player, feet.getY(), height.getValue());
     cells.sort(
         Comparator.comparingDouble(
             pos ->
@@ -228,14 +209,9 @@ public class AutoTrap extends ToggleableModule {
     return false;
   }
 
-  /**
-   * Finds a support to place first when air-place is off: climbs a single adjacent column from the
-   * ground, returning its lowest missing cell so the pillar towers before the cover goes on.
-   * Returns the cell itself when supported, null when no adjacent column can reach it.
-   */
-  private BlockPos findSupport(BlockPos cell, Player target) {
+  /** Same pillar-climb as AutoTrap when air-place is off, grounded at our own feet. */
+  private BlockPos findSupport(BlockPos cell, int groundY) {
     if (hasSupport(cell)) return cell;
-    int groundY = target.blockPosition().getY();
     for (Direction dir : Direction.Plane.HORIZONTAL) {
       BlockPos base =
           new BlockPos(cell.getX() + dir.getStepX(), groundY, cell.getZ() + dir.getStepZ());
@@ -295,24 +271,5 @@ public class AutoTrap extends ToggleableModule {
               net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
           return blockSelections.getSelected().contains(id);
         });
-  }
-
-  private Player findTarget() {
-    List<Player> players = new ArrayList<>();
-    for (Entity entity : minecraft.level.players()) {
-      if (entity == minecraft.player) continue;
-      if (!entity.isAlive()) continue;
-      if (!(entity instanceof Player)) continue;
-      if (!Exeter.getInstance().getFriendManager().isTargetable(entity.getName().getString())) {
-        continue;
-      }
-      double distance = minecraft.player.distanceTo(entity);
-      if (distance <= targetRange.getValue()) {
-        players.add((Player) entity);
-      }
-    }
-    return players.stream()
-        .min(Comparator.comparingDouble(p -> minecraft.player.distanceTo(p)))
-        .orElse(null);
   }
 }
