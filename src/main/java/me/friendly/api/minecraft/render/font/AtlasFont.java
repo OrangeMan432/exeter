@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -34,7 +34,7 @@ public final class AtlasFont {
 
   private final Map<Integer, Glyph> glyphs = new HashMap<Integer, Glyph>();
   private final int spaceAdvance;
-  private DynamicTexture texture;
+  private TextureResources texture;
 
   public static final class Glyph {
     public final int u;
@@ -135,8 +135,8 @@ public final class AtlasFont {
         nativeImage.setPixelABGR(x, y, (a << 24) | 0x00FFFFFF);
       }
     }
-    DynamicTexture dynamic =
-        new DynamicTexture(
+    TextureResources resources =
+        TextureResources.from2dImage(
             new java.util.function.Supplier<String>() {
               @Override
               public String get() {
@@ -144,8 +144,8 @@ public final class AtlasFont {
               }
             },
             nativeImage);
-    Minecraft.getInstance().getTextureManager().register(textureId, dynamic);
-    atlas.texture = dynamic;
+    Minecraft.getInstance().getTextureManager().register(textureId, resources);
+    atlas.texture = resources;
     return atlas;
   }
 

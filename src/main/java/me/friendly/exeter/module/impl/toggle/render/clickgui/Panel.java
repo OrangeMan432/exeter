@@ -13,7 +13,7 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
 
@@ -41,13 +41,13 @@ public abstract class Panel implements Labeled {
     try {
       InputStream arrowStream = mc.getResourceManager().open(ARROW_ID);
       NativeImage arrowImg = NativeImage.read(arrowStream);
-      DynamicTexture arrowTex = new DynamicTexture(() -> "exeter:arrow", arrowImg);
-      mc.getTextureManager().register(ARROW_ID, arrowTex);
+      mc.getTextureManager()
+          .register(ARROW_ID, TextureResources.from2dImage(() -> "exeter:arrow", arrowImg));
 
       InputStream gearStream = mc.getResourceManager().open(GEAR_ID);
       NativeImage gearImg = NativeImage.read(gearStream);
-      DynamicTexture gearTex = new DynamicTexture(() -> "exeter:gear", gearImg);
-      mc.getTextureManager().register(GEAR_ID, gearTex);
+      mc.getTextureManager()
+          .register(GEAR_ID, TextureResources.from2dImage(() -> "exeter:gear", gearImg));
 
     } catch (Exception e) {
       System.out.println("Failed to load arrow/gear textures: " + e.getMessage());

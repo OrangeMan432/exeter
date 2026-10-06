@@ -37,3 +37,6 @@ forge*changelog.txt
 *.un~
 *.swp
 *~
+
+# Local session notes.
+session.txt

@@ -5,9 +5,9 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.util.MathUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.client.CameraType;
-import net.minecraft.util.Mth;
 
 /**
  * Freely rotates the camera with the mouse while the player keeps facing its own direction.
@@ -89,6 +89,6 @@ public final class FreeLook extends ToggleableModule {
     PlayerUtil.restoreRotation(preYaw, prePitch);
     float scale = sensitivity.getValue().floatValue();
     cameraYaw += deltaYaw * scale;
-    cameraPitch = Mth.clamp(cameraPitch + deltaPitch * scale, -90.0f, 90.0f);
+    cameraPitch = MathUtil.clamp(cameraPitch + deltaPitch * scale, -90.0f, 90.0f);
   }
 }
