@@ -676,7 +676,7 @@ public final class PacketMine extends ToggleableModule {
     } else {
       style = GizmoStyle.stroke(outline, lw);
     }
-    Gizmos.cuboid(box, style);
+    Gizmos.cuboid(box, style).setAlwaysOnTop();
   }
 
   private final class BreakPos {
