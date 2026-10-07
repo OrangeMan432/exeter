@@ -13,6 +13,7 @@ import me.friendly.exeter.window.impl.AccountWindow;
 import me.friendly.exeter.window.impl.ConsoleWindow;
 import me.friendly.exeter.window.impl.FriendsWindow;
 import me.friendly.exeter.window.impl.ProxyWindow;
+import me.friendly.exeter.window.impl.WaypointWindow;
 
 public final class WindowsModule extends ToggleableModule {
 
@@ -68,6 +69,7 @@ public final class WindowsModule extends ToggleableModule {
     screen.addWindow(new FriendsWindow(mcWidth - 300, 20, 280, 200));
     screen.addWindow(new AccountWindow(mcWidth - 400, 240, 360, 250));
     screen.addWindow(new ProxyWindow(20, 290, 400, 220));
+    screen.addWindow(new WaypointWindow(mcWidth - 400, 300, 300, 220));
 
     for (Window window : screen.getWindows()) {
       int[] pos = pendingPositions.get(window.getTitle());

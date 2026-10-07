@@ -116,6 +116,15 @@ public abstract class Window {
     }
   }
 
+  public boolean mouseDragged(int mouseX, int mouseY) {
+    if (hidden || !focused) return false;
+    return consumeDragged(mouseX, mouseY);
+  }
+
+  protected boolean consumeDragged(int mouseX, int mouseY) {
+    return false;
+  }
+
   public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta) {
     if (hidden || !isHovered(mouseX, mouseY)) return false;
     return consumeScroll(mouseX, mouseY, scrollDelta);
@@ -206,6 +215,14 @@ public abstract class Window {
 
   public boolean isHidden() {
     return hidden;
+  }
+
+  /**
+   * Modal windows (e.g. an embedded color picker) claim clicks anywhere on screen while open, since
+   * their content usually extends past the window bounds.
+   */
+  public boolean isModal() {
+    return false;
   }
 
   public void setHidden(boolean hidden) {
