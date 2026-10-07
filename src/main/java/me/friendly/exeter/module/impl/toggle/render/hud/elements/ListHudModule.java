@@ -55,8 +55,8 @@ public abstract class ListHudModule extends HudModule {
     List<TextEntry> entries = entriesOrDummy();
     if (entries.isEmpty()) return;
 
-    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+    boolean top = isTop();
+    boolean right = isRight();
     int width = getWidth();
 
     int py = top ? getY() : getY() + getHeight() - 9;

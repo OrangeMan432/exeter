@@ -5,6 +5,7 @@ import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.util.NotificationManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,10 +22,13 @@ public final class NotificationHud extends HudModule {
   private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
 
+  private final NumberProperty<Integer> maxNotifications =
+      new NumberProperty<Integer>(5, 1, 10, "Max Notifications");
+
   public NotificationHud() {
     super("Notifications", new String[] {"notifications", "notif", "notify"}, Corner.BOTTOM_RIGHT);
     setDescription("Garry's Mod style notifications.");
-    this.offerProperties();
+    this.offerProperties(maxNotifications);
   }
 
   private static float easeOutCubic(float t) {
@@ -177,6 +181,7 @@ public final class NotificationHud extends HudModule {
 
   @Override
   public int getWidth() {
+    NotificationManager.setMaxVisible(maxNotifications.getValue());
     List<NotificationManager.Notification> active = NotificationManager.getActive();
     // show dummy in editor when empty
     boolean inEditor =
@@ -196,6 +201,7 @@ public final class NotificationHud extends HudModule {
 
   @Override
   public int getHeight() {
+    NotificationManager.setMaxVisible(maxNotifications.getValue());
     List<NotificationManager.Notification> active = NotificationManager.getActive();
     boolean inEditor =
         Minecraft.getInstance().gui != null
@@ -207,6 +213,7 @@ public final class NotificationHud extends HudModule {
 
   @Override
   public void render(int scaledWidth, int scaledHeight) {
+    NotificationManager.setMaxVisible(maxNotifications.getValue());
     List<NotificationManager.Notification> active = NotificationManager.getActive();
     boolean inEditor =
         Minecraft.getInstance().gui != null
@@ -217,7 +224,7 @@ public final class NotificationHud extends HudModule {
       int w = FontUtil.getStringWidth("Undone Prop") + NOTIF_PADDING * 2 + ICON_SIZE + 4;
       int x = getX();
       int y = getY();
-      if (getCorner() == Corner.BOTTOM_RIGHT || getCorner() == Corner.TOP_RIGHT) {
+      if (isRight()) {
         x = getX() + getWidth() - w;
       }
       drawRoundedRect(x, y, x + w, y + NOTIF_HEIGHT, RADIUS, BG_COLOR);
@@ -228,8 +235,8 @@ public final class NotificationHud extends HudModule {
     if (active.isEmpty()) return;
 
     long now = System.currentTimeMillis();
-    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+    boolean top = isTop();
+    boolean right = isRight();
 
     int baseY = getY();
     // stack direction: if top, downwards; if bottom, upwards

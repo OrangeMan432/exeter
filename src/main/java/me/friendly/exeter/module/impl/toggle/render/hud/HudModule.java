@@ -14,13 +14,19 @@ public abstract class HudModule extends ToggleableModule {
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    BOTTOM_RIGHT,
+    TOP_CENTER
   }
 
   private int x;
   private int y;
   private Corner corner;
   private boolean positioned = false;
+  private boolean free = false;
+
+  /** Previous frame's stack order per corner, so y-ties can't reshuffle stacks. */
+  private static final java.util.Map<Corner, java.util.List<String>> stackOrderMemory =
+      new java.util.EnumMap<>(Corner.class);
 
   protected HudModule(String label, String[] aliases, int color, Corner defaultCorner) {
     super(label, aliases, color, ModuleType.HUD);
@@ -64,6 +70,24 @@ public abstract class HudModule extends ToggleableModule {
     this.corner = corner;
   }
 
+  /** Free-placed modules keep their exact x/y; corner stacks skip them. */
+  public boolean isFree() {
+    return free;
+  }
+
+  public void setFree(boolean free) {
+    this.free = free;
+  }
+
+  /** TOP_CENTER stacks downward like the top corners. */
+  public boolean isTop() {
+    return corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT || corner == Corner.TOP_CENTER;
+  }
+
+  public boolean isRight() {
+    return corner == Corner.TOP_RIGHT || corner == Corner.BOTTOM_RIGHT;
+  }
+
   public boolean isPositioned() {
     return positioned;
   }
@@ -98,15 +122,27 @@ public abstract class HudModule extends ToggleableModule {
 
     for (Corner corner : Corner.values()) {
       List<HudModule> cornerModules =
-          modules.stream().filter(m -> m.getCorner() == corner).collect(Collectors.toList());
+          modules.stream()
+              .filter(m -> m.getCorner() == corner && !m.isFree())
+              .collect(Collectors.toList());
 
-      boolean top = corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT;
+      boolean top =
+          corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT || corner == Corner.TOP_CENTER;
       boolean left = corner == Corner.TOP_LEFT || corner == Corner.BOTTOM_LEFT;
+      boolean center = corner == Corner.TOP_CENTER;
 
+      // Ties (e.g. an emptied radar sharing y with the module below it) resolve to the
+      // previous frame's visual order, never to registry order, so stacks can't swap.
+      List<String> previous = stackOrderMemory.getOrDefault(corner, List.of());
       Comparator<HudModule> verticalOrder =
-          top
-              ? Comparator.comparingInt(HudModule::getY)
-              : Comparator.comparingInt(HudModule::getY).reversed();
+          (top
+                  ? Comparator.comparingInt(HudModule::getY)
+                  : Comparator.comparingInt(HudModule::getY).reversed())
+              .thenComparingInt(
+                  m -> {
+                    int index = previous.indexOf(m.getLabel());
+                    return index == -1 ? Integer.MAX_VALUE : index;
+                  });
 
       cornerModules.sort(verticalOrder);
 
@@ -115,7 +151,12 @@ public abstract class HudModule extends ToggleableModule {
       for (HudModule m : cornerModules) {
         int w = m.getWidth();
         int h = m.getHeight();
-        int baseX = left ? margin : scaledWidth - w - margin;
+        int baseX;
+        if (center) {
+          baseX = scaledWidth / 2 - w / 2;
+        } else {
+          baseX = left ? margin : scaledWidth - w - margin;
+        }
 
         m.x = baseX;
         m.y = top ? baseY : baseY - h;
@@ -123,6 +164,25 @@ public abstract class HudModule extends ToggleableModule {
 
         baseY = top ? baseY + h + (h > 0 ? gap : 0) : baseY - h - (h > 0 ? gap : 0);
       }
+      java.util.List<String> order = new java.util.ArrayList<>(cornerModules.size());
+      for (HudModule m : cornerModules) {
+        order.add(m.getLabel());
+      }
+      stackOrderMemory.put(corner, order);
+    }
+  }
+
+  /**
+   * Pulls overflowing boxes back on screen. Dynamic content (speed digits, potion entries) can
+   * outgrow its laid-out box; idempotent, so safe to run every frame.
+   */
+  public static void clampOnScreen(List<HudModule> modules, int scaledWidth, int scaledHeight) {
+    int margin = 5;
+    for (HudModule m : modules) {
+      int maxX = Math.max(margin, scaledWidth - m.getWidth() - margin);
+      int maxY = Math.max(margin, scaledHeight - m.getHeight() - margin);
+      m.setX(Math.max(margin, Math.min(m.getX(), maxX)));
+      m.setY(Math.max(margin, Math.min(m.getY(), maxY)));
     }
   }
 

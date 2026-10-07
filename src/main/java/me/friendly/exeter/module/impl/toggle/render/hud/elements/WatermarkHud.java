@@ -4,18 +4,39 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
+import me.friendly.exeter.properties.EnumProperty;
 
 public final class WatermarkHud extends HudModule {
+
+  public enum DisplayMode {
+    FULL,
+    SHORT,
+    NAME
+  }
+
+  private final EnumProperty<DisplayMode> displayMode =
+      new EnumProperty<DisplayMode>(DisplayMode.FULL, "Display", "display", "mode");
 
   public WatermarkHud() {
     super("Watermark", new String[] {"watermark", "wm", "water"}, Corner.TOP_LEFT);
     setDescription("Displays the client name and version.");
-    this.offerProperties();
+    this.offerProperties(displayMode);
   }
 
   private String versionText() {
     String dirty = Exeter.DIRTY ? " (dirty)" : "";
-    return String.format(" %s.%s%s", Exeter.BUILD, Exeter.HASH, dirty);
+    switch (displayMode.getValue()) {
+      case SHORT:
+        // Name and tag only: "Exeter b28", without the mc version and commit count.
+        String build = Exeter.BUILD;
+        int mcIndex = build.indexOf("-mc");
+        return " " + (mcIndex == -1 ? build : build.substring(0, mcIndex));
+      case NAME:
+        return "";
+      case FULL:
+      default:
+        return String.format(" %s.%s%s", Exeter.BUILD, Exeter.HASH, dirty);
+    }
   }
 
   @Override

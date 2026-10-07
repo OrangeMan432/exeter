@@ -227,6 +227,9 @@ public class ExeterConfig {
             DebugLogger.get().logSystem("Config", "  invalid corner value: " + cornerName);
           }
         }
+        if (hudData.containsKey("free")) {
+          hudModule.setFree(Boolean.parseBoolean(hudData.get("free").toString()));
+        }
       }
 
       // Load saved window positions (applied when the Windows screen opens)
@@ -377,6 +380,7 @@ public class ExeterConfig {
         hudData.put("x", (long) hudModule.getX());
         hudData.put("y", (long) hudModule.getY());
         hudData.put("corner", hudModule.getCorner().name());
+        hudData.put("free", hudModule.isFree());
         data.put("hud", hudData);
       }
 

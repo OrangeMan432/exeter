@@ -12,6 +12,7 @@ public final class SpeedHud extends HudModule {
   private final NumberProperty<Double> averagingTime =
       new NumberProperty<>(0.0, 0.0, 10.0, "Averaging Time");
   private final Deque<Double> samples = new ArrayDeque<>();
+  private String lastValue = "0.000";
 
   public SpeedHud() {
     super("Speed", new String[] {"speedhud", "speed"}, Corner.BOTTOM_RIGHT);
@@ -21,7 +22,9 @@ public final class SpeedHud extends HudModule {
 
   @Override
   public int getWidth() {
-    return FontUtil.getStringWidth("Speed: ") + FontUtil.getStringWidth("0.000");
+    // Measured from the live value: digit glyphs widen as speed grows, and a fixed
+    // estimate clips when right-aligned.
+    return FontUtil.getStringWidth("Speed: ") + FontUtil.getStringWidth(lastValue);
   }
 
   @Override
@@ -54,6 +57,7 @@ public final class SpeedHud extends HudModule {
     }
 
     String value = String.format("%.3f", display);
+    lastValue = value;
     FontUtil.drawString("Speed: ", getX(), getY(), Colors.getHudAccent());
     FontUtil.drawString(
         value, getX() + FontUtil.getStringWidth("Speed: "), getY(), Colors.getHudMain());

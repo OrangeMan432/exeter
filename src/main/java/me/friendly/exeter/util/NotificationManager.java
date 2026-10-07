@@ -48,9 +48,14 @@ public final class NotificationManager {
 
   private static final List<Notification> queue = new ArrayList<>();
   private static final long DEFAULT_DURATION = 4000;
-  private static final int MAX_VISIBLE = 5;
+  private static int maxVisible = 5;
 
   private NotificationManager() {}
+
+  /** Visible cap, driven by the Notifications HUD setting. */
+  public static void setMaxVisible(int max) {
+    maxVisible = Math.max(1, Math.min(10, max));
+  }
 
   public static void push(String text, String iconName) {
     push(text, iconName, DEFAULT_DURATION);
@@ -67,8 +72,16 @@ public final class NotificationManager {
           return;
         }
       }
-      if (queue.size() >= 10) queue.remove(0);
+      if (queue.size() >= 10) {
+        // Evict with the exit animation instead of vanishing: rewind the oldest in
+        // place so only its fade-out remains, letting it expire naturally.
+        Notification oldest = queue.get(0);
+        oldest.createdAt = System.currentTimeMillis() - oldest.durationMs;
+      }
       queue.add(new Notification(text, iconName, System.currentTimeMillis(), durationMs));
+      while (queue.size() > 12) {
+        queue.remove(0);
+      }
     }
   }
 
@@ -80,7 +93,7 @@ public final class NotificationManager {
         Notification n = it.next();
         if (now - n.createdAt() > n.durationMs() + 300) it.remove();
       }
-      int from = Math.max(0, queue.size() - MAX_VISIBLE);
+      int from = Math.max(0, queue.size() - maxVisible);
       return new ArrayList<>(queue.subList(from, queue.size()));
     }
   }

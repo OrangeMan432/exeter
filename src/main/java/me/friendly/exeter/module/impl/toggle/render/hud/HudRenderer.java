@@ -28,6 +28,7 @@ public final class HudRenderer extends Module {
                 int sh = minecraft.getWindow().getGuiScaledHeight();
                 List<HudModule> active = HudModule.getActive();
                 HudModule.layoutByCorner(active, sw, sh);
+                HudModule.clampOnScreen(active, sw, sh);
                 for (HudModule m : active) {
                   m.render(sw, sh);
                 }

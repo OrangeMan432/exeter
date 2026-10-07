@@ -79,8 +79,8 @@ public final class TextRadarHud extends ListHudModule {
     List<PlayerEntry> entries = collect();
     if (entries.isEmpty()) return;
 
-    boolean top = getCorner() == Corner.TOP_LEFT || getCorner() == Corner.TOP_RIGHT;
-    boolean right = getCorner() == Corner.TOP_RIGHT || getCorner() == Corner.BOTTOM_RIGHT;
+    boolean top = isTop();
+    boolean right = isRight();
     int width = getWidth();
 
     int py = top ? getY() : getY() + getHeight() - 9;

@@ -85,6 +85,7 @@ public final class HudEditorScreen extends Screen {
 
   private void drawHudModules(int mouseX, int mouseY, int scaledWidth, int scaledHeight) {
     List<HudModule> modules = HudModule.getActive();
+    HudModule.clampOnScreen(modules, scaledWidth, scaledHeight);
 
     for (HudModule m : modules) {
       int mx = m.getX();
@@ -114,6 +115,16 @@ public final class HudEditorScreen extends Screen {
     RenderMethods.drawVLine(half, 0, scaledHeight, 0x40FFFF00);
     RenderMethods.drawHLine(0, scaledWidth, snapMargin, 0x40FFFF00);
     RenderMethods.drawHLine(0, scaledWidth, scaledHeight - snapMargin, 0x40FFFF00);
+
+    // Snap zones: dropping a box edge inside one of these snaps to its corner.
+    // Radius comes from the HUD editor settings; 0 disables snapping entirely.
+    int r = me.friendly.exeter.module.impl.toggle.client.HUDEditor.snapRange();
+    RenderMethods.drawRect(0, 0, r, r, 0x18FFFF00);
+    RenderMethods.drawRect(scaledWidth - r, 0, scaledWidth, r, 0x18FFFF00);
+    RenderMethods.drawRect(0, scaledHeight - r, r, scaledHeight, 0x18FFFF00);
+    RenderMethods.drawRect(
+        scaledWidth - r, scaledHeight - r, scaledWidth, scaledHeight, 0x18FFFF00);
+    RenderMethods.drawRect(half - r, 0, half + r, r, 0x18FFFF00);
   }
 
   @Override
@@ -152,12 +163,15 @@ public final class HudEditorScreen extends Screen {
     hudPanel.mouseReleased((int) event.x(), (int) event.y(), event.button());
 
     if (dragging != null) {
-      if (!Minecraft.getInstance().hasShiftDown()) {
+      // Shift skips snapping: exact drop position is kept as free placement.
+      if (Minecraft.getInstance().hasShiftDown()) {
+        dragging.setFree(true);
+      } else {
         snapToNearest(dragging);
-        int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-        int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
-        HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
       }
+      int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      HudModule.layoutByCorner(HudModule.getActive(), sw, sh);
       dragging = null;
     }
     return super.mouseReleased(event);
@@ -191,20 +205,55 @@ public final class HudEditorScreen extends Screen {
   @Override
   public void init() {}
 
+  /**
+   * Snaps to a corner or the top center when the matching box edge lands within radius of one;
+   * otherwise the module keeps its exact drop position as free placement.
+   */
   private void snapToNearest(HudModule m) {
     int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    int margin = 5;
 
-    int centerX = scaledWidth / 2;
-    int centerY = scaledHeight / 2;
-    boolean right = m.getX() + m.getWidth() / 2 > centerX;
-    boolean bottom = m.getY() + m.getHeight() / 2 > centerY;
+    int x = m.getX();
+    int y = m.getY();
+    int w = m.getWidth();
+    int h = m.getHeight();
+    int cx = x + w / 2;
 
-    HudModule.Corner bestCorner;
-    if (right && bottom) bestCorner = HudModule.Corner.BOTTOM_RIGHT;
-    else if (right) bestCorner = HudModule.Corner.TOP_RIGHT;
-    else if (bottom) bestCorner = HudModule.Corner.BOTTOM_LEFT;
-    else bestCorner = HudModule.Corner.TOP_LEFT;
-    m.setCorner(bestCorner);
+    // {anchorX, anchorY, refX, refY, corner}
+    int[][] anchors = {
+      {margin, margin, x, y},
+      {scaledWidth - margin, margin, x + w, y},
+      {margin, scaledHeight - margin, x, y + h},
+      {scaledWidth - margin, scaledHeight - margin, x + w, y + h},
+      {scaledWidth / 2, margin, cx, y}
+    };
+    HudModule.Corner[] corners = {
+      HudModule.Corner.TOP_LEFT,
+      HudModule.Corner.TOP_RIGHT,
+      HudModule.Corner.BOTTOM_LEFT,
+      HudModule.Corner.BOTTOM_RIGHT,
+      HudModule.Corner.TOP_CENTER
+    };
+    HudModule.Corner best = null;
+    double bestDist =
+        (double) me.friendly.exeter.module.impl.toggle.client.HUDEditor.snapRange()
+            * me.friendly.exeter.module.impl.toggle.client.HUDEditor.snapRange();
+    for (int i = 0; i < anchors.length; i++) {
+      double dx = anchors[i][2] - anchors[i][0];
+      double dy = anchors[i][3] - anchors[i][1];
+      double dist = dx * dx + dy * dy;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = corners[i];
+      }
+    }
+
+    if (best == null) {
+      m.setFree(true);
+      return;
+    }
+    m.setCorner(best);
+    m.setFree(false);
   }
 }
