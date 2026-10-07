@@ -73,4 +73,5 @@ the same way that 3arthqu4ke's does (and Future's does).
 - Homovore (leonetics) — PistonCrystal module design and silent rotation
 - OpenMyau (60124808866) — account manager this client's Accounts window is ported from
 - Meteor Client — FreeLook camera concept
+- Phobos (3arthqu4ke) — LINE compass design the CompassHud is based on
 - notanorange-main — improved ClickGUI fuzzy finder
