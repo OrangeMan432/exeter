@@ -48,9 +48,11 @@ import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.FullBright;
+import me.friendly.exeter.module.impl.toggle.render.Waypoints;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.CompassHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.FpsHud;
@@ -124,10 +126,12 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new SpeedHud());
     register(new TextRadarHud());
     register(new NotificationHud());
+    register(new CompassHud());
     register(new BlockEsp());
     register(new EntityEsp());
     register(new FreeLook());
     register(new FullBright());
+    register(new Waypoints());
 
     for (Module m : registry) {
       if (m instanceof Debug debug) {

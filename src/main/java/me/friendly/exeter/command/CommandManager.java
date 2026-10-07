@@ -18,6 +18,7 @@ import me.friendly.exeter.command.impl.client.Presets;
 import me.friendly.exeter.command.impl.client.Runtime;
 import me.friendly.exeter.command.impl.client.ScreenShot;
 import me.friendly.exeter.command.impl.client.Toggle;
+import me.friendly.exeter.command.impl.client.Waypoints;
 import me.friendly.exeter.command.impl.player.Grab;
 import me.friendly.exeter.command.impl.player.HClip;
 import me.friendly.exeter.command.impl.player.VClip;
@@ -52,6 +53,10 @@ public final class CommandManager extends ListRegistry<Command> {
     this.register(new Friends.Remove());
     this.register(new Bind());
     this.register(new ScreenShot());
+    this.register(new Waypoints.Add());
+    this.register(new Waypoints.Here());
+    this.register(new Waypoints.Remove());
+    this.register(new Waypoints.List());
     this.registry.sort((cmd1, cmd2) -> cmd1.getAliases()[0].compareTo(cmd2.getAliases()[0]));
     Exeter.getInstance()
         .getEventManager()
