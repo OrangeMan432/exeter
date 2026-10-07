@@ -26,6 +26,9 @@ public class ColorPickerPopup implements ClickPopup {
   private float hue;
   private float saturation;
   private float value;
+  private final java.util.function.IntSupplier colorGetter;
+  private final java.util.function.IntConsumer colorSetter;
+  private final Runnable onClose;
   private boolean draggingSv;
   private boolean draggingHue;
   private boolean hexFocused;
@@ -35,21 +38,53 @@ public class ColorPickerPopup implements ClickPopup {
   private boolean cursorVisible;
 
   public ColorPickerPopup() {
+    this(null, null, null);
+  }
+
+  /**
+   * Targeted picker: reads/writes the given color instead of the global client color, and runs
+   * onClose instead of closing the ClickGUI popup. Lets windows embed the RGB picker.
+   */
+  public ColorPickerPopup(
+      java.util.function.IntSupplier colorGetter,
+      java.util.function.IntConsumer colorSetter,
+      Runnable onClose) {
+    this.colorGetter = colorGetter;
+    this.colorSetter = colorSetter;
+    this.onClose = onClose;
     float[] hsb = currentHsb();
     hue = hsb[0] * 360f;
     saturation = hsb[1];
     value = hsb[2];
-    Colors.useRgbMode();
+    if (!isTargeted()) {
+      Colors.useRgbMode();
+    }
   }
 
-  private static float[] currentHsb() {
-    int rgb = Colors.getClientColor();
+  private boolean isTargeted() {
+    return colorGetter != null && colorSetter != null;
+  }
+
+  private void close() {
+    if (onClose != null) {
+      onClose.run();
+    } else {
+      ClickGui.getClickGui().closePopup();
+    }
+  }
+
+  private float[] currentHsb() {
+    int rgb = isTargeted() ? colorGetter.getAsInt() : Colors.getClientColor();
     return Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
   }
 
   private void apply() {
-    int packed = Color.HSBtoRGB(hue / 360f, saturation, value);
-    Colors.setRgb((packed >> 16) & 0xFF, (packed >> 8) & 0xFF, packed & 0xFF);
+    int picked = Color.HSBtoRGB(hue / 360f, saturation, value) | 0xFF000000;
+    if (isTargeted()) {
+      colorSetter.accept(picked);
+    } else {
+      Colors.setRgb((picked >> 16) & 0xFF, (picked >> 8) & 0xFF, picked & 0xFF);
+    }
   }
 
   private int svX() {
@@ -217,7 +252,7 @@ public class ColorPickerPopup implements ClickPopup {
     int doneX = popupX + POPUP_W - 59;
     int doneY = popupY + POPUP_H - BUTTON_AREA_H;
     if (mouseX >= doneX && mouseX <= doneX + 55 && mouseY >= doneY && mouseY <= doneY + 14) {
-      ClickGui.getClickGui().closePopup();
+      close();
       return true;
     }
     if (inSv(mouseX, mouseY)) {
@@ -276,7 +311,7 @@ public class ColorPickerPopup implements ClickPopup {
   @Override
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
     if (keyCode == InputConstants.KEY_ESCAPE) {
-      ClickGui.getClickGui().closePopup();
+      close();
       return true;
     }
     if (!hexFocused) {

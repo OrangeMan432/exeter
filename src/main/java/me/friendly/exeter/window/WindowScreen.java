@@ -99,6 +99,15 @@ public final class WindowScreen extends Screen {
     int mouseY = (int) event.y();
     int button = event.button();
 
+    // A modal window (embedded popup open) claims every click, since its content
+    // extends past the window bounds and hover routing would miss it.
+    for (Window window : windows) {
+      if (!window.isHidden() && window.isFocused() && window.isModal()) {
+        window.mouseClicked(mouseX, mouseY, button);
+        return true;
+      }
+    }
+
     int taskbarY = this.height - TASKBAR_HEIGHT;
     if (mouseY >= taskbarY) {
       int btnX = 4;
@@ -136,6 +145,20 @@ public final class WindowScreen extends Screen {
       w.setFocused(false);
     }
     return super.mouseClicked(event, bool);
+  }
+
+  @Override
+  public boolean mouseDragged(
+      net.minecraft.client.input.MouseButtonEvent event, double deltaX, double deltaY) {
+    int mouseX = (int) event.x();
+    int mouseY = (int) event.y();
+    for (int i = windows.size() - 1; i >= 0; i--) {
+      Window window = windows.get(i);
+      if (!window.isHidden() && window.isFocused() && window.mouseDragged(mouseX, mouseY)) {
+        return true;
+      }
+    }
+    return super.mouseDragged(event, deltaX, deltaY);
   }
 
   @Override
