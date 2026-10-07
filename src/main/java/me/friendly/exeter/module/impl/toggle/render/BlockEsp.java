@@ -236,7 +236,7 @@ public final class BlockEsp extends ToggleableModule {
     }
 
     for (BlockPos pos : matchedPositions) {
-      Gizmos.cuboid(pos, style);
+      Gizmos.cuboid(pos, style).setAlwaysOnTop();
     }
   }
 
