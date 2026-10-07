@@ -3,7 +3,6 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.properties.EnumProperty;
 import net.minecraft.world.effect.MobEffect;
@@ -25,14 +24,6 @@ public final class PotionsHud extends ListHudModule {
     super("Potions", new String[] {"potions", "pots", "p"}, Corner.BOTTOM_LEFT);
     setDescription("Displays active potion effects.");
     this.offerProperties(colorMode);
-  }
-
-  @Override
-  public int getWidth() {
-    if (getEntries().isEmpty() && isInEditor()) {
-      return FontUtil.getStringWidth(getDummyEntries().get(0).text());
-    }
-    return 100;
   }
 
   private int themedColor(int fallback) {
