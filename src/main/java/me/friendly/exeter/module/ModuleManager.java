@@ -48,6 +48,7 @@ import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.FullBright;
+import me.friendly.exeter.module.impl.toggle.render.Nametags;
 import me.friendly.exeter.module.impl.toggle.render.Waypoints;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
@@ -131,6 +132,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new EntityEsp());
     register(new FreeLook());
     register(new FullBright());
+    register(new Nametags());
     register(new Waypoints());
 
     for (Module m : registry) {

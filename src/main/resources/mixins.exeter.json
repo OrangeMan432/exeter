@@ -15,6 +15,7 @@
       "MixinMouseHandler",
       "MixinCamera",
       "MixinLightmap",
-      "MixinProxyInitializer"
+      "MixinProxyInitializer",
+      "MixinEntityRenderer"
   ]
 }
