@@ -40,6 +40,29 @@ the agent writes code. Ask before crossing that boundary.
   The user closes the previous client themselves; when told to run, launch
   directly without process checks.
 
+## Verification and builds
+
+- When launching the client, report pid, log path, and built commit
+  (`git rev-parse --short HEAD`) so staleness is checkable at a glance.
+- Prefer `./gradlew compileJava --offline` during development; go online only to
+  fetch new artifacts. Allow 10+ minute timeouts on Gradle calls.
+- Verify with compile and log evidence; do not theorize past one level without it.
+
+## Branch hygiene
+
+- Never carry a dirty tree across branches: commit or named-stash first.
+- Decompiling vanilla behavior: `javap -p -c -classpath
+  ~/.gradle/caches/fabric-loom/<mc-version>/minecraft-merged.jar <class>`.
+
+## Scope and safety
+
+- Public `api/` classes may be consumed by the external media-hud plugin repo.
+  Member-level cuts inside modules are safe; do not delete public API without
+  checking there first.
+- Found secrets get removed/rotated on sight, same as never committing them.
+- Perf-sensitive paths (per-frame HUD layout, gizmo emission): prefer single-quad
+  primitives over per-element fill calls.
+
 ## Code conventions
 
 - Rotation: use `PlayerUtil.setRotation` / `restoreRotation`, not hand-rolled packets.
