@@ -166,10 +166,17 @@ public abstract class Panel implements Labeled {
               : Colors.getClientColorCustomAlpha(77);
       RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, topAccent);
       RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, bottomAccent);
-      RenderMethods.drawGradientRect(
-          this.x - 1, top, this.x, bottom, topAccent, bottomAccent);
-      RenderMethods.drawGradientRect(
-          this.x + this.width, top, this.x + this.width + 1, bottom, topAccent, bottomAccent);
+      // Sampled per strip: a single RGB-lerped gradient drifts off-hue mid-panel,
+      // growing with panel length, while buttons sample exact hues.
+      float stripH = 4.0f;
+      for (float sy = top; sy < bottom; sy += stripH) {
+        float ey = Math.min(sy + stripH, bottom);
+        int stripTop = rolling ? Colors.getRollingColor((int) sy, screenH, 77) : topAccent;
+        int stripBottom = rolling ? Colors.getRollingColor((int) ey, screenH, 77) : bottomAccent;
+        RenderMethods.drawGradientRect(this.x - 1, sy, this.x, ey, stripTop, stripBottom);
+        RenderMethods.drawGradientRect(
+            this.x + this.width, sy, this.x + this.width + 1, ey, stripTop, stripBottom);
+      }
     }
   }
 

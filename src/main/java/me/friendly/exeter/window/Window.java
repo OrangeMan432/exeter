@@ -84,9 +84,15 @@ public abstract class Window {
               : Colors.getClientColorCustomAlpha(220);
       RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, topAccent);
       RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, bottomAccent);
-      RenderMethods.drawGradientRect(x - 1, y, x, y + height, topAccent, bottomAccent);
-      RenderMethods.drawGradientRect(
-          x + width, y, x + width + 1, y + height, topAccent, bottomAccent);
+      // Sampled per strip so long windows stay on-hue like the buttons do.
+      float stripH = 4.0f;
+      for (float sy = y; sy < y + height; sy += stripH) {
+        float ey = Math.min(sy + stripH, y + height);
+        int stripTop = rolling ? Colors.getRollingColor((int) sy, screenH, 220) : topAccent;
+        int stripBottom = rolling ? Colors.getRollingColor((int) ey, screenH, 220) : bottomAccent;
+        RenderMethods.drawGradientRect(x - 1, sy, x, ey, stripTop, stripBottom);
+        RenderMethods.drawGradientRect(x + width, sy, x + width + 1, ey, stripTop, stripBottom);
+      }
     }
   }
 
