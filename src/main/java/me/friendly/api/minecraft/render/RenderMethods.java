@@ -222,8 +222,8 @@ public final class RenderMethods {
   }
 
   /**
-   * Horizontal gradient sampled per strip, so hue sweeps stay exact (a plain RGB lerp
-   * would drift off-hue mid-span).
+   * Horizontal gradient sampled per strip, so hue sweeps stay exact (a plain RGB lerp would drift
+   * off-hue mid-span).
    */
   public static void drawHorizontalSpectrumRect(
       float x, float y, float x1, float y1, java.util.function.IntUnaryOperator colorAtX) {

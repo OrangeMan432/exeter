@@ -103,7 +103,10 @@ public abstract class Window {
               : Colors.getClientColorCustomAlpha(220);
       if (horizontal && rolling) {
         RenderMethods.drawHorizontalSpectrumRect(
-            x - 1, y - 1, x + width + 1, y,
+            x - 1,
+            y - 1,
+            x + width + 1,
+            y,
             sx -> Colors.rollingSample(true, inverse, sx, y, screenW, screenH, 220));
         RenderMethods.drawHorizontalSpectrumRect(
             x - 1,
@@ -112,7 +115,10 @@ public abstract class Window {
             y + height + 1,
             sx -> Colors.rollingSample(true, inverse, sx, y + height, screenW, screenH, 220));
         RenderMethods.drawRect(
-            x - 1, y, x, y + height,
+            x - 1,
+            y,
+            x,
+            y + height,
             Colors.rollingSample(true, inverse, x - 1, y, screenW, screenH, 220));
         RenderMethods.drawRect(
             x + width,
