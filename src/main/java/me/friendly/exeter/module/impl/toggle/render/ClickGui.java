@@ -50,7 +50,8 @@ public final class ClickGui extends ToggleableModule {
       new EnumProperty<RollingDirection>(
           RollingDirection.VERTICAL, "Rolling Direction", "rollingdirection");
   public final Property<Boolean> rollingInverse =
-      new Property<Boolean>(false, "Rolling Inverse", "rollinginverse");  public final ActionProperty resetPositions =
+      new Property<Boolean>(false, "Rolling Inverse", "rollinginverse");
+  public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
 
   private final Map<String, int[]> pendingPanels = new HashMap<>();

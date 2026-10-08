@@ -115,7 +115,8 @@ public final class Colors extends Module {
       new NumberProperty<>(128, 0, 255, "Color 5 Green", "grad5green", "g5g");
   private static final NumberProperty<Integer> grad5Blue =
       new NumberProperty<>(0, 0, 255, "Color 5 Blue", "grad5blue", "g5b");
-  private final PopupProperty pickGradient1 =      new PopupProperty(
+  private final PopupProperty pickGradient1 =
+      new PopupProperty(
           "Pick Color 1",
           () ->
               me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui()
@@ -364,8 +365,8 @@ public final class Colors extends Module {
   }
 
   /**
-   * Phobos-style rolling sweep: the base hue scrolls with time plus a per-row offset, so
-   * vertical gradients move through the spectrum. Static modes return their base color.
+   * Phobos-style rolling sweep: the base hue scrolls with time plus a per-row offset, so vertical
+   * gradients move through the spectrum. Static modes return their base color.
    */
   public static int getRollingColor(int y, int screenHeight, int alpha) {
     return rollingSample(scrollForMode() + spanForMode(y, screenHeight), alpha);
