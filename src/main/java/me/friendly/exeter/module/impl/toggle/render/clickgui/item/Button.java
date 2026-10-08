@@ -86,7 +86,7 @@ public class Button extends Item implements Labeled {
           this.x + (float) this.width,
           this.y + (float) this.height,
           sx -> Colors.rollingSample(true, inverse, sx, by, screenW, screenH, alpha));
-    } else if (useGradient) {
+    } else if (useGradient || rolling) {
       RenderMethods.drawGradientRect(
           this.x,
           this.y,
