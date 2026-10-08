@@ -106,8 +106,7 @@ public abstract class Panel implements Labeled {
           this.x + this.width,
           this.y + this.height - 6,
           Colors.rollingSample(false, inverse, this.x, this.y, screenW, screenH, 77),
-          Colors.rollingSample(
-              false, inverse, this.x, this.y + this.height, screenW, screenH, 77));
+          Colors.rollingSample(false, inverse, this.x, this.y + this.height, screenW, screenH, 77));
     } else {
       RenderMethods.drawGradientRect(
           this.x,
@@ -176,16 +175,28 @@ public abstract class Panel implements Labeled {
       int screenW = Minecraft.getInstance().getWindow().getGuiScaledWidth();
       if (horizontal) {
         RenderMethods.drawHorizontalSpectrumRect(
-            this.x - 1, top - 1, this.x + this.width + 1, top,
+            this.x - 1,
+            top - 1,
+            this.x + this.width + 1,
+            top,
             sx -> Colors.rollingSample(true, inverse, sx, (int) top, screenW, screenH, 77));
         RenderMethods.drawHorizontalSpectrumRect(
-            this.x - 1, bottom, this.x + this.width + 1, bottom + 1,
+            this.x - 1,
+            bottom,
+            this.x + this.width + 1,
+            bottom + 1,
             sx -> Colors.rollingSample(true, inverse, sx, (int) bottom, screenW, screenH, 77));
         RenderMethods.drawRect(
-            this.x - 1, top, this.x, bottom,
+            this.x - 1,
+            top,
+            this.x,
+            bottom,
             Colors.rollingSample(true, inverse, this.x - 1, (int) top, screenW, screenH, 77));
         RenderMethods.drawRect(
-            this.x + this.width, top, this.x + this.width + 1, bottom,
+            this.x + this.width,
+            top,
+            this.x + this.width + 1,
+            bottom,
             Colors.rollingSample(
                 true, inverse, this.x + this.width, (int) top, screenW, screenH, 77));
         return;
@@ -196,8 +207,7 @@ public abstract class Panel implements Labeled {
               : Colors.getClientColorCustomAlpha(77);
       int bottomAccent =
           rolling
-              ? Colors.rollingSample(
-                  false, inverse, this.x, (int) bottom, screenW, screenH, 77)
+              ? Colors.rollingSample(false, inverse, this.x, (int) bottom, screenW, screenH, 77)
               : Colors.getClientColorCustomAlpha(77);
       RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, topAccent);
       RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, bottomAccent);

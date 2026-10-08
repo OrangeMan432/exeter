@@ -212,7 +212,13 @@ public final class ClickGui extends Screen {
             int descTop =
                 descRolling
                     ? Colors.rollingSample(
-                        false, descInverse, descX, (int) (descY - 1.5f), this.width, this.height, 77)
+                        false,
+                        descInverse,
+                        descX,
+                        (int) (descY - 1.5f),
+                        this.width,
+                        this.height,
+                        77)
                     : Colors.getClientColorCustomAlpha(77);
             int descBottom =
                 descRolling
@@ -229,21 +235,33 @@ public final class ClickGui extends Screen {
             float bottom = (float) (descY + descH);
             if (descHorizontal) {
               RenderMethods.drawHorizontalSpectrumRect(
-                  descX - 1, top - 1, descX + descW + 1, top,
+                  descX - 1,
+                  top - 1,
+                  descX + descW + 1,
+                  top,
                   sx ->
                       Colors.rollingSample(
                           true, descInverse, sx, (int) top, this.width, this.height, 77));
               RenderMethods.drawHorizontalSpectrumRect(
-                  descX - 1, bottom, descX + descW + 1, bottom + 1,
+                  descX - 1,
+                  bottom,
+                  descX + descW + 1,
+                  bottom + 1,
                   sx ->
                       Colors.rollingSample(
                           true, descInverse, sx, (int) bottom, this.width, this.height, 77));
               RenderMethods.drawRect(
-                  descX - 1, top, descX, bottom,
+                  descX - 1,
+                  top,
+                  descX,
+                  bottom,
                   Colors.rollingSample(
                       true, descInverse, descX - 1, (int) top, this.width, this.height, 77));
               RenderMethods.drawRect(
-                  descX + descW, top, descX + descW + 1, bottom,
+                  descX + descW,
+                  top,
+                  descX + descW + 1,
+                  bottom,
                   Colors.rollingSample(
                       true, descInverse, descX + descW, (int) top, this.width, this.height, 77));
             } else {

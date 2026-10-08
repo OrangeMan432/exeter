@@ -33,7 +33,8 @@ public class Button extends Item implements Labeled {
     boolean horizontal =
         rolling
             && cg.rollingDirection.getValue()
-                == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+                == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection
+                    .HORIZONTAL;
     boolean inverse = rolling && cg.rollingInverse.getValue();
     var window = net.minecraft.client.Minecraft.getInstance().getWindow();
     int screenH = window.getGuiScaledHeight();
@@ -47,11 +48,13 @@ public class Button extends Item implements Labeled {
     if (rolling) {
       boolean hovered = this.isHovering(mouseX, mouseY);
       if (this.getState()) {
-        topColor = Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 44 : 88);
+        topColor =
+            Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 44 : 88);
         bottomColor =
             Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 77 : 55);
       } else {
-        topColor = Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 55 : 33);
+        topColor =
+            Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 55 : 33);
         bottomColor =
             Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 66 : 33);
       }
@@ -74,36 +77,26 @@ public class Button extends Item implements Labeled {
                   : Colors.getDarkerClientColorCustomAlpha(66));
     }
 
-    if (useGradient) {
-      if (horizontal && rolling) {
-        boolean hovered = this.isHovering(mouseX, mouseY);
-        int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
-        int bx2 = bx;
-        int by2 = by;
-        RenderMethods.drawHorizontalSpectrumRect(
-            this.x,
-            this.y,
-            this.x + (float) this.width,
-            this.y + (float) this.height,
-            sx -> Colors.rollingSample(true, inverse, sx, by2, screenW, screenH, alpha));
-      } else {
-        RenderMethods.drawGradientRect(
-            this.x,
-            this.y,
-            this.x + (float) this.width,
-            this.y + (float) this.height,
-            topColor,
-            bottomColor);
-      }
+    if (horizontal && rolling) {
+      boolean hovered = this.isHovering(mouseX, mouseY);
+      int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
+      RenderMethods.drawHorizontalSpectrumRect(
+          this.x,
+          this.y,
+          this.x + (float) this.width,
+          this.y + (float) this.height,
+          sx -> Colors.rollingSample(true, inverse, sx, by, screenW, screenH, alpha));
+    } else if (useGradient) {
+      RenderMethods.drawGradientRect(
+          this.x,
+          this.y,
+          this.x + (float) this.width,
+          this.y + (float) this.height,
+          topColor,
+          bottomColor);
     } else {
-      int flatColor = topColor;
-      if (horizontal && rolling) {
-        boolean hovered = this.isHovering(mouseX, mouseY);
-        int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
-        flatColor = Colors.rollingSample(true, inverse, bx, by, screenW, screenH, alpha);
-      }
       RenderMethods.drawRect(
-          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, flatColor);
+          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, topColor);
     }
 
     FontUtil.drawString(
@@ -127,8 +120,8 @@ public class Button extends Item implements Labeled {
   }
 
   /**
-   * Client accent at this row, or the rolling hue when enabled. Subclass painters that
-   * draw their own backgrounds should route through here.
+   * Client accent at this row, or the rolling hue when enabled. Subclass painters that draw their
+   * own backgrounds should route through here.
    */
   protected int accentColor(int alpha) {
     var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
@@ -148,6 +141,25 @@ public class Button extends Item implements Labeled {
           alpha);
     }
     return Colors.getClientColorCustomAlpha(alpha);
+  }
+
+  /** Horizontal rolling is on (implies rolling itself is on). */
+  protected boolean rollingHorizontal() {
+    var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    return guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+        && cg.rollingRainbow.getValue()
+        && cg.rollingDirection.getValue()
+            == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+  }
+
+  /** Rolling hue sampled at an explicit position, for spectrum strips. */
+  protected int accentColorAt(int x, int y, int screenW, int screenH, int alpha) {
+    var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    boolean inverse = false;
+    if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg) {
+      inverse = cg.rollingInverse.getValue();
+    }
+    return Colors.rollingSample(true, inverse, x, y, screenW, screenH, alpha);
   }
 
   @Override
