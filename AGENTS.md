@@ -35,6 +35,10 @@ the agent writes code. Ask before crossing that boundary.
 - Use the `workdir` tool parameter instead of `cd` in shell commands.
 - Never kill background Java processes. The user runs long-lived bot instances
   (viaproxy) alongside dev work; only act on processes the user names.
+- Running the client for tests: launch it in the background with a per-branch log,
+  e.g. `JAVA_HOME="..." ./gradlew runClient > /tmp/exeter-<branch>.log 2>&1 &`.
+  The user closes the previous client themselves; when told to run, launch
+  directly without process checks.
 
 ## Code conventions
 
