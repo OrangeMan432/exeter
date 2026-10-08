@@ -45,12 +45,21 @@ public final class WindowButtons {
     boolean hovered =
         mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + buttonHeight;
     boolean on = enabled.test(id);
-    int color =
-        !on
-            ? 0xFF333333
-            : hovered
-                ? Colors.getClientColorCustomAlpha(200)
-                : Colors.getClientColorCustomAlpha(120);
+    int color;
+    if (!on) {
+      color = 0xFF333333;
+    } else if (Window.useRollingRainbow()) {
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      color =
+          hovered
+              ? Colors.getRollingColor(btnY, screenH, 200)
+              : Colors.getRollingColor(btnY, screenH, 120);
+    } else {
+      color =
+          hovered
+              ? Colors.getClientColorCustomAlpha(200)
+              : Colors.getClientColorCustomAlpha(120);
+    }
     RenderMethods.drawRect(bx, btnY, bx + bw, btnY + buttonHeight, color);
     FontUtil.drawString(
         label,

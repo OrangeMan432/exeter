@@ -81,13 +81,24 @@ public abstract class Panel implements Labeled {
     boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
     boolean showModuleCount = guiMod != null && guiMod.showModuleCount.getValue();
     float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
-    RenderMethods.drawGradientRect(
-        this.x,
-        (float) this.y - 1.5f,
-        this.x + this.width,
-        this.y + this.height - 6,
-        Colors.getClientColorCustomAlpha(77),
-        Colors.getClientColorCustomAlpha(77));
+    if (guiMod != null && guiMod.rollingRainbow.getValue()) {
+      int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      RenderMethods.drawGradientRect(
+          this.x,
+          (float) this.y - 1.5f,
+          this.x + this.width,
+          this.y + this.height - 6,
+          Colors.getRollingColor(this.y, screenH, 77),
+          Colors.getRollingColor(this.y + this.height, screenH, 77));
+    } else {
+      RenderMethods.drawGradientRect(
+          this.x,
+          (float) this.y - 1.5f,
+          this.x + this.width,
+          this.y + this.height - 6,
+          Colors.getClientColorCustomAlpha(77),
+          Colors.getClientColorCustomAlpha(77));
+    }
     RenderMethods.drawRect(
         this.x,
         (float) this.y + 12f,
@@ -143,11 +154,22 @@ public abstract class Panel implements Labeled {
     if (borderMod == null || borderMod.showBorder.getValue()) {
       float top = (float) this.y - 1.5f;
       float bottom = (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1);
-      int accent = Colors.getClientColorCustomAlpha(77);
-      RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, accent);
-      RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, accent);
-      RenderMethods.drawRect(this.x - 1, top, this.x, bottom, accent);
-      RenderMethods.drawRect(this.x + this.width, top, this.x + this.width + 1, bottom, accent);
+      boolean rolling = borderMod != null && borderMod.rollingRainbow.getValue();
+      int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      int topAccent =
+          rolling
+              ? Colors.getRollingColor((int) top, screenH, 77)
+              : Colors.getClientColorCustomAlpha(77);
+      int bottomAccent =
+          rolling
+              ? Colors.getRollingColor((int) bottom, screenH, 77)
+              : Colors.getClientColorCustomAlpha(77);
+      RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, topAccent);
+      RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, bottomAccent);
+      RenderMethods.drawGradientRect(
+          this.x - 1, top, this.x, bottom, topAccent, bottomAccent);
+      RenderMethods.drawGradientRect(
+          this.x + this.width, top, this.x + this.width + 1, bottom, topAccent, bottomAccent);
     }
   }
 

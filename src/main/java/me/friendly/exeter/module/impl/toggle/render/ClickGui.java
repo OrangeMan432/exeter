@@ -39,6 +39,8 @@ public final class ClickGui extends ToggleableModule {
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
   public final Property<Boolean> showBorder = new Property<Boolean>(false, "Border", "border");
+  public final Property<Boolean> rollingRainbow =
+      new Property<Boolean>(false, "Rolling Rainbow", "rollingrainbow");
   public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
 
@@ -57,6 +59,7 @@ public final class ClickGui extends ToggleableModule {
         panelAlignment,
         searchEnabled,
         showBorder,
+        rollingRainbow,
         resetPositions);
   }
 

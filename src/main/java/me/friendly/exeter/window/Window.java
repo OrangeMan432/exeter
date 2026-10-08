@@ -34,12 +34,21 @@ public abstract class Window {
       y = mouseY - dragOffsetY;
     }
 
-    int headerColor =
-        focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
-    int headerColorEnd =
-        focused
-            ? Colors.getDarkerClientColorCustomAlpha(220)
-            : Colors.getDarkerClientColorCustomAlpha(150);
+    int headerColor;
+    int headerColorEnd;
+    if (useRollingRainbow()) {
+      int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      int base = focused ? 220 : 150;
+      headerColor = Colors.getRollingColor(y, screenH, base);
+      headerColorEnd = Colors.getRollingColor(y + TITLE_HEIGHT, screenH, base);
+    } else {
+      headerColor =
+          focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
+      headerColorEnd =
+          focused
+              ? Colors.getDarkerClientColorCustomAlpha(220)
+              : Colors.getDarkerClientColorCustomAlpha(150);
+    }
 
     if (useGradient()) {
       RenderMethods.drawGradientRect(
@@ -65,11 +74,19 @@ public abstract class Window {
     renderContent(mouseX, mouseY, partialTicks);
 
     if (focused) {
-      int accent = Colors.getClientColorCustomAlpha(220);
-      RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, accent);
-      RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, accent);
-      RenderMethods.drawRect(x - 1, y, x, y + height, accent);
-      RenderMethods.drawRect(x + width, y, x + width + 1, y + height, accent);
+      int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      boolean rolling = useRollingRainbow();
+      int topAccent =
+          rolling ? Colors.getRollingColor(y, screenH, 220) : Colors.getClientColorCustomAlpha(220);
+      int bottomAccent =
+          rolling
+              ? Colors.getRollingColor(y + height, screenH, 220)
+              : Colors.getClientColorCustomAlpha(220);
+      RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, topAccent);
+      RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, bottomAccent);
+      RenderMethods.drawGradientRect(x - 1, y, x, y + height, topAccent, bottomAccent);
+      RenderMethods.drawGradientRect(
+          x + width, y, x + width + 1, y + height, topAccent, bottomAccent);
     }
   }
 
@@ -83,6 +100,17 @@ public abstract class Window {
           || cg.showGradient.getValue();
     } catch (Exception e) {
       return true;
+    }
+  }
+
+  /** Rolling rainbow master switch, read off the ClickGUI settings like the gradient. */
+  protected static boolean useRollingRainbow() {
+    try {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      return module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+          && cg.rollingRainbow.getValue();
+    } catch (Exception e) {
+      return false;
     }
   }
 

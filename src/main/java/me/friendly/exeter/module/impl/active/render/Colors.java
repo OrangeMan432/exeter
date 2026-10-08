@@ -68,6 +68,10 @@ public final class Colors extends Module {
           1f, 0f, 5f, "RainbowSpeed", "RainbowHueSpeed", "RainbowSped", "RrainbowSpeed");
   private static final NumberProperty<Float> rainbowSaturation =
       new NumberProperty<>(0.5f, 0f, 1f, "Rainbow Saturation", "RainbowSaturation");
+  private static final NumberProperty<Float> rainbowBrightness =
+      new NumberProperty<>(1.0f, 0f, 1f, "Rainbow Brightness", "RainbowBrightness");
+  private static final NumberProperty<Float> rainbowFactor =
+      new NumberProperty<>(1.0f, 0f, 5f, "Rainbow Factor", "RainbowFactor");
   private static final NumberProperty<Float> espFillAlpha =
       new NumberProperty<>(60f, 0f, 255f, "ESP Fill Alpha", "FillAlpha");
   private static final NumberProperty<Float> espOutlineAlpha =
@@ -96,6 +100,8 @@ public final class Colors extends Module {
         hudRainbow,
         rainbowSpeed,
         rainbowSaturation,
+        rainbowBrightness,
+        rainbowFactor,
         espFillAlpha,
         espOutlineAlpha);
   }
@@ -130,6 +136,22 @@ public final class Colors extends Module {
     float hue = (System.currentTimeMillis() + offset) % speed;
     hue /= speed;
     return Color.getHSBColor(hue, s, brightness);
+  }
+
+  /**
+   * Phobos-style rolling rainbow: time-scrolled base hue plus a per-row offset, so
+   * vertical gradients sweep through the spectrum. Alpha applied like the client color.
+   */
+  public static int getRollingColor(int y, int screenHeight, int alpha) {
+    // Long-domain modulo: a float can't resolve currentTimeMillis (ulp is minutes),
+    // which froze the animation for minutes at a time.
+    long cycleMs = Math.max(500L, Math.round((6.0f - rainbowSpeed.getValue()) * 1000.0f));
+    float hue = (float) (System.currentTimeMillis() % cycleMs) / (float) cycleMs;
+    float rowHue = hue + ((float) y / Math.max(1, screenHeight)) * rainbowFactor.getValue();
+    rowHue -= (float) Math.floor(rowHue);
+    Color color =
+        Color.getHSBColor(rowHue, rainbowSaturation.getValue(), rainbowBrightness.getValue());
+    return setAlpha(color, alpha).getRGB();
   }
 
   public static void setRgb(int r, int g, int b) {
@@ -169,7 +191,13 @@ public final class Colors extends Module {
     if (hudColorMode.getValue() == HudColorMode.DEFAULT) {
       return 0xFFAAAAAA;
     }
-    Color base = baseColor();
+    Color base;
+    if (hudRainbow.getValue()) {
+      int cycleMs = Math.max(500, Math.round((6.0f - rainbowSpeed.getValue()) * 1000.0f));
+      base = getRainbow(cycleMs, 0, rainbowSaturation.getValue(), 1.0f);
+    } else {
+      base = baseColor();
+    }
     float[] hsb = Color.RGBtoHSB(base.getRed(), base.getGreen(), base.getBlue(), null);
     return new Color(Color.HSBtoRGB(hsb[0], hsb[1], Math.max(0f, Math.min(1f, hsb[2] * 0.55f))))
         .getRGB();

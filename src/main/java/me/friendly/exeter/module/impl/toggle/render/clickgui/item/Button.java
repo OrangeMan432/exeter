@@ -27,23 +27,43 @@ public class Button extends Item implements Labeled {
     boolean useGradient =
         !(guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg)
             || cg.showGradient.getValue();
+    boolean rolling =
+        guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+            && cg.rollingRainbow.getValue();
+    int screenH =
+        net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
-    int topColor =
-        this.getState()
-            ? (!this.isHovering(mouseX, mouseY)
-                ? Colors.getClientColorCustomAlpha(88)
-                : Colors.getClientColorCustomAlpha(44))
-            : (!this.isHovering(mouseX, mouseY)
-                ? Colors.getDarkerClientColorCustomAlpha(77)
-                : Colors.getDarkerClientColorCustomAlpha(33));
-    int bottomColor =
-        this.getState()
-            ? (!this.isHovering(mouseX, mouseY)
-                ? Colors.getClientColorCustomAlpha(55)
-                : Colors.getClientColorCustomAlpha(77))
-            : (!this.isHovering(mouseX, mouseY)
-                ? Colors.getDarkerClientColorCustomAlpha(55)
-                : Colors.getDarkerClientColorCustomAlpha(66));
+    int topColor;
+    int bottomColor;
+    if (rolling) {
+      boolean hovered = this.isHovering(mouseX, mouseY);
+      if (this.getState()) {
+        topColor = Colors.getRollingColor((int) this.y, screenH, hovered ? 44 : 88);
+        bottomColor =
+            Colors.getRollingColor((int) (this.y + this.height), screenH, hovered ? 77 : 55);
+      } else {
+        topColor = Colors.getRollingColor((int) this.y, screenH, hovered ? 55 : 33);
+        bottomColor =
+            Colors.getRollingColor((int) (this.y + this.height), screenH, hovered ? 66 : 33);
+      }
+    } else {
+      topColor =
+          this.getState()
+              ? (!this.isHovering(mouseX, mouseY)
+                  ? Colors.getClientColorCustomAlpha(88)
+                  : Colors.getClientColorCustomAlpha(44))
+              : (!this.isHovering(mouseX, mouseY)
+                  ? Colors.getDarkerClientColorCustomAlpha(77)
+                  : Colors.getDarkerClientColorCustomAlpha(33));
+      bottomColor =
+          this.getState()
+              ? (!this.isHovering(mouseX, mouseY)
+                  ? Colors.getClientColorCustomAlpha(55)
+                  : Colors.getClientColorCustomAlpha(77))
+              : (!this.isHovering(mouseX, mouseY)
+                  ? Colors.getDarkerClientColorCustomAlpha(55)
+                  : Colors.getDarkerClientColorCustomAlpha(66));
+    }
 
     if (useGradient) {
       RenderMethods.drawGradientRect(
@@ -76,6 +96,20 @@ public class Button extends Item implements Labeled {
 
   public boolean getState() {
     return this.state;
+  }
+
+  /**
+   * Client accent at this row, or the rolling hue when enabled. Subclass painters that
+   * draw their own backgrounds should route through here.
+   */
+  protected int accentColor(int alpha) {
+    var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+        && cg.rollingRainbow.getValue()) {
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      return Colors.getRollingColor((int) this.y, screenH, alpha);
+    }
+    return Colors.getClientColorCustomAlpha(alpha);
   }
 
   @Override

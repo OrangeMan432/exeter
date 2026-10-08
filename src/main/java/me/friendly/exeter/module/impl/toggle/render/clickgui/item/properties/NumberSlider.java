@@ -37,6 +37,19 @@ public class NumberSlider extends Item {
     dragSetting(mouseX, mouseY);
     float offsetX = child ? CHILD_OFFSET : 0.0f;
     float h = (float) this.getHeight();
+    int fillColor;
+    var guiMod = me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+        && cg.rollingRainbow.getValue()) {
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      boolean active = !isHovering(mouseX, mouseY) && !dragging;
+      fillColor = Colors.getRollingColor((int) y, screenH, active ? 77 : 55);
+    } else {
+      fillColor =
+          !isHovering(mouseX, mouseY) && !dragging
+              ? Colors.getClientColorCustomAlpha(77)
+              : Colors.getClientColorCustomAlpha(55);
+    }
     RenderMethods.drawRect(
         x + offsetX,
         y + h - 1.0f,
@@ -44,9 +57,7 @@ public class NumberSlider extends Item {
             ? x + offsetX
             : x + offsetX + ((float) this.width + 7.4F) * partialMultiplier(),
         y + h,
-        !isHovering(mouseX, mouseY) && !dragging
-            ? Colors.getClientColorCustomAlpha(77)
-            : Colors.getClientColorCustomAlpha(55));
+        fillColor);
     FontUtil.drawString(
         String.format("%s\u00a77 %s", this.getLabel(), this.numberProperty.getValue()),
         this.x + offsetX + 2.0f,
