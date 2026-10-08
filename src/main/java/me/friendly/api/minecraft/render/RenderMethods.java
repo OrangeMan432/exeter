@@ -221,6 +221,23 @@ public final class RenderMethods {
     }
   }
 
+  /**
+   * Horizontal gradient sampled per strip, so hue sweeps stay exact (a plain RGB lerp
+   * would drift off-hue mid-span).
+   */
+  public static void drawHorizontalSpectrumRect(
+      float x, float y, float x1, float y1, java.util.function.IntUnaryOperator colorAtX) {
+    if (guiGraphics == null) {
+      return;
+    }
+    float stripW = 4.0f;
+    for (float sx = x; sx < x1; sx += stripW) {
+      float ex = Math.min(sx + stripW, x1);
+      int color = colorAtX.applyAsInt((int) sx);
+      guiGraphics.fill((int) sx, (int) y, (int) ex, (int) y1, color);
+    }
+  }
+
   public static void drawGradientBorderedRect(
       double x, double y, double x2, double y2, float l1, int col1, int col2, int col3) {
     if (guiGraphics != null) {

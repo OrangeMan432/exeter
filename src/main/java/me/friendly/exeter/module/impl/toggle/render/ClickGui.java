@@ -19,6 +19,11 @@ public final class ClickGui extends ToggleableModule {
     TOP_LEFT
   }
 
+  public enum RollingDirection {
+    VERTICAL,
+    HORIZONTAL
+  }
+
   public enum DescriptionMode {
     HOVER,
     PANEL
@@ -41,7 +46,11 @@ public final class ClickGui extends ToggleableModule {
   public final Property<Boolean> showBorder = new Property<Boolean>(false, "Border", "border");
   public final Property<Boolean> rollingRainbow =
       new Property<Boolean>(false, "Rolling Rainbow", "rollingrainbow");
-  public final ActionProperty resetPositions =
+  public final EnumProperty<RollingDirection> rollingDirection =
+      new EnumProperty<RollingDirection>(
+          RollingDirection.VERTICAL, "Rolling Direction", "rollingdirection");
+  public final Property<Boolean> rollingInverse =
+      new Property<Boolean>(false, "Rolling Inverse", "rollinginverse");  public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
 
   private final Map<String, int[]> pendingPanels = new HashMap<>();
@@ -60,6 +69,8 @@ public final class ClickGui extends ToggleableModule {
         searchEnabled,
         showBorder,
         rollingRainbow,
+        rollingDirection,
+        rollingInverse,
         resetPositions);
   }
 

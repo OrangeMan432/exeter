@@ -39,11 +39,23 @@ public class NumberSlider extends Item {
     float h = (float) this.getHeight();
     int fillColor;
     var guiMod = me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+    boolean horizontal = false;
+    boolean inverse = false;
     if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
         && cg.rollingRainbow.getValue()) {
+      horizontal =
+          cg.rollingDirection.getValue()
+              == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+      inverse = cg.rollingInverse.getValue();
+    }
+    if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+        && cg.rollingRainbow.getValue()) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
       int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
       boolean active = !isHovering(mouseX, mouseY) && !dragging;
-      fillColor = Colors.getRollingColor((int) y, screenH, active ? 77 : 55);
+      fillColor =
+          Colors.rollingSample(
+              horizontal, inverse, (int) (x + offsetX), (int) y, screenW, screenH, active ? 77 : 55);
     } else {
       fillColor =
           !isHovering(mouseX, mouseY) && !dragging

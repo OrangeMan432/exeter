@@ -49,11 +49,17 @@ public final class WindowButtons {
     if (!on) {
       color = 0xFF333333;
     } else if (Window.useRollingRainbow()) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
       int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
       color =
-          hovered
-              ? Colors.getRollingColor(btnY, screenH, 200)
-              : Colors.getRollingColor(btnY, screenH, 120);
+          Colors.rollingSample(
+              Window.rollingHorizontal(),
+              Window.rollingInverse(),
+              bx,
+              btnY,
+              screenW,
+              screenH,
+              hovered ? 200 : 120);
     } else {
       color =
           hovered

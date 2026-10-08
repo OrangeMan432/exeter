@@ -368,16 +368,43 @@ public final class Colors extends Module {
    * vertical gradients move through the spectrum. Static modes return their base color.
    */
   public static int getRollingColor(int y, int screenHeight, int alpha) {
+    return rollingSample(scrollForMode() + spanForMode(y, screenHeight), alpha);
+  }
+
+  public static int getRollingColorHorizontal(int x, int screenWidth, int alpha) {
+    return rollingSample(scrollForMode() + spanForMode(x, screenWidth), alpha);
+  }
+
+  /** Axis- and direction-aware entry point for UI painters. */
+  public static int rollingSample(
+      boolean horizontal, boolean inverse, int x, int y, int sw, int sh, int alpha) {
+    if (horizontal) {
+      int xx = inverse ? sw - x : x;
+      return getRollingColorHorizontal(xx, sw, alpha);
+    }
+    int yy = inverse ? sh - y : y;
+    return getRollingColor(yy, sh, alpha);
+  }
+
+  private static float scrollForMode() {
+    return colorMode.getValue() == ColorMode.GRADIENT ? gradientScroll() : rainbowScroll();
+  }
+
+  private static float spanForMode(int pos, int extent) {
+    float factor =
+        colorMode.getValue() == ColorMode.GRADIENT
+            ? gradientFactor.getValue()
+            : rainbowFactor.getValue();
+    return ((float) pos / Math.max(1, extent)) * factor;
+  }
+
+  private static int rollingSample(float t, int alpha) {
+    t -= (float) Math.floor(t);
     Color color;
     if (colorMode.getValue() == ColorMode.GRADIENT) {
-      float row = gradientScroll() + ((float) y / Math.max(1, screenHeight)) * gradientFactor.getValue();
-      row -= (float) Math.floor(row);
-      color = gradientColor(row);
+      color = gradientColor(t);
     } else if (colorMode.getValue() == ColorMode.RAINBOW) {
-      float rowHue =
-          rainbowScroll() + ((float) y / Math.max(1, screenHeight)) * rainbowFactor.getValue();
-      rowHue -= (float) Math.floor(rowHue);
-      color = rainbowColor(rowHue);
+      color = rainbowColor(t);
     } else {
       color = baseColor();
     }

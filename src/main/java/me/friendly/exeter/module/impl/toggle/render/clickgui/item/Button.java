@@ -27,24 +27,33 @@ public class Button extends Item implements Labeled {
     boolean useGradient =
         !(guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg)
             || cg.showGradient.getValue();
-    boolean rolling =
-        guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
-            && cg.rollingRainbow.getValue();
-    int screenH =
-        net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    me.friendly.exeter.module.impl.toggle.render.ClickGui cg =
+        guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui c ? c : null;
+    boolean rolling = cg != null && cg.rollingRainbow.getValue();
+    boolean horizontal =
+        rolling
+            && cg.rollingDirection.getValue()
+                == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+    boolean inverse = rolling && cg.rollingInverse.getValue();
+    var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+    int screenH = window.getGuiScaledHeight();
+    int screenW = window.getGuiScaledWidth();
+    int bx = (int) this.x;
+    int by = (int) this.y;
+    int bh = (int) (this.y + this.height);
 
     int topColor;
     int bottomColor;
     if (rolling) {
       boolean hovered = this.isHovering(mouseX, mouseY);
       if (this.getState()) {
-        topColor = Colors.getRollingColor((int) this.y, screenH, hovered ? 44 : 88);
+        topColor = Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 44 : 88);
         bottomColor =
-            Colors.getRollingColor((int) (this.y + this.height), screenH, hovered ? 77 : 55);
+            Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 77 : 55);
       } else {
-        topColor = Colors.getRollingColor((int) this.y, screenH, hovered ? 55 : 33);
+        topColor = Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 55 : 33);
         bottomColor =
-            Colors.getRollingColor((int) (this.y + this.height), screenH, hovered ? 66 : 33);
+            Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 66 : 33);
       }
     } else {
       topColor =
@@ -66,16 +75,35 @@ public class Button extends Item implements Labeled {
     }
 
     if (useGradient) {
-      RenderMethods.drawGradientRect(
-          this.x,
-          this.y,
-          this.x + (float) this.width,
-          this.y + (float) this.height,
-          topColor,
-          bottomColor);
+      if (horizontal && rolling) {
+        boolean hovered = this.isHovering(mouseX, mouseY);
+        int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
+        int bx2 = bx;
+        int by2 = by;
+        RenderMethods.drawHorizontalSpectrumRect(
+            this.x,
+            this.y,
+            this.x + (float) this.width,
+            this.y + (float) this.height,
+            sx -> Colors.rollingSample(true, inverse, sx, by2, screenW, screenH, alpha));
+      } else {
+        RenderMethods.drawGradientRect(
+            this.x,
+            this.y,
+            this.x + (float) this.width,
+            this.y + (float) this.height,
+            topColor,
+            bottomColor);
+      }
     } else {
+      int flatColor = topColor;
+      if (horizontal && rolling) {
+        boolean hovered = this.isHovering(mouseX, mouseY);
+        int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
+        flatColor = Colors.rollingSample(true, inverse, bx, by, screenW, screenH, alpha);
+      }
       RenderMethods.drawRect(
-          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, topColor);
+          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, flatColor);
     }
 
     FontUtil.drawString(
@@ -106,8 +134,18 @@ public class Button extends Item implements Labeled {
     var guiMod = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
     if (guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
         && cg.rollingRainbow.getValue()) {
-      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
-      return Colors.getRollingColor((int) this.y, screenH, alpha);
+      var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+      boolean horizontal =
+          cg.rollingDirection.getValue()
+              == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+      return Colors.rollingSample(
+          horizontal,
+          cg.rollingInverse.getValue(),
+          (int) this.x,
+          (int) this.y,
+          window.getGuiScaledWidth(),
+          window.getGuiScaledHeight(),
+          alpha);
     }
     return Colors.getClientColorCustomAlpha(alpha);
   }
