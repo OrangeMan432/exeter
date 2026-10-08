@@ -86,35 +86,35 @@ public final class Colors extends Module {
 
   // Gradient stops. Sliders triple as config storage; the pickers write the same values.
   private static final NumberProperty<Integer> grad1Red =
-      new NumberProperty<>(255, 0, 255, "Color 1 Red", "grad1red", "g1r");
+      new NumberProperty<>(133, 0, 255, "Color 1 Red", "grad1red", "g1r");
   private static final NumberProperty<Integer> grad1Green =
       new NumberProperty<>(0, 0, 255, "Color 1 Green", "grad1green", "g1g");
   private static final NumberProperty<Integer> grad1Blue =
       new NumberProperty<>(255, 0, 255, "Color 1 Blue", "grad1blue", "g1b");
   private static final NumberProperty<Integer> grad2Red =
-      new NumberProperty<>(0, 0, 255, "Color 2 Red", "grad2red", "g2r");
+      new NumberProperty<>(245, 0, 255, "Color 2 Red", "grad2red", "g2r");
   private static final NumberProperty<Integer> grad2Green =
-      new NumberProperty<>(255, 0, 255, "Color 2 Green", "grad2green", "g2g");
+      new NumberProperty<>(0, 0, 255, "Color 2 Green", "grad2green", "g2g");
   private static final NumberProperty<Integer> grad2Blue =
-      new NumberProperty<>(0, 0, 255, "Color 2 Blue", "grad2blue", "g2b");
+      new NumberProperty<>(255, 0, 255, "Color 2 Blue", "grad2blue", "g2b");
   private static final NumberProperty<Integer> grad3Red =
       new NumberProperty<>(0, 0, 255, "Color 3 Red", "grad3red", "g3r");
   private static final NumberProperty<Integer> grad3Green =
-      new NumberProperty<>(0, 0, 255, "Color 3 Green", "grad3green", "g3g");
+      new NumberProperty<>(199, 0, 255, "Color 3 Green", "grad3green", "g3g");
   private static final NumberProperty<Integer> grad3Blue =
-      new NumberProperty<>(255, 0, 255, "Color 3 Blue", "grad3blue", "g3b");
+      new NumberProperty<>(216, 0, 255, "Color 3 Blue", "grad3blue", "g3b");
   private static final NumberProperty<Integer> grad4Red =
-      new NumberProperty<>(255, 0, 255, "Color 4 Red", "grad4red", "g4r");
+      new NumberProperty<>(92, 0, 255, "Color 4 Red", "grad4red", "g4r");
   private static final NumberProperty<Integer> grad4Green =
-      new NumberProperty<>(255, 0, 255, "Color 4 Green", "grad4green", "g4g");
+      new NumberProperty<>(0, 0, 255, "Color 4 Green", "grad4green", "g4g");
   private static final NumberProperty<Integer> grad4Blue =
-      new NumberProperty<>(0, 0, 255, "Color 4 Blue", "grad4blue", "g4b");
+      new NumberProperty<>(255, 0, 255, "Color 4 Blue", "grad4blue", "g4b");
   private static final NumberProperty<Integer> grad5Red =
-      new NumberProperty<>(255, 0, 255, "Color 5 Red", "grad5red", "g5r");
+      new NumberProperty<>(0, 0, 255, "Color 5 Red", "grad5red", "g5r");
   private static final NumberProperty<Integer> grad5Green =
-      new NumberProperty<>(128, 0, 255, "Color 5 Green", "grad5green", "g5g");
+      new NumberProperty<>(185, 0, 255, "Color 5 Green", "grad5green", "g5g");
   private static final NumberProperty<Integer> grad5Blue =
-      new NumberProperty<>(0, 0, 255, "Color 5 Blue", "grad5blue", "g5b");
+      new NumberProperty<>(52, 0, 255, "Color 5 Blue", "grad5blue", "g5b");
   private final PopupProperty pickGradient1 =
       new PopupProperty(
           "Pick Color 1",
