@@ -62,6 +62,12 @@ public final class ClickGui extends ToggleableModule {
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
+    rollingDirection.visibleWhen(() -> rollingRainbow.getValue());
+    rollingInverse.visibleWhen(() -> rollingRainbow.getValue());
+    stripWidth.visibleWhen(
+        () ->
+            rollingRainbow.getValue()
+                && rollingDirection.getValue() == RollingDirection.HORIZONTAL);
     stripWidth.visibleWhen(
         () ->
             rollingRainbow.getValue()
