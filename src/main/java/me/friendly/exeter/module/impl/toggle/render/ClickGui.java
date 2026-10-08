@@ -6,6 +6,7 @@ import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.ActionProperty;
 import me.friendly.exeter.properties.EnumProperty;
+import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 
 public final class ClickGui extends ToggleableModule {
@@ -51,6 +52,8 @@ public final class ClickGui extends ToggleableModule {
           RollingDirection.VERTICAL, "Rolling Direction", "rollingdirection");
   public final Property<Boolean> rollingInverse =
       new Property<Boolean>(false, "Rolling Inverse", "rollinginverse");
+  private final NumberProperty<Integer> stripWidth =
+      new NumberProperty<Integer>(4, 1, 8, "Strip Width", "stripwidth");
   public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
 
@@ -59,6 +62,10 @@ public final class ClickGui extends ToggleableModule {
   public ClickGui() {
     super("ClickGui", new String[] {"clickgui"}, ModuleType.RENDER);
     setDescription("Opens the module configuration panel.");
+    stripWidth.visibleWhen(
+        () ->
+            rollingRainbow.getValue()
+                && rollingDirection.getValue() == RollingDirection.HORIZONTAL);
     offerProperties(
         showBackground,
         showDescriptions,
@@ -71,8 +78,24 @@ public final class ClickGui extends ToggleableModule {
         showBorder,
         rollingRainbow,
         rollingDirection,
+        stripWidth,
         rollingInverse,
         resetPositions);
+  }
+
+  /** Spectrum strip width for horizontal gradients; falls back to 4px. */
+  public static float spectrumStripWidth() {
+    try {
+      var module =
+          me.friendly.exeter.core.Exeter.getInstance()
+              .getModuleManager()
+              .getModuleByAlias("clickgui");
+      if (module instanceof ClickGui cg) {
+        return cg.stripWidth.getValue().floatValue();
+      }
+    } catch (Exception ignored) {
+    }
+    return 4.0f;
   }
 
   public GearMode getGearMode() {

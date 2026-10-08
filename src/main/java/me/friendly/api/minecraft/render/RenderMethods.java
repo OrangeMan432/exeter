@@ -223,16 +223,17 @@ public final class RenderMethods {
 
   /**
    * Horizontal gradient sampled per strip, so hue sweeps stay exact (a plain RGB lerp would drift
-   * off-hue mid-span).
+   * off-hue mid-span). Strip width comes from the ClickGUI settings.
    */
   public static void drawHorizontalSpectrumRect(
       float x, float y, float x1, float y1, java.util.function.IntUnaryOperator colorAtX) {
     if (guiGraphics == null) {
       return;
     }
-    float stripW = 4.0f;
-    for (float sx = x; sx < x1; sx += stripW) {
-      float ex = Math.min(sx + stripW, x1);
+    float stripW = me.friendly.exeter.module.impl.toggle.render.ClickGui.spectrumStripWidth();
+    float step = Math.max(1.0f, stripW);
+    for (float sx = x; sx < x1; sx += step) {
+      float ex = Math.min(sx + step, x1);
       int color = colorAtX.applyAsInt((int) sx);
       guiGraphics.fill((int) sx, (int) y, (int) ex, (int) y1, color);
     }
