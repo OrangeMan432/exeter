@@ -44,6 +44,15 @@ the agent writes code. Ask before crossing that boundary.
 - Settings: expose tuning as `Property` / `NumberProperty` / `EnumProperty` via
   `offerProperties()` so config save/load picks them up. Plain fields are invisible
   to the config system.
+- Setting nesting: child settings belong under their parent via `visibleWhen`
+  (e.g. Fill Alpha / Outline Alpha only show when Custom Alpha is on; gradient stop
+  sliders stay hidden behind their pickers). Keep visibility predicates to one
+  condition per line; never leave dead settings visible.
+- Alpha in new/ported modules: never invent per-module alpha plumbing. Add a
+  `Custom Alpha` toggle plus `Fill Alpha` / `Outline Alpha` (gated as above) and
+  fall back to the central ESP alphas otherwise:
+  `custom ? local : EspRenderManager.getGlobalFillAlpha()` (same for outline).
+  Flat fills, outlines and gizmo styles all go through these two values.
 - Shared UI helpers live in `module/impl/toggle/render/clickgui/` (e.g. `SelectionPopup`).
   Do not duplicate popup logic across modules.
 - Test-only hooks go in `me.friendly.exeter.test` and must be inert unless explicitly
