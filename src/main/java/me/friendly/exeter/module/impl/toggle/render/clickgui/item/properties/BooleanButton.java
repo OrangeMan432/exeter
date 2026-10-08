@@ -7,7 +7,6 @@ import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.Module;
-import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
@@ -62,16 +61,26 @@ public class BooleanButton extends Button {
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     float offsetX = child ? CHILD_OFFSET : 0.0f;
-    RenderMethods.drawRect(
-        this.x + offsetX,
-        this.y,
-        this.x + offsetX + (float) this.width + 7.4f,
-        this.y + (float) this.height,
-        this.getState()
-            ? (!this.isHovering(mouseX, mouseY)
-                ? Colors.getClientColorCustomAlpha(77)
-                : Colors.getClientColorCustomAlpha(77))
-            : (!this.isHovering(mouseX, mouseY) ? 0x11555555 : -2007673515));
+    if (this.getState() && rollingHorizontal()) {
+      var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+      RenderMethods.drawHorizontalSpectrumRect(
+          this.x + offsetX,
+          this.y,
+          this.x + offsetX + (float) this.width + 7.4f,
+          this.y + (float) this.height,
+          sx ->
+              accentColorAt(
+                  sx, (int) this.y, window.getGuiScaledWidth(), window.getGuiScaledHeight(), 77));
+    } else {
+      RenderMethods.drawRect(
+          this.x + offsetX,
+          this.y,
+          this.x + offsetX + (float) this.width + 7.4f,
+          this.y + (float) this.height,
+          this.getState()
+              ? (!this.isHovering(mouseX, mouseY) ? accentColor(77) : accentColor(77))
+              : (!this.isHovering(mouseX, mouseY) ? 0x11555555 : -2007673515));
+    }
     FontUtil.drawString(
         this.getLabel(), this.x + offsetX + 2.0f, this.y + 4.0f, this.getState() ? -1 : -5592406);
 

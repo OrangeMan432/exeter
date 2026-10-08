@@ -45,12 +45,39 @@ public final class WindowButtons {
     boolean hovered =
         mouseX >= bx && mouseX <= bx + bw && mouseY >= btnY && mouseY <= btnY + buttonHeight;
     boolean on = enabled.test(id);
-    int color =
-        !on
-            ? 0xFF333333
-            : hovered
-                ? Colors.getClientColorCustomAlpha(200)
-                : Colors.getClientColorCustomAlpha(120);
+    int color;
+    if (!on) {
+      color = 0xFF333333;
+    } else if (Window.useRollingRainbow() && Window.rollingHorizontal()) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      boolean inverse = Window.rollingInverse();
+      RenderMethods.drawHorizontalSpectrumRect(
+          bx,
+          btnY,
+          bx + bw,
+          btnY + buttonHeight,
+          sx ->
+              Colors.rollingSample(true, inverse, sx, btnY, screenW, screenH, hovered ? 200 : 120));
+      FontUtil.drawString(
+          label, bx + bw / 2 - FontUtil.getStringWidth(label) / 2, btnY + 2, 0xFFFFFFFF);
+      return;
+    } else if (Window.useRollingRainbow()) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      color =
+          Colors.rollingSample(
+              Window.rollingHorizontal(),
+              Window.rollingInverse(),
+              bx,
+              btnY,
+              screenW,
+              screenH,
+              hovered ? 200 : 120);
+    } else {
+      color =
+          hovered ? Colors.getClientColorCustomAlpha(200) : Colors.getClientColorCustomAlpha(120);
+    }
     RenderMethods.drawRect(bx, btnY, bx + bw, btnY + buttonHeight, color);
     FontUtil.drawString(
         label,

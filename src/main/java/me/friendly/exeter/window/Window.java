@@ -34,14 +34,37 @@ public abstract class Window {
       y = mouseY - dragOffsetY;
     }
 
-    int headerColor =
-        focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
-    int headerColorEnd =
-        focused
-            ? Colors.getDarkerClientColorCustomAlpha(220)
-            : Colors.getDarkerClientColorCustomAlpha(150);
+    int headerColor;
+    int headerColorEnd;
+    int screenHw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+    int screenHh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+    boolean horizontalTitle = useRollingRainbow() && rollingHorizontal();
+    boolean inverseTitle = useRollingRainbow() && rollingInverse();
+    if (horizontalTitle) {
+      headerColor = headerColorEnd = 0;
+    } else if (useRollingRainbow()) {
+      int base = focused ? 220 : 150;
+      headerColor = Colors.rollingSample(false, inverseTitle, x, y, screenHw, screenHh, base);
+      headerColorEnd =
+          Colors.rollingSample(false, inverseTitle, x, y + TITLE_HEIGHT, screenHw, screenHh, base);
+    } else {
+      headerColor =
+          focused ? Colors.getClientColorCustomAlpha(220) : Colors.getClientColorCustomAlpha(150);
+      headerColorEnd =
+          focused
+              ? Colors.getDarkerClientColorCustomAlpha(220)
+              : Colors.getDarkerClientColorCustomAlpha(150);
+    }
 
-    if (useGradient()) {
+    if (horizontalTitle) {
+      int base = focused ? 220 : 150;
+      RenderMethods.drawHorizontalSpectrumRect(
+          x,
+          y,
+          x + width,
+          y + TITLE_HEIGHT,
+          sx -> Colors.rollingSample(true, inverseTitle, sx, y, screenHw, screenHh, base));
+    } else if (useGradient()) {
       RenderMethods.drawGradientRect(
           x, y, x + width, y + TITLE_HEIGHT, headerColor, headerColorEnd);
     } else {
@@ -65,11 +88,63 @@ public abstract class Window {
     renderContent(mouseX, mouseY, partialTicks);
 
     if (focused) {
-      int accent = Colors.getClientColorCustomAlpha(220);
-      RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, accent);
-      RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, accent);
-      RenderMethods.drawRect(x - 1, y, x, y + height, accent);
-      RenderMethods.drawRect(x + width, y, x + width + 1, y + height, accent);
+      int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      int screenW = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      boolean rolling = useRollingRainbow();
+      boolean horizontal = rolling && rollingHorizontal();
+      boolean inverse = rolling && rollingInverse();
+      int topAccent =
+          rolling && !horizontal
+              ? Colors.rollingSample(false, inverse, x, y, screenW, screenH, 220)
+              : Colors.getClientColorCustomAlpha(220);
+      int bottomAccent =
+          rolling && !horizontal
+              ? Colors.rollingSample(false, inverse, x, y + height, screenW, screenH, 220)
+              : Colors.getClientColorCustomAlpha(220);
+      if (horizontal && rolling) {
+        RenderMethods.drawHorizontalSpectrumRect(
+            x - 1,
+            y - 1,
+            x + width + 1,
+            y,
+            sx -> Colors.rollingSample(true, inverse, sx, y, screenW, screenH, 220));
+        RenderMethods.drawHorizontalSpectrumRect(
+            x - 1,
+            y + height,
+            x + width + 1,
+            y + height + 1,
+            sx -> Colors.rollingSample(true, inverse, sx, y + height, screenW, screenH, 220));
+        RenderMethods.drawRect(
+            x - 1,
+            y,
+            x,
+            y + height,
+            Colors.rollingSample(true, inverse, x - 1, y, screenW, screenH, 220));
+        RenderMethods.drawRect(
+            x + width,
+            y,
+            x + width + 1,
+            y + height,
+            Colors.rollingSample(true, inverse, x + width, y, screenW, screenH, 220));
+        return;
+      }
+      RenderMethods.drawRect(x - 1, y - 1, x + width + 1, y, topAccent);
+      RenderMethods.drawRect(x - 1, y + height, x + width + 1, y + height + 1, bottomAccent);
+      // Sampled per strip so long windows stay on-hue like the buttons do.
+      float stripH = 4.0f;
+      for (float sy = y; sy < y + height; sy += stripH) {
+        float ey = Math.min(sy + stripH, y + height);
+        int stripTop =
+            rolling
+                ? Colors.rollingSample(false, inverse, x, (int) sy, screenW, screenH, 220)
+                : topAccent;
+        int stripBottom =
+            rolling
+                ? Colors.rollingSample(false, inverse, x, (int) ey, screenW, screenH, 220)
+                : bottomAccent;
+        RenderMethods.drawGradientRect(x - 1, sy, x, ey, stripTop, stripBottom);
+        RenderMethods.drawGradientRect(x + width, sy, x + width + 1, ey, stripTop, stripBottom);
+      }
     }
   }
 
@@ -83,6 +158,38 @@ public abstract class Window {
           || cg.showGradient.getValue();
     } catch (Exception e) {
       return true;
+    }
+  }
+
+  /** Rolling rainbow master switch, read off the ClickGUI settings like the gradient. */
+  protected static boolean useRollingRainbow() {
+    try {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      return module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+          && cg.rollingRainbow.getValue();
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  protected static boolean rollingHorizontal() {
+    try {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      return module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+          && cg.rollingDirection.getValue()
+              == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection.HORIZONTAL;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  protected static boolean rollingInverse() {
+    try {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      return module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui cg
+          && cg.rollingInverse.getValue();
+    } catch (Exception e) {
+      return false;
     }
   }
 

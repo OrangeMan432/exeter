@@ -37,16 +37,55 @@ public class NumberSlider extends Item {
     dragSetting(mouseX, mouseY);
     float offsetX = child ? CHILD_OFFSET : 0.0f;
     float h = (float) this.getHeight();
-    RenderMethods.drawRect(
-        x + offsetX,
-        y + h - 1.0f,
+    int fillColor;
+    var guiMod =
+        me.friendly.exeter.core.Exeter.getInstance()
+            .getModuleManager()
+            .getModuleByAlias("clickgui");
+    me.friendly.exeter.module.impl.toggle.render.ClickGui cg =
+        guiMod instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui c ? c : null;
+    boolean rolling = cg != null && cg.rollingRainbow.getValue();
+    boolean horizontal =
+        rolling
+            && cg.rollingDirection.getValue()
+                == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection
+                    .HORIZONTAL;
+    boolean inverse = rolling && cg.rollingInverse.getValue();
+    if (rolling) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      boolean active = !isHovering(mouseX, mouseY) && !dragging;
+      fillColor =
+          Colors.rollingSample(
+              horizontal,
+              inverse,
+              (int) (x + offsetX),
+              (int) y,
+              screenW,
+              screenH,
+              active ? 77 : 55);
+    } else {
+      fillColor =
+          !isHovering(mouseX, mouseY) && !dragging
+              ? Colors.getClientColorCustomAlpha(77)
+              : Colors.getClientColorCustomAlpha(55);
+    }
+    float fillEnd =
         ((Number) numberProperty.getValue()).floatValue() <= min.floatValue()
             ? x + offsetX
-            : x + offsetX + ((float) this.width + 7.4F) * partialMultiplier(),
-        y + h,
-        !isHovering(mouseX, mouseY) && !dragging
-            ? Colors.getClientColorCustomAlpha(77)
-            : Colors.getClientColorCustomAlpha(55));
+            : x + offsetX + ((float) this.width + 7.4F) * partialMultiplier();
+    if (horizontal) {
+      int screenW = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledWidth();
+      int screenH = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
+      RenderMethods.drawHorizontalSpectrumRect(
+          x + offsetX,
+          y + h - 1.0f,
+          fillEnd,
+          y + h,
+          sx -> Colors.rollingSample(true, inverse, sx, (int) y, screenW, screenH, 77));
+    } else {
+      RenderMethods.drawRect(x + offsetX, y + h - 1.0f, fillEnd, y + h, fillColor);
+    }
     FontUtil.drawString(
         String.format("%s\u00a77 %s", this.getLabel(), this.numberProperty.getValue()),
         this.x + offsetX + 2.0f,
