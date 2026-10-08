@@ -35,6 +35,33 @@ the agent writes code. Ask before crossing that boundary.
 - Use the `workdir` tool parameter instead of `cd` in shell commands.
 - Never kill background Java processes. The user runs long-lived bot instances
   (viaproxy) alongside dev work; only act on processes the user names.
+- Running the client for tests: launch it in the background with a per-branch log,
+  e.g. `JAVA_HOME="..." ./gradlew runClient > /tmp/exeter-<branch>.log 2>&1 &`.
+  The user closes the previous client themselves; when told to run, launch
+  directly without process checks.
+
+## Verification and builds
+
+- When launching the client, report pid, log path, and built commit
+  (`git rev-parse --short HEAD`) so staleness is checkable at a glance.
+- Prefer `./gradlew compileJava --offline` during development; go online only to
+  fetch new artifacts. Allow 10+ minute timeouts on Gradle calls.
+- Verify with compile and log evidence; do not theorize past one level without it.
+
+## Branch hygiene
+
+- Never carry a dirty tree across branches: commit or named-stash first.
+- Decompiling vanilla behavior: `javap -p -c -classpath
+  ~/.gradle/caches/fabric-loom/<mc-version>/minecraft-merged.jar <class>`.
+
+## Scope and safety
+
+- Public `api/` classes may be consumed by the external media-hud plugin repo.
+  Member-level cuts inside modules are safe; do not delete public API without
+  checking there first.
+- Found secrets get removed/rotated on sight, same as never committing them.
+- Perf-sensitive paths (per-frame HUD layout, gizmo emission): prefer single-quad
+  primitives over per-element fill calls.
 
 ## Code conventions
 
@@ -44,6 +71,15 @@ the agent writes code. Ask before crossing that boundary.
 - Settings: expose tuning as `Property` / `NumberProperty` / `EnumProperty` via
   `offerProperties()` so config save/load picks them up. Plain fields are invisible
   to the config system.
+- Setting nesting: child settings belong under their parent via `visibleWhen`
+  (e.g. Fill Alpha / Outline Alpha only show when Custom Alpha is on; gradient stop
+  sliders stay hidden behind their pickers). Keep visibility predicates to one
+  condition per line; never leave dead settings visible.
+- Alpha in new/ported modules: never invent per-module alpha plumbing. Add a
+  `Custom Alpha` toggle plus `Fill Alpha` / `Outline Alpha` (gated as above) and
+  fall back to the central ESP alphas otherwise:
+  `custom ? local : EspRenderManager.getGlobalFillAlpha()` (same for outline).
+  Flat fills, outlines and gizmo styles all go through these two values.
 - Shared UI helpers live in `module/impl/toggle/render/clickgui/` (e.g. `SelectionPopup`).
   Do not duplicate popup logic across modules.
 - Test-only hooks go in `me.friendly.exeter.test` and must be inert unless explicitly
