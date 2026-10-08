@@ -44,6 +44,8 @@ public final class EntityEsp extends ToggleableModule {
     super("EntityEsp", new String[] {"entityesp", "entity-esp"}, 0x00FFFF, ModuleType.RENDER);
     setDescription("Highlights specific entities in the world.");
     this.selectEntities = new PopupProperty("Select Entities", this::openEntityPopup);
+    fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
+    outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     offerProperties(
         range,
         lineWidth,

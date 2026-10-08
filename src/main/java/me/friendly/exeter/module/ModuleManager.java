@@ -43,12 +43,17 @@ import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.BlockEsp;
+import me.friendly.exeter.module.impl.toggle.render.BlockHighlight;
+import me.friendly.exeter.module.impl.toggle.render.BreakHighlight;
+import me.friendly.exeter.module.impl.toggle.render.BurrowESP;
 import me.friendly.exeter.module.impl.toggle.render.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.EatTimer;
 import me.friendly.exeter.module.impl.toggle.render.EntityEsp;
 import me.friendly.exeter.module.impl.toggle.render.FreeLook;
 import me.friendly.exeter.module.impl.toggle.render.FullBright;
+import me.friendly.exeter.module.impl.toggle.render.HoleESP;
 import me.friendly.exeter.module.impl.toggle.render.Nametags;
+import me.friendly.exeter.module.impl.toggle.render.VoidESP;
 import me.friendly.exeter.module.impl.toggle.render.Waypoints;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
@@ -129,10 +134,15 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new NotificationHud());
     register(new CompassHud());
     register(new BlockEsp());
+    register(new BlockHighlight());
+    register(new BreakHighlight());
+    register(new BurrowESP());
     register(new EntityEsp());
     register(new FreeLook());
     register(new FullBright());
+    register(new HoleESP());
     register(new Nametags());
+    register(new VoidESP());
     register(new Waypoints());
 
     for (Module m : registry) {

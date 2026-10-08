@@ -52,6 +52,8 @@ public final class BlockEsp extends ToggleableModule {
     super("BlockEsp", new String[] {"blockesp", "block-esp"}, 0xFF00FF, ModuleType.RENDER);
     setDescription("Highlights specific blocks in the world.");
     this.selectBlocks = new PopupProperty("Select Blocks", this::openBlockPopup);
+    fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
+    outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     offerProperties(
         range,
         lineWidth,
