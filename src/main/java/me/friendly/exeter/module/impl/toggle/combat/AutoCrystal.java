@@ -51,6 +51,7 @@ public class AutoCrystal extends ToggleableModule {
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
+  private final Property<Boolean> gappleSwap = new Property<Boolean>(true, "Gapple Swap");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -64,6 +65,9 @@ public class AutoCrystal extends ToggleableModule {
   private String prevTargetKey;
   private Vec3 lastPredicted;
   private Player renderTarget;
+  private int eatSwapFrom = -1;
+  private int eatGappleSlot = -1;
+  private boolean noGappleLogged;
 
   public AutoCrystal() {
     super(
@@ -82,7 +86,8 @@ public class AutoCrystal extends ToggleableModule {
         rotate,
         swingHand,
         autoSwitch,
-        switchBack);
+        switchBack,
+        gappleSwap);
     this.listeners.add(
         new Listener<TickEvent>("autocrystal_tick") {
           @Override
@@ -118,6 +123,8 @@ public class AutoCrystal extends ToggleableModule {
     prevTargetKey = null;
     renderTarget = null;
     lastPredicted = null;
+    eatSwapFrom = -1;
+    noGappleLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -132,14 +139,71 @@ public class AutoCrystal extends ToggleableModule {
     prevTargetKey = null;
     renderTarget = null;
     lastPredicted = null;
+    eatSwapFrom = -1;
+    noGappleLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
+  }
+
+  /**
+   * While the use key is held with crystals in hand, swaps to a gapple and holds all placing and
+   * breaking so right-click eats instead of fighting the aura. Restores the crystal slot on
+   * release, unless the player scrolled elsewhere meanwhile.
+   *
+   * @return true while placements and attacks must stay paused.
+   */
+  private boolean handleGappleSwap() {
+    if (!gappleSwap.getValue()) {
+      eatSwapFrom = -1;
+      return false;
+    }
+    var inv = minecraft.player.getInventory();
+    if (!minecraft.options.keyUse.isDown()) {
+      if (eatSwapFrom != -1) {
+        if (inv.getSelectedSlot() == eatGappleSlot) {
+          inv.setSelectedSlot(eatSwapFrom);
+          PlayerUtil.resyncSlot();
+        }
+        eatSwapFrom = -1;
+      }
+      return false;
+    }
+    var held = inv.getItem(inv.getSelectedSlot());
+    boolean holdingCrystal = held.is(net.minecraft.world.item.Items.END_CRYSTAL);
+    boolean holdingGapple =
+        held.is(net.minecraft.world.item.Items.GOLDEN_APPLE)
+            || held.is(net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE);
+    if (!holdingCrystal && !holdingGapple) return false;
+    if (holdingCrystal && eatSwapFrom == -1) {
+      // God apples first, regular gapples as fallback.
+      int gappleSlot =
+          PlayerUtil.findInHotbar(
+              stack -> stack.is(net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE));
+      if (gappleSlot == -1) {
+        gappleSlot =
+            PlayerUtil.findInHotbar(stack -> stack.is(net.minecraft.world.item.Items.GOLDEN_APPLE));
+      }
+      if (gappleSlot == -1) {
+        if (!noGappleLogged) {
+          noGappleLogged = true;
+          DebugLogger.get().log(getLabel(), DebugLogger.Level.WARN, "no gapple in hotbar");
+        }
+      } else {
+        noGappleLogged = false;
+        eatSwapFrom = inv.getSelectedSlot();
+        eatGappleSlot = gappleSlot;
+        inv.setSelectedSlot(gappleSlot);
+        PlayerUtil.resyncSlot();
+        DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "swapped to gapple to eat");
+      }
+    }
+    return true;
   }
 
   private void onTick() {
     tickCounter++;
     if (minecraft.player == null || minecraft.level == null) return;
     if (minecraft.player.isDeadOrDying()) return;
-
+    if (handleGappleSwap()) return;
     Player target = findTarget();
     if (target == null) {
       lastTargetKey = null;
