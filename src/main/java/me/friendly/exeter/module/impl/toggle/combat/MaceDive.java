@@ -87,6 +87,12 @@ public class MaceDive extends ToggleableModule {
         ModuleType.COMBAT);
     setDescription("Flies above enemies, dives, swaps to chestplate and mace smashes.");
     offerProperties(range, climb, strikeRange, swapRange, cooldown, turnSpeed);
+    range.setDescription("Hunt enemies within this many blocks.");
+    climb.setDescription("Height above the target to reach before diving.");
+    strikeRange.setDescription("Swing the mace within this many blocks of the target.");
+    swapRange.setDescription("Distance at which the elytra swaps to a chestplate.");
+    cooldown.setDescription("Ticks between mace swings.");
+    turnSpeed.setDescription("Degrees steered per tick while flying.");
     this.listeners.add(tickListener);
   }
 
