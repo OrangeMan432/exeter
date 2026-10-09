@@ -53,7 +53,7 @@ public class VoidESP extends ToggleableModule {
   private final EnumProperty<FloorMode> floorMode =
       new EnumProperty<FloorMode>(FloorMode.MODERN, "Floor", "floor");
   private final NumberProperty<Float> lineWidth =
-      new NumberProperty<Float>(2.0f, 0.5f, 10.0f, "Width");
+      new NumberProperty<Float>(2.0f, 0.5f, 10.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -79,6 +79,16 @@ public class VoidESP extends ToggleableModule {
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
+    distance.setDescription("How far around you void spots are searched.");
+    activateY.setDescription("Only highlights void while you are below this height.");
+    renderMode.setDescription("Whether boxes are filled, outlined, or both.");
+    shapeMode.setDescription("Whether void spots draw as full boxes or flat slabs.");
+    floorMode.setDescription("Chooses modern or legacy world floor height.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     this.listeners.add(
         new Listener<TickEvent>("void_esp_tick") {
           @Override
