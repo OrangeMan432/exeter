@@ -30,6 +30,9 @@ public class CustomFont extends ToggleableModule {
         ModuleType.CLIENT);
     setDescription("TrueType font for client text.");
     offerProperties(face, family, size);
+    face.setDescription("Selects which typeface the client uses for text.");
+    family.setDescription("Sets the system font name used when Face is System.");
+    size.setDescription("Sets the size of client text.");
   }
 
   public static CustomFont get() {
