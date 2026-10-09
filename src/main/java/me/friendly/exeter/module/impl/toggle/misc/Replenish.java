@@ -11,6 +11,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.util.StopWatch;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
@@ -71,6 +72,11 @@ public class Replenish extends ToggleableModule {
       clearMemory();
       return;
     }
+    // Same while arranging items by hand: never fight a manual drag.
+    if (minecraft.gui.screen() instanceof AbstractContainerScreen) {
+      clearMemory();
+      return;
+    }
     if (!timer.hasPassed(delay.getValue())) return;
     if (!replenishInLoot.getValue() && lootNearby()) return;
 
@@ -88,6 +94,12 @@ public class Replenish extends ToggleableModule {
         continue;
       }
       ItemStack want = slotEmptied ? remembered : current;
+      // Unstackables (beds, tools, armor) can't be topped up; shuffling them
+      // mid-fight only desyncs modules holding their slots, e.g. BedAura.
+      if (want.getMaxStackSize() <= 1) {
+        memory.set(i, current.copy());
+        continue;
+      }
       // Cursor first: merge what we are already holding before opening new stacks.
       if (!carried.isEmpty()) {
         if (!needsRefill || !canStack(carried, want)) return;
