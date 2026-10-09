@@ -145,12 +145,16 @@ public class FireworkAura extends ToggleableModule {
     Vec3 detonation = target.position().add(0.0, 1.0, 0.0);
     var rocketStack = minecraft.player.getInventory().getItem(rocketSlot);
     float selfDamage =
-        ExplosionUtil.fireworkDamage(
-            minecraft.level,
-            detonation,
-            ExplosionUtil.fireworkBursts(rocketStack),
-            minecraft.player);
-    if (selfDamage > maxSelfDamage.getValue()) {
+        ExplosionUtil.mitigatedDamage(
+            minecraft.player,
+            minecraft.player.damageSources().fireworks(null, minecraft.player),
+            ExplosionUtil.fireworkDamage(
+                minecraft.level,
+                detonation,
+                ExplosionUtil.fireworkBursts(rocketStack),
+                minecraft.player));
+    boolean lethal = ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage);
+    if (selfDamage > maxSelfDamage.getValue() || lethal) {
       if (!noSelfDmgLogged) {
         noSelfDmgLogged = true;
         DebugLogger.get()
@@ -159,8 +163,9 @@ public class FireworkAura extends ToggleableModule {
                 DebugLogger.Level.WARN,
                 "holding fire: self damage "
                     + selfDamage
-                    + " exceeds cap "
-                    + maxSelfDamage.getValue());
+                    + (lethal
+                        ? " lethal at " + minecraft.player.getHealth() + " hp"
+                        : " exceeds cap " + maxSelfDamage.getValue()));
       }
       return;
     }

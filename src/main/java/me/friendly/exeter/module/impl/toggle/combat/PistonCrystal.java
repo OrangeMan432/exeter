@@ -14,6 +14,7 @@ import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.MathUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
@@ -568,7 +569,8 @@ public class PistonCrystal extends ToggleableModule {
               best.explosionPos,
               best.placeBase ? best.base : null,
               profileOf(minecraft.player));
-      if (selfDamage > maxSelfDamage.getValue()) {
+      boolean lethal = ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage);
+      if (selfDamage > maxSelfDamage.getValue() || lethal) {
         if (!noSelfDmgLogged) {
           noSelfDmgLogged = true;
           DebugLogger.get()
@@ -577,8 +579,9 @@ public class PistonCrystal extends ToggleableModule {
                   DebugLogger.Level.WARN,
                   "holding placement: self damage "
                       + selfDamage
-                      + " exceeds cap "
-                      + maxSelfDamage.getValue());
+                      + (lethal
+                          ? " lethal at " + minecraft.player.getHealth() + " hp"
+                          : " exceeds cap " + maxSelfDamage.getValue()));
         }
         return null;
       }

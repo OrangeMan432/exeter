@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import java.util.function.BooleanSupplier;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
+import me.friendly.exeter.util.ExplosionUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
@@ -28,9 +29,15 @@ public class FakePlayerEntity extends RemotePlayer {
       net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
     if (!damageSupplier.getAsBoolean()) return;
 
-    float healthBefore = this.getHealth();
-    float newHealth = healthBefore - damage;
+    // Vanilla pipeline: armor/toughness, then resistance/protection, then absorption.
+    // Explosion-typed (generic bypasses armor, so it must never be used here).
+    damage = ExplosionUtil.mitigatedDamage(this, damageSource, damage);
+    float absorbed = Math.min(this.getAbsorptionAmount(), damage);
+    this.setAbsorptionAmount(this.getAbsorptionAmount() - absorbed);
+    damage -= absorbed;
+    if (damage <= 0.0F) return;
 
+    float newHealth = this.getHealth() - damage;
     if (newHealth <= 0.0F && hasTotem) {
       popTotem(damageSource);
       return;
@@ -77,7 +84,7 @@ public class FakePlayerEntity extends RemotePlayer {
   }
 
   public void applyDamage(float damage) {
-    this.actuallyHurt(null, this.level().damageSources().generic(), damage);
+    this.actuallyHurt(null, ExplosionUtil.explosionSource(this), damage);
   }
 
   public void setDamageSupplier(BooleanSupplier supplier) {
