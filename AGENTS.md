@@ -46,6 +46,9 @@ the agent writes code. Ask before crossing that boundary.
   (`git rev-parse --short HEAD`) so staleness is checkable at a glance.
 - Prefer `./gradlew compileJava --offline` during development; go online only to
   fetch new artifacts. Allow 10+ minute timeouts on Gradle calls.
+- Never run any Gradle build while a client is live: incremental compile deletes
+  class files out from under the running game, and the next lazy load of one
+  crashes it with NoClassDefFoundError. Verify only when no client runs.
 - Verify with compile and log evidence; do not theorize past one level without it.
 
 ## Branch hygiene
