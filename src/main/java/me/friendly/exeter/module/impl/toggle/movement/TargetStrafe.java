@@ -50,6 +50,12 @@ public class TargetStrafe extends ToggleableModule {
     super("TargetStrafe", new String[] {"targetstrafe", "strafe"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Orbits the nearest player.");
     offerProperties(targetRange, jump, antiStuck, preferredDistance, maxDistance, turnAmount);
+    targetRange.setDescription("Nearest targetable player within this many blocks.");
+    jump.setDescription("Hop to keep the speed stages fed while orbiting.");
+    antiStuck.setDescription("Flip orbit direction when stuck against a wall.");
+    preferredDistance.setDescription("Orbit ring radius around the target.");
+    maxDistance.setDescription("Past this range, run straight at the target instead.");
+    turnAmount.setDescription("Degrees steered inward or outward per tick to hold the ring.");
     listeners.add(
         new Listener<PacketEvent>("targetstrafe_packet") {
           @Override
