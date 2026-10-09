@@ -43,11 +43,12 @@ public class TargetStrafe extends ToggleableModule {
   private double lastDist;
   private double boostSpeed;
   private long boostTimer;
+  private boolean wasOnGround;
   private String lastTargetKey;
 
   public TargetStrafe() {
     super("TargetStrafe", new String[] {"targetstrafe", "strafe"}, 0x00FF00, ModuleType.MOVEMENT);
-    setDescription("Orbits the nearest player while keeping NCP speed stages.");
+    setDescription("Orbits the nearest player.");
     offerProperties(targetRange, jump, antiStuck, preferredDistance, maxDistance, turnAmount);
     listeners.add(
         new Listener<PacketEvent>("targetstrafe_packet") {
@@ -74,6 +75,7 @@ public class TargetStrafe extends ToggleableModule {
     moveSpeed = getBaseSpeed();
     lastDist = 0;
     boostSpeed = 0;
+    wasOnGround = false;
     lastTargetKey = null;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
@@ -119,9 +121,13 @@ public class TargetStrafe extends ToggleableModule {
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "target=" + targetKey);
     }
 
-    if (minecraft.player.onGround()) {
+    // Landing edge, not every grounded tick: re-arming stage 2 continuously
+    // multiplies the boost without bound when Jump can't lift us off.
+    boolean onGround = minecraft.player.onGround();
+    if (onGround && !wasOnGround) {
       level = 2;
     }
+    wasOnGround = onGround;
 
     boolean noInput = minecraft.player.zza == 0 && minecraft.player.xxa == 0;
     if (level != 1 || noInput) {
