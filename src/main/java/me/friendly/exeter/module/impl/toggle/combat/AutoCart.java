@@ -7,8 +7,11 @@ import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.render.PlacementRender;
 import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.NotificationManager;
 import me.friendly.exeter.util.PlayerUtil;
@@ -37,6 +40,27 @@ public class AutoCart extends ToggleableModule {
       new NumberProperty<Integer>(1, 0, 20, "Break Delay");
   private final NumberProperty<Double> maxSelfDamage =
       new NumberProperty<Double>(10.0, 0.0, 60.0, "Max Self Damage");
+  private final Property<Boolean> render = new Property<Boolean>(true, "Render");
+  private final Property<Boolean> fade = new Property<Boolean>(true, "Fade");
+  private final NumberProperty<Integer> fadeTime =
+      new NumberProperty<Integer>(1000, 0, 5000, "Fade Time");
+  private final EnumProperty<PlacementRender.FadeMode> fadeMode =
+      new EnumProperty<>(PlacementRender.FadeMode.ALPHA, "Fade Mode", "fademode");
+  private final Property<Boolean> slide = new Property<Boolean>(false, "Slide");
+  private final NumberProperty<Integer> slideTime =
+      new NumberProperty<Integer>(250, 1, 1000, "Slide Time");
+  private final Property<Boolean> smoothSlide = new Property<Boolean>(false, "Smooth Slide");
+  private final Property<Boolean> renderDamage = new Property<Boolean>(true, "Damage Text");
+  private final NumberProperty<Integer> renderTime =
+      new NumberProperty<Integer>(500, 0, 5000, "Render Time");
+  private final NumberProperty<Float> lineWidth =
+      new NumberProperty<Float>(1.5f, 0.5f, 5.0f, "Line Width");
+  private final Property<Boolean> useCustomAlpha =
+      new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
+  private final NumberProperty<Float> fillAlpha =
+      new NumberProperty<Float>(50f, 0f, 255f, "Fill Alpha", "FillAlpha");
+  private final NumberProperty<Float> outlineAlpha =
+      new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
 
   private Player target;
   private BlockPos targetPos;
@@ -47,6 +71,7 @@ public class AutoCart extends ToggleableModule {
   private boolean doneMessageSent;
   private boolean swapPending;
   private boolean noSelfDmgLogged;
+  private final PlacementRender placementRender = new PlacementRender();
 
   private final Listener<TickEvent> tickListener =
       new Listener<TickEvent>("autocart_tick") {
@@ -69,8 +94,34 @@ public class AutoCart extends ToggleableModule {
         rotateRail,
         rotateMinecart,
         instaLight,
-        breakDelay);
+        breakDelay,
+        render,
+        fade,
+        fadeTime,
+        fadeMode,
+        slide,
+        slideTime,
+        smoothSlide,
+        renderDamage,
+        renderTime,
+        lineWidth,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha);
+    fadeTime.visibleWhen(() -> fade.getValue());
+    fadeMode.visibleWhen(() -> fade.getValue());
+    slideTime.visibleWhen(() -> slide.getValue());
+    smoothSlide.visibleWhen(() -> slide.getValue());
+    fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
+    outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     this.listeners.add(tickListener);
+    this.listeners.add(
+        new Listener<me.friendly.exeter.events.WorldRenderEvent>("autocart_render") {
+          @Override
+          public void call(me.friendly.exeter.events.WorldRenderEvent event) {
+            onRender();
+          }
+        });
   }
 
   @Override
@@ -86,6 +137,15 @@ public class AutoCart extends ToggleableModule {
     swapPending = false;
     noSelfDmgLogged = false;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
+  }
+
+  @Override
+  protected void onDisable() {
+    super.onDisable();
+    target = null;
+    targetPos = null;
+    placementRender.clear();
+    DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
   @Override
@@ -105,6 +165,7 @@ public class AutoCart extends ToggleableModule {
       DebugLogger.get()
           .log(getLabel(), DebugLogger.Level.INFO, "lighting phase stage=" + lightStage);
       tickLighting();
+      updateRender();
       return;
     }
 
@@ -115,6 +176,7 @@ public class AutoCart extends ToggleableModule {
             .log(getLabel(), DebugLogger.Level.WARN, "lost target, clearing " + targetPos);
       target = null;
       targetPos = null;
+      placementRender.clear();
       return;
     }
 
@@ -153,6 +215,8 @@ public class AutoCart extends ToggleableModule {
       }
       return;
     }
+
+    updateRender();
 
     if (cartsPlaced < tntCarts.getValue()) {
       int tntCartSlot = findTntCart();
@@ -256,6 +320,47 @@ public class AutoCart extends ToggleableModule {
       }
     }
     doneMessageSent = true;
+  }
+
+  /**
+   * Tracks the rail cell for the placement render; the damage number is the power-4 cart blast
+   * against the current target.
+   */
+  private void updateRender() {
+    if (target == null || targetPos == null) {
+      placementRender.clear();
+      return;
+    }
+    Vec3 center = new Vec3(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+    float damage = ExplosionUtil.explosionDamage(minecraft.level, center, 4.0F, target);
+    placementRender.setRenderPos(
+        targetPos.below().immutable(),
+        String.format("%.1f", damage),
+        smoothSlide.getValue(),
+        slideTime.getValue());
+  }
+
+  private void onRender() {
+    if (minecraft.level == null || minecraft.player == null) return;
+    if (!render.getValue()) return;
+    placementRender.render(
+        new PlacementRender.Params(
+            fade.getValue(),
+            fadeTime.getValue(),
+            fadeMode.getValue(),
+            slide.getValue(),
+            slideTime.getValue(),
+            smoothSlide.getValue(),
+            renderDamage.getValue(),
+            renderTime.getValue(),
+            lineWidth.getValue(),
+            useCustomAlpha.getValue()
+                ? Math.round(fillAlpha.getValue())
+                : EspRenderManager.getGlobalFillAlpha(),
+            useCustomAlpha.getValue()
+                ? Math.round(outlineAlpha.getValue())
+                : EspRenderManager.getGlobalOutlineAlpha(),
+            1.0));
   }
 
   /**

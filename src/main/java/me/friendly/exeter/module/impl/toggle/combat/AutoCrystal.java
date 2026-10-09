@@ -2,9 +2,7 @@ package me.friendly.exeter.module.impl.toggle.combat;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
@@ -17,19 +15,16 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.render.PlacementRender;
 import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.PlayerUtil;
-import me.friendly.exeter.util.StopWatch;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -37,11 +32,6 @@ import net.minecraft.world.phys.Vec3;
  * prediction, place the best, break the best, with fade/slide placement render.
  */
 public class AutoCrystal extends ToggleableModule {
-
-  public enum FadeMode {
-    ALPHA,
-    SHRINK
-  }
 
   private final NumberProperty<Double> targetRange =
       new NumberProperty<Double>(10.0, 0.0, 16.0, "Target Range");
@@ -69,8 +59,8 @@ public class AutoCrystal extends ToggleableModule {
   private final Property<Boolean> fade = new Property<Boolean>(true, "Fade");
   private final NumberProperty<Integer> fadeTime =
       new NumberProperty<Integer>(1000, 0, 5000, "Fade Time");
-  private final EnumProperty<FadeMode> fadeMode =
-      new EnumProperty<>(FadeMode.ALPHA, "Fade Mode", "fademode");
+  private final EnumProperty<PlacementRender.FadeMode> fadeMode =
+      new EnumProperty<>(PlacementRender.FadeMode.ALPHA, "Fade Mode", "fademode");
   private final Property<Boolean> slide = new Property<Boolean>(false, "Slide");
   private final NumberProperty<Integer> slideTime =
       new NumberProperty<Integer>(250, 1, 1000, "Slide Time");
@@ -103,13 +93,7 @@ public class AutoCrystal extends ToggleableModule {
   private int eatGappleSlot = -1;
   private boolean noGappleLogged;
   private final java.util.ArrayDeque<Long> placeTimes = new java.util.ArrayDeque<>();
-  private BlockPos renderPos;
-  private String renderDamageText;
-  private final Map<BlockPos, Long> fadePositions = new HashMap<>();
-  private BlockPos slidePos;
-  private long slideStartMs;
-  private final StopWatch renderTimer = new StopWatch();
-  private final StopWatch slideTimer = new StopWatch();
+  private final PlacementRender placementRender = new PlacementRender();
 
   public AutoCrystal() {
     super(
@@ -186,9 +170,7 @@ public class AutoCrystal extends ToggleableModule {
     lastPredicted = null;
     eatSwapFrom = -1;
     noGappleLogged = false;
-    renderPos = null;
-    slidePos = null;
-    fadePositions.clear();
+    placementRender.clear();
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -205,9 +187,7 @@ public class AutoCrystal extends ToggleableModule {
     lastPredicted = null;
     eatSwapFrom = -1;
     noGappleLogged = false;
-    renderPos = null;
-    slidePos = null;
-    fadePositions.clear();
+    placementRender.clear();
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
@@ -407,16 +387,7 @@ public class AutoCrystal extends ToggleableModule {
    * becomes the slide origin, throttled by Smooth Slide.
    */
   private void setRenderPos(BlockPos pos, String text) {
-    renderTimer.reset();
-    if (pos != null
-        && !pos.equals(slidePos)
-        && (!smoothSlide.getValue() || slideTimer.hasPassed(slideTime.getValue()))) {
-      slidePos = renderPos;
-      slideStartMs = System.currentTimeMillis();
-      slideTimer.reset();
-    }
-    renderPos = pos;
-    renderDamageText = text;
+    placementRender.setRenderPos(pos, text, smoothSlide.getValue(), slideTime.getValue());
   }
 
   private void onRender() {
@@ -436,83 +407,24 @@ public class AutoCrystal extends ToggleableModule {
       renderTarget = null;
     }
     if (!render.getValue()) return;
-    long now = System.currentTimeMillis();
-    BlockPos pos = renderTimer.hasPassed(renderTime.getValue()) ? null : renderPos;
-    if (pos == null) {
-      slidePos = null;
-      fadePositions.clear();
-      return;
-    }
-    int color = EspRenderManager.getClientColor();
-    int fillBase =
-        useCustomAlpha.getValue()
-            ? Math.round(fillAlpha.getValue())
-            : EspRenderManager.getGlobalFillAlpha();
-    int outlineBase =
-        useCustomAlpha.getValue()
-            ? Math.round(outlineAlpha.getValue())
-            : EspRenderManager.getGlobalOutlineAlpha();
-    if (fade.getValue()) {
-      for (Map.Entry<BlockPos, Long> stale : fadePositions.entrySet()) {
-        if (stale.getKey().equals(pos)) continue;
-        float factor =
-            Math.min(
-                1.0f,
-                Math.max(
-                    0.0f,
-                    (float) (stale.getValue() + fadeTime.getValue() - now) / fadeTime.getValue()));
-        if (factor <= 0.0f) continue;
-        if (fadeMode.getValue() == FadeMode.SHRINK) {
-          AABB full = new AABB(stale.getKey());
-          double height = (full.maxY - full.minY) * factor;
-          if (height <= 0.001) continue;
-          renderBox(
-              new AABB(full.minX, full.minY, full.minZ, full.maxX, full.minY + height, full.maxZ),
-              fillBase,
-              outlineBase,
-              color);
-        } else {
-          renderBox(
-              new AABB(stale.getKey()),
-              Math.round(fillBase * factor),
-              Math.round(outlineBase * factor),
-              color);
-        }
-      }
-      fadePositions.put(pos, now);
-    }
-    fadePositions.entrySet().removeIf(e -> e.getValue() + fadeTime.getValue() < now);
-    if (slide.getValue() && slidePos != null && !slidePos.equals(pos)) {
-      double factor =
-          Math.min(1.0, (double) (now - slideStartMs) / Math.max(1, slideTime.getValue()));
-      if (factor >= 1.0) {
-        renderBox(new AABB(pos), fillBase, outlineBase, color);
-      } else {
-        renderBox(lerpBox(new AABB(slidePos), new AABB(pos), factor), fillBase, outlineBase, color);
-      }
-    } else {
-      renderBox(new AABB(pos), fillBase, outlineBase, color);
-    }
-    if (renderDamage.getValue() && renderDamageText != null) {
-      Gizmos.billboardTextOverBlock(renderDamageText, pos, 0, 0xFFFFFFFF, 0.5f).setAlwaysOnTop();
-    }
-  }
-
-  private void renderBox(AABB box, int fillAlpha, int outlineAlpha, int color) {
-    GizmoStyle style =
-        GizmoStyle.strokeAndFill(
-            ARGB.color(outlineAlpha, color), lineWidth.getValue(), ARGB.color(fillAlpha, color));
-    Gizmos.cuboid(box, style).setAlwaysOnTop();
-  }
-
-  private static AABB lerpBox(AABB from, AABB to, double t) {
-    return new AABB(
-        from.minX + (to.minX - from.minX) * t,
-        from.minY + (to.minY - from.minY) * t,
-        from.minZ + (to.minZ - from.minZ) * t,
-        from.maxX + (to.maxX - from.maxX) * t,
-        from.maxY + (to.maxY - from.maxY) * t,
-        from.maxZ + (to.maxZ - from.maxZ) * t);
+    placementRender.render(
+        new PlacementRender.Params(
+            fade.getValue(),
+            fadeTime.getValue(),
+            fadeMode.getValue(),
+            slide.getValue(),
+            slideTime.getValue(),
+            smoothSlide.getValue(),
+            renderDamage.getValue(),
+            renderTime.getValue(),
+            lineWidth.getValue(),
+            useCustomAlpha.getValue()
+                ? Math.round(fillAlpha.getValue())
+                : EspRenderManager.getGlobalFillAlpha(),
+            useCustomAlpha.getValue()
+                ? Math.round(outlineAlpha.getValue())
+                : EspRenderManager.getGlobalOutlineAlpha(),
+            1.0));
   }
 
   private void tickBreak(Player target, Vec3 predicted) {
