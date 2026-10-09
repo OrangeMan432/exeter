@@ -1,94 +1,126 @@
 package me.friendly.exeter.command.impl.client;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.mojang.blaze3d.platform.NativeImage;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.*;
-import java.net.*;
-import java.net.URL;
-import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.logging.Logger;
-import org.apache.commons.codec.binary.Base64;
+import me.friendly.exeter.proxy.ProxyManager;
+import net.minecraft.client.Screenshot;
 
 public final class ScreenShot extends Command {
+  private static final String API_URL = "https://catbox.moe/user/api.php";
+  private static final DateTimeFormatter NAME_FORMAT =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss-SSS");
 
   public ScreenShot() {
     super(new String[] {"screenshot"}, new Argument[0]);
-    setDescription("Take a screenshot");
+    setDescription("Take a screenshot and upload it to catbox.moe");
   }
 
   @Override
   public String dispatch() {
-    return "Uploading screenshot!";
+    if (minecraft.gameRenderer == null) return "Renderer not ready.";
+    Screenshot.takeScreenshot(
+        minecraft.gameRenderer.mainRenderTarget(),
+        image -> {
+          Thread thread = new Thread(() -> saveAndUpload(image), "Screenshot Upload Thread");
+          thread.start();
+        });
+    return "Capturing screenshot...";
   }
 
-  public void uploadImage(final File file) {
-    Thread thread =
-        new Thread(
-            new Runnable() {
+  private void saveAndUpload(NativeImage image) {
+    try (image) {
+      File dir = new File(minecraft.gameDirectory, "screenshots");
+      dir.mkdirs();
+      File file = new File(dir, LocalDateTime.now().format(NAME_FORMAT) + ".png");
+      image.writeToFile(file.toPath());
+      String url = upload(file);
+      if (url == null) {
+        Logger.getLogger().printToChat("Upload failed: catbox returned an error.");
+        return;
+      }
+      Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(url), null);
+      Logger.getLogger().printToChat("Screenshot URL copied to clipboard: " + url);
+    } catch (IOException e) {
+      Logger.getLogger().printToChat("Unable to save screenshot.");
+      e.printStackTrace();
+    }
+  }
 
-              @Override
-              public void run() {
-                try {
-                  String line;
-                  BufferedImage image = ImageIO.read(new File(file.getAbsolutePath()));
-                  ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-                  ImageIO.write((RenderedImage) image, "png", byteArray);
-                  byte[] fileByes = byteArray.toByteArray();
-                  String base64File = Base64.encodeBase64String((byte[]) fileByes);
-                  String postData =
-                      URLEncoder.encode("image", "UTF-8")
-                          + "="
-                          + URLEncoder.encode(base64File, "UTF-8");
-                  URL imgurApi = new URL("https://api.imgur.com/3/image");
-                  HttpURLConnection connection = (HttpURLConnection) imgurApi.openConnection();
-                  connection.setDoOutput(true);
-                  connection.setDoInput(true);
-                  connection.setRequestMethod("POST");
-                  connection.setRequestProperty("Authorization", "Client-ID 57e0280fe5e3a5e");
-                  connection.setRequestProperty(
-                      "Content-Type", "application/x-www-form-urlencoded");
-                  connection.connect();
-                  OutputStreamWriter outputStreamWriter =
-                      new OutputStreamWriter(connection.getOutputStream());
-                  outputStreamWriter.write(postData);
-                  outputStreamWriter.flush();
-                  outputStreamWriter.close();
-                  StringBuilder stringBuilder = new StringBuilder();
-                  BufferedReader rd =
-                      new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                  while ((line = rd.readLine()) != null) {
-                    stringBuilder.append(line).append(System.lineSeparator());
-                  }
-                  rd.close();
-                  Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                  JsonObject json =
-                      (JsonObject) gson.fromJson(stringBuilder.toString(), JsonObject.class);
-                  String url =
-                      "http://i.imgur.com/"
-                          + json.get("data").getAsJsonObject().get("id").getAsString()
-                          + ".png";
-                  StringSelection contents = new StringSelection(url);
-                  Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                  clipboard.setContents(contents, null);
-                  Logger.getLogger().printToChat("Screenshot URL copied to clipboard.");
-                } catch (IOException e) {
-                  Logger.getLogger().printToChat("Unable to upload screenshot.");
-                  e.printStackTrace();
-                }
-                if (!file.delete()) {
-                  Logger.getLogger().printToChat("Unable to delete screenshot.");
-                }
-              }
-            });
-    thread.setName("Screenshot Upload Thread");
-    thread.start();
+  /**
+   * POSTs the file as multipart/form-data via the shared proxied HTTP client, so uploads honor the
+   * active proxy like all other client traffic. Returns the file URL, or null on error.
+   */
+  private static String upload(File file) {
+    String boundary = "Exeter" + System.currentTimeMillis();
+    try {
+      byte[] body = multipartBody(boundary, file);
+      HttpClient client = ProxyManager.httpClient();
+      HttpRequest request =
+          HttpRequest.newBuilder(URI.create(API_URL))
+              .timeout(Duration.ofSeconds(60))
+              .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+              .header("User-Agent", "exeter")
+              .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+              .build();
+      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+      String result = response.body() == null ? "" : response.body().trim();
+      if (response.statusCode() != 200 || !result.startsWith("https://")) {
+        DebugLogger.get()
+            .logFile(
+                "ScreenShot",
+                "upload failed: status="
+                    + response.statusCode()
+                    + " body="
+                    + result.substring(0, Math.min(result.length(), 200)));
+        return null;
+      }
+      return result;
+    } catch (IOException | InterruptedException e) {
+      DebugLogger.get().logFile("ScreenShot", "upload exception: " + e);
+      if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  private static byte[] multipartBody(String boundary, File file) throws IOException {
+    String head =
+        "--"
+            + boundary
+            + "\r\n"
+            + "Content-Disposition: form-data; name=\"reqtype\"\r\n\r\n"
+            + "fileupload\r\n"
+            + "--"
+            + boundary
+            + "\r\n"
+            + "Content-Disposition: form-data; name=\"fileToUpload\"; filename=\""
+            + file.getName()
+            + "\"\r\n"
+            + "Content-Type: image/png\r\n\r\n";
+    String tail = "\r\n--" + boundary + "--\r\n";
+    byte[] headBytes = head.getBytes(StandardCharsets.UTF_8);
+    byte[] data = Files.readAllBytes(file.toPath());
+    byte[] tailBytes = tail.getBytes(StandardCharsets.UTF_8);
+    byte[] body = new byte[headBytes.length + data.length + tailBytes.length];
+    System.arraycopy(headBytes, 0, body, 0, headBytes.length);
+    System.arraycopy(data, 0, body, headBytes.length, data.length);
+    System.arraycopy(tailBytes, 0, body, headBytes.length + data.length, tailBytes.length);
+    return body;
   }
 }
