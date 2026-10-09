@@ -69,6 +69,15 @@ public class AutoMend extends ToggleableModule {
         minHealth,
         enemyCheck,
         disableOnComplete);
+    delay.setDescription("Ticks between XP bottle throws.");
+    minDamage.setDescription("Start mending armor at or below this durability percent.");
+    repairTo.setDescription("Stop mending armor once it reaches this durability.");
+    takeOff.setDescription("Unequip armor once it is repaired.");
+    takeOffDelay.setDescription("Ticks between unequipping repaired pieces.");
+    healthCheck.setDescription("Stop when your health drops too low.");
+    minHealth.setDescription("Stop below this health.");
+    enemyCheck.setDescription("Stop while enemies are nearby.");
+    disableOnComplete.setDescription("Turn off once all armor is repaired.");
     listeners.add(tickListener);
   }
 
