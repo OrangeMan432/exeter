@@ -2,7 +2,9 @@ package me.friendly.exeter.module.impl.toggle.combat;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.core.Exeter;
@@ -11,24 +13,35 @@ import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
+import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.PlayerUtil;
+import me.friendly.exeter.util.StopWatch;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Crystal aura in the spirit of 3arthh4ck's AutoCrystal, cut down to the working core: score
- * placements by raw explosion damage, place the best, break the best. No prediction, motion
- * extrapolation or multiplace.
+ * Crystal aura in the spirit of 3arthh4ck's AutoCrystal: score placements by explosion damage with
+ * prediction, place the best, break the best, with fade/slide placement render.
  */
 public class AutoCrystal extends ToggleableModule {
+
+  public enum FadeMode {
+    ALPHA,
+    SHRINK
+  }
 
   private final NumberProperty<Double> targetRange =
       new NumberProperty<Double>(10.0, 0.0, 16.0, "Target Range");
@@ -52,6 +65,27 @@ public class AutoCrystal extends ToggleableModule {
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
   private final Property<Boolean> switchBack = new Property<Boolean>(true, "Switch Back");
   private final Property<Boolean> gappleSwap = new Property<Boolean>(true, "Gapple Swap");
+  private final Property<Boolean> render = new Property<Boolean>(true, "Render");
+  private final Property<Boolean> fade = new Property<Boolean>(true, "Fade");
+  private final NumberProperty<Integer> fadeTime =
+      new NumberProperty<Integer>(1000, 0, 5000, "Fade Time");
+  private final EnumProperty<FadeMode> fadeMode =
+      new EnumProperty<>(FadeMode.ALPHA, "Fade Mode", "fademode");
+  private final Property<Boolean> slide = new Property<Boolean>(false, "Slide");
+  private final NumberProperty<Integer> slideTime =
+      new NumberProperty<Integer>(250, 1, 1000, "Slide Time");
+  private final Property<Boolean> smoothSlide = new Property<Boolean>(false, "Smooth Slide");
+  private final Property<Boolean> renderDamage = new Property<Boolean>(true, "Damage Text");
+  private final NumberProperty<Integer> renderTime =
+      new NumberProperty<Integer>(500, 0, 5000, "Render Time");
+  private final NumberProperty<Float> lineWidth =
+      new NumberProperty<Float>(1.5f, 0.5f, 5.0f, "Line Width");
+  private final Property<Boolean> useCustomAlpha =
+      new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
+  private final NumberProperty<Float> fillAlpha =
+      new NumberProperty<Float>(50f, 0f, 255f, "Fill Alpha", "FillAlpha");
+  private final NumberProperty<Float> outlineAlpha =
+      new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
 
   private int tickCounter;
   private int lastPlaceTick = -100;
@@ -69,6 +103,13 @@ public class AutoCrystal extends ToggleableModule {
   private int eatGappleSlot = -1;
   private boolean noGappleLogged;
   private final java.util.ArrayDeque<Long> placeTimes = new java.util.ArrayDeque<>();
+  private BlockPos renderPos;
+  private String renderDamageText;
+  private final Map<BlockPos, Long> fadePositions = new HashMap<>();
+  private BlockPos slidePos;
+  private long slideStartMs;
+  private final StopWatch renderTimer = new StopWatch();
+  private final StopWatch slideTimer = new StopWatch();
 
   public AutoCrystal() {
     super(
@@ -88,7 +129,26 @@ public class AutoCrystal extends ToggleableModule {
         swingHand,
         autoSwitch,
         switchBack,
-        gappleSwap);
+        gappleSwap,
+        render,
+        fade,
+        fadeTime,
+        fadeMode,
+        slide,
+        slideTime,
+        smoothSlide,
+        renderDamage,
+        renderTime,
+        lineWidth,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha);
+    fadeTime.visibleWhen(() -> fade.getValue());
+    fadeMode.visibleWhen(() -> fade.getValue());
+    slideTime.visibleWhen(() -> slide.getValue());
+    smoothSlide.visibleWhen(() -> slide.getValue());
+    fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
+    outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     this.listeners.add(
         new Listener<TickEvent>("autocrystal_tick") {
           @Override
@@ -126,6 +186,9 @@ public class AutoCrystal extends ToggleableModule {
     lastPredicted = null;
     eatSwapFrom = -1;
     noGappleLogged = false;
+    renderPos = null;
+    slidePos = null;
+    fadePositions.clear();
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -142,6 +205,9 @@ public class AutoCrystal extends ToggleableModule {
     lastPredicted = null;
     eatSwapFrom = -1;
     noGappleLogged = false;
+    renderPos = null;
+    slidePos = null;
+    fadePositions.clear();
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
@@ -336,20 +402,117 @@ public class AutoCrystal extends ToggleableModule {
     return ExplosionUtil.explosionDamage(minecraft.level, center, 6.0F, target, predictedFeet, box);
   }
 
+  /**
+   * Tracks the displayed placement cell for the slide animation, 3arthh4ck-style: the previous cell
+   * becomes the slide origin, throttled by Smooth Slide.
+   */
+  private void setRenderPos(BlockPos pos, String text) {
+    renderTimer.reset();
+    if (pos != null
+        && !pos.equals(slidePos)
+        && (!smoothSlide.getValue() || slideTimer.hasPassed(slideTime.getValue()))) {
+      slidePos = renderPos;
+      slideStartMs = System.currentTimeMillis();
+      slideTimer.reset();
+    }
+    renderPos = pos;
+    renderDamageText = text;
+  }
+
   private void onRender() {
-    if (predict.getValue() <= 0) return;
     if (minecraft.level == null || minecraft.player == null) return;
-    if (renderTarget == null || lastPredicted == null) return;
-    if (!renderTarget.isAlive() || renderTarget.isRemoved()) {
+    if (predict.getValue() > 0
+        && renderTarget != null
+        && lastPredicted != null
+        && renderTarget.isAlive()
+        && !renderTarget.isRemoved()) {
+      Vec3 from = renderTarget.position().add(0, 1.0, 0);
+      Vec3 to = lastPredicted.add(0, 1.0, 0);
+      if (from.distanceToSqr(to) >= 0.01) {
+        Gizmos.line(from, to, me.friendly.exeter.render.EspRenderManager.getClientColor(), 2.0f)
+            .setAlwaysOnTop();
+      }
+    } else {
       renderTarget = null;
+    }
+    if (!render.getValue()) return;
+    long now = System.currentTimeMillis();
+    BlockPos pos = renderTimer.hasPassed(renderTime.getValue()) ? null : renderPos;
+    if (pos == null) {
+      slidePos = null;
+      fadePositions.clear();
       return;
     }
-    Vec3 from = renderTarget.position().add(0, 1.0, 0);
-    Vec3 to = lastPredicted.add(0, 1.0, 0);
-    if (from.distanceToSqr(to) < 0.01) return;
-    net.minecraft.gizmos.Gizmos.line(
-            from, to, me.friendly.exeter.render.EspRenderManager.getClientColor(), 2.0f)
-        .setAlwaysOnTop();
+    int color = EspRenderManager.getClientColor();
+    int fillBase =
+        useCustomAlpha.getValue()
+            ? Math.round(fillAlpha.getValue())
+            : EspRenderManager.getGlobalFillAlpha();
+    int outlineBase =
+        useCustomAlpha.getValue()
+            ? Math.round(outlineAlpha.getValue())
+            : EspRenderManager.getGlobalOutlineAlpha();
+    if (fade.getValue()) {
+      for (Map.Entry<BlockPos, Long> stale : fadePositions.entrySet()) {
+        if (stale.getKey().equals(pos)) continue;
+        float factor =
+            Math.min(
+                1.0f,
+                Math.max(
+                    0.0f,
+                    (float) (stale.getValue() + fadeTime.getValue() - now) / fadeTime.getValue()));
+        if (factor <= 0.0f) continue;
+        if (fadeMode.getValue() == FadeMode.SHRINK) {
+          AABB full = new AABB(stale.getKey());
+          double height = (full.maxY - full.minY) * factor;
+          if (height <= 0.001) continue;
+          renderBox(
+              new AABB(full.minX, full.minY, full.minZ, full.maxX, full.minY + height, full.maxZ),
+              fillBase,
+              outlineBase,
+              color);
+        } else {
+          renderBox(
+              new AABB(stale.getKey()),
+              Math.round(fillBase * factor),
+              Math.round(outlineBase * factor),
+              color);
+        }
+      }
+      fadePositions.put(pos, now);
+    }
+    fadePositions.entrySet().removeIf(e -> e.getValue() + fadeTime.getValue() < now);
+    if (slide.getValue() && slidePos != null && !slidePos.equals(pos)) {
+      double factor =
+          Math.min(1.0, (double) (now - slideStartMs) / Math.max(1, slideTime.getValue()));
+      if (factor >= 1.0) {
+        renderBox(new AABB(pos), fillBase, outlineBase, color);
+      } else {
+        renderBox(lerpBox(new AABB(slidePos), new AABB(pos), factor), fillBase, outlineBase, color);
+      }
+    } else {
+      renderBox(new AABB(pos), fillBase, outlineBase, color);
+    }
+    if (renderDamage.getValue() && renderDamageText != null) {
+      Gizmos.billboardTextOverBlock(renderDamageText, pos, 0, 0xFFFFFFFF, 0.5f).setAlwaysOnTop();
+    }
+  }
+
+  private void renderBox(AABB box, int fillAlpha, int outlineAlpha, int color) {
+    GizmoStyle style =
+        GizmoStyle.strokeAndFill(
+            ARGB.color(outlineAlpha, color), lineWidth.getValue(), ARGB.color(fillAlpha, color));
+    Gizmos.cuboid(box, style).setAlwaysOnTop();
+  }
+
+  private static AABB lerpBox(AABB from, AABB to, double t) {
+    return new AABB(
+        from.minX + (to.minX - from.minX) * t,
+        from.minY + (to.minY - from.minY) * t,
+        from.minZ + (to.minZ - from.minZ) * t,
+        from.maxX + (to.maxX - from.maxX) * t,
+        from.maxY + (to.maxY - from.maxY) * t,
+        from.maxZ + (to.maxZ - from.maxZ) * t);
   }
 
   private void tickBreak(Player target, Vec3 predicted) {
@@ -544,6 +707,7 @@ public class AutoCrystal extends ToggleableModule {
       }
       return;
     }
+    setRenderPos(bestBase.immutable(), String.format("%.1f", bestDamage));
     noWallLogged = false;
 
     int origSlot = minecraft.player.getInventory().getSelectedSlot();
