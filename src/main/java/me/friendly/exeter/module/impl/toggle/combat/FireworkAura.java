@@ -59,6 +59,15 @@ public class FireworkAura extends ToggleableModule {
     setDescription("Fireworks players hiding under cover.");
     offerProperties(
         targetRange, placeRange, maxSelfDamage, delay, rotate, swingHand, autoSwitch, switchBack);
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    maxSelfDamage.setDescription(
+        "Skip placements above this self damage. Lethal hits are always skipped.");
+    delay.setDescription("Ticks between firework launches.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
     this.listeners.add(
         new Listener<TickEvent>("fireworkaura_tick") {
           @Override
