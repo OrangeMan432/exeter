@@ -44,7 +44,7 @@ public class BreakHighlight extends ToggleableModule {
   private final EnumProperty<RenderMode> renderMode =
       new EnumProperty<RenderMode>(RenderMode.BOTH, "Render", "mode");
   private final NumberProperty<Float> lineWidth =
-      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Width");
+      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -88,6 +88,16 @@ public class BreakHighlight extends ToggleableModule {
         fillAlpha,
         outlineAlpha,
         textScale);
+    range.setDescription("How far from you mined blocks are shown.");
+    playerRange.setDescription("Hides the box once the miner is this far from the block.");
+    showProgress.setDescription("Adds the mining progress percent next to the miner name.");
+    renderMode.setDescription("Whether boxes are filled, outlined, or both.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
+    textScale.setDescription("Size of the name and progress text.");
     this.listeners.add(
         new Listener<PacketEvent>("break_highlight_packet") {
           @Override
