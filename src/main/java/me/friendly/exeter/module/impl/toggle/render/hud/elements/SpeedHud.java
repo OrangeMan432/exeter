@@ -18,6 +18,7 @@ public final class SpeedHud extends HudModule {
     super("Speed", new String[] {"speedhud", "speed"}, Corner.BOTTOM_RIGHT);
     setDescription("Displays your current movement speed.");
     this.offerProperties(averagingTime);
+    averagingTime.setDescription("Smooths the readout by averaging over this many seconds.");
   }
 
   @Override
