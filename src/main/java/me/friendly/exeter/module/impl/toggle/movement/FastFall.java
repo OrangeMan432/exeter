@@ -35,6 +35,9 @@ public final class FastFall extends ToggleableModule {
     super("FastFall", new String[] {"fastfall", "fast fall"}, 0x00AAFF, ModuleType.MOVEMENT);
     setDescription("Makes you fall faster. Fast mode applies on ground, Strict mode uses timer.");
     offerProperties(mode, noLag, height);
+    mode.setDescription("How extra fall speed is applied.");
+    noLag.setDescription("Soften the pull to avoid lagging back.");
+    height.setDescription("Only speed up falls within this height.");
 
     listeners.add(
         new Listener<TickEvent>("fastfall_tick") {
