@@ -17,7 +17,6 @@ public class Speed extends ToggleableModule {
   private final Property<Boolean> damageBoost = new Property<Boolean>(true, "Damage Boost");
   private final Property<Boolean> jump = new Property<Boolean>(true, "Jump");
   private final Property<Boolean> strict = new Property<Boolean>(false, "Strict");
-  private final Property<Boolean> lavaBoost = new Property<Boolean>(true, "Lava Boost");
   private final Property<Boolean> waterSpeed = new Property<Boolean>(true, "Water Speed");
   private final Property<Boolean> randomBoost = new Property<Boolean>(false, "Random Boost");
 
@@ -33,7 +32,12 @@ public class Speed extends ToggleableModule {
     super("Speed", new String[] {"speed"}, 0x00FF00, ModuleType.MOVEMENT);
     setDescription("Increases movement speed with various methods.");
 
-    offerProperties(damageBoost, jump, strict, lavaBoost, waterSpeed, randomBoost);
+    offerProperties(damageBoost, jump, strict, waterSpeed, randomBoost);
+    damageBoost.setDescription("Gain speed after taking damage.");
+    jump.setDescription("Jump to keep moving.");
+    strict.setDescription("Use slower but safer speeds.");
+    waterSpeed.setDescription("Keep moving fast while in liquids.");
+    randomBoost.setDescription("Add random speed bursts while running.");
 
     listeners.add(
         new Listener<PacketEvent>("speed_packet") {
