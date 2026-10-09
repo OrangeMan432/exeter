@@ -17,6 +17,7 @@ public final class NoFall extends ToggleableModule {
     super("NoFall", new String[] {"nofall", "nofalldamage"}, 0x00FFAA, ModuleType.MOVEMENT);
     setDescription("Prevents fall damage when above a minimum height.");
     offerProperties(minDistance);
+    minDistance.setDescription("Fall distance before preventing damage.");
     listeners.add(
         new Listener<TickEvent>("nofall_tick") {
           @Override
