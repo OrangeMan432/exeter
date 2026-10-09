@@ -57,7 +57,7 @@ public class HoleESP extends ToggleableModule {
   private final Property<Boolean> hideOwn = new Property<Boolean>(false, "Hide Own");
   private final Property<Boolean> flatOwn = new Property<Boolean>(false, "Flat Own");
   private final NumberProperty<Float> lineWidth =
-      new NumberProperty<Float>(2.0f, 0.5f, 10.0f, "Width");
+      new NumberProperty<Float>(2.0f, 0.5f, 10.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -88,6 +88,21 @@ public class HoleESP extends ToggleableModule {
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
+    range.setDescription("How far around you holes are searched.");
+    yRange.setDescription("How far above and below you holes are searched.");
+    useSingle.setDescription("Highlights single-block holes.");
+    useDouble.setDescription("Highlights two-block-long holes.");
+    useQuad.setDescription("Highlights 2x2 holes.");
+    renderMode.setDescription("Whether boxes are filled, outlined, or both.");
+    shapeMode.setDescription(
+        "Chooses whether the box covers the hole air, the floor, a flat slab, or two blocks tall.");
+    hideOwn.setDescription("Hides the hole you are standing in.");
+    flatOwn.setDescription("Draws the hole you are standing in as a flat slab.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     this.listeners.add(
         new Listener<TickEvent>("hole_esp_tick") {
           @Override
