@@ -11,9 +11,12 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class FakePlayerEntity extends RemotePlayer {
   private BooleanSupplier damageSupplier = () -> true;
@@ -28,15 +31,47 @@ public class FakePlayerEntity extends RemotePlayer {
       net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
     if (!damageSupplier.getAsBoolean()) return;
 
-    float healthBefore = this.getHealth();
-    float newHealth = healthBefore - damage;
+    // Vanilla pipeline: armor/toughness, then resistance/protection, then absorption.
+    damage = this.getDamageAfterArmorAbsorb(damageSource, damage);
+    damage = this.magicAbsorb(damageSource, damage);
+    float absorbed = Math.min(this.getAbsorptionAmount(), damage);
+    this.setAbsorptionAmount(this.getAbsorptionAmount() - absorbed);
+    damage -= absorbed;
+    if (damage <= 0.0F) return;
 
+    float newHealth = this.getHealth() - damage;
     if (newHealth <= 0.0F && hasTotem) {
       popTotem(damageSource);
       return;
     }
 
     this.setHealth(Math.max(newHealth, 0.0F));
+  }
+
+  /**
+   * Client-safe mirror of vanilla {@code getDamageAfterMagicAbsorb} (resistance exact, stats
+   * skipped). Protection enchantments resolve their effects against a ServerLevel, which only
+   * exists on an integrated server; on remote servers protection is skipped while armor, toughness
+   * and resistance still apply.
+   */
+  private float magicAbsorb(DamageSource damageSource, float damage) {
+    if (damageSource.is(DamageTypeTags.BYPASSES_EFFECTS)) return damage;
+    if (this.hasEffect(MobEffects.RESISTANCE)
+        && !damageSource.is(DamageTypeTags.BYPASSES_RESISTANCE)) {
+      int scale = (this.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
+      damage = Math.max(damage * (25 - scale) / 25.0F, 0.0F);
+    }
+    if (damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) return damage;
+    var server = Minecraft.getInstance().getSingleplayerServer();
+    if (server != null) {
+      var serverLevel = server.getLevel(this.level().dimension());
+      if (serverLevel != null) {
+        damage =
+            CombatRules.getDamageAfterMagicAbsorb(
+                damage, EnchantmentHelper.getDamageProtection(serverLevel, this, damageSource));
+      }
+    }
+    return damage;
   }
 
   private void popTotem(DamageSource source) {
