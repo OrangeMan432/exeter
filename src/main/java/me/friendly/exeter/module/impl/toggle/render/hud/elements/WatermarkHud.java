@@ -21,6 +21,7 @@ public final class WatermarkHud extends HudModule {
     super("Watermark", new String[] {"watermark", "wm", "water"}, Corner.TOP_LEFT);
     setDescription("Displays the client name and version.");
     this.offerProperties(displayMode);
+    displayMode.setDescription("Chooses how much version detail the watermark shows.");
   }
 
   private String versionText() {
