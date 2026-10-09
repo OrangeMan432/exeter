@@ -41,6 +41,7 @@ the same way that 3arthqu4ke's does (and Future's does).
 
 - `RSHIFT` — ClickGUI (module configuration)
 - `` ` `` (grave) — Windows (console, friends)
+- `,` (comma) — HUDEditor (reposition overlay elements)
 
 ## Features
 
