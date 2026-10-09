@@ -82,6 +82,11 @@ the agent writes code. Ask before crossing that boundary.
   Flat fills, outlines and gizmo styles all go through these two values.
 - Shared UI helpers live in `module/impl/toggle/render/clickgui/` (e.g. `SelectionPopup`).
   Do not duplicate popup logic across modules.
+- ArrayList tags: override `getTag()` for live display info (mode, target, counts, rates).
+  Return null when there is nothing to show; never return the label itself (the list
+  skips label-equal tags). Multiple fields go comma-separated (`Name, 4/s` renders as
+  `Module [Name, 4/s]`, brackets gray, tag text un-cased). `getTag()` runs every frame,
+  so keep it allocation-light: precompute in tick handlers, prune rate windows on read.
 - Test-only hooks go in `me.friendly.exeter.test` and must be inert unless explicitly
   enabled (e.g. `-Dexeter.smokeTest=true`).
 - If the user corrects you, treat it as a standing constraint until explicitly lifted.
