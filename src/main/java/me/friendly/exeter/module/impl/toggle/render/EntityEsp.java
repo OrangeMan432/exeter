@@ -56,6 +56,18 @@ public final class EntityEsp extends ToggleableModule {
         outlineAlpha,
         entitySelections.getProperty(),
         selectEntities);
+    range.setDescription("How far from you entities are highlighted.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    renderMode.setDescription("Whether boxes are filled, outlined, or both.");
+    playersAlways.setDescription("Always highlights players, even if not selected.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
+    entitySelections
+        .getProperty()
+        .setDescription("Entity types currently selected for highlighting.");
+    selectEntities.setDescription("Opens the entity picker.");
 
     this.listeners.add(
         new Listener<WorldRenderEvent>("entity_esp_render") {
