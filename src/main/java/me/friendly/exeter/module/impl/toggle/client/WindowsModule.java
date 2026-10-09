@@ -26,6 +26,7 @@ public final class WindowsModule extends ToggleableModule {
   public WindowsModule() {
     super("Windows", new String[] {"Windows", "win"}, ModuleType.CLIENT);
     offerProperties(resetPositions);
+    resetPositions.setDescription("Restores all client windows to their default positions.");
   }
 
   public static WindowScreen getScreen() {
