@@ -87,6 +87,20 @@ public final class ClickGui extends ToggleableModule {
         stripWidth,
         rollingInverse,
         resetPositions);
+    showBackground.setDescription("Draws the dark background behind panels.");
+    showDescriptions.setDescription("Shows setting descriptions in the GUI.");
+    showGear.setDescription("Shows the gear button that opens module settings.");
+    showArrow.setDescription("Shows the open/close arrow on panel headers.");
+    showModuleCount.setDescription("Shows the module count on panel headers.");
+    showGradient.setDescription("Draws buttons with a gradient background.");
+    panelAlignment.setDescription("Aligns panels centered or top-left.");
+    searchEnabled.setDescription("Shows the search bar for finding modules.");
+    showBorder.setDescription("Draws a border around panels.");
+    rollingRainbow.setDescription("Colors panels and buttons with an animated rainbow.");
+    rollingDirection.setDescription("Direction the rainbow colors scroll.");
+    stripWidth.setDescription("Width of the color strip on horizontal gradients.");
+    rollingInverse.setDescription("Reverses the rainbow scroll direction.");
+    resetPositions.setDescription("Resets all panel positions.");
   }
 
   /** Spectrum strip width for horizontal gradients; falls back to 4px. */

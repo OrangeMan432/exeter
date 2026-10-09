@@ -57,6 +57,12 @@ public class AutoGear extends ToggleableModule {
     super("AutoGear", new String[] {"autogear", "auto-gear"}, 0xFF0000, ModuleType.MISCELLANEOUS);
     setDescription("Automatically sorts and equips best gear from your inventory.");
     offerProperties(enderChest, confirmSort, invasive, closeAfter, tickDelay, movesPerTick);
+    enderChest.setDescription("Allow sorting from ender chests.");
+    confirmSort.setDescription("Verify the sort completed before finishing.");
+    invasive.setDescription("Move items even into occupied slots.");
+    closeAfter.setDescription("Close the container when sorting finishes.");
+    tickDelay.setDescription("Ticks to wait between sort steps.");
+    movesPerTick.setDescription("Container clicks to perform per tick.");
     this.listeners.add(tickListener);
   }
 

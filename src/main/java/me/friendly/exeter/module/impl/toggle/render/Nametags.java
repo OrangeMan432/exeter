@@ -41,6 +41,11 @@ public class Nametags extends ToggleableModule {
     this.selectEntities = new PopupProperty("Select Entities", this::openEntityPopup);
     offerProperties(
         range, textScale, playersAlways, entitySelections.getProperty(), selectEntities);
+    range.setDescription("How far from you nametags are shown.");
+    textScale.setDescription("Size of the nametag text.");
+    playersAlways.setDescription("Always tags players, even if not selected.");
+    entitySelections.getProperty().setDescription("Entity types currently tagged.");
+    selectEntities.setDescription("Opens the entity picker.");
     this.listeners.add(
         new Listener<WorldRenderEvent>("nametags_render") {
           @Override

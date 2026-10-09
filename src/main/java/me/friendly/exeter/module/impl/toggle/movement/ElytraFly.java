@@ -131,6 +131,22 @@ public class ElytraFly extends ToggleableModule {
         restartDelay,
         sprint,
         manualTakeoff);
+    mode.setDescription("Flight behavior to use.");
+    pitch40LowerBounds.setDescription("Lowest height before climbing back up.");
+    pitch40UpperBounds.setDescription("Highest height before diving back down.");
+    pitch40RotationSpeedUp.setDescription("Climb speed while gaining height.");
+    pitch40RotationSpeedDown.setDescription("Dive speed while losing height.");
+    pitch40TakeoffDelay.setDescription("Delay between fireworks while taking off.");
+    pitch40YawLock.setDescription("How Pitch40 controls facing direction.");
+    autoJump.setDescription("Hold jump to keep gliding.");
+    yawLockMode.setDescription("How facing direction is controlled.");
+    yaw.setDescription("Fixed facing direction for Simple yaw lock.");
+    lockPitch.setDescription("Hold a fixed pitch while flying.");
+    pitch.setDescription("Fixed pitch angle to hold.");
+    restart.setDescription("Restart gliding after being rubberbanded.");
+    restartDelay.setDescription("Delay before restarting after a rubberband.");
+    sprint.setDescription("Sprint while flying.");
+    manualTakeoff.setDescription("Only start gliding manually, not with jump.");
     listeners.add(tickListener);
     listeners.add(packetListener);
   }

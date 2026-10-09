@@ -39,6 +39,7 @@ public class AutoItemDupe extends ToggleableModule {
     super("AutoItemDupe", new String[] {"autoitemdupe", "aidd"}, ModuleType.MISCELLANEOUS);
     setDescription("Dupes wooden buttons using the crafting recipe bug.");
     offerProperties(cancelGui);
+    cancelGui.setDescription("Close open screens when disabling.");
 
     this.listeners.add(
         new Listener<TickEvent>("auto_item_dupe_tick") {

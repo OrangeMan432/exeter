@@ -46,6 +46,14 @@ public class FakePlayerModule extends ToggleableModule {
 
     offerProperties(
         record, playRecording, loop, gapple, gappleDelay, damage, copyArmor, respawnDelay);
+    record.setDescription("Record your movement for playback.");
+    playRecording.setDescription("Play back the recorded movement.");
+    loop.setDescription("Loop the recorded movement.");
+    gapple.setDescription("Apply golden apple effects to the fake player.");
+    gappleDelay.setDescription("Delay between golden apple effects in milliseconds.");
+    damage.setDescription("Let explosions and fireworks hurt the fake player.");
+    copyArmor.setDescription("Copy your armor onto the fake player.");
+    respawnDelay.setDescription("Seconds before respawning after death.");
 
     listeners.add(new ListenerTick(this));
     listeners.add(new ListenerAttack(this));

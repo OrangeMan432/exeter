@@ -21,6 +21,8 @@ public final class ArmorHud extends HudModule {
     super("Armor", new String[] {"armor", "a"}, Corner.BOTTOM_LEFT);
     setDescription("Displays your equipped armor.");
     this.offerProperties(orientation, showDurability);
+    orientation.setDescription("Arranges the armor icons in a row or a column.");
+    showDurability.setDescription("Shows each armor piece's remaining durability beside it.");
   }
 
   @Override

@@ -47,6 +47,13 @@ public final class AutoHoleMine extends ToggleableModule {
     super("AutoHoleMine", new String[] {"autoholemine", "holemine"}, 0xFFAA00, ModuleType.COMBAT);
     setDescription("Mines into the nearest enemy hole.");
     offerProperties(breakTrap, doubleMine, ignoreBed, ignorePiston, ignoreWeb, fire, fallingBlocks);
+    breakTrap.setDescription("Mine the cover block above an open surround.");
+    doubleMine.setDescription("Mine two blocks at once when no single mine works.");
+    ignoreBed.setDescription("Never mine bed blocks.");
+    ignorePiston.setDescription("Never mine piston heads.");
+    ignoreWeb.setDescription("Never mine cobwebs.");
+    fire.setDescription("Also mine fire blocks around the hole.");
+    fallingBlocks.setDescription("Also mine falling blocks like sand and gravel.");
     listeners.add(
         new Listener<TickEvent>("autoholemine_tick") {
           @Override

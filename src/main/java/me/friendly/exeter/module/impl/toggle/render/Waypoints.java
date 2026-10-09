@@ -31,6 +31,10 @@ public class Waypoints extends ToggleableModule {
     super("Waypoints", new String[] {"waypoints", "wp"}, 0x55FFFF, ModuleType.RENDER);
     setDescription("Beacons for saved waypoints, with coords and distance.");
     offerProperties(lineWidth, textScale, showCoords, showDistance);
+    lineWidth.setDescription("Outline thickness in pixels.");
+    textScale.setDescription("Size of the waypoint label text.");
+    showCoords.setDescription("Shows waypoint coordinates in the label.");
+    showDistance.setDescription("Shows live distance in the waypoint label.");
     this.listeners.add(
         new Listener<WorldRenderEvent>("waypoints_render") {
           @Override

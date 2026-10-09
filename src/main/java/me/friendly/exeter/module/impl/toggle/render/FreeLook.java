@@ -34,6 +34,8 @@ public final class FreeLook extends ToggleableModule {
     super("FreeLook", new String[] {"freelook", "free-look"}, 0x55FFFF, ModuleType.RENDER);
     setDescription("Rotate the camera with the mouse without turning the player.");
     offerProperties(togglePerspective, sensitivity);
+    togglePerspective.setDescription("Switches to third person while free looking.");
+    sensitivity.setDescription("How fast the free camera turns with the mouse.");
   }
 
   @Override

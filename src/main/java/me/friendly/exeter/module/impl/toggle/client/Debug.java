@@ -45,6 +45,15 @@ public class Debug extends ToggleableModule {
         refillTotem,
         moduleToggles.getProperty(),
         modulesPopup);
+    logToFile.setDescription("Saves debug output to the log file.");
+    logToChat.setDescription("Shows debug output in chat.");
+    logToNotifications.setDescription("Shows debug output as notifications.");
+    showInfo.setDescription("Includes info-level messages in debug output.");
+    showWarn.setDescription("Includes warning messages in debug output.");
+    showError.setDescription("Includes error messages in debug output.");
+    refillTotem.setDescription("Gives you a fresh totem each time you pop one.");
+    moduleToggles.getProperty().setDescription("Chooses which modules can send debug output.");
+    modulesPopup.setDescription("Opens the list of modules to toggle debug output for.");
     this.listeners.add(
         new Listener<PacketEvent>("debug_totem_refill") {
           @Override

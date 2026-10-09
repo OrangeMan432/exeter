@@ -34,6 +34,7 @@ public final class FullBright extends ToggleableModule {
     super("FullBright", new String[] {"fullbright", "fb", "bright"}, 0xFFFFAA, ModuleType.RENDER);
     setDescription("Maximizes brightness.");
     offerProperties(mode);
+    mode.setDescription("How brightness is boosted: gamma or night vision.");
     listeners.add(tickListener);
   }
 

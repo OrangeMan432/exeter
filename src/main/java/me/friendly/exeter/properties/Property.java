@@ -7,6 +7,7 @@ import java.util.function.BooleanSupplier;
 public class Property<T> {
   private final String[] aliases;
   protected T value;
+  private String description = "";
   private final List<Property<?>> children = new ArrayList<>();
   private BooleanSupplier visibleWhen = () -> true;
 
@@ -17,6 +18,15 @@ public class Property<T> {
 
   public String[] getAliases() {
     return this.aliases;
+  }
+
+  /** Hover text for the ClickGUI. Empty means the GUI falls back to label plus value. */
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public T getValue() {

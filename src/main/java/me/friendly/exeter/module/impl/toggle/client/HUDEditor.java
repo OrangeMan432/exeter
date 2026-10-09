@@ -14,6 +14,7 @@ public final class HUDEditor extends ToggleableModule {
     super("HUDEditor", new String[] {"hudeditor", "hudedit"}, ModuleType.CLIENT);
     setDescription("Opens the HUD editor to reposition overlay elements.");
     offerProperties(snapRange);
+    snapRange.setDescription("Controls how closely HUD elements snap to edges and each other.");
   }
 
   /** Snap radius in pixels; 0 disables corner snapping (everything drops free). */

@@ -51,6 +51,9 @@ public class ElytraTarget extends ToggleableModule {
         ModuleType.COMBAT);
     setDescription("Automatically steers towards the nearest enemy in range.");
     offerProperties(range, speed, showTarget);
+    range.setDescription("Steer toward the nearest enemy within this many blocks.");
+    speed.setDescription("Degrees turned per tick toward the target.");
+    showTarget.setDescription("Draw a marker on the current target.");
     this.listeners.add(tickListener);
   }
 

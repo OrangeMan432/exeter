@@ -105,6 +105,21 @@ public class PistonCrystal extends ToggleableModule {
         showEsp,
         cleanup,
         cleanupDelay);
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    breakRange.setDescription("Maximum reach for breaking, in blocks.");
+    minDamage.setDescription("Skip placements below this target damage.");
+    maxSelfDamage.setDescription(
+        "Skip placements above this self damage. Lethal hits are always skipped.");
+    delay.setDescription("Ticks between placement attempts.");
+    autoBase.setDescription("Place an obsidian base when one is missing.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    showEsp.setDescription("Draw markers on the piston and crystal spots.");
+    cleanup.setDescription("Break the piston and redstone after the attempt.");
+    cleanupDelay.setDescription("Ticks before placed parts are broken.");
     this.listeners.add(
         new Listener<TickEvent>("piston_crystal_tick") {
           @Override

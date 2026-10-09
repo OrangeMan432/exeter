@@ -70,6 +70,16 @@ public class PistonPush extends ToggleableModule {
         showEsp,
         cleanup,
         cleanupDelay);
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    attemptDelay.setDescription("Ticks between push attempts.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    showEsp.setDescription("Draw markers on the piston and redstone spots.");
+    cleanup.setDescription("Break the piston and redstone after pushing.");
+    cleanupDelay.setDescription("Ticks before placed parts are broken.");
     this.listeners.add(
         new Listener<TickEvent>("piston_push_tick") {
           @Override

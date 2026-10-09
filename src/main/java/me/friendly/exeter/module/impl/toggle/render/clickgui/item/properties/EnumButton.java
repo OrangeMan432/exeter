@@ -6,9 +6,10 @@ import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.PropertyItem;
 import me.friendly.exeter.properties.EnumProperty;
 
-public class EnumButton extends Button {
+public class EnumButton extends Button implements PropertyItem {
   private EnumProperty property;
   private final Module module;
   private final boolean child;
@@ -24,6 +25,11 @@ public class EnumButton extends Button {
   @Override
   public boolean isVisible() {
     return property == null || property.isVisible();
+  }
+
+  @Override
+  public EnumProperty<?> getProperty() {
+    return this.property;
   }
 
   @Override

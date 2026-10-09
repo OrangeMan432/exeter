@@ -29,6 +29,7 @@ public final class NotificationHud extends HudModule {
     super("Notifications", new String[] {"notifications", "notif", "notify"}, Corner.BOTTOM_RIGHT);
     setDescription("Garry's Mod style notifications.");
     this.offerProperties(maxNotifications);
+    maxNotifications.setDescription("Limits how many notifications are shown at once.");
   }
 
   private static float easeOutCubic(float t) {

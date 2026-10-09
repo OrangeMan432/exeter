@@ -57,8 +57,6 @@ public class AutoPot extends ToggleableModule {
 
   private final NumberProperty<Integer> badDelay =
       new NumberProperty<Integer>(10, 0, 30, "Bad Pot Delay");
-  private final NumberProperty<Double> factor =
-      new NumberProperty<Double>(0.75, 0.0, 1.5, "Factor");
   private final NumberProperty<Double> range = new NumberProperty<Double>(4.0, 0.0, 10.0, "Range");
   private final NumberProperty<Integer> badSlot =
       new NumberProperty<Integer>(1, 1, 9, "Badpot Slot");
@@ -66,7 +64,6 @@ public class AutoPot extends ToggleableModule {
   private final Property<Boolean> doJump = new Property<Boolean>(false, "Jump Boost");
   private final Property<Boolean> poison = new Property<Boolean>(false, "Poison");
   private final Property<Boolean> slow = new Property<Boolean>(false, "Slowness");
-  private final Property<Boolean> debug = new Property<Boolean>(false, "Debug");
 
   private final HashMap<Integer, Long> weaknessTime = new HashMap<>();
   private final HashMap<Integer, Long> jumpBoostTime = new HashMap<>();
@@ -104,14 +101,54 @@ public class AutoPot extends ToggleableModule {
         only,
         silentSwitch,
         badDelay,
-        factor,
         range,
         badSlot,
         weak,
         doJump,
         poison,
-        slow,
-        debug);
+        slow);
+    hp.setDescription("Throw healing potions when health is low.");
+    health.setDescription("Throw a healing potion below this health.");
+    equal.setDescription("Also throw when health exactly equals the threshold.");
+    predict.setDescription("Throw early when health is about to drop.");
+    times.setDescription("How far ahead to project falling health.");
+    predictHpDelay.setDescription("Cooldown between predicted heals, in milliseconds.");
+    healthSlot.setDescription("Hotbar slot healing potions are moved into.");
+    hpDelay.setDescription("Cooldown between healing throws, in milliseconds.");
+    speedPot.setDescription("Throw swiftness potions when the effect runs low.");
+    timeLeft.setDescription("Re-throw swiftness when fewer seconds of effect remain.");
+    swiftnessSlot.setDescription("Hotbar slot swiftness potions are moved into.");
+    speedDelay.setDescription("Cooldown between swiftness throws, in milliseconds.");
+    only.setDescription("Only throw while standing over solid ground.");
+    silentSwitch.setDescription("Return to the previous slot after throwing.");
+    badDelay.setDescription("Seconds between offensive throws.");
+    range.setDescription("Throw offensive potions at enemies within this many blocks.");
+    badSlot.setDescription("Hotbar slot offensive potions are moved into.");
+    weak.setDescription("Throw weakness potions at nearby enemies.");
+    doJump.setDescription("Throw leaping potions at nearby enemies.");
+    poison.setDescription("Throw poison potions at nearby enemies.");
+    slow.setDescription("Throw slowness potions at nearby enemies.");
+
+    hp.addChild(health);
+    hp.addChild(equal);
+    hp.addChild(predict);
+    hp.addChild(healthSlot);
+    hp.addChild(hpDelay);
+    predict.addChild(times);
+    predict.addChild(predictHpDelay);
+    speedPot.addChild(timeLeft);
+    speedPot.addChild(swiftnessSlot);
+    speedPot.addChild(speedDelay);
+    health.visibleWhen(() -> hp.getValue());
+    equal.visibleWhen(() -> hp.getValue());
+    predict.visibleWhen(() -> hp.getValue());
+    healthSlot.visibleWhen(() -> hp.getValue());
+    hpDelay.visibleWhen(() -> hp.getValue());
+    times.visibleWhen(() -> predict.getValue());
+    predictHpDelay.visibleWhen(() -> predict.getValue());
+    timeLeft.visibleWhen(() -> speedPot.getValue());
+    swiftnessSlot.visibleWhen(() -> speedPot.getValue());
+    speedDelay.visibleWhen(() -> speedPot.getValue());
 
     listeners.add(
         new Listener<TickEvent>("auto_pot_tick") {

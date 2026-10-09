@@ -64,6 +64,16 @@ public final class BlockEsp extends ToggleableModule {
         rescanInterval,
         blockSelections.getProperty(),
         selectBlocks);
+    range.setDescription("How far from you to search for matching blocks.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    renderMode.setDescription("Whether highlights are filled, outlined, or both.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
+    rescanInterval.setDescription("How often the world is rescanned for matching blocks.");
+    blockSelections.getProperty().setDescription("Blocks currently selected for highlighting.");
+    selectBlocks.setDescription("Opens the block picker.");
 
     this.listeners.add(
         new Listener<TickEvent>("block_esp_tick") {

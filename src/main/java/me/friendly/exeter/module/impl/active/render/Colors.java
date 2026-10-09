@@ -246,6 +246,45 @@ public final class Colors extends Module {
         hudColorMode,
         espFillAlpha,
         espOutlineAlpha);
+    colorMode.setDescription("Selects how the client accent color is produced.");
+    red.setDescription("Sets the red part of the client color.");
+    green.setDescription("Sets the green part of the client color.");
+    blue.setDescription("Sets the blue part of the client color.");
+    pickColor.setDescription("Opens a picker for the client color.");
+    hue.setDescription("Sets the hue of the client color.");
+    saturation.setDescription("Sets how vivid the client color is.");
+    lightness.setDescription("Sets how bright the client color is.");
+    rainbowSpeed.setDescription("Controls how fast the rainbow color cycles.");
+    rainbowSaturation.setDescription("Controls how vivid the rainbow color is.");
+    rainbowBrightness.setDescription("Controls how bright the rainbow color is.");
+    rainbowFactor.setDescription("Controls how much the rainbow shifts across the screen.");
+    gradientCount.setDescription("Sets how many colors the gradient blends between.");
+    grad1Red.setDescription("Sets the red part of gradient color 1.");
+    grad1Green.setDescription("Sets the green part of gradient color 1.");
+    grad1Blue.setDescription("Sets the blue part of gradient color 1.");
+    pickGradient1.setDescription("Opens a picker for gradient color 1.");
+    grad2Red.setDescription("Sets the red part of gradient color 2.");
+    grad2Green.setDescription("Sets the green part of gradient color 2.");
+    grad2Blue.setDescription("Sets the blue part of gradient color 2.");
+    pickGradient2.setDescription("Opens a picker for gradient color 2.");
+    grad3Red.setDescription("Sets the red part of gradient color 3.");
+    grad3Green.setDescription("Sets the green part of gradient color 3.");
+    grad3Blue.setDescription("Sets the blue part of gradient color 3.");
+    pickGradient3.setDescription("Opens a picker for gradient color 3.");
+    grad4Red.setDescription("Sets the red part of gradient color 4.");
+    grad4Green.setDescription("Sets the green part of gradient color 4.");
+    grad4Blue.setDescription("Sets the blue part of gradient color 4.");
+    pickGradient4.setDescription("Opens a picker for gradient color 4.");
+    grad5Red.setDescription("Sets the red part of gradient color 5.");
+    grad5Green.setDescription("Sets the green part of gradient color 5.");
+    grad5Blue.setDescription("Sets the blue part of gradient color 5.");
+    pickGradient5.setDescription("Opens a picker for gradient color 5.");
+    gradientSpeed.setDescription("Controls how fast the gradient cycles.");
+    gradientBrightness.setDescription("Limits how bright the gradient gets.");
+    gradientFactor.setDescription("Controls how much the gradient shifts across the screen.");
+    hudColorMode.setDescription("Chooses whether HUD text uses white or the client color.");
+    espFillAlpha.setDescription("Sets how transparent ESP box fills are.");
+    espOutlineAlpha.setDescription("Sets how transparent ESP outlines are.");
   }
 
   private static Color baseColor() {

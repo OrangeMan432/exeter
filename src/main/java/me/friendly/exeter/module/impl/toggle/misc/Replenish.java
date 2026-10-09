@@ -46,6 +46,10 @@ public class Replenish extends ToggleableModule {
     super("Replenish", new String[] {"replenish", "refill"}, 0x66CCFF, ModuleType.MISCELLANEOUS);
     setDescription("Refills hotbar stacks from the main inventory.");
     offerProperties(threshold, delay, putBack, replenishInLoot);
+    threshold.setDescription("Refill hotbar stacks at or below this count.");
+    delay.setDescription("Milliseconds between inventory moves.");
+    putBack.setDescription("Return leftover items to the donor slot.");
+    replenishInLoot.setDescription("Keep refilling while dropped items are nearby.");
     clearMemory();
     this.listeners.add(tickListener);
   }

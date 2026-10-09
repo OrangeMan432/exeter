@@ -30,6 +30,8 @@ public final class CompassHud extends HudModule {
     super("CompassHud", new String[] {"compasshud", "compass"}, Corner.TOP_LEFT);
     setDescription("Compass strip with waypoint markers.");
     offerProperties(width, labelMode);
+    width.setDescription("Sets how wide the compass strip is.");
+    labelMode.setDescription("Places waypoint names above or below the strip.");
   }
 
   @Override

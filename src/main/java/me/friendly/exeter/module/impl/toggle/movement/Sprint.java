@@ -19,6 +19,7 @@ public class Sprint extends ToggleableModule {
     super("Sprint", new String[] {"sprint", "autosprint"}, 0xFF0000, ModuleType.MOVEMENT);
     setDescription("Automatically sprints in the direction you are moving.");
     offerProperties(omni);
+    omni.setDescription("Sprint in all directions, not just forward.");
 
     this.listeners.add(
         new Listener<TickEvent>("sprint_tick") {

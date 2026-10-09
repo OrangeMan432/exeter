@@ -50,7 +50,6 @@ public class AutoShulker extends ToggleableModule {
   private final NumberProperty<Integer> slot = new NumberProperty<Integer>(1, 1, 9, "Slot");
   private final Property<Boolean> packetPlace = new Property<Boolean>(true, "Packet Place");
   private final Property<Boolean> placeSwing = new Property<Boolean>(true, "Place Swing");
-  private final Property<Boolean> packetSwing = new Property<Boolean>(true, "Packet Swing");
   private final Property<Boolean> packetSwitch = new Property<Boolean>(true, "Packet Switch");
   private final Property<Boolean> preferUnderneath =
       new Property<Boolean>(true, "Prefer Underneath");
@@ -90,9 +89,22 @@ public class AutoShulker extends ToggleableModule {
         slot,
         packetPlace,
         placeSwing,
-        packetSwing,
         packetSwitch,
         preferUnderneath);
+    once.setDescription("Stop after opening one shulker.");
+    emptySlots.setDescription("Minimum empty slots needed to place a shulker.");
+    disableAfterDeath.setDescription("Turn off automatically after dying.");
+    range.setDescription("Horizontal placement range in blocks.");
+    yRange.setDescription("Vertical placement range in blocks.");
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    tickDelay.setDescription("Ticks between placement attempts.");
+    openDelay.setDescription("Ticks between opening attempts.");
+    inventory.setDescription("Pull shulkers from the main inventory.");
+    slot.setDescription("Hotbar slot to swap shulkers into.");
+    packetPlace.setDescription("Place the shulker box directly.");
+    placeSwing.setDescription("Swing your hand when placing.");
+    packetSwitch.setDescription("Switch to the shulker slot and back.");
+    preferUnderneath.setDescription("Prefer placing below your feet.");
     this.listeners.add(tickListener);
   }
 
