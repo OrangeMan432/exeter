@@ -41,7 +41,7 @@ public class BlockHighlight extends ToggleableModule {
   private final EnumProperty<RenderMode> renderMode =
       new EnumProperty<RenderMode>(RenderMode.OUTLINED, "Type", "type");
   private final NumberProperty<Float> lineWidth =
-      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Width");
+      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -56,6 +56,13 @@ public class BlockHighlight extends ToggleableModule {
     fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     offerProperties(lookMode, renderMode, lineWidth, useCustomAlpha, fillAlpha, outlineAlpha);
+    lookMode.setDescription("Whether the whole block or just the targeted face is highlighted.");
+    renderMode.setDescription("Whether the highlight is filled, outlined, or both.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     this.listeners.add(
         new Listener<WorldRenderEvent>("block_highlight_render") {
           @Override
