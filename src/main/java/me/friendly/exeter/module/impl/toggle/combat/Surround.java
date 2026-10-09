@@ -69,6 +69,18 @@ public class Surround extends ToggleableModule {
         switchBack,
         blockSelections.getProperty(),
         selectBlocks);
+    height.setDescription("Wall height around your feet.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    attemptDelay.setDescription("Ticks between placement attempts.");
+    blocksPerTick.setDescription("Maximum blocks placed each tick.");
+    airPlace.setDescription("Place without needing a neighboring support block.");
+    snapCenter.setDescription("Move to the block center when enabled.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    blockSelections.getProperty().setDescription("Blocks the surround is allowed to place.");
+    selectBlocks.setDescription("Open the block picker.");
     this.listeners.add(
         new Listener<TickEvent>("surround_tick") {
           @Override
