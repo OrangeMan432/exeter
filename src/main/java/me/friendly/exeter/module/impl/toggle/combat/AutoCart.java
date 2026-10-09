@@ -108,6 +108,30 @@ public class AutoCart extends ToggleableModule {
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
+    tntCarts.setDescription("TNT minecarts to place on the rail before detonating.");
+    cartsPerTick.setDescription("Minecarts placed per tick.");
+    range.setDescription("Acquire targets within this many blocks.");
+    maxSelfDamage.setDescription(
+        "Skip placements above this self damage. Lethal hits are always skipped.");
+    pullFromInventory.setDescription("Pull TNT minecarts from the inventory into the hotbar.");
+    rotateRail.setDescription("Face the rail position while placing the rail.");
+    rotateMinecart.setDescription("Face the rail position while placing minecarts.");
+    instaLight.setDescription("Automatically break the rail and ignite the placed carts.");
+    breakDelay.setDescription("Ticks between breaks.");
+    render.setDescription("Draw the placement marker.");
+    fade.setDescription("Keep drawing past positions while they fade out.");
+    fadeTime.setDescription("Milliseconds a past position stays visible.");
+    fadeMode.setDescription("Alpha fades opacity out; Shrink sinks the box height to zero.");
+    slide.setDescription("Glide the box from the previous cell instead of teleporting it.");
+    slideTime.setDescription("Milliseconds the glide takes.");
+    smoothSlide.setDescription("Only move the box origin once per slide period.");
+    renderDamage.setDescription("Billboard the predicted damage over the box.");
+    renderTime.setDescription("Milliseconds the box survives after the last update.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     fadeTime.visibleWhen(() -> fade.getValue());
     fadeMode.visibleWhen(() -> fade.getValue());
     slideTime.visibleWhen(() -> slide.getValue());
