@@ -68,6 +68,7 @@ public class AutoCrystal extends ToggleableModule {
   private int eatSwapFrom = -1;
   private int eatGappleSlot = -1;
   private boolean noGappleLogged;
+  private final java.util.ArrayDeque<Long> placeTimes = new java.util.ArrayDeque<>();
 
   public AutoCrystal() {
     super(
@@ -197,6 +198,26 @@ public class AutoCrystal extends ToggleableModule {
       }
     }
     return true;
+  }
+
+  /** Live tag for the ArrayList: current target plus crystal placements in the last second. */
+  @Override
+  public String getTag() {
+    if (lastTargetKey == null) return null;
+    return lastTargetKey + ", " + placeRate() + "/s";
+  }
+
+  /** Placements in the trailing 1000ms window; pruned on every read so it stays live. */
+  private int placeRate() {
+    prunePlaceTimes();
+    return placeTimes.size();
+  }
+
+  private void prunePlaceTimes() {
+    long cutoff = System.currentTimeMillis() - 1000L;
+    while (!placeTimes.isEmpty() && placeTimes.peekFirst() < cutoff) {
+      placeTimes.pollFirst();
+    }
   }
 
   private void onTick() {
@@ -570,6 +591,8 @@ public class AutoCrystal extends ToggleableModule {
     pendingCrystal = placeAt.above().immutable();
     pendingTick = tickCounter;
     lastPlaceTick = tickCounter;
+    placeTimes.addLast(System.currentTimeMillis());
+    prunePlaceTimes();
   }
 
   private boolean hasLiveCrystal(BlockPos crystalCell) {

@@ -50,12 +50,7 @@ public final class ArrayListHud extends ListHudModule {
     if (organize.getValue() == Organize.ABC) {
       cmp = Comparator.comparing(Module::getLabel);
     } else {
-      cmp =
-          Comparator.comparingInt(
-                  (Module m) ->
-                      me.friendly.api.minecraft.render.font.FontUtil.getStringWidth(
-                          getTag(m.getLabel())))
-              .reversed();
+      cmp = Comparator.comparingInt((Module m) -> fullWidth(m)).reversed();
     }
     modules.sort(cmp);
 
@@ -68,21 +63,34 @@ public final class ArrayListHud extends ListHudModule {
       int entryColor = tm.getColor() | 0xFF000000;
       if (color == ColorMode.CLIENT) entryColor = Colors.getHudMain();
       else if (color == ColorMode.CLIENT_ACCENT) entryColor = Colors.getHudAccent();
-      entries.add(new TextEntry(getTag(tm.getLabel()), entryColor));
+      entries.add(new TextEntry(cased(tm.getLabel()), entryColor, suffixOf(tm), 0xFFAAAAAA));
     }
     return entries;
   }
 
-  private String getTag(String tag) {
+  /** Gray bracket info from the module's live tag, or empty when it has none. */
+  private static String suffixOf(ToggleableModule module) {
+    String tag = module.getTag();
+    if (tag == null || tag.isEmpty() || tag.equals(module.getLabel())) return "";
+    return " [" + tag + "]";
+  }
+
+  private int fullWidth(Module module) {
+    String full = cased(module.getLabel());
+    if (module instanceof ToggleableModule tm) full += suffixOf(tm);
+    return me.friendly.api.minecraft.render.font.FontUtil.getStringWidth(full);
+  }
+
+  private String cased(String label) {
     switch (look.getValue()) {
       case UPPER:
-        return tag.toUpperCase();
+        return label.toUpperCase();
       case LOWER:
-        return tag.toLowerCase();
+        return label.toLowerCase();
       case CUB:
-        return String.format("[%s]", tag.toLowerCase());
+        return String.format("[%s]", label.toLowerCase());
       default:
-        return tag;
+        return label;
     }
   }
 }

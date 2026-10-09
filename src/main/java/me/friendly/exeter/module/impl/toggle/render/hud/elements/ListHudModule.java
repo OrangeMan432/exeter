@@ -8,7 +8,15 @@ import net.minecraft.client.Minecraft;
 
 public abstract class ListHudModule extends HudModule {
 
-  public record TextEntry(String text, int color) {}
+  public record TextEntry(String text, int color, String suffix, int suffixColor) {
+    public TextEntry(String text, int color) {
+      this(text, color, "", 0xFFFFFFFF);
+    }
+
+    public String fullText() {
+      return text + suffix;
+    }
+  }
 
   protected ListHudModule(String label, String[] aliases, int color, Corner defaultCorner) {
     super(label, aliases, color, defaultCorner);
@@ -39,7 +47,7 @@ public abstract class ListHudModule extends HudModule {
   public int getWidth() {
     int max = 0;
     for (TextEntry entry : entriesOrDummy()) {
-      int w = FontUtil.getStringWidth(entry.text());
+      int w = FontUtil.getStringWidth(entry.fullText());
       if (w > max) max = w;
     }
     return max;
@@ -61,9 +69,13 @@ public abstract class ListHudModule extends HudModule {
 
     int py = top ? getY() : getY() + getHeight() - 9;
     for (TextEntry entry : entries) {
-      int lw = FontUtil.getStringWidth(entry.text());
+      int lw = FontUtil.getStringWidth(entry.fullText());
       int px = right ? getX() + width - lw : getX();
       FontUtil.drawString(entry.text(), px, py, entry.color());
+      if (!entry.suffix().isEmpty()) {
+        FontUtil.drawString(
+            entry.suffix(), px + FontUtil.getStringWidth(entry.text()), py, entry.suffixColor());
+      }
       py += top ? 9 : -9;
     }
   }
