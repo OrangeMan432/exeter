@@ -127,6 +127,35 @@ public class AutoCrystal extends ToggleableModule {
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    wallRange.setDescription("Maximum reach for placements behind walls, in blocks.");
+    breakRange.setDescription("Maximum reach for breaking, in blocks.");
+    minDamage.setDescription("Skip placements below this target damage.");
+    maxSelfDamage.setDescription(
+        "Skip placements above this self damage. Lethal hits are always skipped.");
+    placeDelay.setDescription("Ticks between placements.");
+    breakDelay.setDescription("Ticks between breaks.");
+    predict.setDescription("Ticks ahead to predict the target position.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    gappleSwap.setDescription("Swap to a gapple and pause the aura while the use key is held.");
+    render.setDescription("Draw the placement marker.");
+    fade.setDescription("Keep drawing past positions while they fade out.");
+    fadeTime.setDescription("Milliseconds a past position stays visible.");
+    fadeMode.setDescription("Alpha fades opacity out; Shrink sinks the box height to zero.");
+    slide.setDescription("Glide the box from the previous cell instead of teleporting it.");
+    slideTime.setDescription("Milliseconds the glide takes.");
+    smoothSlide.setDescription("Only move the box origin once per slide period.");
+    renderDamage.setDescription("Billboard the predicted damage over the box.");
+    renderTime.setDescription("Milliseconds the box survives after the last update.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     fadeTime.visibleWhen(() -> fade.getValue());
     fadeMode.visibleWhen(() -> fade.getValue());
     slideTime.visibleWhen(() -> slide.getValue());
