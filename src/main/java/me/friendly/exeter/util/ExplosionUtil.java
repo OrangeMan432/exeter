@@ -49,7 +49,9 @@ public final class ExplosionUtil {
     if (exposure <= 0.0) return 0.0F;
     double impact = (1.0 - dist) * exposure;
     if (impact <= 0.0) return 0.0F;
-    return (float) ((impact * impact + impact) / 2.0 * 7.0 * radius + 1.0);
+    float raw = (float) ((impact * impact + impact) / 2.0 * 7.0 * radius + 1.0);
+    // Explosion types scale with difficulty for players (Player-hurt path).
+    return applyDifficulty(level, raw);
   }
 
   /**
@@ -69,6 +71,20 @@ public final class ExplosionUtil {
   public static int fireworkBursts(ItemStack stack) {
     var fireworks = stack.get(DataComponents.FIREWORKS);
     return fireworks == null ? 0 : fireworks.explosions().size();
+  }
+
+  /**
+   * Vanilla Player-hurt difficulty scaling for always-scaling types. Fireworks are {@code
+   * when_caused_by_living_non_player}, and our own rockets are caused by a player, so {@link
+   * #fireworkDamage} deliberately skips this.
+   */
+  private static float applyDifficulty(Level level, float damage) {
+    return switch (level.getDifficulty()) {
+      case PEACEFUL -> 0.0F;
+      case EASY -> Math.min(damage / 2.0F + 1.0F, damage);
+      case HARD -> damage * 3.0F / 2.0F;
+      default -> damage;
+    };
   }
 
   /**
