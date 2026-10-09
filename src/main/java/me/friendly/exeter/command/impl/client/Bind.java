@@ -28,10 +28,17 @@ public final class Bind extends Command {
     if (!(module instanceof Toggleable)) {
       return "That module is not toggleable.";
     }
-    if (key == InputConstants.UNKNOWN.getValue()) {
+    if (key == InputConstants.UNKNOWN.getValue() && !keyName.equals("NONE")) {
       return "Unknown key: " + keyName;
     }
     ToggleableModule toggleableModule = (ToggleableModule) module;
+    if (keyName.equals("NONE")) {
+      Exeter.getInstance()
+          .getKeybindManager()
+          .getKeybindByLabel(toggleableModule.getLabel())
+          .setKey(0);
+      return String.format("&e%s&7 has been unbound.", toggleableModule.getLabel());
+    }
     Exeter.getInstance()
         .getKeybindManager()
         .getKeybindByLabel(toggleableModule.getLabel())

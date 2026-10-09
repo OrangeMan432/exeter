@@ -164,6 +164,11 @@ public final class ModuleManager extends ListRegistry<Module> {
         .getKeybindByLabel("Windows")
         .setKey(InputConstants.KEY_GRAVE);
 
+    Exeter.getInstance()
+        .getKeybindManager()
+        .getKeybindByLabel("HUDEditor")
+        .setKey(InputConstants.KEY_COMMA);
+
     new Config("module_configurations") {
 
       @Override
