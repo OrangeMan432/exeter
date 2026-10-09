@@ -43,7 +43,6 @@ public class AutoArmor extends ToggleableModule {
       new NumberProperty<>(5, 0, 99, "Elytra Depletion");
   private final Property<Boolean> pauseWhenSafe = new Property<>(false, "Pause When Safe");
   private final Property<Boolean> allowMend = new Property<>(false, "Allow Mend");
-  private final NumberProperty<Integer> repairTo = new NumberProperty<>(80, 0, 100, "Repair To");
 
   private final StopWatch rightClickTimer = new StopWatch();
   private boolean sleep;
@@ -73,8 +72,18 @@ public class AutoArmor extends ToggleableModule {
         elytraSaver,
         elytraDepletion,
         pauseWhenSafe,
-        allowMend,
-        repairTo);
+        allowMend);
+    delay.setDescription("Ticks between armor checks.");
+    strict.setDescription("Only equip while standing still.");
+    stackArmor.setDescription("Also equip armor pieces stacked above one item.");
+    swapSlot.setDescription("Hotbar slot used to equip stacked armor.");
+    packetSwitch.setDescription("Swap armor without visibly changing the held slot.");
+    armorSaver.setDescription("Unequip armor below the Depletion percent.");
+    depletion.setDescription("Durability percent below which armor is saved.");
+    elytraSaver.setDescription("Swap out a worn elytra before it breaks.");
+    elytraDepletion.setDescription("Durability percent below which the elytra is saved.");
+    pauseWhenSafe.setDescription("Pause while no enemies are nearby.");
+    allowMend.setDescription("Unequip mending armor while repairing it with XP.");
     listeners.add(tickListener);
   }
 
