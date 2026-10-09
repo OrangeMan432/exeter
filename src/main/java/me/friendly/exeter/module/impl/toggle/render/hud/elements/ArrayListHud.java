@@ -40,6 +40,9 @@ public final class ArrayListHud extends ListHudModule {
     super("ArrayList", new String[] {"arraylist", "array", "al"}, Corner.TOP_RIGHT);
     setDescription("Displays active modules in a list.");
     this.offerProperties(organize, look, colorMode);
+    organize.setDescription("Sorts entries alphabetically or longest first.");
+    look.setDescription("Controls name casing, including an optional bracketed style.");
+    colorMode.setDescription("Chooses between per-module colors or the client theme.");
   }
 
   @Override
