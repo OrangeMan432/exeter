@@ -168,6 +168,38 @@ public final class PacketMine extends ToggleableModule {
         display,
         renderMode,
         lineWidth);
+    delay.setDescription("Pause between mining attempts.");
+    breakRange.setDescription("Maximum reach for breaking, in blocks.");
+    creativeMode.setDescription("Control when blocks break instantly without mining time.");
+    breakTime.setDescription("Scales how long each block takes to mine.");
+    instant.setDescription("Keep mining the same spot without starting a new attempt.");
+    checkUnbreakable.setDescription("Skip blocks that cannot be broken.");
+    strict.setDescription("Restart mining after switching held items.");
+    ignoreChecks.setDescription("Finish the break even if the block already looks broken.");
+    swing.setDescription("Swing the hand while mining.");
+    forceRotation.setDescription("Face the block while it finishes mining.");
+    rotateTime.setDescription("How early to face the block before it breaks.");
+    sendRange.setDescription("Only finish breaks within this many blocks.");
+    removeRange.setDescription("Drop mining targets past this many blocks.");
+    doubleMineEnabled.setDescription("Mine a second block alongside the main one.");
+    doubleCalc.setDescription("Mining time scaling for the second block.");
+    maxTick.setDescription("Ticks before the second block attempt expires.");
+    minHealth.setDescription("Pause double-mining below this health.");
+    pauseMending.setDescription("Pause double-mining while mending armor.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    waitDouble.setDescription("Wait for the second block before finishing the first.");
+    bypassSwitch.setDescription("Swap tools from the full inventory, not just the hotbar.");
+    inventoryOnly.setDescription("Limit tool swaps to inventory slots.");
+    fastSwitch.setDescription("Swap back immediately after the double-mine hit.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    packetSwitch.setDescription("Switch tools without changing the visible held slot.");
+    placeCrystal.setDescription("Place a crystal on the mined block.");
+    breakCrystal.setDescription("Choose how crystals on mined blocks are broken.");
+    antiWeakness.setDescription("Swap to a weapon before hitting crystals while weakened.");
+    renderRange.setDescription("Only draw mining progress within this many blocks.");
+    display.setDescription("Draw the mining progress box.");
+    renderMode.setDescription("Whether the progress box is filled, outlined, or both.");
+    lineWidth.setDescription("Outline thickness in pixels.");
     listeners.add(
         new Listener<TickEvent>("packetmine_tick") {
           @Override
