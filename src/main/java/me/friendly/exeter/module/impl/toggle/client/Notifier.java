@@ -136,6 +136,12 @@ public final class Notifier extends ToggleableModule {
     super("Notifier", new String[] {"notifier", "notify", "notif"}, 0xFFAA55, ModuleType.CLIENT);
     setDescription("Sends notifications for game events.");
     offerProperties(visualRange, totemNotify, armorLow, armorBreak, teleports, pearls);
+    visualRange.setDescription("Notifies when players enter or leave visual range.");
+    totemNotify.setDescription("Notifies when a player pops a totem.");
+    armorLow.setDescription("Warns when a player's armor durability runs low.");
+    armorBreak.setDescription("Notifies when a player's armor piece breaks.");
+    teleports.setDescription("Notifies when a player teleports.");
+    pearls.setDescription("Notifies when a player throws an ender pearl and which way it goes.");
     listeners.add(packetListener);
     listeners.add(tickListener);
   }
