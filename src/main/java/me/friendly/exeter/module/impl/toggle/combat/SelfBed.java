@@ -37,6 +37,10 @@ public class SelfBed extends ToggleableModule {
     super("SelfBed", new String[] {"selfbed", "self-bed"}, 0xFF0000, ModuleType.COMBAT);
     setDescription("Places and uses beds at your position for self-combat.");
     this.offerProperties(rotate, range, placeDelay, useDelay);
+    rotate.setDescription("Face the target position while acting.");
+    range.setDescription("Maximum reach for placements, in blocks.");
+    placeDelay.setDescription("Ticks between placements.");
+    useDelay.setDescription("Ticks between placing and using the bed.");
     this.listeners.add(tickListener);
   }
 
