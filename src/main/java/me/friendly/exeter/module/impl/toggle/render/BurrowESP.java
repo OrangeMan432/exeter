@@ -26,7 +26,7 @@ public class BurrowESP extends ToggleableModule {
   private final Property<Boolean> showFriends = new Property<Boolean>(true, "Friends", "friend");
   private final Property<Boolean> showEnemies = new Property<Boolean>(true, "Enemies", "enemy");
   private final NumberProperty<Float> lineWidth =
-      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Width");
+      new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -41,6 +41,14 @@ public class BurrowESP extends ToggleableModule {
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     offerProperties(
         showSelf, showFriends, showEnemies, lineWidth, useCustomAlpha, fillAlpha, outlineAlpha);
+    showSelf.setDescription("Highlights you when you are inside a block.");
+    showFriends.setDescription("Highlights friends inside blocks.");
+    showEnemies.setDescription("Highlights other players inside blocks.");
+    lineWidth.setDescription("Outline thickness in pixels.");
+    useCustomAlpha.setDescription(
+        "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
+    fillAlpha.setDescription("Box fill opacity, 0-255.");
+    outlineAlpha.setDescription("Box outline opacity, 0-255.");
     this.listeners.add(
         new Listener<WorldRenderEvent>("burrow_esp_render") {
           @Override
