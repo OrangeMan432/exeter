@@ -78,6 +78,18 @@ public class AutoTrap extends ToggleableModule {
         switchBack,
         blockSelections.getProperty(),
         selectBlocks);
+    mode.setDescription("Full cages the target; Head only covers above the head.");
+    targetRange.setDescription("Acquire targets within this many blocks.");
+    placeRange.setDescription("Maximum reach for placements, in blocks.");
+    attemptDelay.setDescription("Ticks between placement attempts.");
+    blocksPerTick.setDescription("Blocks placed per tick.");
+    airPlace.setDescription("Place blocks without needing a solid neighbour.");
+    rotate.setDescription("Face the target position while acting.");
+    swingHand.setDescription("Swing the hand on place and break.");
+    autoSwitch.setDescription("Switch to the needed item before acting.");
+    switchBack.setDescription("Return to the previous slot afterwards.");
+    blockSelections.getProperty().setDescription("Blocks to trap with.");
+    selectBlocks.setDescription("Open the block selection menu.");
     this.listeners.add(
         new Listener<TickEvent>("autotrap_tick") {
           @Override
