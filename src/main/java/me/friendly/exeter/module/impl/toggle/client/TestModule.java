@@ -24,6 +24,12 @@ public class TestModule extends ToggleableModule {
     super("TestModule", new String[] {"testmodule", "test"}, 0xFFAA00, ModuleType.CLIENT);
     setDescription("Sends test debug messages for verifying the Debug system.");
     offerProperties(testInfo, testWarning, testError, testMultiLine, testAllModules, clearLog);
+    testInfo.setDescription("Sends a sample info message to test debug output.");
+    testWarning.setDescription("Sends a sample warning message to test debug output.");
+    testError.setDescription("Sends a sample error message to test debug output.");
+    testMultiLine.setDescription("Sends a three-line sample message to test debug output.");
+    testAllModules.setDescription("Sends sample messages from several module names.");
+    clearLog.setDescription("Clears the saved debug log file.");
 
     this.listeners.add(
         new Listener<TickEvent>("test_module_tick") {
