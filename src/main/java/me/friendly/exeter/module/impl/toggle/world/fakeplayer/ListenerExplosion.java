@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.world.fakeplayer;
 
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.world.phys.Vec3;
@@ -27,26 +28,32 @@ public class ListenerExplosion extends Listener<PacketEvent> {
           if (mc.level == null || module.getFakePlayer() == null || !module.isRunning()) return;
 
           Vec3 center = packet.center();
-          double x = center.x();
-          double y = center.y();
-          double z = center.z();
           float strength = packet.radius();
 
-          double dx = module.getFakePlayer().getX() - x;
-          double dy = module.getFakePlayer().getY() - y;
-          double dz = module.getFakePlayer().getZ() - z;
-          double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-          if (distance > 12.0) return;
-
-          double distFactor = 1.0 - distance / 12.0;
-          if (distFactor <= 0) return;
-
-          double exposure = (distFactor * distFactor + distFactor) / 2.0;
+          // Vanilla-faithful: sampled line-of-sight exposure, so cover blocks.
           float damage =
-              (float) ((exposure * exposure + exposure) / 2.0 * 7.0 * strength * 2.0 + 1.0);
-
-          module.getFakePlayer().applyDamage(damage);
+              me.friendly.exeter.util.ExplosionUtil.explosionDamage(
+                  mc.level, center, strength, module.getFakePlayer());
+          var dummy = module.getFakePlayer();
+          DebugLogger.get()
+              .log(
+                  "FakePlayer",
+                  DebugLogger.Level.INFO,
+                  String.format(
+                      "boom center=(%.2f,%.2f,%.2f) radius=%.1f dummy=(%.2f,%.2f,%.2f) hp=%.1f"
+                          + " dmg=%.1f",
+                      center.x,
+                      center.y,
+                      center.z,
+                      strength,
+                      dummy.getX(),
+                      dummy.getY(),
+                      dummy.getZ(),
+                      dummy.getHealth(),
+                      damage));
+          if (damage > 0) {
+            module.getFakePlayer().applyDamage(damage);
+          }
         });
   }
 }

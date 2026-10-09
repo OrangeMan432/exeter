@@ -1,6 +1,7 @@
 package me.friendly.exeter.util;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -8,7 +9,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 
 /**
  * Client-side mirrors of the vanilla server damage formulas, for predicting explosion and firework
@@ -24,10 +24,21 @@ public final class ExplosionUtil {
    * (MinecartTNT base 4.0, speed bonus only while moving), 6 for end crystals.
    */
   public static float explosionDamage(Level level, Vec3 center, float power, LivingEntity victim) {
+    return explosionDamage(
+        level, center, power, victim, victim.position(), victim.getBoundingBox());
+  }
+
+  /**
+   * Same formula with an explicit victim position and box, for scoring predicted positions the
+   * entity hasn't reached yet. The victim entity is still passed for the raycast collision context,
+   * exactly like vanilla.
+   */
+  public static float explosionDamage(
+      Level level, Vec3 center, float power, LivingEntity victim, Vec3 victimPos, AABB victimBox) {
     float radius = power * 2.0F;
-    double dist = victim.position().distanceTo(center) / radius;
+    double dist = victimPos.distanceTo(center) / radius;
     if (dist > 1.0) return 0.0F;
-    double exposure = exposure(level, center, victim.getBoundingBox());
+    double exposure = exposure(level, center, victim, victimBox);
     if (exposure <= 0.0) return 0.0F;
     double impact = (1.0 - dist) * exposure;
     if (impact <= 0.0) return 0.0F;
@@ -66,32 +77,37 @@ public final class ExplosionUtil {
     return false;
   }
 
-  /** Fraction of AABB grid points with a clear ray from the blast center (vanilla exposure). */
-  private static double exposure(Level level, Vec3 source, AABB box) {
-    int steps = 2;
+  /**
+   * Byte-for-byte port of {@code ServerExplosion.getSeenPercent}: per-axis grid steps {@code
+   * 1/(size*2+1)}, half-texel insets on X/Z only (no Y inset), rays cast from each box sample point
+   * to the blast center with COLLIDER blocks and the victim entity context.
+   */
+  private static double exposure(Level level, Vec3 center, LivingEntity victim, AABB box) {
+    double stepX = 1.0 / (box.getXsize() * 2.0 + 1.0);
+    double stepY = 1.0 / (box.getYsize() * 2.0 + 1.0);
+    double stepZ = 1.0 / (box.getZsize() * 2.0 + 1.0);
+    double offX = (1.0 - Math.floor(1.0 / stepX) * stepX) / 2.0;
+    double offZ = (1.0 - Math.floor(1.0 / stepZ) * stepZ) / 2.0;
+    if (stepX < 0.0 || stepY < 0.0 || stepZ < 0.0) return 0.0;
+    int seen = 0;
     int total = 0;
-    int clear = 0;
-    for (int xi = 0; xi <= steps; xi++) {
-      for (int yi = 0; yi <= steps; yi++) {
-        for (int zi = 0; zi <= steps; zi++) {
+    for (double t = 0.0; t <= 1.0; t += stepX) {
+      for (double u = 0.0; u <= 1.0; u += stepY) {
+        for (double v = 0.0; v <= 1.0; v += stepZ) {
           Vec3 point =
               new Vec3(
-                  box.minX + box.getXsize() * xi / steps,
-                  box.minY + box.getYsize() * yi / steps,
-                  box.minZ + box.getZsize() * zi / steps);
+                  Mth.lerp(t, box.minX, box.maxX) + offX,
+                  Mth.lerp(u, box.minY, box.maxY),
+                  Mth.lerp(v, box.minZ, box.maxZ) + offZ);
           var hit =
               level.clip(
                   new ClipContext(
-                      source,
-                      point,
-                      ClipContext.Block.COLLIDER,
-                      ClipContext.Fluid.NONE,
-                      CollisionContext.empty()));
-          if (hit.getType() == HitResult.Type.MISS) clear++;
+                      point, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, victim));
+          if (hit.getType() == HitResult.Type.MISS) seen++;
           total++;
         }
       }
     }
-    return total == 0 ? 0.0 : (double) clear / total;
+    return total == 0 ? 0.0 : (double) seen / total;
   }
 }

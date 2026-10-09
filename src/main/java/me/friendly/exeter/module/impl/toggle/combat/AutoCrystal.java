@@ -24,9 +24,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Crystal aura in the spirit of 3arthh4ck's AutoCrystal, cut down to the working core:
- * score placements by raw explosion damage, place the best, break the best. No
- * prediction, motion extrapolation or multiplace.
+ * Crystal aura in the spirit of 3arthh4ck's AutoCrystal, cut down to the working core: score
+ * placements by raw explosion damage, place the best, break the best. No prediction, motion
+ * extrapolation or multiplace.
  */
 public class AutoCrystal extends ToggleableModule {
 
@@ -46,6 +46,7 @@ public class AutoCrystal extends ToggleableModule {
       new NumberProperty<Integer>(4, 0, 40, "Place Delay");
   private final NumberProperty<Integer> breakDelay =
       new NumberProperty<Integer>(4, 0, 40, "Break Delay");
+  private final NumberProperty<Integer> predict = new NumberProperty<Integer>(0, 0, 20, "Predict");
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> autoSwitch = new Property<Boolean>(true, "Auto Switch");
@@ -58,9 +59,15 @@ public class AutoCrystal extends ToggleableModule {
   private boolean noCrystalLogged;
   private boolean noWallLogged;
   private BlockPos pendingCrystal;
+  private int pendingTick;
+  private Vec3 prevTargetPos;
+  private String prevTargetKey;
+  private Vec3 lastPredicted;
+  private Player renderTarget;
 
   public AutoCrystal() {
-    super("AutoCrystal", new String[] {"autocrystal", "crystal", "ca"}, 0xFF44FF, ModuleType.COMBAT);
+    super(
+        "AutoCrystal", new String[] {"autocrystal", "crystal", "ca"}, 0xFF44FF, ModuleType.COMBAT);
     setDescription("Places and breaks end crystals on targets.");
     offerProperties(
         targetRange,
@@ -71,6 +78,7 @@ public class AutoCrystal extends ToggleableModule {
         maxSelfDamage,
         placeDelay,
         breakDelay,
+        predict,
         rotate,
         swingHand,
         autoSwitch,
@@ -90,6 +98,13 @@ public class AutoCrystal extends ToggleableModule {
             PlayerUtil.spoofMovement(event);
           }
         });
+    this.listeners.add(
+        new Listener<me.friendly.exeter.events.WorldRenderEvent>("autocrystal_render") {
+          @Override
+          public void call(me.friendly.exeter.events.WorldRenderEvent event) {
+            onRender();
+          }
+        });
   }
 
   @Override
@@ -99,6 +114,10 @@ public class AutoCrystal extends ToggleableModule {
     noCrystalLogged = false;
     noWallLogged = false;
     pendingCrystal = null;
+    prevTargetPos = null;
+    prevTargetKey = null;
+    renderTarget = null;
+    lastPredicted = null;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "enabled");
   }
 
@@ -109,6 +128,10 @@ public class AutoCrystal extends ToggleableModule {
     noCrystalLogged = false;
     noWallLogged = false;
     pendingCrystal = null;
+    prevTargetPos = null;
+    prevTargetKey = null;
+    renderTarget = null;
+    lastPredicted = null;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
@@ -121,6 +144,10 @@ public class AutoCrystal extends ToggleableModule {
     if (target == null) {
       lastTargetKey = null;
       pendingCrystal = null;
+      renderTarget = null;
+      lastPredicted = null;
+      prevTargetPos = null;
+      prevTargetKey = null;
       return;
     }
     String targetKey = target.getName().getString();
@@ -132,8 +159,61 @@ public class AutoCrystal extends ToggleableModule {
       DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "target=" + targetKey);
     }
 
-    tickBreak(target);
-    tickPlace(target);
+    Vec3 predicted = predictedPos(target);
+    renderTarget = target;
+    lastPredicted = predicted;
+    tickBreak(target, predicted);
+    tickPlace(target, predicted);
+  }
+
+  /**
+   * Linear extrapolation from per-tick position history. Remote velocity is ~zero except after
+   * knockback (it isn't synced), so history is the only honest source. No gravity term: stair
+   * descents already carry their downward velocity.
+   */
+  private Vec3 predictedPos(Player target) {
+    Vec3 current = target.position();
+    String key = target.getName().getString();
+    Vec3 predicted = current;
+    int ticks = predict.getValue();
+    if (ticks > 0 && key.equals(prevTargetKey) && prevTargetPos != null) {
+      Vec3 delta = current.subtract(prevTargetPos);
+      // Teleports (ender pearls, chorus) aren't motion: reset instead of drawing
+      // a line across the map.
+      if (delta.lengthSqr() > 64.0) {
+        prevTargetPos = null;
+        prevTargetKey = null;
+      } else {
+        Vec3 velocity = delta;
+        if (velocity.lengthSqr() > 0) {
+          predicted = current.add(velocity.x * ticks, velocity.y * ticks, velocity.z * ticks);
+        }
+      }
+    }
+    prevTargetPos = current;
+    prevTargetKey = key;
+    if (ticks <= 0 || predicted == current) return current;
+    return groundSnap(predicted, ticks);
+  }
+
+  /**
+   * Drops (or lifts) the extrapolated point onto real terrain so the prediction follows staircases
+   * instead of flying level past them. Needs headroom: the two cells above the ground must be free.
+   */
+  private Vec3 groundSnap(Vec3 predicted, int ticks) {
+    if (minecraft.level == null) return predicted;
+    int x = (int) Math.floor(predicted.x);
+    int z = (int) Math.floor(predicted.z);
+    int top = (int) Math.floor(predicted.y) + 2;
+    int bottom = (int) Math.floor(predicted.y) - Math.max(2, ticks);
+    for (int y = top; y >= bottom; y--) {
+      BlockPos ground = new BlockPos(x, y, z);
+      if (minecraft.level.getBlockState(ground).isAir()) continue;
+      if (!minecraft.level.getBlockState(ground.above()).isAir()) continue;
+      if (!minecraft.level.getBlockState(ground.above(2)).isAir()) continue;
+      return new Vec3(predicted.x, y + 1.0, predicted.z);
+    }
+    return predicted;
   }
 
   private Player findTarget() {
@@ -158,7 +238,36 @@ public class AutoCrystal extends ToggleableModule {
     return ExplosionUtil.explosionDamage(minecraft.level, center, 6.0F, victim);
   }
 
-  private void tickBreak(Player target) {
+  /** Same, but scored against the predicted position with the target's shifted box. */
+  private float predictedDamageAt(Vec3 center, Player target, Vec3 predictedFeet) {
+    Vec3 current = target.position();
+    net.minecraft.world.phys.AABB box =
+        target
+            .getBoundingBox()
+            .move(
+                predictedFeet.x - current.x,
+                predictedFeet.y - current.y,
+                predictedFeet.z - current.z);
+    return ExplosionUtil.explosionDamage(minecraft.level, center, 6.0F, target, predictedFeet, box);
+  }
+
+  private void onRender() {
+    if (predict.getValue() <= 0) return;
+    if (minecraft.level == null || minecraft.player == null) return;
+    if (renderTarget == null || lastPredicted == null) return;
+    if (!renderTarget.isAlive() || renderTarget.isRemoved()) {
+      renderTarget = null;
+      return;
+    }
+    Vec3 from = renderTarget.position().add(0, 1.0, 0);
+    Vec3 to = lastPredicted.add(0, 1.0, 0);
+    if (from.distanceToSqr(to) < 0.01) return;
+    net.minecraft.gizmos.Gizmos.line(
+            from, to, me.friendly.exeter.render.EspRenderManager.getClientColor(), 2.0f)
+        .setAlwaysOnTop();
+  }
+
+  private void tickBreak(Player target, Vec3 predicted) {
     if (tickCounter - lastBreakTick < breakDelay.getValue()) return;
     if (breakPending()) return;
     EndCrystal best = null;
@@ -168,7 +277,7 @@ public class AutoCrystal extends ToggleableModule {
     for (Entity entity : minecraft.level.getEntities(null, target.getBoundingBox().inflate(12.0))) {
       if (!(entity instanceof EndCrystal crystal)) continue;
       if (eye.distanceToSqr(crystal.position()) > rangeSq) continue;
-      float targetDamage = damageAt(crystal.position(), target);
+      float targetDamage = predictedDamageAt(crystal.position(), target, predicted);
       if (targetDamage < minDamage.getValue()) continue;
       float selfDamage = damageAt(crystal.position(), minecraft.player);
       if (selfDamage > maxSelfDamage.getValue()) continue;
@@ -194,16 +303,15 @@ public class AutoCrystal extends ToggleableModule {
   }
 
   /**
-   * Breaks our pending crystal first, ignoring target damage: the target may have left
-   * its blast area, but it still blocks future placements. Returns true when a break
-   * was attempted (one break per tick budget).
+   * Breaks our pending crystal first, ignoring target damage: the target may have left its blast
+   * area, but it still blocks future placements. Returns true when a break was attempted (one break
+   * per tick budget).
    */
   private boolean breakPending() {
     if (pendingCrystal == null) return false;
     Vec3 center = Vec3.atCenterOf(pendingCrystal);
     EndCrystal crystal = null;
-    for (Entity entity :
-        minecraft.level.getEntities(null, targetBox(pendingCrystal.below()))) {
+    for (Entity entity : minecraft.level.getEntities(null, targetBox(pendingCrystal.below()))) {
       if (entity instanceof EndCrystal c
           && c.isAlive()
           && c.position().distanceToSqr(center) < 4.0) {
@@ -234,17 +342,19 @@ public class AutoCrystal extends ToggleableModule {
     return true;
   }
 
-  private void tickPlace(Player target) {
+  private void tickPlace(Player target, Vec3 predicted) {
     if (tickCounter - lastPlaceTick < placeDelay.getValue()) return;
     // One pending crystal at a time: break what's placed before placing more.
     // Dropped when it's gone or out of breaking reach: a stranded pending would
     // stall all future placements.
     if (pendingCrystal != null) {
       Vec3 pendingCenter = Vec3.atCenterOf(pendingCrystal);
-      if (!hasLiveCrystal(pendingCrystal)
-          || minecraft.player.distanceToSqr(
-                  pendingCenter.x, pendingCenter.y, pendingCenter.z)
-              > breakRange.getValue() * breakRange.getValue()) {
+      // Spawn latency grace: the entity needs a few ticks to show up client-side.
+      boolean fresh = tickCounter - pendingTick < 5;
+      if (!fresh
+          && (!hasLiveCrystal(pendingCrystal)
+              || minecraft.player.distanceToSqr(pendingCenter.x, pendingCenter.y, pendingCenter.z)
+                  > breakRange.getValue() * breakRange.getValue())) {
         pendingCrystal = null;
       } else {
         return;
@@ -264,11 +374,16 @@ public class AutoCrystal extends ToggleableModule {
     BlockPos bestBase = null;
     float bestDamage = 0.0f;
     boolean bestVisible = false;
+    Vec3 bestDetonation = Vec3.ZERO;
     BlockPos nearestWalled = null;
     double nearestWalledDist = Double.MAX_VALUE;
     Vec3 eye = minecraft.player.getEyePosition();
     double rangeSq = placeRange.getValue() * placeRange.getValue();
-    BlockPos feet = target.blockPosition();
+    BlockPos feet =
+        new BlockPos(
+            (int) Math.floor(predicted.x),
+            (int) Math.floor(predicted.y),
+            (int) Math.floor(predicted.z));
     int r = (int) Math.ceil(placeRange.getValue());
     for (int dx = -r; dx <= r; dx++) {
       for (int dy = -2; dy <= 2; dy++) {
@@ -277,13 +392,20 @@ public class AutoCrystal extends ToggleableModule {
           var state = minecraft.level.getBlockState(base);
           if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.BEDROCK)) continue;
           if (!minecraft.level.getBlockState(base.above()).isAir()) continue;
+          // Crystals can't be placed inside any entity, dropped items included.
+          if (!minecraft
+              .level
+              .getEntities(null, new net.minecraft.world.phys.AABB(base.above()))
+              .isEmpty()) {
+            continue;
+          }
           if (eye.distanceToSqr(Vec3.atCenterOf(base)) > rangeSq) continue;
-          Vec3 detonation =
-              new Vec3(base.getX() + 0.5, base.getY() + 1.0, base.getZ() + 0.5);
+          Vec3 detonation = new Vec3(base.getX() + 0.5, base.getY() + 1.0, base.getZ() + 0.5);
           // Visibility ray goes to the crystal in open air, never into the base
           // block itself (a ray ending inside solid always reports BLOCKED).
           boolean visible =
-              minecraft.level
+              minecraft
+                      .level
                       .clip(
                           new net.minecraft.world.level.ClipContext(
                               eye,
@@ -296,21 +418,21 @@ public class AutoCrystal extends ToggleableModule {
           double allowed = visible ? placeRange.getValue() : wallRange.getValue();
           double detDistSq = eye.distanceToSqr(detonation);
           if (detDistSq > allowed * allowed) {
-            if (!visible
-                && detDistSq < nearestWalledDist) {
+            if (!visible && detDistSq < nearestWalledDist) {
               nearestWalledDist = detDistSq;
               nearestWalled = base.immutable();
             }
             continue;
           }
           if (hasCrystal(base)) continue;
-          float targetDamage = damageAt(detonation, target);
+          float targetDamage = predictedDamageAt(detonation, target, predicted);
           if (targetDamage < minDamage.getValue()) continue;
           if (damageAt(detonation, minecraft.player) > maxSelfDamage.getValue()) continue;
           if (targetDamage > bestDamage) {
             bestDamage = targetDamage;
             bestBase = base;
             bestVisible = visible;
+            bestDetonation = detonation;
           }
         }
       }
@@ -366,9 +488,16 @@ public class AutoCrystal extends ToggleableModule {
                 + bestDamage
                 + " visible="
                 + bestVisible
+                + " dist="
+                + String.format(
+                    "%.2f",
+                    Math.sqrt(minecraft.player.getEyePosition().distanceToSqr(bestDetonation)))
+                + " wallRange="
+                + wallRange.getValue()
                 + " target="
                 + target.getName().getString());
     pendingCrystal = placeAt.above().immutable();
+    pendingTick = tickCounter;
     lastPlaceTick = tickCounter;
   }
 
@@ -387,8 +516,7 @@ public class AutoCrystal extends ToggleableModule {
   private boolean hasCrystal(BlockPos base) {
     Vec3 center = new Vec3(base.getX() + 0.5, base.getY() + 1.0, base.getZ() + 0.5);
     for (Entity entity : minecraft.level.getEntities(null, targetBox(base))) {
-      if (entity instanceof EndCrystal
-          && entity.position().distanceToSqr(center) < 4.0) {
+      if (entity instanceof EndCrystal && entity.position().distanceToSqr(center) < 4.0) {
         return true;
       }
     }
@@ -397,7 +525,11 @@ public class AutoCrystal extends ToggleableModule {
 
   private static net.minecraft.world.phys.AABB targetBox(BlockPos base) {
     return new net.minecraft.world.phys.AABB(
-        base.getX() - 1, base.getY(), base.getZ() - 1,
-        base.getX() + 2, base.getY() + 3, base.getZ() + 2);
+        base.getX() - 1,
+        base.getY(),
+        base.getZ() - 1,
+        base.getX() + 2,
+        base.getY() + 3,
+        base.getZ() + 2);
   }
 }
