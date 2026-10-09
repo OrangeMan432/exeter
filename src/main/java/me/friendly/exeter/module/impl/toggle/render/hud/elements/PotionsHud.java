@@ -24,6 +24,7 @@ public final class PotionsHud extends ListHudModule {
     super("Potions", new String[] {"potions", "pots", "p"}, Corner.BOTTOM_LEFT);
     setDescription("Displays active potion effects.");
     this.offerProperties(colorMode);
+    colorMode.setDescription("Chooses between effect colors or the client theme.");
   }
 
   private int themedColor(int fallback) {
