@@ -1,9 +1,16 @@
 package me.friendly.exeter.util;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -62,6 +69,78 @@ public final class ExplosionUtil {
   public static int fireworkBursts(ItemStack stack) {
     var fireworks = stack.get(DataComponents.FIREWORKS);
     return fireworks == null ? 0 : fireworks.explosions().size();
+  }
+
+  /**
+   * Client-safe mirror of vanilla {@code getDamageAfterMagicAbsorb} (resistance exact, stats
+   * skipped). Protection enchantments resolve their effects against a ServerLevel, which only
+   * exists on an integrated server; on remote servers protection is skipped while armor, toughness
+   * and resistance still apply.
+   */
+  private static float magicAbsorb(LivingEntity victim, DamageSource source, float damage) {
+    if (source.is(DamageTypeTags.BYPASSES_EFFECTS)) return damage;
+    if (victim.hasEffect(MobEffects.RESISTANCE) && !source.is(DamageTypeTags.BYPASSES_RESISTANCE)) {
+      int scale = (victim.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
+      damage = Math.max(damage * (25 - scale) / 25.0F, 0.0F);
+    }
+    if (source.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) return damage;
+    var server = Minecraft.getInstance().getSingleplayerServer();
+    if (server != null) {
+      var serverLevel = server.getLevel(victim.level().dimension());
+      if (serverLevel != null) {
+        damage =
+            CombatRules.getDamageAfterMagicAbsorb(
+                damage, EnchantmentHelper.getDamageProtection(serverLevel, victim, source));
+      }
+    }
+    return damage;
+  }
+
+  /**
+   * 3arthh4ck-style lethal check: the mitigated hit would leave the victim under 1 hp, i.e. pop a
+   * totem or kill outright. Health includes absorption, matching {@code EntityUtil.getHealth}; the
+   * Max Self Damage gates stay on raw damage.
+   */
+  public static boolean wouldPop(LivingEntity victim, DamageSource source, float rawDamage) {
+    return wouldPopMitigated(victim, mitigatedDamage(victim, source, rawDamage));
+  }
+
+  /**
+   * Lethal check on an already-mitigated value, for callers whose damage comes back armored
+   * (PistonCrystal profiles, mitigated self-damage gates).
+   */
+  public static boolean wouldPopMitigated(LivingEntity victim, float mitigatedDamage) {
+    return mitigatedDamage > victim.getHealth() + victim.getAbsorptionAmount() - 1.0F;
+  }
+
+  /** Detached explosion source (explosion type, no entities): armor and enchants apply. */
+  public static DamageSource explosionSource(LivingEntity victim) {
+    return victim.damageSources().explosion(null, null);
+  }
+
+  /** Post-armor self damage from an explosion-typed hit (crystals, TNT carts). */
+  public static float mitigatedExplosionDamage(LivingEntity victim, float rawDamage) {
+    return mitigatedDamage(victim, explosionSource(victim), rawDamage);
+  }
+
+  /**
+   * Vanilla {@code actuallyHurt} mitigation without the side effects: armor/toughness via {@code
+   * CombatRules} (client-safe, the ServerLevel enchant path is instanceof-guarded), then
+   * resistance/protection. Pre-absorption, like 3arthh4ck's DamageUtil. Never wears armor:
+   * prediction must not consume durability.
+   */
+  public static float mitigatedDamage(LivingEntity victim, DamageSource source, float rawDamage) {
+    float damage = rawDamage;
+    if (!source.is(DamageTypeTags.BYPASSES_ARMOR)) {
+      damage =
+          CombatRules.getDamageAfterAbsorb(
+              victim,
+              damage,
+              source,
+              victim.getArmorValue(),
+              (float) victim.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+    }
+    return magicAbsorb(victim, source, damage);
   }
 
   /** Vanilla-style check: a clear ray to the feet or mid-body with COLLIDER blocks. */

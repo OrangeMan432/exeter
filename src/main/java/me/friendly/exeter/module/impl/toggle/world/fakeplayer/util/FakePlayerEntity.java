@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import java.util.function.BooleanSupplier;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
+import me.friendly.exeter.util.ExplosionUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
@@ -11,12 +12,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class FakePlayerEntity extends RemotePlayer {
   private BooleanSupplier damageSupplier = () -> true;
@@ -32,8 +30,8 @@ public class FakePlayerEntity extends RemotePlayer {
     if (!damageSupplier.getAsBoolean()) return;
 
     // Vanilla pipeline: armor/toughness, then resistance/protection, then absorption.
-    damage = this.getDamageAfterArmorAbsorb(damageSource, damage);
-    damage = this.magicAbsorb(damageSource, damage);
+    // Explosion-typed (generic bypasses armor, so it must never be used here).
+    damage = ExplosionUtil.mitigatedDamage(this, damageSource, damage);
     float absorbed = Math.min(this.getAbsorptionAmount(), damage);
     this.setAbsorptionAmount(this.getAbsorptionAmount() - absorbed);
     damage -= absorbed;
@@ -46,32 +44,6 @@ public class FakePlayerEntity extends RemotePlayer {
     }
 
     this.setHealth(Math.max(newHealth, 0.0F));
-  }
-
-  /**
-   * Client-safe mirror of vanilla {@code getDamageAfterMagicAbsorb} (resistance exact, stats
-   * skipped). Protection enchantments resolve their effects against a ServerLevel, which only
-   * exists on an integrated server; on remote servers protection is skipped while armor, toughness
-   * and resistance still apply.
-   */
-  private float magicAbsorb(DamageSource damageSource, float damage) {
-    if (damageSource.is(DamageTypeTags.BYPASSES_EFFECTS)) return damage;
-    if (this.hasEffect(MobEffects.RESISTANCE)
-        && !damageSource.is(DamageTypeTags.BYPASSES_RESISTANCE)) {
-      int scale = (this.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
-      damage = Math.max(damage * (25 - scale) / 25.0F, 0.0F);
-    }
-    if (damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) return damage;
-    var server = Minecraft.getInstance().getSingleplayerServer();
-    if (server != null) {
-      var serverLevel = server.getLevel(this.level().dimension());
-      if (serverLevel != null) {
-        damage =
-            CombatRules.getDamageAfterMagicAbsorb(
-                damage, EnchantmentHelper.getDamageProtection(serverLevel, this, damageSource));
-      }
-    }
-    return damage;
   }
 
   private void popTotem(DamageSource source) {
@@ -112,7 +84,7 @@ public class FakePlayerEntity extends RemotePlayer {
   }
 
   public void applyDamage(float damage) {
-    this.actuallyHurt(null, this.level().damageSources().generic(), damage);
+    this.actuallyHurt(null, ExplosionUtil.explosionSource(this), damage);
   }
 
   public void setDamageSupplier(BooleanSupplier supplier) {

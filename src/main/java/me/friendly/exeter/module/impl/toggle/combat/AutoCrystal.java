@@ -279,8 +279,10 @@ public class AutoCrystal extends ToggleableModule {
       if (eye.distanceToSqr(crystal.position()) > rangeSq) continue;
       float targetDamage = predictedDamageAt(crystal.position(), target, predicted);
       if (targetDamage < minDamage.getValue()) continue;
-      float selfDamage = damageAt(crystal.position(), minecraft.player);
-      if (selfDamage > maxSelfDamage.getValue()) continue;
+      float rawSelf = damageAt(crystal.position(), minecraft.player);
+      float selfDamage = ExplosionUtil.mitigatedExplosionDamage(minecraft.player, rawSelf);
+      if (selfDamage > maxSelfDamage.getValue()
+          || ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage)) continue;
       if (targetDamage > bestDamage) {
         bestDamage = targetDamage;
         best = crystal;
@@ -323,8 +325,10 @@ public class AutoCrystal extends ToggleableModule {
       pendingCrystal = null;
       return false;
     }
-    float selfDamage = damageAt(crystal.position(), minecraft.player);
-    if (selfDamage > maxSelfDamage.getValue()) {
+    float rawSelf = damageAt(crystal.position(), minecraft.player);
+    float selfDamage = ExplosionUtil.mitigatedExplosionDamage(minecraft.player, rawSelf);
+    if (selfDamage > maxSelfDamage.getValue()
+        || ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage)) {
       // Won't touch it even to unblock: drop it and move on instead of stalling.
       pendingCrystal = null;
       return false;
@@ -427,7 +431,10 @@ public class AutoCrystal extends ToggleableModule {
           if (hasCrystal(base)) continue;
           float targetDamage = predictedDamageAt(detonation, target, predicted);
           if (targetDamage < minDamage.getValue()) continue;
-          if (damageAt(detonation, minecraft.player) > maxSelfDamage.getValue()) continue;
+          float rawSelf = damageAt(detonation, minecraft.player);
+          float selfDamage = ExplosionUtil.mitigatedExplosionDamage(minecraft.player, rawSelf);
+          if (selfDamage > maxSelfDamage.getValue()
+              || ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage)) continue;
           if (targetDamage > bestDamage) {
             bestDamage = targetDamage;
             bestBase = base;

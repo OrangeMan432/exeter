@@ -205,8 +205,10 @@ public class AutoCart extends ToggleableModule {
     if (instaLight.getValue()) {
       // Detonation is imminent: stationary TNT carts explode at power 4 around the rail.
       // Hold here (keeping the placed carts) until we move clear instead of suiciding.
-      float selfDamage = predictedSelfDamage();
-      if (selfDamage > maxSelfDamage.getValue()) {
+      float selfDamage =
+          ExplosionUtil.mitigatedExplosionDamage(minecraft.player, predictedSelfDamage());
+      boolean lethal = ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage);
+      if (selfDamage > maxSelfDamage.getValue() || lethal) {
         if (!noSelfDmgLogged) {
           noSelfDmgLogged = true;
           DebugLogger.get()
@@ -215,8 +217,9 @@ public class AutoCart extends ToggleableModule {
                   DebugLogger.Level.WARN,
                   "holding lighting: self damage "
                       + selfDamage
-                      + " exceeds cap "
-                      + maxSelfDamage.getValue());
+                      + (lethal
+                          ? " lethal at " + minecraft.player.getHealth() + " hp"
+                          : " exceeds cap " + maxSelfDamage.getValue()));
         }
         return;
       }
@@ -236,16 +239,19 @@ public class AutoCart extends ToggleableModule {
               getLabel(), DebugLogger.Level.INFO, "done " + cartsPlaced + " carts at " + targetPos);
       NotificationManager.push("AutoCart done " + cartsPlaced + " carts", "tnt_minecart");
       // Manual path: the user breaks the rail themselves, so this is advisory only.
-      float selfDamage = predictedSelfDamage();
-      if (selfDamage > maxSelfDamage.getValue()) {
+      float selfDamage =
+          ExplosionUtil.mitigatedExplosionDamage(minecraft.player, predictedSelfDamage());
+      boolean lethal = ExplosionUtil.wouldPopMitigated(minecraft.player, selfDamage);
+      if (selfDamage > maxSelfDamage.getValue() || lethal) {
         DebugLogger.get()
             .log(
                 getLabel(),
                 DebugLogger.Level.WARN,
                 "predicted self damage "
                     + selfDamage
-                    + " exceeds cap "
-                    + maxSelfDamage.getValue()
+                    + (lethal
+                        ? " lethal at " + minecraft.player.getHealth() + " hp"
+                        : " exceeds cap " + maxSelfDamage.getValue())
                     + " if lit from here");
       }
     }
