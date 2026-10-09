@@ -9,9 +9,12 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.TickEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.render.PlacementRender;
+import me.friendly.exeter.util.ExplosionUtil;
 import me.friendly.exeter.util.PlayerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,7 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class BedAura extends ToggleableModule {
   private final Property<Boolean> rotate = new Property<Boolean>(true, "Rotate");
@@ -35,7 +38,21 @@ public class BedAura extends ToggleableModule {
       new NumberProperty<Integer>(1, 0, 20, "Break Delay");
   private final Property<Boolean> swingHand = new Property<Boolean>(true, "Swing Hand");
   private final Property<Boolean> anarchyServer = new Property<Boolean>(false, "5b5t", "5b5t");
-  private final Property<Boolean> showEsp = new Property<Boolean>(true, "Show ESP", "ESP");
+  private final Property<Boolean> render = new Property<Boolean>(true, "Render");
+  private final Property<Boolean> fade = new Property<Boolean>(true, "Fade");
+  private final NumberProperty<Integer> fadeTime =
+      new NumberProperty<Integer>(1000, 0, 5000, "Fade Time");
+  private final EnumProperty<PlacementRender.FadeMode> fadeMode =
+      new EnumProperty<>(PlacementRender.FadeMode.ALPHA, "Fade Mode", "fademode");
+  private final Property<Boolean> slide = new Property<Boolean>(false, "Slide");
+  private final NumberProperty<Integer> slideTime =
+      new NumberProperty<Integer>(250, 1, 1000, "Slide Time");
+  private final Property<Boolean> smoothSlide = new Property<Boolean>(false, "Smooth Slide");
+  private final Property<Boolean> renderDamage = new Property<Boolean>(true, "Damage Text");
+  private final NumberProperty<Integer> renderTime =
+      new NumberProperty<Integer>(500, 0, 5000, "Render Time");
+  private final NumberProperty<Float> lineWidth =
+      new NumberProperty<Float>(1.5f, 0.5f, 5.0f, "Line Width");
   private final Property<Boolean> useCustomAlpha =
       new Property<Boolean>(false, "Custom Alpha", "CustomAlpha");
   private final NumberProperty<Float> fillAlpha =
@@ -48,8 +65,10 @@ public class BedAura extends ToggleableModule {
   private int lastBreakTick;
   private Player target;
   private BlockPos lastBedPos;
+  private BlockPos lastHeadPos;
   private boolean waitingToBreak;
   private boolean waitingToPlace;
+  private final PlacementRender placementRender = new PlacementRender();
 
   public BedAura() {
     super("BedAura", new String[] {"bedaura", "bed-aura"}, 0xFF0000, ModuleType.COMBAT);
@@ -65,10 +84,25 @@ public class BedAura extends ToggleableModule {
         breakDelay,
         swingHand,
         anarchyServer,
-        showEsp,
+        render,
+        fade,
+        fadeTime,
+        fadeMode,
+        slide,
+        slideTime,
+        smoothSlide,
+        renderDamage,
+        renderTime,
+        lineWidth,
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
+    fadeTime.visibleWhen(() -> fade.getValue());
+    fadeMode.visibleWhen(() -> fade.getValue());
+    slideTime.visibleWhen(() -> slide.getValue());
+    smoothSlide.visibleWhen(() -> slide.getValue());
+    fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
+    outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
 
     this.listeners.add(
         new Listener<TickEvent>("bed_aura_tick") {
@@ -76,6 +110,13 @@ public class BedAura extends ToggleableModule {
           public void call(TickEvent event) {
             if (event.getStage() != Stage.PRE) return;
             BedAura.this.onTick();
+          }
+        });
+    this.listeners.add(
+        new Listener<me.friendly.exeter.events.WorldRenderEvent>("bed_aura_render") {
+          @Override
+          public void call(me.friendly.exeter.events.WorldRenderEvent event) {
+            onRender();
           }
         });
   }
@@ -88,13 +129,19 @@ public class BedAura extends ToggleableModule {
     lastBreakTick = -100;
     target = null;
     lastBedPos = null;
+    lastHeadPos = null;
     waitingToBreak = false;
     waitingToPlace = false;
+    placementRender.clear();
   }
 
   @Override
   protected void onDisable() {
     super.onDisable();
+    target = null;
+    lastBedPos = null;
+    lastHeadPos = null;
+    placementRender.clear();
   }
 
   private void onTick() {
@@ -107,7 +154,10 @@ public class BedAura extends ToggleableModule {
     if (bedSlot == -1) return;
 
     target = findTarget();
-    if (target == null) return;
+    if (target == null) {
+      placementRender.clear();
+      return;
+    }
 
     if (waitingToBreak) {
       if (tickCounter - lastBreakTick >= 2) {
@@ -141,6 +191,8 @@ public class BedAura extends ToggleableModule {
 
     placeBed(placePos, bedSlot);
     lastBedPos = placePos;
+    lastHeadPos = placePos.relative(minecraft.player.getDirection().getOpposite()).immutable();
+    updateRender();
     lastPlaceTick = tickCounter;
     waitingToPlace = true;
   }
@@ -171,13 +223,6 @@ public class BedAura extends ToggleableModule {
     if (needSwitch && switchBack.getValue()) {
       PlayerUtil.swapBack();
     }
-
-    if (showEsp.getValue()) {
-      int overrideFill = useCustomAlpha.getValue() ? Math.round(fillAlpha.getValue()) : -1;
-      int overrideOutline = useCustomAlpha.getValue() ? Math.round(outlineAlpha.getValue()) : -1;
-      EspRenderManager.getInstance()
-          .addBoxEsp(new AABB(pos), 3.0f, true, true, overrideFill, overrideOutline);
-    }
   }
 
   private void useBed(BlockPos pos, int slot) {
@@ -206,6 +251,47 @@ public class BedAura extends ToggleableModule {
     if (needSwitch && switchBack.getValue()) {
       PlayerUtil.swapBack();
     }
+  }
+
+  /**
+   * Tracks the bed foot for the placement render; the damage number is the power-5 bed blast at the
+   * head block against the current target.
+   */
+  private void updateRender() {
+    if (target == null || lastBedPos == null || lastHeadPos == null) {
+      placementRender.clear();
+      return;
+    }
+    float damage =
+        ExplosionUtil.explosionDamage(minecraft.level, Vec3.atCenterOf(lastHeadPos), 5.0F, target);
+    placementRender.setRenderPos(
+        lastBedPos.immutable(),
+        String.format("%.1f", damage),
+        smoothSlide.getValue(),
+        slideTime.getValue());
+  }
+
+  private void onRender() {
+    if (minecraft.level == null || minecraft.player == null) return;
+    if (!render.getValue()) return;
+    placementRender.render(
+        new PlacementRender.Params(
+            fade.getValue(),
+            fadeTime.getValue(),
+            fadeMode.getValue(),
+            slide.getValue(),
+            slideTime.getValue(),
+            smoothSlide.getValue(),
+            renderDamage.getValue(),
+            renderTime.getValue(),
+            lineWidth.getValue(),
+            useCustomAlpha.getValue()
+                ? Math.round(fillAlpha.getValue())
+                : EspRenderManager.getGlobalFillAlpha(),
+            useCustomAlpha.getValue()
+                ? Math.round(outlineAlpha.getValue())
+                : EspRenderManager.getGlobalOutlineAlpha(),
+            9.0 / 16.0));
   }
 
   private BlockPos findBestPlacePos() {
