@@ -143,8 +143,6 @@ public final class ClickGui extends Screen {
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
     boolean showBg = guiModule == null || guiModule.showBackground.getValue();
     boolean showDesc = guiModule == null || guiModule.showDescriptions.getValue();
-    me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode descMode =
-        guiModule != null ? guiModule.getDescriptionMode() : null;
 
     if (showBg) {
       RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);
@@ -165,6 +163,11 @@ public final class ClickGui extends Screen {
         if (!panel.getOpen()) continue;
         for (var item : panel.getItems()) {
           if (item instanceof ModuleButton moduleButton && panel.matchesSearch(item)) {
+            String settingDesc = moduleButton.getHoveredSettingDescription(mouseX, mouseY);
+            if (settingDesc != null) {
+              hoveredDesc = settingDesc;
+              break;
+            }
             float ix = item.getX();
             float iy = item.getY();
             int iw = item.getWidth();
@@ -179,133 +182,12 @@ public final class ClickGui extends Screen {
         }
       }
 
-      if (hoveredDesc != null) {
-        if (descMode
-            == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
-          Panel lastPanel = this.panels.isEmpty() ? null : this.panels.get(this.panels.size() - 1);
-          int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
-          int descY = lastPanel != null ? lastPanel.getY() : 4;
-          int headerW = FontUtil.getStringWidth("Description");
-          int textW = FontUtil.getStringWidth(hoveredDesc);
-          int padding = 4;
-          int descW = Math.max(headerW, textW) + padding * 2;
-          int headerH = 18;
-          int descH = headerH - 6 + padding + 8 + padding;
-
-          boolean descRolling = guiModule != null && guiModule.rollingRainbow.getValue();
-          boolean descHorizontal =
-              descRolling
-                  && guiModule.rollingDirection.getValue()
-                      == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection
-                          .HORIZONTAL;
-          boolean descInverse = descRolling && guiModule.rollingInverse.getValue();
-          if (descHorizontal) {
-            RenderMethods.drawHorizontalSpectrumRect(
-                descX,
-                descY - 1.5f,
-                descX + descW,
-                descY + headerH - 6,
-                sx ->
-                    Colors.rollingSample(
-                        true, descInverse, sx, descY, this.width, this.height, 77));
-          } else {
-            int descTop =
-                descRolling
-                    ? Colors.rollingSample(
-                        false,
-                        descInverse,
-                        descX,
-                        (int) (descY - 1.5f),
-                        this.width,
-                        this.height,
-                        77)
-                    : Colors.getClientColorCustomAlpha(77);
-            int descBottom =
-                descRolling
-                    ? Colors.rollingSample(
-                        false, descInverse, descX, descY + headerH - 6, this.width, this.height, 77)
-                    : Colors.getClientColorCustomAlpha(77);
-            RenderMethods.drawGradientRect(
-                descX, descY - 1.5f, descX + descW, descY + headerH - 6, descTop, descBottom);
-          }
-          RenderMethods.drawRect(
-              descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
-          if (guiModule == null || guiModule.showBorder.getValue()) {
-            float top = descY - 1.5f;
-            float bottom = (float) (descY + descH);
-            if (descHorizontal) {
-              RenderMethods.drawHorizontalSpectrumRect(
-                  descX - 1,
-                  top - 1,
-                  descX + descW + 1,
-                  top,
-                  sx ->
-                      Colors.rollingSample(
-                          true, descInverse, sx, (int) top, this.width, this.height, 77));
-              RenderMethods.drawHorizontalSpectrumRect(
-                  descX - 1,
-                  bottom,
-                  descX + descW + 1,
-                  bottom + 1,
-                  sx ->
-                      Colors.rollingSample(
-                          true, descInverse, sx, (int) bottom, this.width, this.height, 77));
-              RenderMethods.drawRect(
-                  descX - 1,
-                  top,
-                  descX,
-                  bottom,
-                  Colors.rollingSample(
-                      true, descInverse, descX - 1, (int) top, this.width, this.height, 77));
-              RenderMethods.drawRect(
-                  descX + descW,
-                  top,
-                  descX + descW + 1,
-                  bottom,
-                  Colors.rollingSample(
-                      true, descInverse, descX + descW, (int) top, this.width, this.height, 77));
-            } else {
-              int accentTop =
-                  descRolling
-                      ? Colors.rollingSample(
-                          false, descInverse, descX, (int) top, this.width, this.height, 77)
-                      : Colors.getClientColorCustomAlpha(77);
-              int accentBottom =
-                  descRolling
-                      ? Colors.rollingSample(
-                          false, descInverse, descX, (int) bottom, this.width, this.height, 77)
-                      : Colors.getClientColorCustomAlpha(77);
-              RenderMethods.drawRect(descX - 1, top - 1, descX + descW + 1, top, accentTop);
-              RenderMethods.drawRect(
-                  descX - 1, bottom, descX + descW + 1, bottom + 1, accentBottom);
-              float stripH = 4.0f;
-              for (float sy = top; sy < bottom; sy += stripH) {
-                float ey = Math.min(sy + stripH, bottom);
-                int stripTop =
-                    descRolling
-                        ? Colors.rollingSample(
-                            false, descInverse, descX, (int) sy, this.width, this.height, 77)
-                        : accentTop;
-                int stripBottom =
-                    descRolling
-                        ? Colors.rollingSample(
-                            false, descInverse, descX, (int) ey, this.width, this.height, 77)
-                        : accentBottom;
-                RenderMethods.drawGradientRect(descX - 1, sy, descX, ey, stripTop, stripBottom);
-                RenderMethods.drawGradientRect(
-                    descX + descW, sy, descX + descW + 1, ey, stripTop, stripBottom);
-              }
-            }
-          }
-          FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
-          FontUtil.drawString(
-              hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
-        } else {
-          int textWidth = FontUtil.getStringWidth(hoveredDesc);
-          int centerX = this.width / 2 - textWidth / 2;
-          FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
-        }
-      }
+      drawHoveredDescription(
+          hoveredDesc,
+          this.panels.isEmpty() ? null : this.panels.get(this.panels.size() - 1),
+          this.width,
+          this.height,
+          guiModule);
     }
 
     if (popup != null) {
@@ -552,6 +434,130 @@ public final class ClickGui extends Screen {
 
   public final ArrayList<Panel> getPanels() {
     return this.panels;
+  }
+
+  /**
+   * Draws a hovered module/setting description, honoring the ClickGUI description mode: a side
+   * panel anchored after the given panel, or centered text at the top. Shared with the HUD editor
+   * so both screens behave the same.
+   */
+  public static void drawHoveredDescription(
+      String hoveredDesc,
+      Panel anchor,
+      int screenW,
+      int screenH,
+      me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule) {
+    if (hoveredDesc == null) return;
+    if (guiModule != null
+        && guiModule.getDescriptionMode()
+            == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
+      Panel lastPanel = anchor;
+      int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
+      int descY = lastPanel != null ? lastPanel.getY() : 4;
+      int headerW = FontUtil.getStringWidth("Description");
+      int textW = FontUtil.getStringWidth(hoveredDesc);
+      int padding = 4;
+      int descW = Math.max(headerW, textW) + padding * 2;
+      int headerH = 18;
+      int descH = headerH - 6 + padding + 8 + padding;
+
+      boolean descRolling = guiModule.rollingRainbow.getValue();
+      boolean descHorizontal =
+          descRolling
+              && guiModule.rollingDirection.getValue()
+                  == me.friendly.exeter.module.impl.toggle.render.ClickGui.RollingDirection
+                      .HORIZONTAL;
+      boolean descInverse = descRolling && guiModule.rollingInverse.getValue();
+      if (descHorizontal) {
+        RenderMethods.drawHorizontalSpectrumRect(
+            descX,
+            descY - 1.5f,
+            descX + descW,
+            descY + headerH - 6,
+            sx -> Colors.rollingSample(true, descInverse, sx, descY, screenW, screenH, 77));
+      } else {
+        int descTop =
+            descRolling
+                ? Colors.rollingSample(
+                    false, descInverse, descX, (int) (descY - 1.5f), screenW, screenH, 77)
+                : Colors.getClientColorCustomAlpha(77);
+        int descBottom =
+            descRolling
+                ? Colors.rollingSample(
+                    false, descInverse, descX, descY + headerH - 6, screenW, screenH, 77)
+                : Colors.getClientColorCustomAlpha(77);
+        RenderMethods.drawGradientRect(
+            descX, descY - 1.5f, descX + descW, descY + headerH - 6, descTop, descBottom);
+      }
+      RenderMethods.drawRect(descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
+      if (guiModule.showBorder.getValue()) {
+        float top = descY - 1.5f;
+        float bottom = (float) (descY + descH);
+        if (descHorizontal) {
+          RenderMethods.drawHorizontalSpectrumRect(
+              descX - 1,
+              top - 1,
+              descX + descW + 1,
+              top,
+              sx -> Colors.rollingSample(true, descInverse, sx, (int) top, screenW, screenH, 77));
+          RenderMethods.drawHorizontalSpectrumRect(
+              descX - 1,
+              bottom,
+              descX + descW + 1,
+              bottom + 1,
+              sx ->
+                  Colors.rollingSample(true, descInverse, sx, (int) bottom, screenW, screenH, 77));
+          RenderMethods.drawRect(
+              descX - 1,
+              top,
+              descX,
+              bottom,
+              Colors.rollingSample(true, descInverse, descX - 1, (int) top, screenW, screenH, 77));
+          RenderMethods.drawRect(
+              descX + descW,
+              top,
+              descX + descW + 1,
+              bottom,
+              Colors.rollingSample(
+                  true, descInverse, descX + descW, (int) top, screenW, screenH, 77));
+        } else {
+          int accentTop =
+              descRolling
+                  ? Colors.rollingSample(false, descInverse, descX, (int) top, screenW, screenH, 77)
+                  : Colors.getClientColorCustomAlpha(77);
+          int accentBottom =
+              descRolling
+                  ? Colors.rollingSample(
+                      false, descInverse, descX, (int) bottom, screenW, screenH, 77)
+                  : Colors.getClientColorCustomAlpha(77);
+          RenderMethods.drawRect(descX - 1, top - 1, descX + descW + 1, top, accentTop);
+          RenderMethods.drawRect(descX - 1, bottom, descX + descW + 1, bottom + 1, accentBottom);
+          float stripH = 4.0f;
+          for (float sy = top; sy < bottom; sy += stripH) {
+            float ey = Math.min(sy + stripH, bottom);
+            int stripTop =
+                descRolling
+                    ? Colors.rollingSample(
+                        false, descInverse, descX, (int) sy, screenW, screenH, 77)
+                    : accentTop;
+            int stripBottom =
+                descRolling
+                    ? Colors.rollingSample(
+                        false, descInverse, descX, (int) ey, screenW, screenH, 77)
+                    : accentBottom;
+            RenderMethods.drawGradientRect(descX - 1, sy, descX, ey, stripTop, stripBottom);
+            RenderMethods.drawGradientRect(
+                descX + descW, sy, descX + descW + 1, ey, stripTop, stripBottom);
+          }
+        }
+      }
+      FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
+      FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);
+    } else {
+      int textWidth = FontUtil.getStringWidth(hoveredDesc);
+      int centerX = screenW / 2 - textWidth / 2;
+      FontUtil.drawString(hoveredDesc, centerX, 2, 0xFFCCCCCC);
+    }
   }
 
   public String getSearch() {

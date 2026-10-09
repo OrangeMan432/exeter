@@ -10,9 +10,10 @@ import me.friendly.exeter.module.Module;
 import me.friendly.exeter.module.impl.toggle.client.Debug;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.PropertyItem;
 import me.friendly.exeter.properties.Property;
 
-public class BooleanButton extends Button {
+public class BooleanButton extends Button implements PropertyItem {
   private Property property;
   private Module module;
   private final boolean child;
@@ -51,6 +52,11 @@ public class BooleanButton extends Button {
 
   public List<Item> getChildren() {
     return this.children;
+  }
+
+  @Override
+  public Property<?> getProperty() {
+    return this.property;
   }
 
   @Override

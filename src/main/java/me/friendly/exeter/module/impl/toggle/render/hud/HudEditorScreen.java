@@ -6,6 +6,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -81,6 +82,42 @@ public final class HudEditorScreen extends Screen {
     drawSnapGuides(scaledWidth, scaledHeight);
 
     hudPanel.drawScreen(mouseX, mouseY, partialTicks);
+    drawHoveredDescription(mouseX, mouseY);
+  }
+
+  /** Mirrors the ClickGUI hover text so setting descriptions work in this screen too. */
+  private void drawHoveredDescription(int mouseX, int mouseY) {
+    me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = null;
+    if (Exeter.getInstance() != null) {
+      var module = Exeter.getInstance().getModuleManager().getModuleByAlias("clickgui");
+      if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui gui) {
+        if (!gui.showDescriptions.getValue()) return;
+        guiModule = gui;
+      }
+    }
+    if (hudPanel == null || !hudPanel.getOpen()) return;
+    String hoveredDesc = null;
+    for (Item item : hudPanel.getItems()) {
+      if (!(item instanceof ModuleButton moduleButton)) continue;
+      String settingDesc = moduleButton.getHoveredSettingDescription(mouseX, mouseY);
+      if (settingDesc != null) {
+        hoveredDesc = settingDesc;
+        break;
+      }
+      float ix = item.getX();
+      float iy = item.getY();
+      if (mouseX >= ix
+          && mouseX <= ix + item.getWidth()
+          && mouseY >= iy
+          && mouseY <= iy + item.getHeight()) {
+        String desc = moduleButton.getModule().getDescription();
+        if (desc != null && !desc.isEmpty()) {
+          hoveredDesc = desc;
+        }
+      }
+    }
+    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.drawHoveredDescription(
+        hoveredDesc, hudPanel, this.width, this.height, guiModule);
   }
 
   private void drawHudModules(int mouseX, int mouseY, int scaledWidth, int scaledHeight) {

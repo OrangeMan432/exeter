@@ -116,6 +116,47 @@ public class ModuleButton extends Button {
     return this.topLevelItems;
   }
 
+  /**
+   * Description of the hovered setting (or nested child) row, or null when the mouse is not over
+   * one. Falls back to label plus value when the setting is undescribed.
+   */
+  public String getHoveredSettingDescription(int mouseX, int mouseY) {
+    if (!this.subOpen) return null;
+    for (Item item : topLevelItems) {
+      String desc = hoveredSettingDescription(item, mouseX, mouseY);
+      if (desc != null) return desc;
+    }
+    return null;
+  }
+
+  private static String hoveredSettingDescription(Item item, int mouseX, int mouseY) {
+    if (!item.isVisible()) return null;
+    if (item instanceof PropertyItem propertyItem
+        && contains(item, mouseX, mouseY)
+        && propertyItem.getProperty() != null) {
+      Property<?> property = propertyItem.getProperty();
+      String desc = property.getDescription();
+      if (desc != null && !desc.isEmpty()) return desc;
+      String label = property.getAliases().length > 0 ? property.getAliases()[0] : "?";
+      if (property instanceof ActionProperty) return label;
+      return label + ": " + String.valueOf(property.getValue());
+    }
+    if (item instanceof BooleanButton booleanButton && booleanButton.isChildrenOpen()) {
+      for (Item child : booleanButton.getChildren()) {
+        String desc = hoveredSettingDescription(child, mouseX, mouseY);
+        if (desc != null) return desc;
+      }
+    }
+    return null;
+  }
+
+  private static boolean contains(Item item, int mouseX, int mouseY) {
+    return mouseX >= item.getX()
+        && mouseX <= item.getX() + item.getWidth()
+        && mouseY >= item.getY()
+        && mouseY <= item.getY() + item.getHeight();
+  }
+
   @Override
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     super.drawScreen(mouseX, mouseY, partialTicks);

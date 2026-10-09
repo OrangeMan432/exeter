@@ -7,9 +7,10 @@ import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.item.PropertyItem;
 import me.friendly.exeter.properties.NumberProperty;
 
-public class NumberSlider extends Item {
+public class NumberSlider extends Item implements PropertyItem {
   private NumberProperty numberProperty;
   private Number min;
   private Number max;
@@ -30,6 +31,11 @@ public class NumberSlider extends Item {
   @Override
   public boolean isVisible() {
     return numberProperty == null || numberProperty.isVisible();
+  }
+
+  @Override
+  public NumberProperty<?> getProperty() {
+    return this.numberProperty;
   }
 
   @Override
