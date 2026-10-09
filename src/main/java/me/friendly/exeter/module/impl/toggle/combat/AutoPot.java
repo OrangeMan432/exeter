@@ -129,6 +129,27 @@ public class AutoPot extends ToggleableModule {
     poison.setDescription("Throw poison potions at nearby enemies.");
     slow.setDescription("Throw slowness potions at nearby enemies.");
 
+    hp.addChild(health);
+    hp.addChild(equal);
+    hp.addChild(predict);
+    hp.addChild(healthSlot);
+    hp.addChild(hpDelay);
+    predict.addChild(times);
+    predict.addChild(predictHpDelay);
+    speedPot.addChild(timeLeft);
+    speedPot.addChild(swiftnessSlot);
+    speedPot.addChild(speedDelay);
+    health.visibleWhen(() -> hp.getValue());
+    equal.visibleWhen(() -> hp.getValue());
+    predict.visibleWhen(() -> hp.getValue());
+    healthSlot.visibleWhen(() -> hp.getValue());
+    hpDelay.visibleWhen(() -> hp.getValue());
+    times.visibleWhen(() -> predict.getValue());
+    predictHpDelay.visibleWhen(() -> predict.getValue());
+    timeLeft.visibleWhen(() -> speedPot.getValue());
+    swiftnessSlot.visibleWhen(() -> speedPot.getValue());
+    speedDelay.visibleWhen(() -> speedPot.getValue());
+
     listeners.add(
         new Listener<TickEvent>("auto_pot_tick") {
           @Override
