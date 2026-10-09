@@ -58,6 +58,11 @@ public class AutoFirework extends ToggleableModule {
         ModuleType.MISCELLANEOUS);
     setDescription("Automatically fires fireworks while flying with an elytra.");
     offerProperties(mode, delay, autoSwitch, switchBack, swingHand);
+    mode.setDescription("When to fire the next firework.");
+    delay.setDescription("Ticks between fireworks in Delay mode.");
+    autoSwitch.setDescription("Switch to fireworks automatically.");
+    switchBack.setDescription("Switch back after firing.");
+    swingHand.setDescription("Swing your hand when firing.");
     this.listeners.add(tickListener);
   }
 
