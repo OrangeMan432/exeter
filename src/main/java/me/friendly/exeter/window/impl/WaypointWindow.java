@@ -101,7 +101,7 @@ public class WaypointWindow extends Window {
     int btnY = barY + INPUT_HEIGHT + 4;
     drawButton(0, btnY, mouseX, mouseY, "Add");
     drawButton(1, btnY, mouseX, mouseY, "Remove");
-    drawButton(2, btnY, mouseX, mouseY, "On/Off");
+    drawButton(2, btnY, mouseX, mouseY, isSelectedEnabled() ? "Disable" : "Enable");
     drawButton(3, btnY, mouseX, mouseY, "Add Here");
     drawButton(4, btnY, mouseX, mouseY, "Color");
   }
@@ -345,6 +345,13 @@ public class WaypointWindow extends Window {
     manager().remove(removed.getName());
     setStatus("§7Removed (" + removed.getName() + ")", 3000);
     selectedIndex = -1;
+  }
+
+  private boolean isSelectedEnabled() {
+    List<Waypoint> waypoints = manager().getRegistry();
+    return selectedIndex >= 0
+        && selectedIndex < waypoints.size()
+        && waypoints.get(selectedIndex).isEnabled();
   }
 
   private void toggleSelected() {

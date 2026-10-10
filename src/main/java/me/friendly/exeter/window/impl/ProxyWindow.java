@@ -122,7 +122,7 @@ public class ProxyWindow extends Window {
     drawButton(1, btnY, mouseX, mouseY, "Remove");
     drawButton(2, btnY, mouseX, mouseY, pendingType == ProxyEntry.Type.SOCKS5 ? "Socks" : "Http");
     drawButton(3, btnY, mouseX, mouseY, "Use");
-    drawButton(4, btnY, mouseX, mouseY, proxies().isEnabled() ? "On" : "Off");
+    drawButton(4, btnY, mouseX, mouseY, proxies().isEnabled() ? "Disable" : "Enable");
   }
 
   private void drawStatus(int statusY) {
