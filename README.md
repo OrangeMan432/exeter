@@ -73,6 +73,6 @@ the same way that 3arthqu4ke's does (and Future's does).
 - Lemon — various modules throughout the codebase
 - Homovore (leonetics) — PistonCrystal module design and silent rotation
 - OpenMyau (60124808866) — account manager this client's Accounts window is ported from
-- Meteor Client — FreeLook camera concept
+- Meteor Client — FreeLook camera concept, AutoWalk and rotation command
 - Phobos (3arthqu4ke) — LINE compass design the CompassHud is based on, rolling rainbow gradient
 - notanorange-main — improved ClickGUI fuzzy finder
