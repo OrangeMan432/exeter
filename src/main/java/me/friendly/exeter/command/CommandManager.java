@@ -14,6 +14,7 @@ import me.friendly.exeter.command.impl.client.Friends;
 import me.friendly.exeter.command.impl.client.Help;
 import me.friendly.exeter.command.impl.client.MacroCommand;
 import me.friendly.exeter.command.impl.client.Modules;
+import me.friendly.exeter.command.impl.client.PluginCommand;
 import me.friendly.exeter.command.impl.client.Prefix;
 import me.friendly.exeter.command.impl.client.Presets;
 import me.friendly.exeter.command.impl.client.Rotation;
@@ -47,6 +48,7 @@ public final class CommandManager extends ListRegistry<Command> {
     this.register(new Help());
     this.register(new Modules());
     this.register(new MacroCommand());
+    this.register(new PluginCommand());
     this.register(new Prefix());
     this.register(new Connect());
     this.register(new GearCommand());
