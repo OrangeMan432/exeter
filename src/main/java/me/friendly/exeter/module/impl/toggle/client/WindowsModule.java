@@ -14,6 +14,7 @@ import me.friendly.exeter.window.impl.AccountWindow;
 import me.friendly.exeter.window.impl.ConsoleWindow;
 import me.friendly.exeter.window.impl.FriendsWindow;
 import me.friendly.exeter.window.impl.MacroWindow;
+import me.friendly.exeter.window.impl.PluginWindow;
 import me.friendly.exeter.window.impl.ProxyWindow;
 import me.friendly.exeter.window.impl.WaypointWindow;
 
@@ -24,7 +25,8 @@ public final class WindowsModule extends ToggleableModule {
   private final Map<String, Boolean> pendingHidden = new HashMap<>();
 
   /** Windows that start hidden on a fresh config; saved visibility wins once set. */
-  private static final Set<String> DEFAULT_HIDDEN = Set.of("Proxies", "Waypoints", "Macros");
+  private static final Set<String> DEFAULT_HIDDEN =
+      Set.of("Proxies", "Waypoints", "Macros", "Plugins");
 
   public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
@@ -92,6 +94,7 @@ public final class WindowsModule extends ToggleableModule {
     screen.addWindow(new ProxyWindow(20, 290, 400, 220));
     screen.addWindow(new WaypointWindow(mcWidth - 400, 300, 300, 220));
     screen.addWindow(new MacroWindow(440, 290, 380, 280));
+    screen.addWindow(new PluginWindow(440, 580, 380, 220));
 
     for (Window window : screen.getWindows()) {
       int[] pos = pendingPositions.get(window.getTitle());
