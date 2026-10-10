@@ -22,7 +22,7 @@ public class WaypointWindow extends Window {
   private static final int ENTRY_HEIGHT = 14;
   private static final int BUTTON_HEIGHT = 12;
   private static final int INPUT_HEIGHT = 14;
-  private static final int BOTTOM_BAR_HEIGHT = 30;
+  private static final int BOTTOM_BAR_HEIGHT = 32;
 
   private final StringBuilder inputBuffer = new StringBuilder();
   private int selectedIndex = -1;
@@ -98,7 +98,7 @@ public class WaypointWindow extends Window {
       }
     }
 
-    int btnY = barY + INPUT_HEIGHT + 2;
+    int btnY = barY + INPUT_HEIGHT + 4;
     drawButton(0, btnY, mouseX, mouseY, "Add");
     drawButton(1, btnY, mouseX, mouseY, "Remove");
     drawButton(2, btnY, mouseX, mouseY, "On/Off");
@@ -202,7 +202,7 @@ public class WaypointWindow extends Window {
       }
     }
 
-    int btnY = barY + INPUT_HEIGHT + 2;
+    int btnY = barY + INPUT_HEIGHT + 4;
     if (clickButton(0, btnY, mouseX, mouseY)) {
       addFromInput();
       return true;
