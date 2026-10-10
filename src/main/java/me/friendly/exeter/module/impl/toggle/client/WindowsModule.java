@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
@@ -20,6 +21,11 @@ public final class WindowsModule extends ToggleableModule {
 
   private static WindowScreen screen;
   private final Map<String, int[]> pendingPositions = new HashMap<>();
+  private final Map<String, Boolean> pendingHidden = new HashMap<>();
+
+  /** Windows that start hidden on a fresh config; saved visibility wins once set. */
+  private static final Set<String> DEFAULT_HIDDEN =
+      Set.of("Proxies", "Waypoints", "Macros");
 
   public final ActionProperty resetPositions =
       new ActionProperty("Reset Positions", this::resetPositions);
@@ -44,13 +50,24 @@ public final class WindowsModule extends ToggleableModule {
     return pendingPositions;
   }
 
-  /** Copies live window positions into the pending map, called when the screen closes. */
+  /** Hidden flags loaded from windows.toml, applied on top of defaults when the screen opens. */
+  public void setPendingHidden(Map<String, Boolean> hidden) {
+    pendingHidden.clear();
+    pendingHidden.putAll(hidden);
+  }
+
+  public Map<String, Boolean> getPendingHidden() {
+    return pendingHidden;
+  }
+
+  /** Copies live window positions and visibility into the pending maps, called when the screen closes. */
   public void capturePositions() {
     if (screen == null) {
       return;
     }
     for (Window window : screen.getWindows()) {
       pendingPositions.put(window.getTitle(), new int[] {window.getX(), window.getY()});
+      pendingHidden.put(window.getTitle(), window.isHidden());
     }
   }
 
@@ -79,6 +96,8 @@ public final class WindowsModule extends ToggleableModule {
       if (pos != null) {
         window.setPosition(pos[0], pos[1]);
       }
+      window.setHidden(
+          pendingHidden.getOrDefault(window.getTitle(), DEFAULT_HIDDEN.contains(window.getTitle())));
     }
   }
 

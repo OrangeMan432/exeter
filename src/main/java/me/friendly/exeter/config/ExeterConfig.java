@@ -237,15 +237,22 @@ public class ExeterConfig {
           && data.containsKey("windows")) {
         Map<String, Object> windowsData = (Map<String, Object>) data.get("windows");
         Map<String, int[]> positions = new HashMap<>();
+        Map<String, Boolean> hidden = new HashMap<>();
         for (Map.Entry<String, Object> entry : windowsData.entrySet()) {
           if (entry.getValue() instanceof Map) {
-            int[] pos = readPosition((Map<String, Object>) entry.getValue());
+            Map<String, Object> windowEntry = (Map<String, Object>) entry.getValue();
+            int[] pos = readPosition(windowEntry);
             if (pos != null) {
               positions.put(entry.getKey(), pos);
+            }
+            if (windowEntry.containsKey("hidden")) {
+              hidden.put(
+                  entry.getKey(), Boolean.parseBoolean(windowEntry.get("hidden").toString()));
             }
           }
         }
         windowsModule.setPendingPositions(positions);
+        windowsModule.setPendingHidden(hidden);
       }
 
       // Load saved ClickGUI panel positions (applied when the ClickGUI screen opens)
@@ -392,6 +399,9 @@ public class ExeterConfig {
           Map<String, Object> pos = new HashMap<>();
           pos.put("x", (long) entry.getValue()[0]);
           pos.put("y", (long) entry.getValue()[1]);
+          if (windowsModule.getPendingHidden().containsKey(entry.getKey())) {
+            pos.put("hidden", windowsModule.getPendingHidden().get(entry.getKey()));
+          }
           windowsData.put(entry.getKey(), pos);
         }
         data.put("windows", windowsData);
