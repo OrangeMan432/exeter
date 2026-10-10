@@ -44,6 +44,7 @@ import me.friendly.exeter.module.impl.toggle.movement.Speed;
 import me.friendly.exeter.module.impl.toggle.movement.Sprint;
 import me.friendly.exeter.module.impl.toggle.movement.Step;
 import me.friendly.exeter.module.impl.toggle.movement.TargetStrafe;
+import me.friendly.exeter.module.impl.toggle.movement.AutoWalk;
 import me.friendly.exeter.module.impl.toggle.movement.Velocity;
 import me.friendly.exeter.module.impl.toggle.render.BlockEsp;
 import me.friendly.exeter.module.impl.toggle.render.BlockHighlight;
@@ -122,6 +123,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Step());
     register(new Sprint());
     register(new TargetStrafe());
+    register(new AutoWalk());
     register(new TestModule());
     register(new Debug());
     register(new Notifier());
