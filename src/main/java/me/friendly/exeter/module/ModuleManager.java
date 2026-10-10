@@ -62,6 +62,8 @@ import me.friendly.exeter.module.impl.toggle.render.Waypoints;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.BindListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.MacroListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CompassHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
@@ -131,6 +133,8 @@ public final class ModuleManager extends ListRegistry<Module> {
 
     register(new WatermarkHud());
     register(new ArrayListHud());
+    register(new MacroListHud());
+    register(new BindListHud());
     register(new ArmorHud());
     register(new PotionsHud());
     register(new CoordsHud());
