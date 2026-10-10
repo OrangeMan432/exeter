@@ -6,7 +6,6 @@ import java.util.Optional;
 import me.friendly.exeter.command.Argument;
 import me.friendly.exeter.command.Command;
 import me.friendly.exeter.core.Exeter;
-import me.friendly.exeter.logging.Logger;
 import me.friendly.exeter.plugin.Plugin;
 import me.friendly.exeter.plugin.PluginDownloader;
 import me.friendly.exeter.plugin.PluginList;
@@ -19,6 +18,7 @@ public final class PluginCommand extends Command {
     addSubCommand("list", "", "List available plugins.");
     addSubCommand("installed", "", "List loaded plugins.");
     addSubCommand("install", "<name>", "Download and load a plugin.");
+    addSubCommand("uninstall", "<name>", "Stop a plugin and delete its jar.");
     addSubCommand("reload", "", "Load jars added to the plugins folder.");
   }
 
@@ -49,6 +49,13 @@ public final class PluginCommand extends Command {
     if (action.equalsIgnoreCase("install")) {
       install(this.getArgument("name").getValue());
       return "Downloading...";
+    }
+    if (action.equalsIgnoreCase("uninstall")) {
+      String name = this.getArgument("name").getValue();
+      if (Exeter.getInstance().getPluginManager().uninstall(name)) {
+        return "Uninstalled " + name + ".";
+      }
+      return "No loaded plugin: " + name;
     }
     return String.format("%s %s", "plugin", this.getSyntax());
   }
@@ -87,45 +94,60 @@ public final class PluginCommand extends Command {
   private void install(String name) {
     new Thread(
             () -> {
-              PluginList.Entry entry = findEntry(name);
-              if (entry == null) {
-                print("No such plugin in the list: " + name);
-                return;
+              try {
+                installSync(name);
+              } catch (Exception e) {
+                e.printStackTrace();
+                print("Install failed: " + e.getMessage());
               }
-              print("Downloading " + entry.name() + " " + entry.version() + "...");
-              PluginDownloader.install(
-                  entry,
-                  Exeter.getInstance().getPluginManager().getFile(),
-                  (Optional<File> file) -> {
-                    if (file.isEmpty()) {
-                      print("Download failed for " + entry.name() + ".");
-                      return;
-                    }
-                    Optional<Plugin> plugin =
-                        Exeter.getInstance().getPluginManager().loadFile(file.get());
-                    if (plugin.isEmpty()) {
-                      print("Downloaded, but no plugin found inside " + file.get().getName() + ".");
-                      return;
-                    }
-                    print("Installed and loaded " + plugin.get().getName() + ".");
-                  });
             },
             "exeter-plugin-install")
         .start();
   }
 
+  private void installSync(String name) {
+    PluginList.Entry entry = findEntry(name);
+    if (entry == null) {
+      print("No such plugin in the list: " + name);
+      return;
+    }
+    print("Downloading " + entry.name() + " " + entry.version() + "...");
+    PluginDownloader.install(
+        entry,
+        Exeter.getInstance().getPluginManager().getFile(),
+        (Optional<File> file) -> {
+          if (file.isEmpty()) {
+            print("Download failed for " + entry.name() + ".");
+            return;
+          }
+          Optional<Plugin> plugin = Exeter.getInstance().getPluginManager().loadFile(file.get());
+          if (plugin.isEmpty()) {
+            print("Downloaded, but no plugin found inside " + file.get().getName() + ".");
+            return;
+          }
+          print("Installed and loaded " + plugin.get().getName() + ".");
+        });
+  }
+
   private PluginList.Entry findEntry(String name) {
     try {
-      for (PluginList.Entry entry : PluginList.fetch()) {
+      List<PluginList.Entry> entries = PluginList.fetch();
+      me.friendly.exeter.logging.DebugLogger.get()
+          .logSystem("Plugins", "list fetched: " + entries.size() + " entries");
+      for (PluginList.Entry entry : entries) {
         if (entry.name().equalsIgnoreCase(name)) return entry;
       }
     } catch (Exception e) {
+      e.printStackTrace();
+      me.friendly.exeter.logging.DebugLogger.get()
+          .logSystem("Plugins", "list fetch failed: " + e.getMessage());
       return null;
     }
     return null;
   }
 
+  /** Chat must print on the main thread; workers die silently otherwise. */
   private void print(String message) {
-    Logger.getLogger().printToChat(message);
+    minecraft.execute(() -> me.friendly.exeter.logging.Logger.getLogger().printToChat(message));
   }
 }
