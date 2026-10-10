@@ -16,6 +16,7 @@ import me.friendly.exeter.command.impl.client.Modules;
 import me.friendly.exeter.command.impl.client.Prefix;
 import me.friendly.exeter.command.impl.client.Presets;
 import me.friendly.exeter.command.impl.client.Runtime;
+import me.friendly.exeter.command.impl.client.Rotation;
 import me.friendly.exeter.command.impl.client.ScreenShot;
 import me.friendly.exeter.command.impl.client.Toggle;
 import me.friendly.exeter.command.impl.client.Waypoints;
@@ -40,6 +41,7 @@ public final class CommandManager extends ListRegistry<Command> {
     this.registry = new ArrayList();
     this.register(new Toggle());
     this.register(new Runtime());
+    this.register(new Rotation());
     this.register(new Grab());
     this.register(new Help());
     this.register(new Modules());
