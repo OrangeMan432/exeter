@@ -15,7 +15,10 @@ public class ConsoleWindow extends Window implements java.util.function.Consumer
   private static final int LINE_HEIGHT = 11;
   private static final int MAX_ENTRIES = 500;
 
-  private static final List<LogEntry> staticEntries = new ArrayList<>();
+  // Copy-on-write: log listeners append from worker threads (plugin downloads)
+  // while the render thread iterates here.
+  private static final List<LogEntry> staticEntries =
+      new java.util.concurrent.CopyOnWriteArrayList<>();
   private static boolean listenerRegistered = false;
 
   private final List<String> renderedLines = new ArrayList<>();
