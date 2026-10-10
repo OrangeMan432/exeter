@@ -69,6 +69,7 @@ public final class BindListHud extends ListHudModule {
       int entryColor = tm.getColor() | 0xFF000000;
       if (color == ColorMode.CLIENT) entryColor = Colors.getHudMain();
       else if (color == ColorMode.CLIENT_ACCENT) entryColor = Colors.getHudAccent();
+      if (!tm.isRunning()) entryColor = 0xFF888888;
       rows.add(new Row(tm.getLabel(), KeyNames.name(keybind.getKey()), entryColor));
     }
 
@@ -76,6 +77,9 @@ public final class BindListHud extends ListHudModule {
       if (macro.getKey() == 0) continue;
       int entryColor =
           color == ColorMode.CLIENT_ACCENT ? Colors.getHudAccent() : Colors.getHudMain();
+      if (macro.getMode() == Macro.Mode.TOGGLE && !macro.isEnabled()) {
+        entryColor = 0xFF888888;
+      }
       rows.add(new Row(macro.getName(), KeyNames.name(macro.getKey()), entryColor));
     }
 
