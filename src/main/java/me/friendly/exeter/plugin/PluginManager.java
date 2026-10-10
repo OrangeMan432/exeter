@@ -41,43 +41,78 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
    */
   @Override
   public void onLoad() throws IOException {
-    File[] files;
+    ensureDir();
+    for (File file : jarFiles()) {
+      loadFile(file);
+    }
+  }
+
+  /**
+   * Picks up jars added after startup (e.g. downloaded through the plugin manager). Jars whose
+   * plugin name is already loaded are skipped: classes cannot be unloaded, so updating a plugin
+   * still needs a restart.
+   *
+   * @return newly loaded plugins.
+   */
+  public java.util.List<Plugin> reload() {
+    ensureDir();
+    java.util.List<Plugin> loaded = new java.util.ArrayList<>();
+    for (File file : jarFiles()) {
+      loadFile(file).ifPresent(loaded::add);
+    }
+    return loaded;
+  }
+
+  /**
+   * Loads one jar, instantiating every direct {@link Plugin} subclass inside. Already-loaded plugin
+   * names are skipped.
+   */
+  public Optional<Plugin> loadFile(File file) {
+    if (!file.isFile() || !file.getName().endsWith(".jar")) return Optional.empty();
+    Plugin found = null;
+    try (JarFile jarFile = new JarFile(file)) {
+      Enumeration<JarEntry> entries = jarFile.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = entries.nextElement();
+        String name = entry.getName();
+        if (!name.endsWith(".class")) continue;
+        String className = name.replace('/', '.');
+        className = className.substring(0, className.length() - 6);
+        URLClassLoader classLoader =
+            new URLClassLoader(
+                new URL[] {new URL("file:///" + file.getAbsolutePath())},
+                getClass().getClassLoader());
+        Class<?> clazz = classLoader.loadClass(className);
+        if (clazz == null
+            || clazz.getSuperclass() == null
+            || !clazz.getSuperclass().equals(Plugin.class)) continue;
+        Plugin plugin = (Plugin) clazz.getDeclaredConstructor().newInstance();
+        if (get(plugin.getName()).isPresent()) continue;
+        this.getList().add(plugin);
+        plugin.setRunning(true);
+        found = plugin;
+      }
+    } catch (IOException
+        | ClassNotFoundException
+        | IllegalAccessException
+        | InstantiationException
+        | NoSuchMethodException
+        | java.lang.reflect.InvocationTargetException e) {
+      e.printStackTrace();
+    }
+    return Optional.ofNullable(found);
+  }
+
+  private void ensureDir() {
     if (!this.getFile().exists()) {
       this.getFile().mkdirs();
       this.getFile().mkdir();
     }
-    if ((files = this.getFile().listFiles()).length > 0) {
-      for (File file : files) {
-        if (!file.isFile() || !file.getName().endsWith(".jar")) continue;
-        try {
-          JarFile jarFile = new JarFile(file);
-          Enumeration<JarEntry> entries = jarFile.entries();
-          while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName();
-            if (!name.endsWith(".class")) continue;
-            String className = name.replaceAll("/", ".");
-            className = className.substring(0, className.length() - 6);
-            URLClassLoader classLoader =
-                new URLClassLoader(
-                    new URL[] {new URL("file:///" + file.getAbsolutePath())},
-                    getClass().getClassLoader());
-            Class<?> clazz = classLoader.loadClass(className);
-            if (clazz == null
-                || clazz.getSuperclass() == null
-                || !clazz.getSuperclass().equals(Plugin.class)) continue;
-            Plugin plugin = (Plugin) clazz.newInstance();
-            this.getList().add(plugin);
-            plugin.setRunning(true);
-          }
-        } catch (IOException
-            | ClassNotFoundException
-            | IllegalAccessException
-            | InstantiationException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+  }
+
+  private File[] jarFiles() {
+    File[] files = this.getFile().listFiles();
+    return files == null ? new File[0] : files;
   }
 
   /**
