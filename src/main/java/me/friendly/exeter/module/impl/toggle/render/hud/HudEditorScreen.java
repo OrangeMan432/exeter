@@ -240,7 +240,11 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
-  public void init() {}
+  public void init() {
+    // Rebuild every open: plugin modules arrive (and leave) at runtime, and a
+    // cached panel would keep showing uninstalled ones.
+    hudPanel = null;
+  }
 
   /**
    * Snaps to a corner or the top center when the matching box edge lands within radius of one;
