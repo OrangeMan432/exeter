@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import me.friendly.api.event.Listener;
+import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.Module;
@@ -74,6 +75,23 @@ public class Debug extends ToggleableModule {
     }
   }
 
+  /**
+   * Picks up modules registered after startup (e.g. by plugins) so they can be toggled for debug
+   * output too.
+   */
+  private void syncModuleToggles() {
+    if (allModules == null) {
+      allModules = new ArrayList<>();
+    }
+    for (Module module : Exeter.getInstance().getModuleManager().getRegistry()) {
+      if (module == this || !(module instanceof ToggleableModule)) continue;
+      if (!allModules.contains(module)) {
+        allModules.add(module);
+        moduleToggles.getToggles().putIfAbsent(module.getLabel(), false);
+      }
+    }
+  }
+
   /** Test helper: hands the player a fresh totem via /give whenever they pop one. */
   private void onPacket(PacketEvent event) {
     if (!refillTotem.getValue()) return;
@@ -86,6 +104,7 @@ public class Debug extends ToggleableModule {
   }
 
   private void openModulesPopup() {
+    syncModuleToggles();
     List<SearchSelectPopup.ToggleItem> items = new ArrayList<>();
     for (Module module : allModules) {
       String name = module.getLabel();

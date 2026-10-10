@@ -61,7 +61,7 @@ public class WaypointWindow extends Window {
       if (hovered || i == selectedIndex) {
         RenderMethods.drawRect(x, rowY, x + width, rowY + ENTRY_HEIGHT, 0x20FFFFFF);
       }
-      String marker = waypoint.isEnabled() ? "§a[on] " : "§8[off] ";
+      String marker = waypoint.isEnabled() ? "§a[Enabled] " : "§8[Disabled] ";
       String display = marker + waypoint.getName() + " §8(" + waypoint.coordsShort() + "§8)";
       int swatch = 0xFF000000 | waypoint.getColor();
       RenderMethods.drawRect(x + 5, rowY + 3, x + 11, rowY + 9, swatch);
