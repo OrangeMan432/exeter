@@ -39,9 +39,9 @@ the same way that 3arthqu4ke's does (and Future's does).
 
 ## Controls
 
-- `RSHIFT` — ClickGUI (module configuration)
-- `` ` `` (grave) — Windows (console, friends)
-- `,` (comma) — HUDEditor (reposition overlay elements)
+- `RSHIFT` - ClickGUI (module configuration)
+- `` ` `` (grave) - Windows (console, friends)
+- `,` (comma) - HUDEditor (reposition overlay elements)
 
 ## Features
 
@@ -58,21 +58,21 @@ the same way that 3arthqu4ke's does (and Future's does).
 
 ## Project layout
 
-- `src/main/java/me/friendly/exeter/` — client source (`module/`, `config/`, `window/`,
+- `src/main/java/me/friendly/exeter/` - client source (`module/`, `config/`, `window/`,
   `logging/`, `util/`, `mixin/`, `test/`)
-- `src/main/java/me/friendly/api/` — event system and helpers
-- `.github/workflows/` — dev/release builds, format check, smoke test
-- `run/` — local dev client directory (not committed)
+- `src/main/java/me/friendly/api/` - event system and helpers
+- `.github/workflows/` - dev/release builds, format check, smoke test
+- `run/` - local dev client directory (not committed)
 
 ## Credits
 
-- Friendly — original 1.8 client
-- Gopro336 — source reconstruction, cleanup, javadoc, and porting work
-- OrangeMan432 — this fork
-- Earthhack (3arthqu4ke) — FakePlayer implementation, Replenish module, AutoCrystal logic
-- Lemon — various modules throughout the codebase
-- Homovore (leonetics) — PistonCrystal module design and silent rotation
-- OpenMyau (60124808866) — account manager this client's Accounts window is ported from
-- Meteor Client — FreeLook camera concept, AutoWalk and rotation command
-- Phobos (3arthqu4ke) — LINE compass design the CompassHud is based on, rolling rainbow gradient
-- notanorange-main — improved ClickGUI fuzzy finder
+- Friendly - original 1.8 client
+- Gopro336 - source reconstruction, cleanup, javadoc, and porting work
+- OrangeMan432 - this fork
+- Earthhack (3arthqu4ke) - FakePlayer implementation, Replenish module, AutoCrystal logic
+- Lemon - various modules throughout the codebase
+- Homovore (leonetics) - PistonCrystal module design and silent rotation
+- OpenMyau (60124808866) - account manager this client's Accounts window is ported from
+- Meteor Client - FreeLook camera concept, AutoWalk and rotation command
+- Phobos (3arthqu4ke) - LINE compass design the CompassHud is based on, rolling rainbow gradient
+- notanorange-main - improved ClickGUI fuzzy finder

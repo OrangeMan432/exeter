@@ -246,7 +246,7 @@ public class MacroWindow extends Window {
       rowY += ENTRY_HEIGHT;
     }
     if (lines.isEmpty()) {
-      FontUtil.drawString("  (empty — type below and press Enter)", x + 5, listY + 2, 0xFF666666);
+      FontUtil.drawString("  (empty - type a command below and press Enter)", x + 5, listY + 2, 0xFF666666);
     }
 
     int cmdY = y + height - INPUT_HEIGHT - 3;
