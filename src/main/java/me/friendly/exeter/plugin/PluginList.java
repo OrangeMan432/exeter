@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +26,7 @@ public final class PluginList {
   /** Fetches and parses the list. Runs on the caller's thread; call off-thread. */
   public static List<Entry> fetch(String url) throws Exception {
     List<Entry> entries = new ArrayList<>();
-    try (Reader reader =
-        new InputStreamReader(URI.create(url).toURL().openStream(), StandardCharsets.UTF_8)) {
+    try (Reader reader = new InputStreamReader(Github.open(url), StandardCharsets.UTF_8)) {
       JsonElement root = JsonParser.parseReader(reader);
       if (!(root instanceof JsonArray array)) {
         return entries;

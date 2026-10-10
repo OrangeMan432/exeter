@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -25,27 +24,35 @@ public final class PluginDownloader {
    */
   public static void install(
       PluginList.Entry entry, File pluginsDir, Consumer<Optional<File>> result) {
+    debug(entry.name() + ": resolving release for " + entry.repo());
     try {
       String assetUrl = latestJarUrl(entry.repo());
       if (assetUrl == null) {
+        debug(entry.name() + ": no jar asset in latest release");
         result.accept(Optional.empty());
         return;
       }
       String fileName = assetUrl.substring(assetUrl.lastIndexOf('/') + 1);
       File out = new File(pluginsDir, fileName);
+      debug(entry.name() + ": downloading " + assetUrl);
       download(assetUrl, out);
+      debug(entry.name() + ": saved " + out.length() + " bytes to " + out.getName());
       result.accept(Optional.of(out));
     } catch (Exception e) {
       e.printStackTrace();
+      debug(entry.name() + ": download failed: " + e.getMessage());
       result.accept(Optional.empty());
     }
+  }
+
+  private static void debug(String message) {
+    me.friendly.exeter.logging.DebugLogger.get().logSystem("Plugins", message);
   }
 
   /** First .jar asset of the latest release that is not a sources jar. */
   private static String latestJarUrl(String repo) throws Exception {
     String api = "https://api.github.com/repos/" + repo + "/releases/latest";
-    try (Reader reader =
-        new InputStreamReader(URI.create(api).toURL().openStream(), StandardCharsets.UTF_8)) {
+    try (Reader reader = new InputStreamReader(Github.open(api), StandardCharsets.UTF_8)) {
       JsonElement root = JsonParser.parseReader(reader);
       if (!(root instanceof JsonObject release)) {
         return null;
@@ -76,7 +83,7 @@ public final class PluginDownloader {
     if (out.getParentFile() != null) {
       out.getParentFile().mkdirs();
     }
-    try (InputStream in = URI.create(url).toURL().openStream();
+    try (InputStream in = Github.open(url);
         OutputStream fileOut = new FileOutputStream(out)) {
       in.transferTo(fileOut);
     }
