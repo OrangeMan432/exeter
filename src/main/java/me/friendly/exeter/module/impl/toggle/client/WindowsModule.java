@@ -1,6 +1,8 @@
 package me.friendly.exeter.module.impl.toggle.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import me.friendly.exeter.config.ExeterConfig;
@@ -23,6 +25,9 @@ public final class WindowsModule extends ToggleableModule {
   private static WindowScreen screen;
   private final Map<String, int[]> pendingPositions = new HashMap<>();
   private final Map<String, Boolean> pendingHidden = new HashMap<>();
+
+  /** Windows contributed by plugins; re-added on every open so they survive rebuilds. */
+  private final List<Window> extraWindows = new ArrayList<>();
 
   /** Windows that start hidden on a fresh config; saved visibility wins once set. */
   private static final Set<String> DEFAULT_HIDDEN =
@@ -61,6 +66,29 @@ public final class WindowsModule extends ToggleableModule {
     return pendingHidden;
   }
 
+  /** Registers a plugin window so it opens with the rest and keeps its saved spot. */
+  public void registerWindow(Window window) {
+    unregisterWindow(window.getTitle());
+    extraWindows.add(window);
+    if (screen != null) {
+      screen.addWindow(window);
+      int[] pos = pendingPositions.get(window.getTitle());
+      if (pos != null) {
+        window.setPosition(pos[0], pos[1]);
+      }
+      window.setHidden(
+          pendingHidden.getOrDefault(
+              window.getTitle(), DEFAULT_HIDDEN.contains(window.getTitle())));
+    }
+  }
+
+  public void unregisterWindow(String title) {
+    extraWindows.removeIf(window -> window.getTitle().equalsIgnoreCase(title));
+    if (screen != null) {
+      screen.getWindows().removeIf(window -> window.getTitle().equalsIgnoreCase(title));
+    }
+  }
+
   /**
    * Copies live window positions and visibility into the pending maps, called when the screen
    * closes.
@@ -94,7 +122,10 @@ public final class WindowsModule extends ToggleableModule {
     screen.addWindow(new ProxyWindow(20, 290, 400, 220));
     screen.addWindow(new WaypointWindow(mcWidth - 400, 300, 300, 220));
     screen.addWindow(new MacroWindow(440, 290, 380, 280));
-    screen.addWindow(new PluginWindow(440, 580, 380, 220));
+    screen.addWindow(new PluginWindow(440, 30, 380, 220));
+    for (Window window : extraWindows) {
+      screen.addWindow(window);
+    }
 
     for (Window window : screen.getWindows()) {
       int[] pos = pendingPositions.get(window.getTitle());
