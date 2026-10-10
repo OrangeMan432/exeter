@@ -197,10 +197,7 @@ public class MacroWindow extends Window {
     int tabX = x + 3;
     for (int i = 0; i < tabs.size(); i++) {
       ListTab tab = tabs.get(i);
-      String label =
-          (tab == listTab ? "[" + listTabLabel(tab) + "]" : listTabLabel(tab))
-              + (i < tabs.size() - 1 || true ? "" : "");
-      String full = (tab == listTab ? "[" : "") + listTabLabel(tab) + (tab == listTab ? "]" : "");
+      String full = listTabLabel(tab);
       int w = FontUtil.getStringWidth(full) + 10;
       boolean hovered =
           mouseX >= tabX
@@ -442,10 +439,7 @@ public class MacroWindow extends Window {
     int tabX = x + 3;
     List<ListTab> tabs = listTabs(macro);
     for (int i = 0; i < tabs.size(); i++) {
-      String full =
-          (tabs.get(i) == listTab ? "[" : "")
-              + listTabLabel(tabs.get(i))
-              + (tabs.get(i) == listTab ? "]" : "");
+      String full = listTabLabel(tabs.get(i));
       int w = FontUtil.getStringWidth(full) + 10;
       if (mouseX >= tabX && mouseX <= tabX + w) return i;
       tabX += w + 2;
