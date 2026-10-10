@@ -93,6 +93,8 @@ the agent writes code. Ask before crossing that boundary.
 - Test-only hooks go in `me.friendly.exeter.test` and must be inert unless explicitly
   enabled (e.g. `-Dexeter.smokeTest=true`).
 - If the user corrects you, treat it as a standing constraint until explicitly lifted.
+- Never use em dashes (or en dashes) anywhere: code, comments, strings, docs.
+  Plain hyphens only.
 
 ## Logging in new modules
 

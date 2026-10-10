@@ -35,6 +35,7 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoFirework;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.Replenish;
+import me.friendly.exeter.module.impl.toggle.movement.AutoWalk;
 import me.friendly.exeter.module.impl.toggle.movement.ElytraFly;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
 import me.friendly.exeter.module.impl.toggle.movement.NoAccel;
@@ -61,10 +62,12 @@ import me.friendly.exeter.module.impl.toggle.render.Waypoints;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudRenderer;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArmorHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.ArrayListHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.BindListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CompassHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.CoordsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.DirectionHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.FpsHud;
+import me.friendly.exeter.module.impl.toggle.render.hud.elements.MacroListHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.NotificationHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.PotionsHud;
 import me.friendly.exeter.module.impl.toggle.render.hud.elements.SpeedHud;
@@ -122,6 +125,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new Step());
     register(new Sprint());
     register(new TargetStrafe());
+    register(new AutoWalk());
     register(new TestModule());
     register(new Debug());
     register(new Notifier());
@@ -129,6 +133,8 @@ public final class ModuleManager extends ListRegistry<Module> {
 
     register(new WatermarkHud());
     register(new ArrayListHud());
+    register(new MacroListHud());
+    register(new BindListHud());
     register(new ArmorHud());
     register(new PotionsHud());
     register(new CoordsHud());

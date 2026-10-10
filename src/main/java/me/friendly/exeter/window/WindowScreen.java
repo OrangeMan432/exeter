@@ -50,13 +50,35 @@ public final class WindowScreen extends Screen {
       RenderMethods.drawGradientRect(0, 0, this.width, this.height, 0x80000000, 0x40000000);
     }
 
+    Window front = hoverFront(mouseX, mouseY);
     for (Window window : windows) {
       if (!window.isHidden()) {
-        window.render(mouseX, mouseY, partialTicks);
+        window.render(front == null || window == front ? mouseX : -10000, mouseY, partialTicks);
       }
     }
 
     renderTaskbar(mouseX, mouseY);
+  }
+
+  /**
+   * Frontmost visible window under the mouse; hover states in every window below it are suppressed
+   * by rendering them with an offscreen mouse position. Clicks already route front-first, so this
+   * only affects hover highlights. Skipped while a modal popup is open, since its content extends
+   * past window bounds.
+   */
+  private Window hoverFront(int mouseX, int mouseY) {
+    for (Window window : windows) {
+      if (!window.isHidden() && window.isModal()) {
+        return null;
+      }
+    }
+    Window front = null;
+    for (Window window : windows) {
+      if (!window.isHidden() && window.isHovered(mouseX, mouseY)) {
+        front = window;
+      }
+    }
+    return front;
   }
 
   private void renderTaskbar(int mouseX, int mouseY) {

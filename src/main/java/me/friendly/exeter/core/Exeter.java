@@ -11,6 +11,7 @@ import me.friendly.exeter.config.ExeterConfig;
 import me.friendly.exeter.friend.FriendManager;
 import me.friendly.exeter.keybind.KeybindManager;
 import me.friendly.exeter.logging.Logger;
+import me.friendly.exeter.macro.MacroManager;
 import me.friendly.exeter.module.ModuleManager;
 import me.friendly.exeter.plugin.PluginManager;
 import me.friendly.exeter.proxy.ProxyManager;
@@ -41,6 +42,7 @@ public final class Exeter {
   private ModuleManager moduleManager;
   private CommandManager commandManager;
   private FriendManager friendManager;
+  private MacroManager macroManager;
   private ProxyManager proxyManager;
   private WaypointManager waypointManager;
   private ConfigManager configManager;
@@ -71,6 +73,7 @@ public final class Exeter {
     this.waypointManager = new WaypointManager();
     this.keybindManager = new KeybindManager();
     this.commandManager = new CommandManager();
+    this.macroManager = new MacroManager();
     this.exeterConfig = new ExeterConfig();
     this.moduleManager = new ModuleManager();
     this.accountManager = new AccountManager();
@@ -121,6 +124,10 @@ public final class Exeter {
 
   public FriendManager getFriendManager() {
     return this.friendManager;
+  }
+
+  public MacroManager getMacroManager() {
+    return this.macroManager;
   }
 
   public ProxyManager getProxyManager() {
