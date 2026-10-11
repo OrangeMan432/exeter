@@ -294,9 +294,43 @@ public final class HudEditorScreen extends Screen {
 
     if (best == null) {
       m.setFree(true);
+      snapEdge(m, scaledWidth, scaledHeight);
       return;
     }
     m.setCorner(best);
+    m.setEdge(HudModule.Edge.NONE);
     m.setFree(false);
+  }
+
+  /**
+   * Edge snap zones mirroring the corner ones: a module dropped near an edge tracks it across
+   * resizes. Corners win when both match; otherwise the module stays free with no anchor.
+   */
+  private void snapEdge(HudModule m, int scaledWidth, int scaledHeight) {
+    int radius = me.friendly.exeter.module.impl.toggle.client.HUDEditor.snapRange();
+    if (radius <= 0) {
+      m.setEdge(HudModule.Edge.NONE);
+      return;
+    }
+    int margin = 5;
+    int w = m.getWidth();
+    int h = m.getHeight();
+    int x = m.getX();
+    int y = m.getY();
+    if (Math.abs(x - margin) <= radius) {
+      m.setEdge(HudModule.Edge.LEFT);
+      m.setEdgeOffset(x - margin);
+    } else if (Math.abs((x + w) - (scaledWidth - margin)) <= radius) {
+      m.setEdge(HudModule.Edge.RIGHT);
+      m.setEdgeOffset(scaledWidth - margin - (x + w));
+    } else if (Math.abs(y - margin) <= radius) {
+      m.setEdge(HudModule.Edge.TOP);
+      m.setEdgeOffset(y - margin);
+    } else if (Math.abs((y + h) - (scaledHeight - margin)) <= radius) {
+      m.setEdge(HudModule.Edge.BOTTOM);
+      m.setEdgeOffset(scaledHeight - margin - (y + h));
+    } else {
+      m.setEdge(HudModule.Edge.NONE);
+    }
   }
 }
