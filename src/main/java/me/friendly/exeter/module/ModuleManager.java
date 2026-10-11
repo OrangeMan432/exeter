@@ -35,6 +35,7 @@ import me.friendly.exeter.module.impl.toggle.misc.AutoFirework;
 import me.friendly.exeter.module.impl.toggle.misc.AutoGear;
 import me.friendly.exeter.module.impl.toggle.misc.AutoItemDupe;
 import me.friendly.exeter.module.impl.toggle.misc.Replenish;
+import me.friendly.exeter.module.impl.toggle.misc.Swing;
 import me.friendly.exeter.module.impl.toggle.movement.AutoWalk;
 import me.friendly.exeter.module.impl.toggle.movement.ElytraFly;
 import me.friendly.exeter.module.impl.toggle.movement.FastFall;
@@ -98,6 +99,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new AutoMend());
     register(new AutoGear());
     register(new Replenish());
+    register(new Swing());
     register(new AutoFirework());
     register(new ElytraTarget());
     register(new MaceDive());

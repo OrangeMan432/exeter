@@ -285,6 +285,9 @@ public class PlayerUtil {
 
   public static void swingHand() {
     if (mc.player == null) return;
+    if (!me.friendly.exeter.module.impl.toggle.misc.Swing.allowReset() && mc.player.isSwinging()) {
+      return;
+    }
     mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
   }
 
