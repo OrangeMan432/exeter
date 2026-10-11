@@ -106,7 +106,13 @@ public class Speed extends ToggleableModule {
     lastDist = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
 
     boolean moving = PlayerUtil.isMoving();
-    if (!moving) return;
+    // Damage boosts must land with or without input: crystal knockback usually
+    // hits while standing still, and gating on keys ate the boost entirely.
+    boolean boosted = false;
+    if (damageBoost.getValue() && boostSpeed > 0) {
+      boosted = true;
+    }
+    if (!moving && !boosted) return;
 
     if (!waterSpeed.getValue() && isLiquid()) return;
 
@@ -137,7 +143,9 @@ public class Speed extends ToggleableModule {
     }
 
     if (damageBoost.getValue() && boostSpeed > 0) {
-      moveSpeed += boostSpeed;
+      // Lemon-style: take the knockback velocity outright so it survives into
+      // the airborne decay instead of adding one tick on top of stage speed.
+      moveSpeed = boostSpeed;
       boostSpeed = 0;
     }
 
@@ -152,6 +160,10 @@ public class Speed extends ToggleableModule {
 
     moveSpeed = Math.max(moveSpeed, getBaseSpeed());
 
+    if (!moving) {
+      setMoveSpeedFacing(moveSpeed);
+      return;
+    }
     setMoveSpeed(moveSpeed);
   }
 
@@ -173,6 +185,14 @@ public class Speed extends ToggleableModule {
     double newX = forward * -sin * speed + strafe * cos * speed;
     double newZ = forward * cos * speed + strafe * sin * speed;
 
+    minecraft.player.setDeltaMovement(newX, minecraft.player.getDeltaMovement().y, newZ);
+  }
+
+  /** Facing-direction motion for inputless boosts (knockback while standing still). */
+  private void setMoveSpeedFacing(double speed) {
+    double rad = Math.toRadians(minecraft.player.getYRot());
+    double newX = -Math.sin(rad) * speed;
+    double newZ = Math.cos(rad) * speed;
     minecraft.player.setDeltaMovement(newX, minecraft.player.getDeltaMovement().y, newZ);
   }
 
