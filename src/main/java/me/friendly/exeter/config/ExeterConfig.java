@@ -230,6 +230,17 @@ public class ExeterConfig {
         if (hudData.containsKey("free")) {
           hudModule.setFree(Boolean.parseBoolean(hudData.get("free").toString()));
         }
+        if (hudData.containsKey("edge")) {
+          String edgeName = hudData.get("edge").toString();
+          try {
+            hudModule.setEdge(HudModule.Edge.valueOf(edgeName));
+          } catch (IllegalArgumentException e) {
+            DebugLogger.get().logSystem("Config", "  invalid edge value: " + edgeName);
+          }
+        }
+        if (hudData.containsKey("edgeOffset")) {
+          hudModule.setEdgeOffset(((Number) hudData.get("edgeOffset")).intValue());
+        }
       }
 
       // Load saved window positions (applied when the Windows screen opens)
@@ -388,6 +399,8 @@ public class ExeterConfig {
         hudData.put("y", (long) hudModule.getY());
         hudData.put("corner", hudModule.getCorner().name());
         hudData.put("free", hudModule.isFree());
+        hudData.put("edge", hudModule.getEdge().name());
+        hudData.put("edgeOffset", (long) hudModule.getEdgeOffset());
         data.put("hud", hudData);
       }
 

@@ -18,9 +18,20 @@ public abstract class HudModule extends ToggleableModule {
     TOP_CENTER
   }
 
+  /** Screen edge an edge-snapped module tracks on resize; NONE keeps absolute x/y. */
+  public enum Edge {
+    NONE,
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM
+  }
+
   private int x;
   private int y;
   private Corner corner;
+  private Edge edge = Edge.NONE;
+  private int edgeOffset;
   private boolean positioned = false;
   private boolean free = false;
 
@@ -79,6 +90,23 @@ public abstract class HudModule extends ToggleableModule {
     this.free = free;
   }
 
+  public Edge getEdge() {
+    return edge;
+  }
+
+  public void setEdge(Edge edge) {
+    this.edge = edge;
+  }
+
+  /** Pixels from the anchored edge, captured when the module snaps to it. */
+  public int getEdgeOffset() {
+    return edgeOffset;
+  }
+
+  public void setEdgeOffset(int edgeOffset) {
+    this.edgeOffset = Math.max(0, edgeOffset);
+  }
+
   /** TOP_CENTER stacks downward like the top corners. */
   public boolean isTop() {
     return corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT || corner == Corner.TOP_CENTER;
@@ -119,6 +147,11 @@ public abstract class HudModule extends ToggleableModule {
   public static void layoutByCorner(List<HudModule> modules, int scaledWidth, int scaledHeight) {
     int margin = 5;
     int gap = 2;
+
+    for (HudModule m : modules) {
+      if (!m.isFree() || m.getEdge() == Edge.NONE) continue;
+      resolveEdge(m, scaledWidth, scaledHeight, margin);
+    }
 
     for (Corner corner : Corner.values()) {
       List<HudModule> cornerModules =
@@ -170,6 +203,32 @@ public abstract class HudModule extends ToggleableModule {
       }
       stackOrderMemory.put(corner, order);
     }
+  }
+
+  /**
+   * Re-resolves an edge-anchored module from the live screen size so it tracks its edge across
+   * resizes instead of floating where the edge used to be.
+   */
+  private static void resolveEdge(HudModule m, int scaledWidth, int scaledHeight, int margin) {
+    int w = m.getWidth();
+    int h = m.getHeight();
+    switch (m.getEdge()) {
+      case LEFT:
+        m.x = margin + m.getEdgeOffset();
+        break;
+      case RIGHT:
+        m.x = scaledWidth - margin - w - m.getEdgeOffset();
+        break;
+      case TOP:
+        m.y = margin + m.getEdgeOffset();
+        break;
+      case BOTTOM:
+        m.y = scaledHeight - margin - h - m.getEdgeOffset();
+        break;
+      case NONE:
+        break;
+    }
+    m.positioned = true;
   }
 
   /**
