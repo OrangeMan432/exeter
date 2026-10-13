@@ -38,13 +38,19 @@ public abstract class Panel implements Labeled {
   private static void registerTextures(Minecraft mc) {
     if (texturesRegistered) return;
     texturesRegistered = true;
-    try {
-      InputStream arrowStream = mc.getResourceManager().open(ARROW_ID);
+    // Classloader-direct: mod resource packs are absent without fabric-api.
+    try (InputStream arrowStream =
+            Panel.class.getResourceAsStream("/assets/minecraft/textures/exeter/arrow.png");
+        InputStream gearStream =
+            Panel.class.getResourceAsStream("/assets/minecraft/textures/exeter/gear.png")) {
+      if (arrowStream == null || gearStream == null) {
+        System.out.println("Missing arrow/gear textures in jar");
+        return;
+      }
       NativeImage arrowImg = NativeImage.read(arrowStream);
       mc.getTextureManager()
           .register(ARROW_ID, TextureResources.from2dImage(() -> "exeter:arrow", arrowImg));
 
-      InputStream gearStream = mc.getResourceManager().open(GEAR_ID);
       NativeImage gearImg = NativeImage.read(gearStream);
       mc.getTextureManager()
           .register(GEAR_ID, TextureResources.from2dImage(() -> "exeter:gear", gearImg));

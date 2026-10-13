@@ -1,5 +1,6 @@
 package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 
+import java.io.InputStream;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.api.minecraft.render.font.FontUtil;
@@ -38,6 +39,49 @@ public final class NotificationHud extends HudModule {
 
   private static float easeInCubic(float t) {
     return t * t * t;
+  }
+
+  private static final String[] SILK_ICONS = {
+    "eye.png",
+    "exclamation.png",
+    "cross.png",
+    "tick.png",
+    "accept.png",
+    "error.png",
+    "information.png",
+    "clock.png",
+    "arrow_undo.png",
+    "cancel.png"
+  };
+  private static boolean silkRegistered;
+
+  private static final java.util.Set<String> silkLoaded = new java.util.HashSet<>();
+
+  /** Raw PNGs no longer self-upload on snapshot-4; register like Panel does. */
+  private static void ensureSilkRegistered() {
+    if (silkRegistered) return;
+    silkRegistered = true;
+    var mc = Minecraft.getInstance();
+    for (String silk : SILK_ICONS) {
+      // Classloader-direct: mod resource packs are absent without fabric-api.
+      try (InputStream in =
+          NotificationHud.class.getResourceAsStream("/assets/exeter/textures/icon16/" + silk)) {
+        if (in == null) {
+          System.out.println("Missing silk icon in jar: " + silk);
+          continue;
+        }
+        com.mojang.blaze3d.platform.NativeImage img =
+            com.mojang.blaze3d.platform.NativeImage.read(in);
+        mc.getTextureManager()
+            .register(
+                Identifier.parse("exeter:textures/icon16/" + silk),
+                net.minecraft.client.renderer.texture.TextureResources.from2dImage(
+                    () -> "exeter:" + silk, img));
+        silkLoaded.add(silk);
+      } catch (Exception e) {
+        System.out.println("Failed to load silk icon " + silk + ": " + e.getMessage());
+      }
+    }
   }
 
   private ItemStack iconToStack(String iconName) {
@@ -113,16 +157,13 @@ public final class NotificationHud extends HudModule {
     }
     // try GMod silk icon16 (eye, exclamation, cross, tick, error, information, clock, arrow_undo)
     String silk = mapToSilk(iconName);
-    if (silk != null && RenderMethods.guiGraphics != null) {
+    ensureSilkRegistered();
+    if (silk != null && RenderMethods.guiGraphics != null && silkLoaded.contains(silk)) {
       try {
         Identifier id = Identifier.parse("exeter:textures/icon16/" + silk);
-        // check resource exists
-        var res = Minecraft.getInstance().getResourceManager().getResource(id);
-        if (res.isPresent()) {
-          RenderMethods.guiGraphics.blit(
-              id, x, y, x + ICON_SIZE, y + ICON_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
-          return;
-        }
+        RenderMethods.guiGraphics.blit(
+            id, x, y, x + ICON_SIZE, y + ICON_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
+        return;
       } catch (Exception ignored) {
       }
     }
