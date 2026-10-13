@@ -7,12 +7,14 @@ import java.util.function.BooleanSupplier;
 public class Property<T> {
   private final String[] aliases;
   protected T value;
+  private final T defaultValue;
   private String description = "";
   private final List<Property<?>> children = new ArrayList<>();
   private BooleanSupplier visibleWhen = () -> true;
 
   public Property(T value, String... aliases) {
     this.value = value;
+    this.defaultValue = value;
     this.aliases = aliases;
   }
 
@@ -35,6 +37,15 @@ public class Property<T> {
 
   public void setValue(T value) {
     this.value = value;
+  }
+
+  /** Construction-time value, for in-game config resets. */
+  public T getDefaultValue() {
+    return this.defaultValue;
+  }
+
+  public void resetToDefault() {
+    setValue(defaultValue);
   }
 
   public List<Property<?>> getChildren() {
