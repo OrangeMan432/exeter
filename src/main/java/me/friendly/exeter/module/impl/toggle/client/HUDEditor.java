@@ -9,12 +9,15 @@ import me.friendly.exeter.properties.NumberProperty;
 public final class HUDEditor extends ToggleableModule {
   private final NumberProperty<Integer> snapRange =
       new NumberProperty<Integer>(48, 0, 128, "Snap Range");
+  private final NumberProperty<Integer> edgeSnapRange =
+      new NumberProperty<Integer>(8, 0, 128, "Edge Snap Range");
 
   public HUDEditor() {
     super("HUDEditor", new String[] {"hudeditor", "hudedit"}, ModuleType.CLIENT);
     setDescription("Opens the HUD editor to reposition overlay elements.");
-    offerProperties(snapRange);
+    offerProperties(snapRange, edgeSnapRange);
     snapRange.setDescription("Controls how closely HUD elements snap to edges and each other.");
+    edgeSnapRange.setDescription("Snap distance for screen edges, in pixels.");
   }
 
   /** Snap radius in pixels; 0 disables corner snapping (everything drops free). */
@@ -25,6 +28,16 @@ public final class HUDEditor extends ToggleableModule {
       return editor.snapRange.getValue();
     }
     return 48;
+  }
+
+  /** Edge snap radius in pixels; 0 disables edge snapping. Defaults much tighter. */
+  public static int edgeSnapRange() {
+    if (Exeter.getInstance() == null) return 8;
+    var module = Exeter.getInstance().getModuleManager().getModuleByAlias("hudeditor");
+    if (module instanceof HUDEditor editor) {
+      return editor.edgeSnapRange.getValue();
+    }
+    return 8;
   }
 
   @Override
