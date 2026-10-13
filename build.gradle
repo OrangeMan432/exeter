@@ -103,7 +103,7 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // No fabric-api: only loader classes are used, and its mixins lag snapshots.
 
     implementation "com.moandjiezana.toml:toml4j:0.7.2"
     compileOnly "com.googlecode.json-simple:json-simple:1.1.1"
