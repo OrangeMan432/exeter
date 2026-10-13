@@ -43,8 +43,10 @@ public class ListenerAttack extends Listener<PacketEvent> {
     Entity target = mc.level.getEntity(packet.entityId());
     if (target == null || target != module.getFakePlayer()) return;
 
+    // Right-click interacts are not attacks: swallow the packet so the server
+    // never sees an interact with a client-only entity, but deal no damage.
+    // Holding right click used to spam melee hits and pop totems.
     event.setCanceled(true);
-    applyHit();
   }
 
   private void applyHit() {
