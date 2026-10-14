@@ -24,10 +24,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public final class PopChams extends ToggleableModule {
-  private final NumberProperty<Double> riseSpeed =
-      new NumberProperty<Double>(1.5, 0.1, 10.0, "Rise Speed");
   private final NumberProperty<Double> riseDistance =
       new NumberProperty<Double>(2.0, -5.0, 5.0, "Rise Distance");
+  private final NumberProperty<Double> fadeTime =
+      new NumberProperty<Double>(1.5, 0.5, 10.0, "Fade Time");
   private final NumberProperty<Float> spin = new NumberProperty<Float>(180f, 0f, 720f, "Spin");
   private final Property<Boolean> fade = new Property<Boolean>(true, "Fade", "fade");
   private final Property<Boolean> fill = new Property<Boolean>(false, "Fill", "fill");
@@ -57,8 +57,8 @@ public final class PopChams extends ToggleableModule {
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     thirdPerson.visibleWhen(() -> self.getValue());
     offerProperties(
-        riseSpeed,
         riseDistance,
+        fadeTime,
         spin,
         fade,
         fill,
@@ -69,10 +69,10 @@ public final class PopChams extends ToggleableModule {
         useCustomAlpha,
         fillAlpha,
         outlineAlpha);
-    riseSpeed.setDescription("How fast the wireframe rises, in blocks per second.");
-    riseDistance.setDescription("How far the wireframe rises. Negative sinks it instead.");
+    riseDistance.setDescription("How far the wireframe rises. 0 stays put, negative sinks it.");
+    fadeTime.setDescription("How long each pop lasts, in seconds. Rise always spans this time.");
     spin.setDescription("Wireframe spin speed in degrees per second. 0 disables spin.");
-    fade.setDescription("Fade the wireframe out as it rises.");
+    fade.setDescription("Fade the wireframe out over the fade time.");
     fill.setDescription("Also fill the model faces. Only applies while Spin is 0.");
     lineWidth.setDescription("Wireframe line thickness in pixels.");
     range.setDescription("How far from you pops are rendered.");
@@ -106,7 +106,7 @@ public final class PopChams extends ToggleableModule {
         .log(
             getLabel(),
             DebugLogger.Level.INFO,
-            "enabled, rise " + riseDistance.getValue() + " @ " + riseSpeed.getValue() + "/s");
+            "enabled, rise " + riseDistance.getValue() + " over " + fadeTime.getValue() + "s");
   }
 
   @Override
@@ -161,7 +161,7 @@ public final class PopChams extends ToggleableModule {
     }
 
     double dist = riseDistance.getValue();
-    double total = Math.abs(dist) / Math.max(0.1, riseSpeed.getValue());
+    double total = Math.max(0.1, fadeTime.getValue());
     long now = System.currentTimeMillis();
     float lw = lineWidth.getValue();
     float spinDeg = spin.getValue();
