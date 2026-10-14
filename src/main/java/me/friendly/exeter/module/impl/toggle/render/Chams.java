@@ -28,6 +28,7 @@ public final class Chams extends ToggleableModule {
   private final NumberProperty<Float> lineWidth =
       new NumberProperty<Float>(2.0f, 0.5f, 5.0f, "Line Width");
   private final Property<Boolean> fill = new Property<Boolean>(false, "Fill", "fill");
+  private final Property<Boolean> glint = new Property<Boolean>(true, "Glint", "glint");
   private final Property<Boolean> playersAlways =
       new Property<Boolean>(true, "Players Always", "players");
   private final Property<Boolean> self = new Property<Boolean>(false, "Self", "self");
@@ -53,6 +54,7 @@ public final class Chams extends ToggleableModule {
         range,
         lineWidth,
         fill,
+        glint,
         playersAlways,
         self,
         thirdPerson,
@@ -64,6 +66,7 @@ public final class Chams extends ToggleableModule {
     range.setDescription("How far from you entities are rendered.");
     lineWidth.setDescription("Wireframe line thickness in pixels.");
     fill.setDescription("Also fill the model faces.");
+    glint.setDescription("Extra tinted fill pass over chams targets.");
     playersAlways.setDescription("Always render players, even if not selected.");
     self.setDescription("Render a wireframe around yourself.");
     thirdPerson.setDescription("Only render yourself while in third person camera.");
@@ -129,7 +132,6 @@ public final class Chams extends ToggleableModule {
   private void onRender() {
     if (minecraft.level == null || minecraft.player == null) return;
 
-    double rangeSq = range.getValue() * range.getValue();
     float lw = lineWidth.getValue();
     boolean filled = fill.getValue();
     float partial = ModelWireframe.currentPartialTick();
@@ -146,31 +148,42 @@ public final class Chams extends ToggleableModule {
     int outlineColor = ARGB.color(outlineAlphaVal, EspRenderManager.getClientColor());
 
     for (Entity entity : minecraft.level.entitiesForRendering()) {
-      if (entity == null || !entity.isAlive()) continue;
-
-      boolean match = false;
-      if (playersAlways.getValue() && entity instanceof Player && entity != minecraft.player) {
-        match = true;
-      }
-      if (entity == minecraft.player && self.getValue()) {
-        if (!thirdPerson.getValue() || !minecraft.options.getCameraType().isFirstPerson()) {
-          match = true;
-        }
-      }
-      if (!match) {
-        String typeId =
-            net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-                .getKey(entity.getType())
-                .toString();
-        if (entitySelections.getSelected().contains(typeId)) {
-          match = true;
-        }
-      }
-      if (!match) continue;
-      if (minecraft.player.distanceToSqr(entity) > rangeSq) continue;
+      if (!matches(entity)) continue;
 
       drawModel(entity, partial, filled, fillColor, outlineColor, lw);
     }
+  }
+
+  public boolean glintEnabled() {
+    return glint.getValue();
+  }
+
+  /** Shared match logic for the wireframe and glint passes. */
+  public boolean matches(Entity entity) {
+    if (minecraft.level == null || minecraft.player == null) return false;
+    if (entity == null || !entity.isAlive()) return false;
+
+    boolean match = false;
+    if (playersAlways.getValue() && entity instanceof Player && entity != minecraft.player) {
+      match = true;
+    }
+    if (entity == minecraft.player && self.getValue()) {
+      if (!thirdPerson.getValue() || !minecraft.options.getCameraType().isFirstPerson()) {
+        match = true;
+      }
+    }
+    if (!match) {
+      String typeId =
+          net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
+              .getKey(entity.getType())
+              .toString();
+      if (entitySelections.getSelected().contains(typeId)) {
+        match = true;
+      }
+    }
+    if (!match) return false;
+    double rangeSq = range.getValue() * range.getValue();
+    return minecraft.player.distanceToSqr(entity) <= rangeSq;
   }
 
   private void drawModel(

@@ -11,10 +11,13 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.UvMapping;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -71,6 +74,130 @@ public final class ModelWireframe {
   private static Vec3 offset(Vec3 v, double ox, double oy, double oz, Vec3 renderOffset) {
     return new Vec3(
         v.x + ox + renderOffset.x, v.y + oy + renderOffset.y, v.z + oz + renderOffset.z);
+  }
+
+  private static final int FULLBRIGHT = 15728880;
+  private static long lastGlintLogMs;
+
+  /**
+   * Re-submits every Chams target through its own renderer into a swapping collector that re-types
+   * model nodes as animated glint. Vanilla does all posing (spin, bob, crouch, layers), so players,
+   * mobs, crystals and minecarts all work. Depth-tested like everything else: open view only.
+   */
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public static void submitGlint(
+      PoseStack pose,
+      SubmitNodeCollector collector,
+      net.minecraft.client.renderer.state.level.LevelRenderState levelState) {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.level == null || mc.player == null) return;
+    var module =
+        me.friendly.exeter.core.Exeter.getInstance().getModuleManager().getModuleByAlias("chams");
+    if (!(module instanceof me.friendly.exeter.module.impl.toggle.render.Chams chams)) return;
+    if (!chams.isRunning() || !chams.glintEnabled()) return;
+
+    float partialTick = currentPartialTick();
+    float tickDelta = mc.level.tickRateManager().isFrozen() ? 1f : partialTick;
+    Vec3 cam = levelState.cameraRenderState.pos;
+
+    int submitted = 0;
+    for (Entity entity : mc.level.entitiesForRendering()) {
+      if (!chams.matches(entity)) continue;
+      EntityRenderer renderer = mc.getEntityRenderDispatcher().getRenderer(entity);
+      if (!(renderer instanceof LivingEntityRenderer livingRenderer)) {
+        if (!(renderer instanceof net.minecraft.client.renderer.entity.EntityRenderer)) continue;
+      }
+      EntityRenderState state = (EntityRenderState) renderer.createRenderState(entity, tickDelta);
+      Identifier texture = glintTexture(renderer, state);
+      if (texture == null) continue;
+
+      pose.pushPose();
+      Vec3 renderOffset = renderer.getRenderOffset(state);
+      // Submit space is camera-relative: vanilla passes state minus camera pos.
+      pose.translate(
+          state.x - cam.x + renderOffset.x,
+          state.y - cam.y + renderOffset.y,
+          state.z - cam.z + renderOffset.z);
+      // Slight shell so the overlay wins the depth test against the base model.
+      pose.scale(1.005f, 1.005f, 1.005f);
+      // Three stacked passes: vanilla glint is faint, alpha accumulates per pass.
+      for (int pass = 0; pass < 3; pass++) {
+        renderer.submit(
+            state, pose, new GlintSwap(collector, texture), levelState.cameraRenderState);
+      }
+      pose.popPose();
+      submitted++;
+    }
+    if (submitted > 0) {
+      long now = System.currentTimeMillis();
+      if (now - lastGlintLogMs > 5000) {
+        lastGlintLogMs = now;
+        me.friendly.exeter.logging.DebugLogger.get()
+            .logFile("ChamsGlint", "submitted " + submitted + " glint nodes");
+      }
+    }
+  }
+
+  private static Identifier glintTexture(EntityRenderer renderer, EntityRenderState state) {
+    try {
+      if (renderer instanceof LivingEntityRenderer living
+          && state instanceof LivingEntityRenderState livingState) {
+        return living.getTextureLocation(livingState);
+      }
+      if (state instanceof net.minecraft.client.renderer.entity.state.EndCrystalRenderState) {
+        return Identifier.parse("minecraft:textures/entity/end_crystal/end_crystal.png");
+      }
+      if (state instanceof net.minecraft.client.renderer.entity.state.MinecartRenderState) {
+        return Identifier.parse("minecraft:textures/entity/minecart/minecart.png");
+      }
+    } catch (Exception e) {
+      me.friendly.exeter.logging.DebugLogger.get()
+          .logFile("ChamsGlint", "texture lookup failed: " + e);
+    }
+    me.friendly.exeter.logging.DebugLogger.get()
+        .logFile(
+            "ChamsGlint",
+            "no texture for "
+                + renderer.getClass().getSimpleName()
+                + " state "
+                + state.getClass().getSimpleName());
+    return null;
+  }
+
+  /** Swaps model submits for glint-typed ones; everything else is dropped. */
+  private static final class GlintSwap extends SubmitNodeStorage {
+    private final SubmitNodeCollector delegate;
+    private final Identifier texture;
+
+    GlintSwap(SubmitNodeCollector delegate, Identifier texture) {
+      this.delegate = delegate;
+      this.texture = texture;
+    }
+
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public <S> void submitModel(
+        Model<? super S> model,
+        S state,
+        PoseStack poseStack,
+        RenderType renderType,
+        int lightCoords,
+        int overlayCoords,
+        int tintedColor,
+        UvMapping uvMapping,
+        int outlineColor) {
+      if (renderType.isOutline()) return;
+      delegate.submitModel(
+          model,
+          state,
+          poseStack,
+          net.minecraft.client.renderer.rendertype.RenderTypes.entitySolidGlint(texture),
+          FULLBRIGHT,
+          overlayCoords,
+          tintedColor,
+          uvMapping,
+          outlineColor);
+    }
   }
 
   /** Intercepts submitted models and records every emitted face as a quad. */
@@ -166,15 +293,19 @@ public final class ModelWireframe {
       ys[i] = y;
       zs[i] = z;
       if (++i == 4) {
-        quads.add(
-            new Quad(
-                new Vec3(xs[0], ys[0], zs[0]),
-                new Vec3(xs[1], ys[1], zs[1]),
-                new Vec3(xs[2], ys[2], zs[2]),
-                new Vec3(xs[3], ys[3], zs[3])));
+        emit();
         i = 0;
       }
       return this;
+    }
+
+    private void emit() {
+      quads.add(
+          new Quad(
+              new Vec3(xs[0], ys[0], zs[0]),
+              new Vec3(xs[1], ys[1], zs[1]),
+              new Vec3(xs[2], ys[2], zs[2]),
+              new Vec3(xs[3], ys[3], zs[3])));
     }
 
     @Override
