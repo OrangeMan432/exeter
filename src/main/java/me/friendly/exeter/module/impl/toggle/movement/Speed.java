@@ -181,14 +181,22 @@ public class Speed extends ToggleableModule {
    * Keeps a pending damage boost alive for the whole airtime instead of spending it in one tick.
    *
    * <p>The knockback magnitude is recorded when the damage packet arrives and re-applied every tick
-   * until the player lands, tapering as it goes, so the boost carries through the arc rather than
-   * stopping midair.
+   * while the player is still airborne and still pressing a key, tapering as it goes. The boost
+   * amplifies movement rather than replacing it, so it ends as soon as the input stops.
    */
   private void tickDamageBoost() {
     if (boostSpeed <= 0.0) return;
 
     if (minecraft.player.onGround()) {
       clearDamageBoost("landed");
+      return;
+    }
+
+    // Without input nothing else writes horizontal velocity, so re-applying the boost each tick
+    // would cancel the game's air drag and accelerate the player off the map. Hand control back to
+    // the game instead.
+    if (!PlayerUtil.isMoving()) {
+      clearDamageBoost("movement input released");
       return;
     }
 
@@ -209,11 +217,13 @@ public class Speed extends ToggleableModule {
    * Re-applies the boost as the last step of the tick.
    *
    * <p>Velocity is scaled rather than rebuilt from the movement input, so holding a strafe key
-   * cannot cancel the boost, and the knockback direction is preserved. Knockback with no horizontal
-   * component has nothing to scale, so that case launches along the facing instead.
+   * cannot cancel the boost, and the knockback direction is preserved. It only runs while a
+   * movement key is held, so releasing the keys hands the horizontal velocity back to the game and
+   * the player stops instead of drifting. Knockback with no horizontal component has nothing to
+   * scale, so that case launches along the facing instead.
    */
   private void applyDamageBoost() {
-    if (!damageBoost.getValue() || boostSpeed <= 0.0) return;
+    if (!damageBoost.getValue() || boostSpeed <= 0.0 || !PlayerUtil.isMoving()) return;
 
     Vec3 velocity = minecraft.player.getDeltaMovement();
     double horizontal = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
