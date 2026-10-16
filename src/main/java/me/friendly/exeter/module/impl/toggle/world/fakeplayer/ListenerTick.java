@@ -47,6 +47,7 @@ public class ListenerTick extends Listener<TickEvent> {
     tickFireworks(fp);
 
     boolean record = module.isRecording();
+    float partial = me.friendly.exeter.render.ModelWireframe.currentPartialTick();
 
     if (module.isGappleEnabled() && module.getTimer().hasPassed(module.getGappleDelay())) {
       fp.setAbsorptionAmount(16.0f);
@@ -64,18 +65,36 @@ public class ListenerTick extends Listener<TickEvent> {
           return;
         }
 
-        if (module.getIndex() >= module.getPositions().size()) {
+        int size = module.getPositions().size();
+        if (module.getIndex() >= size || module.getIndex() < 0) {
           if (!module.isLooping()) {
             module.setPlayingRecording(false);
+            module.setIndex(0);
+            return;
+          } else if (module.isReverse()) {
+            // Reverse is a second pass over the same frames, not a restart: that is what makes
+            // a recording of walking up stairs run back down them.
+            module.setReverseRun(!module.isReverseRun());
+            module.setIndex(module.isReverseRun() ? size - 1 : 0);
+          } else {
+            module.setIndex(0);
           }
-          module.setIndex(0);
         }
 
         if (ticks++ % 2 == 0) {
-          Position p = module.getPositions().get(module.getIndex());
-          module.setIndex(module.getIndex() + 1);
+          int i = module.getIndex();
+          // Recomputed after the flip above, so the turn frame steps the right way.
+          boolean reversed = module.isReverse() && module.isReverseRun();
+          if (reversed) {
+            module.setIndex(i - 1);
+          } else {
+            module.setIndex(i + 1);
+          }
+          Position p = module.getPositions().get(Math.max(0, Math.min(size - 1, i)));
           fp.snapTo(p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch());
           fp.setMotionDirect(p.getMotionX(), p.getMotionY(), p.getMotionZ());
+          applyLook(fp, p);
+          applyLimbs(fp, p);
         }
       } else {
         module.setIndex(0);
@@ -91,9 +110,39 @@ public class ListenerTick extends Listener<TickEvent> {
       }
 
       if (ticks++ % 2 == 0) {
-        module.getPositions().add(new Position(mc.player));
+        module.getPositions().add(new Position(mc.player, partial));
       }
     }
+  }
+
+  /** Head and body angle, so the dummy looks where the recording looked. */
+  private static void applyLook(FakePlayerEntity fp, Position p) {
+    fp.setYHeadRot(p.getHeadYaw());
+    fp.setYBodyRot(p.getHeadYaw());
+  }
+
+  /**
+   * Limb positions: walk cycle speed drives the leg swing, and a recorded swing restarts the arm
+   * animation when the recording crosses into one.
+   */
+  private static void applyLimbs(FakePlayerEntity fp, Position p) {
+    // speed straight from the recording, position advances from there: the only public path into
+    // WalkAnimationState, and it keeps the phase in step with the movement.
+    fp.walkAnimation.update(p.getWalkSpeed(), 1.0f, 1.0f);
+    if (p.isSwinging()) {
+      var hand =
+          p.isOffhandSwing()
+              ? net.minecraft.world.InteractionHand.OFF_HAND
+              : net.minecraft.world.InteractionHand.MAIN_HAND;
+      if (!fp.isSwinging() || swingHand(fp) != hand) {
+        fp.swing(hand, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+      }
+    }
+  }
+
+  private static net.minecraft.world.InteractionHand swingHand(FakePlayerEntity fp) {
+    var swing = fp.getCurrentSwing();
+    return swing == null ? net.minecraft.world.InteractionHand.MAIN_HAND : swing.hand();
   }
 
   /**
