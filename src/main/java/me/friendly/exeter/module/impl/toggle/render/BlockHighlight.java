@@ -1,5 +1,7 @@
 package me.friendly.exeter.module.impl.toggle.render;
 
+import java.util.ArrayList;
+import java.util.List;
 import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.WorldRenderEvent;
 import me.friendly.exeter.logging.DebugLogger;
@@ -9,6 +11,7 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.Property;
 import me.friendly.exeter.render.EspRenderManager;
+import me.friendly.exeter.render.PlacementRender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gizmos.GizmoStyle;
@@ -36,6 +39,23 @@ public class BlockHighlight extends ToggleableModule {
     BOTH
   }
 
+  /** Box left behind by the block you just stopped looking at. */
+  private static final class FadingBox {
+    final AABB box;
+    final long startMs;
+
+    FadingBox(AABB box, long startMs) {
+      this.box = box;
+      this.startMs = startMs;
+    }
+  }
+
+  private final List<FadingBox> fading = new ArrayList<>();
+  private AABB slideFrom;
+  private AABB lastBox;
+  private BlockPos lastPos;
+  private long slideStartMs;
+
   private final EnumProperty<LookMode> lookMode =
       new EnumProperty<LookMode>(LookMode.BLOCK, "Render", "look", "mode");
   private final EnumProperty<RenderMode> renderMode =
@@ -48,6 +68,15 @@ public class BlockHighlight extends ToggleableModule {
       new NumberProperty<Float>(50f, 0f, 255f, "Fill Alpha", "FillAlpha");
   private final NumberProperty<Float> outlineAlpha =
       new NumberProperty<Float>(255f, 0f, 255f, "Outline Alpha", "OutlineAlpha");
+  private final Property<Boolean> fade = new Property<Boolean>(true, "Fade");
+  private final NumberProperty<Integer> fadeTime =
+      new NumberProperty<Integer>(1000, 0, 5000, "Fade Time");
+  private final EnumProperty<PlacementRender.FadeMode> fadeMode =
+      new EnumProperty<>(PlacementRender.FadeMode.ALPHA, "Fade Mode", "fademode");
+  private final Property<Boolean> slide = new Property<Boolean>(false, "Slide");
+  private final NumberProperty<Integer> slideTime =
+      new NumberProperty<Integer>(250, 1, 1000, "Slide Time");
+  private final Property<Boolean> smoothSlide = new Property<Boolean>(false, "Smooth Slide");
 
   public BlockHighlight() {
     super(
@@ -55,7 +84,21 @@ public class BlockHighlight extends ToggleableModule {
     setDescription("Highlights the block under your crosshair.");
     fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
-    offerProperties(lookMode, renderMode, lineWidth, useCustomAlpha, fillAlpha, outlineAlpha);
+    fadeMode.visibleWhen(() -> fade.getValue());
+    smoothSlide.visibleWhen(() -> slide.getValue());
+    offerProperties(
+        lookMode,
+        renderMode,
+        lineWidth,
+        useCustomAlpha,
+        fillAlpha,
+        outlineAlpha,
+        fade,
+        fadeTime,
+        fadeMode,
+        slide,
+        slideTime,
+        smoothSlide);
     lookMode.setDescription("Whether the whole block or just the targeted face is highlighted.");
     renderMode.setDescription("Whether the highlight is filled, outlined, or both.");
     lineWidth.setDescription("Outline thickness in pixels.");
@@ -63,6 +106,12 @@ public class BlockHighlight extends ToggleableModule {
         "Use the Fill/Outline Alpha below instead of the global ESP alphas.");
     fillAlpha.setDescription("Box fill opacity, 0-255.");
     outlineAlpha.setDescription("Box outline opacity, 0-255.");
+    fade.setDescription("Fade the box out where you stopped looking at it.");
+    fadeTime.setDescription("How long the old box takes to fade, in milliseconds.");
+    fadeMode.setDescription("Fade the old box by alpha or by shrinking it away.");
+    slide.setDescription("Slide the box over to the new block instead of jumping.");
+    slideTime.setDescription("How long a slide takes, in milliseconds.");
+    smoothSlide.setDescription("Only restart the slide once the previous one finished.");
     this.listeners.add(
         new Listener<WorldRenderEvent>("block_highlight_render") {
           @Override
@@ -81,28 +130,30 @@ public class BlockHighlight extends ToggleableModule {
   @Override
   protected void onDisable() {
     super.onDisable();
+    fading.clear();
+    slideFrom = null;
+    lastBox = null;
+    lastPos = null;
     DebugLogger.get().log(getLabel(), DebugLogger.Level.INFO, "disabled");
   }
 
   private void onRender() {
-    if (minecraft.level == null || minecraft.player == null) return;
-    if (!(minecraft.hitResult instanceof BlockHitResult hit)) return;
-    if (hit.getType() != HitResult.Type.BLOCK) return;
-    BlockPos pos = hit.getBlockPos();
-    BlockState state = minecraft.level.getBlockState(pos);
-    if (state.isAir()) return;
-    AABB box = state.getShape(minecraft.level, pos).bounds().move(pos);
-
-    AABB renderBox = box;
-    if (lookMode.getValue() == LookMode.SIDE) {
-      renderBox = faceSlab(box, hit.getDirection());
+    long now = System.currentTimeMillis();
+    AABB box = null;
+    BlockPos pos = null;
+    if (minecraft.level != null
+        && minecraft.player != null
+        && minecraft.hitResult instanceof BlockHitResult hit
+        && hit.getType() == HitResult.Type.BLOCK) {
+      BlockPos candidate = hit.getBlockPos();
+      BlockState state = minecraft.level.getBlockState(candidate);
+      if (!state.isAir()) {
+        AABB hitBox = state.getShape(minecraft.level, candidate).bounds().move(candidate);
+        box = lookMode.getValue() == LookMode.SIDE ? faceSlab(hitBox, hit.getDirection()) : hitBox;
+        pos = candidate;
+      }
     }
 
-    boolean filled =
-        renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
-    boolean outlined =
-        renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
-    int color = EspRenderManager.getClientColor();
     int fillAlphaVal =
         useCustomAlpha.getValue()
             ? Math.round(fillAlpha.getValue())
@@ -111,6 +162,73 @@ public class BlockHighlight extends ToggleableModule {
         useCustomAlpha.getValue()
             ? Math.round(outlineAlpha.getValue())
             : EspRenderManager.getGlobalOutlineAlpha();
+
+    // The block you just left keeps rendering: fading in place, and the slide origin.
+    if (pos == null || !pos.equals(lastPos)) {
+      if (lastPos != null && lastBox != null) {
+        if (fade.getValue()) fading.add(new FadingBox(lastBox, now));
+        // Smooth Slide holds the origin until the previous slide finished, same rule as
+        // PlacementRender.setRenderPos.
+        if (!smoothSlide.getValue() || now - slideStartMs >= slideTime.getValue()) {
+          slideFrom = lastBox;
+          slideStartMs = now;
+        }
+      }
+      lastPos = pos;
+    }
+    lastBox = box;
+    if (pos == null) {
+      slideFrom = null;
+      if (fading.isEmpty()) return;
+    }
+
+    for (FadingBox stale : fading) {
+      float factor =
+          Math.min(
+              1.0f,
+              Math.max(
+                  0.0f,
+                  (float) (stale.startMs + fadeTime.getValue() - now)
+                      / Math.max(1, fadeTime.getValue())));
+      if (factor <= 0.0f) continue;
+      if (fadeMode.getValue() == PlacementRender.FadeMode.SHRINK) {
+        double height = (stale.box.maxY - stale.box.minY) * factor;
+        if (height <= 0.001) continue;
+        renderBox(
+            new AABB(
+                stale.box.minX,
+                stale.box.minY,
+                stale.box.minZ,
+                stale.box.maxX,
+                stale.box.minY + height,
+                stale.box.maxZ),
+            fillAlphaVal,
+            outlineAlphaVal);
+      } else {
+        renderBox(
+            stale.box, Math.round(fillAlphaVal * factor), Math.round(outlineAlphaVal * factor));
+      }
+    }
+    fading.removeIf(f -> f.startMs + fadeTime.getValue() < now);
+
+    if (box == null) return;
+    if (slide.getValue() && slideFrom != null) {
+      double factor =
+          Math.min(1.0, (double) (now - slideStartMs) / Math.max(1, slideTime.getValue()));
+      if (factor < 1.0) {
+        renderBox(lerpBox(slideFrom, box, factor), fillAlphaVal, outlineAlphaVal);
+        return;
+      }
+    }
+    renderBox(box, fillAlphaVal, outlineAlphaVal);
+  }
+
+  private void renderBox(AABB box, int fillAlphaVal, int outlineAlphaVal) {
+    boolean filled =
+        renderMode.getValue() == RenderMode.FILLED || renderMode.getValue() == RenderMode.BOTH;
+    boolean outlined =
+        renderMode.getValue() == RenderMode.OUTLINED || renderMode.getValue() == RenderMode.BOTH;
+    int color = EspRenderManager.getClientColor();
     int fillColor = ARGB.color(fillAlphaVal, color);
     int outlineColor = ARGB.color(outlineAlphaVal, color);
 
@@ -122,7 +240,17 @@ public class BlockHighlight extends ToggleableModule {
     } else {
       style = GizmoStyle.stroke(outlineColor, lineWidth.getValue());
     }
-    Gizmos.cuboid(renderBox, style).setAlwaysOnTop();
+    Gizmos.cuboid(box, style).setAlwaysOnTop();
+  }
+
+  private static AABB lerpBox(AABB from, AABB to, double t) {
+    return new AABB(
+        from.minX + (to.minX - from.minX) * t,
+        from.minY + (to.minY - from.minY) * t,
+        from.minZ + (to.minZ - from.minZ) * t,
+        from.maxX + (to.maxX - from.maxX) * t,
+        from.maxY + (to.maxY - from.maxY) * t,
+        from.maxZ + (to.maxZ - from.maxZ) * t);
   }
 
   /** Thin slab hugging the targeted face, for Side mode. */

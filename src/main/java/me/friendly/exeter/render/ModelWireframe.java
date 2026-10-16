@@ -42,6 +42,14 @@ public final class ModelWireframe {
   }
 
   public static List<Quad> capture(Entity entity, float partialTick) {
+    return capture(entity, partialTick, false);
+  }
+
+  /**
+   * @param hideHead drop the head from the capture, so a first person self wireframe does not sit
+   *     in front of the camera
+   */
+  public static List<Quad> capture(Entity entity, float partialTick, boolean hideHead) {
     Minecraft mc = Minecraft.getInstance();
     if (mc.level == null) return List.of();
     float tickDelta = mc.level.tickRateManager().isFrozen() ? 1f : partialTick;
@@ -54,7 +62,7 @@ public final class ModelWireframe {
     double oz = Mth.lerp(tickDelta, entity.zOld, entity.getZ());
     Vec3 renderOffset = renderer.getRenderOffset(state);
 
-    Capture capture = new Capture();
+    Capture capture = new Capture(hideHead);
     PoseStack pose = new PoseStack();
     CameraRenderState camera = mc.gameRenderer.gameRenderState().levelRenderState.cameraRenderState;
     renderer.submit(state, pose, capture, camera);
@@ -204,8 +212,10 @@ public final class ModelWireframe {
   private static final class Capture extends SubmitNodeStorage {
     final List<Quad> quads = new ArrayList<>();
     final FaceConsumer consumer = new FaceConsumer();
+    private final boolean hideHead;
 
-    Capture() {
+    Capture(boolean hideHead) {
+      this.hideHead = hideHead;
       this.consumer.quads = quads;
     }
 
@@ -225,6 +235,13 @@ public final class ModelWireframe {
       // Hide after setupAnim: PlayerModel.setupAnim drives part visibility
       // from skin settings and would undo an earlier hide.
       List<ModelPart> hidden = hideSecondLayer(model);
+      if (hideHead) {
+        ModelPart head = findPart(model.root(), "head");
+        if (head != null && head.visible) {
+          head.visible = false;
+          hidden.add(head);
+        }
+      }
       try {
         model.renderToBuffer(poseStack, consumer, lightCoords, overlayCoords, tintedColor);
       } finally {
