@@ -24,7 +24,6 @@ public final class NotificationHud extends HudModule {
   private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
   private static final int BAR_HEIGHT = 2;
-  private static final int BAR_RADIUS = 1;
   private static final int GREEN_BAR = 0x01FF00;
 
   private final NumberProperty<Integer> maxNotifications =
@@ -155,22 +154,23 @@ public final class NotificationHud extends HudModule {
   }
 
   /**
-   * Bar with one rounded end, so the end sitting on the panel edge follows the panel's rounded
-   * corner instead of poking out of it.
+   * Bar whose panel-side end is clipped row by row against the panel's own corner arc, so it sits
+   * flush inside the rounded background instead of poking square into it.
    */
-  private void drawBar(int x, int y, int w, int h, boolean roundRight, int color) {
+  private void drawBar(int x, int y, int w, int h, boolean right, int color) {
     if (RenderMethods.guiGraphics == null || w <= 0) return;
-    int r = Math.min(BAR_RADIUS, Math.min(w, h) / 2);
-    if (r <= 0) {
-      RenderMethods.guiGraphics.fill(x, y, x + w, y + h, color);
-      return;
-    }
-    if (roundRight) {
-      RenderMethods.guiGraphics.fill(x, y, x + w - r, y + h, color);
-      drawRoundedRect(x + w - r, y, x + w, y + h, r, color);
-    } else {
-      drawRoundedRect(x, y, x + r, y + h, r, color);
-      RenderMethods.guiGraphics.fill(x + r, y, x + w, y + h, color);
+    int r = RADIUS;
+    for (int row = 0; row < h; row++) {
+      int yy = y + row;
+      // Rows are measured from the panel bottom, where the corner arc turns.
+      int t = Math.min(r, h - 1 - row);
+      float dx = r - (float) Math.sqrt(Math.max(0f, r * r - (r - t) * (r - t)));
+      int inset = Math.min(Math.round(dx), w - 1);
+      if (right) {
+        RenderMethods.guiGraphics.fill(x + inset, yy, x + w, yy + 1, color);
+      } else {
+        RenderMethods.guiGraphics.fill(x + inset, yy, x + w, yy + 1, color);
+      }
     }
   }
 
@@ -354,7 +354,7 @@ public final class NotificationHud extends HudModule {
         remaining = Math.max(0f, Math.min(1f, remaining));
         int barWidth = Math.round(w * remaining);
         if (barWidth > 0) {
-          int barY = y + h - BAR_HEIGHT - 1;
+          int barY = y + h - BAR_HEIGHT;
           int barColor =
               (alpha << 24)
                   | ((greenBar.getValue() ? GREEN_BAR : EspRenderManager.getClientColor())
