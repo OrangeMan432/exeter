@@ -24,7 +24,7 @@ public final class NotificationHud extends HudModule {
   private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
   private static final int BAR_HEIGHT = 2;
-  private static final int BAR_INSET = 4;
+  private static final int BAR_RADIUS = 1;
   private static final int GREEN_BAR = 0x01FF00;
 
   private final NumberProperty<Integer> maxNotifications =
@@ -152,6 +152,26 @@ public final class NotificationHud extends HudModule {
     // fill remaining corner interiors that were not covered by AA (center of corner)
     // the loop above already handles full opacity for inner pixels, but the rectangular
     // strips x+r interior already covers, so corners are complete
+  }
+
+  /**
+   * Bar with one rounded end, so the end sitting on the panel edge follows the panel's rounded
+   * corner instead of poking out of it.
+   */
+  private void drawBar(int x, int y, int w, int h, boolean roundRight, int color) {
+    if (RenderMethods.guiGraphics == null || w <= 0) return;
+    int r = Math.min(BAR_RADIUS, Math.min(w, h) / 2);
+    if (r <= 0) {
+      RenderMethods.guiGraphics.fill(x, y, x + w, y + h, color);
+      return;
+    }
+    if (roundRight) {
+      RenderMethods.guiGraphics.fill(x, y, x + w - r, y + h, color);
+      drawRoundedRect(x + w - r, y, x + w, y + h, r, color);
+    } else {
+      drawRoundedRect(x, y, x + r, y + h, r, color);
+      RenderMethods.guiGraphics.fill(x + r, y, x + w, y + h, color);
+    }
   }
 
   private void drawIcon(String iconName, int x, int y) {
@@ -328,20 +348,22 @@ public final class NotificationHud extends HudModule {
       // icon
       drawIcon(n.iconName(), x + 4, y + 3);
 
-      // time remaining bar, shrinks from the right as the notification ages
+      // time remaining bar: shrinks towards the screen edge the HUD is snapped to
       if (progressBar.getValue() && RenderMethods.guiGraphics != null) {
         float remaining = 1.0f - (float) age / (float) Math.max(1, n.durationMs());
         remaining = Math.max(0f, Math.min(1f, remaining));
-        int barMax = w - BAR_INSET * 2;
-        int barWidth = Math.round(barMax * remaining);
+        int barWidth = Math.round(w * remaining);
         if (barWidth > 0) {
           int barY = y + h - BAR_HEIGHT - 1;
           int barColor =
               (alpha << 24)
                   | ((greenBar.getValue() ? GREEN_BAR : EspRenderManager.getClientColor())
                       & 0x00FFFFFF);
-          RenderMethods.guiGraphics.fill(
-              x + BAR_INSET, barY, x + BAR_INSET + barWidth, barY + BAR_HEIGHT, barColor);
+          if (right) {
+            drawBar(x + w - barWidth, barY, barWidth, BAR_HEIGHT, true, barColor);
+          } else {
+            drawBar(x, barY, barWidth, BAR_HEIGHT, false, barColor);
+          }
         }
       }
 
