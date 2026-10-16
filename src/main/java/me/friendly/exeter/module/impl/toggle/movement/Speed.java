@@ -4,6 +4,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.api.event.Stage;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.events.TickEvent;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.Property;
@@ -13,6 +14,18 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 
 public class Speed extends ToggleableModule {
+
+  /**
+   * Fraction of the boost kept each airborne tick. Tapered so a boost ends on its own if the player
+   * somehow never touches ground, and tuned so a typical knockback carries most of the arc.
+   */
+  private static final double BOOST_DECAY = 0.96;
+
+  /** Boost below this is treated as spent. */
+  private static final double BOOST_MIN = 0.05;
+
+  /** Below this the player has no meaningful horizontal motion to scale. */
+  private static final double MIN_HORIZONTAL = 1.0E-4;
 
   private final Property<Boolean> damageBoost = new Property<Boolean>(true, "Damage Boost");
   private final Property<Boolean> jump = new Property<Boolean>(true, "Jump");
@@ -82,6 +95,11 @@ public class Speed extends ToggleableModule {
         lagDetected = true;
         Vec3 vel = packet.movement();
         boostSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+        DebugLogger.get()
+            .log(
+                getLabel(),
+                DebugLogger.Level.INFO,
+                "damage boost armed at " + round(boostSpeed) + " blocks per tick");
       }
     }
   }
@@ -94,6 +112,15 @@ public class Speed extends ToggleableModule {
       lagDetected = false;
     }
 
+    // The damage boost is ticked and applied outside the movement path below, so it lands with
+    // or without a key held, and it gets the last word over the stage speed instead of being
+    // overwritten by it.
+    tickDamageBoost();
+    applyStageSpeed();
+    applyDamageBoost();
+  }
+
+  private void applyStageSpeed() {
     if (jump.getValue() && PlayerUtil.isMoving() && minecraft.player.onGround()) {
       minecraft.player.jumpFromGround();
     }
@@ -136,11 +163,6 @@ public class Speed extends ToggleableModule {
       moveSpeed = 1.418 * getBaseSpeed();
     }
 
-    if (damageBoost.getValue() && boostSpeed > 0) {
-      moveSpeed += boostSpeed;
-      boostSpeed = 0;
-    }
-
     if (randomBoost.getValue()
         && System.currentTimeMillis() - lastRandomBoost > 3500
         && !lagDetected
@@ -153,6 +175,73 @@ public class Speed extends ToggleableModule {
     moveSpeed = Math.max(moveSpeed, getBaseSpeed());
 
     setMoveSpeed(moveSpeed);
+  }
+
+  /**
+   * Keeps a pending damage boost alive for the whole airtime instead of spending it in one tick.
+   *
+   * <p>The knockback magnitude is recorded when the damage packet arrives and re-applied every tick
+   * while the player is still airborne and still pressing a key, tapering as it goes. The boost
+   * amplifies movement rather than replacing it, so it ends as soon as the input stops.
+   */
+  private void tickDamageBoost() {
+    if (boostSpeed <= 0.0) return;
+
+    if (minecraft.player.onGround()) {
+      clearDamageBoost("landed");
+      return;
+    }
+
+    // Without input nothing else writes horizontal velocity, so re-applying the boost each tick
+    // would cancel the game's air drag and accelerate the player off the map. Hand control back to
+    // the game instead.
+    if (!PlayerUtil.isMoving()) {
+      clearDamageBoost("movement input released");
+      return;
+    }
+
+    boostSpeed *= BOOST_DECAY;
+    if (boostSpeed < BOOST_MIN) {
+      clearDamageBoost("tapered to " + round(boostSpeed) + " blocks per tick");
+    }
+  }
+
+  private void clearDamageBoost(String reason) {
+    if (boostSpeed <= 0.0) return;
+    DebugLogger.get()
+        .log(getLabel(), DebugLogger.Level.INFO, "damage boost ended (" + reason + ")");
+    boostSpeed = 0.0;
+  }
+
+  /**
+   * Re-applies the boost as the last step of the tick.
+   *
+   * <p>Velocity is scaled rather than rebuilt from the movement input, so holding a strafe key
+   * cannot cancel the boost, and the knockback direction is preserved. It only runs while a
+   * movement key is held, so releasing the keys hands the horizontal velocity back to the game and
+   * the player stops instead of drifting. Knockback with no horizontal component has nothing to
+   * scale, so that case launches along the facing instead.
+   */
+  private void applyDamageBoost() {
+    if (!damageBoost.getValue() || boostSpeed <= 0.0 || !PlayerUtil.isMoving()) return;
+
+    Vec3 velocity = minecraft.player.getDeltaMovement();
+    double horizontal = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+    double target = Math.max(horizontal, boostSpeed);
+
+    if (horizontal < MIN_HORIZONTAL) {
+      double rad = Math.toRadians(minecraft.player.getYRot());
+      minecraft.player.setDeltaMovement(
+          -Math.sin(rad) * target, velocity.y, Math.cos(rad) * target);
+      return;
+    }
+
+    double scale = target / horizontal;
+    minecraft.player.setDeltaMovement(velocity.x * scale, velocity.y, velocity.z * scale);
+  }
+
+  private static double round(double value) {
+    return Math.round(value * 1000.0) / 1000.0;
   }
 
   private void setMoveSpeed(double speed) {
