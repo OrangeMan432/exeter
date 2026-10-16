@@ -29,6 +29,11 @@ import net.minecraft.world.phys.AABB;
 /**
  * Hole ESP ported from Lemon's HoleESP: finds 1x1, 2x1 and 2x2 holes in range and colors them green
  * for bedrock, red for obsidian.
+ *
+ * <p>Only holes lined with blast resistant blocks are drawn at all. A hole in dirt or grass offers
+ * no protection from a crystal, so marking it is noise. Within that set, green means unbreakable
+ * and therefore safe, and red means breakable: obsidian still absorbs crystal damage but a player
+ * can break it to make somewhere to place a crystal.
  */
 public class HoleESP extends ToggleableModule {
 
@@ -44,6 +49,19 @@ public class HoleESP extends ToggleableModule {
     FLAT,
     DOUBLE
   }
+
+  /**
+   * Explosion resistance a block needs before it counts as lining a hole. Obsidian and crying
+   * obsidian sit at 1200 and bedrock is blast proof, while stone is only 6 and dirt is 0, so this
+   * separates blocks that would actually survive a crystal from everything else.
+   */
+  private static final float MIN_BLAST_RESISTANCE = 600.0F;
+
+  /** Unbreakable, so nothing can remove the cover. */
+  private static final int SAFE_COLOR = 0xFF00FF00;
+
+  /** Blast resistant but breakable, so a player could crack it open to place a crystal. */
+  private static final int UNSAFE_COLOR = 0xFFFF0000;
 
   private final NumberProperty<Integer> range = new NumberProperty<Integer>(5, 1, 20, "Range");
   private final NumberProperty<Integer> yRange = new NumberProperty<Integer>(5, 1, 20, "Y Range");
@@ -164,7 +182,7 @@ public class HoleESP extends ToggleableModule {
       if (!useQuad.getValue() || claimed.contains(pos)) continue;
       AABB quad = quadAt(pos, floors);
       if (quad != null) {
-        holes.put(quad, quadColor(quad));
+        addHole(quad);
         claimCells(pos, 2, 2);
       }
     }
@@ -172,14 +190,14 @@ public class HoleESP extends ToggleableModule {
       if (!useDouble.getValue() || claimed.contains(pos)) continue;
       AABB pair = pairAt(pos, floors);
       if (pair != null) {
-        holes.put(pair, pairColor(pair));
+        addHole(pair);
       }
     }
     if (useSingle.getValue()) {
       for (BlockPos pos : floors) {
         if (claimed.contains(pos)) continue;
         if (!isSingleHole(pos)) continue;
-        holes.put(new AABB(pos), singleColor(pos));
+        addHole(new AABB(pos));
       }
     }
   }
@@ -276,36 +294,47 @@ public class HoleESP extends ToggleableModule {
     }
   }
 
-  /** Green when floor and walls are all bedrock, red otherwise. */
-  private boolean allBedrock(AABB box) {
+  /**
+   * Decides whether a hole is worth drawing and what colour it takes.
+   *
+   * <p>Returns null when any of the blocks around the hole is not blast resistant. Dirt, grass and
+   * stone are excluded that way, so they stop being reported as red holes. Vegetation is skipped
+   * before the test, because a flower inside an obsidian hole should not disqualify the obsidian.
+   */
+  private Integer classify(AABB box) {
     int minX = (int) Math.floor(box.minX) - 1;
     int maxX = (int) Math.floor(box.maxX - 1e-7) + 1;
     int minY = (int) Math.floor(box.minY) - 1;
     int maxY = (int) Math.floor(box.maxY - 1e-7);
     int minZ = (int) Math.floor(box.minZ) - 1;
     int maxZ = (int) Math.floor(box.maxZ - 1e-7) + 1;
+
+    boolean sawBlock = false;
+    boolean allBedrock = true;
     for (int x = minX; x <= maxX; x++) {
       for (int y = minY; y <= maxY; y++) {
         for (int z = minZ; z <= maxZ; z++) {
           BlockState state = minecraft.level.getBlockState(new BlockPos(x, y, z));
           if (state.isAir()) continue;
-          if (!state.is(Blocks.BEDROCK)) return false;
+          if (state.canBeReplaced()) continue;
+          if (state.getBlock().getExplosionResistance() < MIN_BLAST_RESISTANCE) {
+            return null;
+          }
+          sawBlock = true;
+          if (!state.is(Blocks.BEDROCK)) allBedrock = false;
         }
       }
     }
-    return true;
+    if (!sawBlock) return null;
+    return allBedrock ? SAFE_COLOR : UNSAFE_COLOR;
   }
 
-  private int singleColor(BlockPos pos) {
-    return allBedrock(new AABB(pos)) ? 0xFF00FF00 : 0xFFFF0000;
-  }
-
-  private int pairColor(AABB pair) {
-    return allBedrock(pair) ? 0xFF00FF00 : 0xFFFF0000;
-  }
-
-  private int quadColor(AABB quad) {
-    return allBedrock(quad) ? 0xFF00FF00 : 0xFFFF0000;
+  /** Records the hole unless its surroundings are not blast resistant. */
+  private void addHole(AABB box) {
+    Integer color = classify(box);
+    if (color != null) {
+      holes.put(box, color);
+    }
   }
 
   private void onRender() {
@@ -348,7 +377,6 @@ public class HoleESP extends ToggleableModule {
       } else {
         style = GizmoStyle.stroke(outlineColor, lineWidth.getValue());
       }
-      Gizmos.cuboid(box, style).setAlwaysOnTop();
     }
   }
 
