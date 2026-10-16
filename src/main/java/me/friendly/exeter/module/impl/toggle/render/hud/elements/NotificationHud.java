@@ -153,25 +153,10 @@ public final class NotificationHud extends HudModule {
     // strips x+r interior already covers, so corners are complete
   }
 
-  /**
-   * Bar whose panel-side end is clipped row by row against the panel's own corner arc, so it sits
-   * flush inside the rounded background instead of poking square into it.
-   */
+  /** Plain bar, anchored to the screen edge the HUD is snapped to. */
   private void drawBar(int x, int y, int w, int h, boolean right, int color) {
     if (RenderMethods.guiGraphics == null || w <= 0) return;
-    int r = RADIUS;
-    for (int row = 0; row < h; row++) {
-      int yy = y + row;
-      // Rows are measured from the panel bottom, where the corner arc turns.
-      int t = Math.min(r, h - 1 - row);
-      float dx = r - (float) Math.sqrt(Math.max(0f, r * r - (r - t) * (r - t)));
-      int inset = Math.min(Math.round(dx), w - 1);
-      if (right) {
-        RenderMethods.guiGraphics.fill(x + inset, yy, x + w, yy + 1, color);
-      } else {
-        RenderMethods.guiGraphics.fill(x + inset, yy, x + w, yy + 1, color);
-      }
-    }
+    RenderMethods.guiGraphics.fill(x, y, x + w, y + h, color);
   }
 
   private void drawIcon(String iconName, int x, int y) {
