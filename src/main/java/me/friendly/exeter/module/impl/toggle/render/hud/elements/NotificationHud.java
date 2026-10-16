@@ -7,6 +7,7 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.NotificationManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,15 +23,31 @@ public final class NotificationHud extends HudModule {
   private static final int OUT_DURATION = 300;
   private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
+  private static final int BAR_HEIGHT = 2;
+  private static final int BAR_INSET = 3;
+  private static final int BAR_RADIUS = 1;
+  private static final int BAR_GREEN = 0x22C55E;
 
   private final NumberProperty<Integer> maxNotifications =
       new NumberProperty<Integer>(5, 1, 10, "Max Notifications");
+  private final me.friendly.exeter.properties.Property<Boolean> progressBar =
+      new me.friendly.exeter.properties.Property<Boolean>(false, "Progress Bar", "progressBar");
+  private final me.friendly.exeter.properties.Property<Boolean> greenBar =
+      new me.friendly.exeter.properties.Property<Boolean>(false, "Green Bar", "greenBar");
 
   public NotificationHud() {
     super("Notifications", new String[] {"notifications", "notif", "notify"}, Corner.BOTTOM_RIGHT);
     setDescription("Garry's Mod style notifications.");
-    this.offerProperties(maxNotifications);
+    this.offerProperties(maxNotifications, progressBar, greenBar);
     maxNotifications.setDescription("Limits how many notifications are shown at once.");
+    progressBar.setDescription("Draw a shrinking bar showing time left before removal.");
+    greenBar.setDescription("Use green for the progress bar instead of the client color.");
+    greenBar.visibleWhen(() -> progressBar.getValue());
+  }
+
+  /** Panel height, taller when the progress bar takes a strip under the text. */
+  private int boxHeight() {
+    return NOTIF_HEIGHT + (progressBar.getValue() ? BAR_HEIGHT + 1 : 0);
   }
 
   private static float easeOutCubic(float t) {
@@ -248,9 +265,9 @@ public final class NotificationHud extends HudModule {
     boolean inEditor =
         Minecraft.getInstance().gui != null
             && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
-    if (active.isEmpty() && inEditor) return NOTIF_HEIGHT;
+    if (active.isEmpty() && inEditor) return boxHeight();
     if (active.isEmpty()) return 0;
-    return active.size() * (NOTIF_HEIGHT + 2) - 2;
+    return active.size() * (boxHeight() + 2) - 2;
   }
 
   @Override
@@ -264,12 +281,13 @@ public final class NotificationHud extends HudModule {
     if (active.isEmpty() && inEditor) {
       // dummy preview
       int w = FontUtil.getStringWidth("Undone Prop") + NOTIF_PADDING * 2 + ICON_SIZE + 4;
+      int dummyH = boxHeight();
       int x = getX();
       int y = getY();
       if (isRight()) {
         x = getX() + getWidth() - w;
       }
-      drawRoundedRect(x, y, x + w, y + NOTIF_HEIGHT, RADIUS, BG_COLOR);
+      drawRoundedRect(x, y, x + w, y + dummyH, RADIUS, BG_COLOR);
       drawIcon("undo", x + 4, y + 3);
       FontUtil.drawString("Undone Prop", x + ICON_SIZE + 8, y + 7, 0xFFFFFFFF);
       return;
@@ -300,7 +318,7 @@ public final class NotificationHud extends HudModule {
       }
 
       int w = FontUtil.getStringWidth(n.displayText()) + NOTIF_PADDING * 2 + ICON_SIZE + 4;
-      int h = NOTIF_HEIGHT;
+      int h = boxHeight();
 
       int y = top ? baseY + i * (h + 2) : baseY + getHeight() - h - i * (h + 2);
 
@@ -316,6 +334,28 @@ public final class NotificationHud extends HudModule {
 
       // icon
       drawIcon(n.iconName(), x + 4, y + 3);
+
+      // time remaining bar, shrinks from the right as the notification ages
+      if (progressBar.getValue() && RenderMethods.guiGraphics != null) {
+        float remaining = 1.0f - (float) age / (float) Math.max(1, n.durationMs());
+        remaining = Math.max(0f, Math.min(1f, remaining));
+        int barMax = w - BAR_INSET * 2;
+        int barWidth = Math.round(barMax * remaining);
+        if (barWidth > 0) {
+          int barY = y + h - BAR_HEIGHT - 1;
+          int barColor =
+              (alpha << 24)
+                  | ((greenBar.getValue() ? BAR_GREEN : EspRenderManager.getClientColor())
+                      & 0x00FFFFFF);
+          drawRoundedRect(
+              x + BAR_INSET,
+              barY,
+              x + BAR_INSET + barWidth,
+              barY + BAR_HEIGHT,
+              BAR_RADIUS,
+              barColor);
+        }
+      }
 
       // text with alpha
       int textColor = (alpha << 24) | 0x00FFFFFF;
