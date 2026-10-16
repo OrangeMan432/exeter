@@ -188,7 +188,13 @@ public final class Chams extends ToggleableModule {
 
   private void drawModel(
       Entity entity, float partial, boolean filled, int fillColor, int outlineColor, float lw) {
-    List<ModelWireframe.Quad> quads = ModelWireframe.capture(entity, partial);
+    // Third Person off lets the self wireframe render in first person; drop the head
+    // there so it does not sit in front of the camera.
+    boolean hideHead =
+        entity == minecraft.player
+            && !thirdPerson.getValue()
+            && minecraft.options.getCameraType().isFirstPerson();
+    List<ModelWireframe.Quad> quads = ModelWireframe.capture(entity, partial, hideHead);
     for (ModelWireframe.Quad quad : quads) {
       net.minecraft.world.phys.Vec3 a = quad.a();
       net.minecraft.world.phys.Vec3 b = quad.b();
