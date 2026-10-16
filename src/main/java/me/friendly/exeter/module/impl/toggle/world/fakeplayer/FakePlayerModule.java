@@ -48,15 +48,7 @@ public class FakePlayerModule extends ToggleableModule {
 
     reverse.visibleWhen(() -> loop.getValue());
     offerProperties(
-        record,
-        playRecording,
-        loop,
-        reverse,
-        gapple,
-        gappleDelay,
-        damage,
-        copyArmor,
-        respawnDelay);
+        record, playRecording, loop, reverse, gapple, gappleDelay, damage, copyArmor, respawnDelay);
     record.setDescription("Record your movement for playback.");
     playRecording.setDescription("Play back the recorded movement.");
     loop.setDescription("Loop the recorded movement.");

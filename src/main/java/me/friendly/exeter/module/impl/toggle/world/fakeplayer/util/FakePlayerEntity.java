@@ -83,8 +83,32 @@ public class FakePlayerEntity extends RemotePlayer {
     Exeter.getInstance().getEventManager().dispatch(new PacketEvent(packet));
   }
 
+  /**
+   * Damage the dummy the way the client sees it: i-frames first, then the vanilla mitigation
+   * pipeline. Vanilla's own hurt path is server side, so the window is applied here instead of
+   * letting every explosion land.
+   */
   public void applyDamage(float damage) {
-    this.actuallyHurt(null, ExplosionUtil.explosionSource(this), damage);
+    if (hurtTime > 0) {
+      me.friendly.exeter.logging.DebugLogger.get()
+          .logFile(
+              "FakePlayer",
+              "ignored "
+                  + String.format("%.1f", damage)
+                  + " damage, "
+                  + hurtTime
+                  + " iframes left");
+      return;
+    }
+    float before = this.getHealth();
+    var source = ExplosionUtil.explosionSource(this);
+    this.actuallyHurt(null, source, damage);
+    if (this.getHealth() != before) {
+      // Same values vanilla's client side damage event uses: 10 ticks of invulnerability.
+      this.hurtDuration = 10;
+      this.hurtTime = 10;
+      this.handleDamageEvent(source);
+    }
   }
 
   public void setDamageSupplier(BooleanSupplier supplier) {
