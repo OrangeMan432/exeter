@@ -73,7 +73,7 @@ public final class PopChams extends ToggleableModule {
     fadeTime.setDescription("How long each pop lasts, in seconds. Rise always spans this time.");
     spin.setDescription("Wireframe spin speed in degrees per second. 0 disables spin.");
     fade.setDescription("Fade the wireframe out over the fade time.");
-    fill.setDescription("Also fill the model faces. Only applies while Spin is 0.");
+    fill.setDescription("Also fill the model faces.");
     lineWidth.setDescription("Wireframe line thickness in pixels.");
     range.setDescription("How far from you pops are rendered.");
     self.setDescription("Render pops for your own totem pops.");
@@ -165,7 +165,7 @@ public final class PopChams extends ToggleableModule {
     long now = System.currentTimeMillis();
     float lw = lineWidth.getValue();
     float spinDeg = spin.getValue();
-    boolean filled = fill.getValue() && spinDeg == 0f;
+    boolean filled = fill.getValue();
     double rangeSq = range.getValue() * range.getValue();
 
     int count = 0;
