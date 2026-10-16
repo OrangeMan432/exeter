@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 public final class PopChams extends ToggleableModule {
   private final NumberProperty<Double> riseDistance =
       new NumberProperty<Double>(2.0, -5.0, 5.0, "Rise Distance");
+  private final NumberProperty<Double> grow = new NumberProperty<Double>(0.0, -1.0, 2.0, "Grow");
   private final NumberProperty<Double> fadeTime =
       new NumberProperty<Double>(1.5, 0.5, 10.0, "Fade Time");
   private final NumberProperty<Float> spin = new NumberProperty<Float>(180f, 0f, 720f, "Spin");
@@ -58,6 +59,7 @@ public final class PopChams extends ToggleableModule {
     thirdPerson.visibleWhen(() -> self.getValue());
     offerProperties(
         riseDistance,
+        grow,
         fadeTime,
         spin,
         fade,
@@ -70,6 +72,8 @@ public final class PopChams extends ToggleableModule {
         fillAlpha,
         outlineAlpha);
     riseDistance.setDescription("How far the wireframe rises. 0 stays put, negative sinks it.");
+    grow.setDescription(
+        "Scales the wireframe over the fade time. Positive grows, negative shrinks, 0 keeps size.");
     fadeTime.setDescription("How long each pop lasts, in seconds. Rise always spans this time.");
     spin.setDescription("Wireframe spin speed in degrees per second. 0 disables spin.");
     fade.setDescription("Fade the wireframe out over the fade time.");
@@ -161,6 +165,7 @@ public final class PopChams extends ToggleableModule {
     }
 
     double dist = riseDistance.getValue();
+    double growValue = grow.getValue();
     double total = Math.max(0.1, fadeTime.getValue());
     long now = System.currentTimeMillis();
     float lw = lineWidth.getValue();
@@ -189,15 +194,18 @@ public final class PopChams extends ToggleableModule {
           ARGB.color(Math.round(baseOutlineAlpha() * fadeScale), EspRenderManager.getClientColor());
 
       double yOff = dist * progress;
+      // 0 keeps size, positive grows to 1 + grow, negative shrinks. Clamped at 0 so a
+      // negative value collapses to nothing instead of flipping the faces inside out.
+      double scale = Math.max(0.0, 1.0 + growValue * progress);
       double angleRad = spinDeg == 0f ? 0.0 : Math.toRadians(spinDeg * (float) elapsed);
       double cos = Math.cos(angleRad);
       double sin = Math.sin(angleRad);
 
       for (ModelWireframe.Quad quad : pop.quads) {
-        Vec3 a = place(quad.a(), pop, yOff, cos, sin);
-        Vec3 b = place(quad.b(), pop, yOff, cos, sin);
-        Vec3 c = place(quad.c(), pop, yOff, cos, sin);
-        Vec3 d = place(quad.d(), pop, yOff, cos, sin);
+        Vec3 a = place(quad.a(), pop, yOff, cos, sin, scale);
+        Vec3 b = place(quad.b(), pop, yOff, cos, sin, scale);
+        Vec3 c = place(quad.c(), pop, yOff, cos, sin, scale);
+        Vec3 d = place(quad.d(), pop, yOff, cos, sin, scale);
         if (filled) {
           Gizmos.rect(a, b, c, d, GizmoStyle.fill(fillColor)).setAlwaysOnTop();
         }
@@ -210,10 +218,11 @@ public final class PopChams extends ToggleableModule {
     activePops = count;
   }
 
-  private Vec3 place(Vec3 v, Pop pop, double yOff, double cos, double sin) {
-    double dx = v.x - pop.cx;
-    double dz = v.z - pop.cz;
-    return new Vec3(pop.cx + dx * cos - dz * sin, v.y + yOff, pop.cz + dx * sin + dz * cos);
+  private Vec3 place(Vec3 v, Pop pop, double yOff, double cos, double sin, double scale) {
+    double dx = (v.x - pop.cx) * scale;
+    double dz = (v.z - pop.cz) * scale;
+    double y = pop.cy + (v.y - pop.cy) * scale + yOff;
+    return new Vec3(pop.cx + dx * cos - dz * sin, y, pop.cz + dx * sin + dz * cos);
   }
 
   private int baseFillAlpha() {
@@ -231,22 +240,26 @@ public final class PopChams extends ToggleableModule {
   private static final class Pop {
     final List<ModelWireframe.Quad> quads;
     final double cx;
+    final double cy;
     final double cz;
     final long startMs;
 
     Pop(List<ModelWireframe.Quad> quads, long startMs) {
       this.quads = new ArrayList<>(quads);
       double sx = 0;
+      double sy = 0;
       double sz = 0;
       int n = 0;
       for (ModelWireframe.Quad q : quads) {
         for (Vec3 v : new Vec3[] {q.a(), q.b(), q.c(), q.d()}) {
           sx += v.x;
+          sy += v.y;
           sz += v.z;
           n++;
         }
       }
       this.cx = sx / n;
+      this.cy = sy / n;
       this.cz = sz / n;
       this.startMs = startMs;
     }
