@@ -20,6 +20,9 @@ public class FakePlayerEntity extends RemotePlayer {
   private BooleanSupplier damageSupplier = () -> true;
   private boolean hasTotem = true;
 
+  /** Whether the last applyDamage call actually took effect, totem pops included. */
+  private boolean damageConsumed;
+
   public FakePlayerEntity(ClientLevel level, GameProfile gameProfile) {
     super(level, gameProfile);
   }
@@ -27,6 +30,7 @@ public class FakePlayerEntity extends RemotePlayer {
   @Override
   protected void actuallyHurt(
       net.minecraft.server.level.ServerLevel level, DamageSource damageSource, float damage) {
+    damageConsumed = false;
     if (!damageSupplier.getAsBoolean()) return;
 
     // Vanilla pipeline: armor/toughness, then resistance/protection, then absorption.
@@ -35,15 +39,22 @@ public class FakePlayerEntity extends RemotePlayer {
     float absorbed = Math.min(this.getAbsorptionAmount(), damage);
     this.setAbsorptionAmount(this.getAbsorptionAmount() - absorbed);
     damage -= absorbed;
-    if (damage <= 0.0F) return;
-
-    float newHealth = this.getHealth() - damage;
-    if (newHealth <= 0.0F && hasTotem) {
-      popTotem(damageSource);
+    if (damage <= 0.0F) {
+      damageConsumed = absorbed > 0.0F;
       return;
     }
 
+    float newHealth = this.getHealth() - damage;
+    if (newHealth <= 0.0F && hasTotem) {
+      // A totem eats the hit, and that still counts as taking damage: the hit is spent.
+      popTotem(damageSource);
+      damageConsumed = true;
+      return;
+    }
+
+    float before = this.getHealth();
     this.setHealth(Math.max(newHealth, 0.0F));
+    damageConsumed = this.getHealth() != before;
   }
 
   private void popTotem(DamageSource source) {
@@ -100,15 +111,12 @@ public class FakePlayerEntity extends RemotePlayer {
                   + " iframes left");
       return;
     }
-    float before = this.getHealth();
     var source = ExplosionUtil.explosionSource(this);
     this.actuallyHurt(null, source, damage);
-    if (this.getHealth() != before) {
-      // Same values vanilla's client side damage event uses: 10 ticks of invulnerability.
-      this.hurtDuration = 10;
-      this.hurtTime = 10;
-      this.handleDamageEvent(source);
-    }
+    if (!damageConsumed) return;
+    // handleDamageEvent is vanilla's client side damage handler and sets hurtDuration/hurtTime to
+    // the same 10 tick window, so one burst can only ever pop a single totem.
+    this.handleDamageEvent(source);
   }
 
   public void setDamageSupplier(BooleanSupplier supplier) {
