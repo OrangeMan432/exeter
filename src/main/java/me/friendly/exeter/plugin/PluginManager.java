@@ -232,6 +232,16 @@ public class PluginManager extends ListManager<Plugin> implements PluginManagerI
       if (!beforeModules.contains(module)) ownedModules.add(module);
     }
     modulesByPlugin.put(plugin.getName().toLowerCase(), ownedModules);
+    // Plugins register their modules after the global config load has already run, so their
+    // toml was never read: enabled, keybinds and settings all came back as defaults. Loading
+    // each new module now restores the state the user saved last session.
+    for (me.friendly.exeter.module.Module module : ownedModules) {
+      me.friendly.exeter.config.ExeterConfig.getInstance().loadModule(module);
+      if (module instanceof me.friendly.exeter.module.ToggleableModule toggleable
+          && toggleable.isRunning()) {
+        debug(plugin.getName() + ": restored module " + module.getLabel() + " as enabled");
+      }
+    }
     java.util.List<me.friendly.exeter.command.Command> ownedCommands = new java.util.ArrayList<>();
     for (me.friendly.exeter.command.Command command : commandManager.getRegistry()) {
       if (!beforeCommands.contains(command)) ownedCommands.add(command);
