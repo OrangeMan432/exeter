@@ -7,6 +7,7 @@ import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
 import me.friendly.exeter.properties.NumberProperty;
+import me.friendly.exeter.render.EspRenderManager;
 import me.friendly.exeter.util.NotificationManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,15 +23,24 @@ public final class NotificationHud extends HudModule {
   private static final int OUT_DURATION = 300;
   private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
+  private static final int BAR_HEIGHT = 2;
+  private static final int GREEN_BAR = 0x01FF00;
 
   private final NumberProperty<Integer> maxNotifications =
       new NumberProperty<Integer>(5, 1, 10, "Max Notifications");
+  private final me.friendly.exeter.properties.Property<Boolean> progressBar =
+      new me.friendly.exeter.properties.Property<Boolean>(false, "Progress Bar", "progressBar");
+  private final me.friendly.exeter.properties.Property<Boolean> greenBar =
+      new me.friendly.exeter.properties.Property<Boolean>(false, "Green Bar", "greenBar");
 
   public NotificationHud() {
     super("Notifications", new String[] {"notifications", "notif", "notify"}, Corner.BOTTOM_RIGHT);
     setDescription("Garry's Mod style notifications.");
-    this.offerProperties(maxNotifications);
+    this.offerProperties(maxNotifications, progressBar, greenBar);
     maxNotifications.setDescription("Limits how many notifications are shown at once.");
+    progressBar.setDescription("Draw a shrinking bar showing time left before removal.");
+    greenBar.setDescription("Use green for the progress bar instead of the client color.");
+    greenBar.visibleWhen(() -> progressBar.getValue());
   }
 
   private static float easeOutCubic(float t) {
@@ -141,6 +151,12 @@ public final class NotificationHud extends HudModule {
     // fill remaining corner interiors that were not covered by AA (center of corner)
     // the loop above already handles full opacity for inner pixels, but the rectangular
     // strips x+r interior already covers, so corners are complete
+  }
+
+  /** Plain bar, anchored to the screen edge the HUD is snapped to. */
+  private void drawBar(int x, int y, int w, int h, boolean right, int color) {
+    if (RenderMethods.guiGraphics == null || w <= 0) return;
+    RenderMethods.guiGraphics.fill(x, y, x + w, y + h, color);
   }
 
   private void drawIcon(String iconName, int x, int y) {
@@ -316,6 +332,25 @@ public final class NotificationHud extends HudModule {
 
       // icon
       drawIcon(n.iconName(), x + 4, y + 3);
+
+      // time remaining bar: shrinks towards the screen edge the HUD is snapped to
+      if (progressBar.getValue() && RenderMethods.guiGraphics != null) {
+        float remaining = 1.0f - (float) age / (float) Math.max(1, n.durationMs());
+        remaining = Math.max(0f, Math.min(1f, remaining));
+        int barWidth = Math.round(w * remaining);
+        if (barWidth > 0) {
+          int barY = y + h - BAR_HEIGHT;
+          int barColor =
+              (alpha << 24)
+                  | ((greenBar.getValue() ? GREEN_BAR : EspRenderManager.getClientColor())
+                      & 0x00FFFFFF);
+          if (right) {
+            drawBar(x + w - barWidth, barY, barWidth, BAR_HEIGHT, true, barColor);
+          } else {
+            drawBar(x, barY, barWidth, BAR_HEIGHT, false, barColor);
+          }
+        }
+      }
 
       // text with alpha
       int textColor = (alpha << 24) | 0x00FFFFFF;
