@@ -9,7 +9,8 @@ the agent writes code. Ask before crossing that boundary.
    Never run the client without asking first.
 2. After the user tests, confirm everything worked properly.
 3. If it worked, commit the changes, then request permission to push. Never push without
-   being asked or given explicit confirmation.
+   being asked or given explicit confirmation. If a push fails, retry it once, then stop and
+   wait for the user instead of retrying again.
 4. When pushing is approved, enumerate the commits being pushed first if not already done.
 
 ## Commits
