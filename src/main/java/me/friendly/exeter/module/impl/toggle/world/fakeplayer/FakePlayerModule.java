@@ -25,6 +25,7 @@ public class FakePlayerModule extends ToggleableModule {
   private final Property<Boolean> record = new Property<>(false, "Record");
   private final Property<Boolean> playRecording = new Property<>(false, "Play Recording");
   private final Property<Boolean> loop = new Property<>(false, "Loop");
+  private final Property<Boolean> reverse = new Property<>(false, "Reverse");
   private final Property<Boolean> gapple = new Property<>(true, "Gapple");
   private final NumberProperty<Integer> gappleDelay =
       new NumberProperty<>(1600, 1500, 2000, "Gapple Delay");
@@ -38,17 +39,28 @@ public class FakePlayerModule extends ToggleableModule {
   private final StopWatch timer = new StopWatch();
   private final StopWatch respawnTimer = new StopWatch();
   private int index;
+  private boolean reverseRun;
   private boolean pendingRespawn;
 
   public FakePlayerModule() {
     super("FakePlayer", new String[] {"fakeplayer", "fp", "bot"}, 0xFFAA00, ModuleType.WORLD);
     setDescription("Spawns a fake player for testing combat and movement.");
 
+    reverse.visibleWhen(() -> loop.getValue());
     offerProperties(
-        record, playRecording, loop, gapple, gappleDelay, damage, copyArmor, respawnDelay);
+        record,
+        playRecording,
+        loop,
+        reverse,
+        gapple,
+        gappleDelay,
+        damage,
+        copyArmor,
+        respawnDelay);
     record.setDescription("Record your movement for playback.");
     playRecording.setDescription("Play back the recorded movement.");
     loop.setDescription("Loop the recorded movement.");
+    reverse.setDescription("Play the recording back again in reverse each loop, ping pong style.");
     gapple.setDescription("Apply golden apple effects to the fake player.");
     gappleDelay.setDescription("Delay between golden apple effects in milliseconds.");
     damage.setDescription("Let explosions and fireworks hurt the fake player.");
@@ -73,6 +85,7 @@ public class FakePlayerModule extends ToggleableModule {
     removeFakePlayer();
     positions.clear();
     index = 0;
+    reverseRun = false;
     record.setValue(false);
     playRecording.setValue(false);
   }
@@ -198,6 +211,18 @@ public class FakePlayerModule extends ToggleableModule {
 
   public boolean isLooping() {
     return loop.getValue();
+  }
+
+  public boolean isReverse() {
+    return reverse.getValue();
+  }
+
+  public boolean isReverseRun() {
+    return reverseRun;
+  }
+
+  public void setReverseRun(boolean reverseRun) {
+    this.reverseRun = reverseRun;
   }
 
   public boolean isGappleEnabled() {

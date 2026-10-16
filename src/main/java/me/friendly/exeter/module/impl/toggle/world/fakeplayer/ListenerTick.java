@@ -65,16 +65,32 @@ public class ListenerTick extends Listener<TickEvent> {
           return;
         }
 
-        if (module.getIndex() >= module.getPositions().size()) {
+        int size = module.getPositions().size();
+        if (module.getIndex() >= size || module.getIndex() < 0) {
           if (!module.isLooping()) {
             module.setPlayingRecording(false);
+            module.setIndex(0);
+            return;
+          } else if (module.isReverse()) {
+            // Reverse is a second pass over the same frames, not a restart: that is what makes
+            // a recording of walking up stairs run back down them.
+            module.setReverseRun(!module.isReverseRun());
+            module.setIndex(module.isReverseRun() ? size - 1 : 0);
+          } else {
+            module.setIndex(0);
           }
-          module.setIndex(0);
         }
 
         if (ticks++ % 2 == 0) {
-          Position p = module.getPositions().get(module.getIndex());
-          module.setIndex(module.getIndex() + 1);
+          int i = module.getIndex();
+          // Recomputed after the flip above, so the turn frame steps the right way.
+          boolean reversed = module.isReverse() && module.isReverseRun();
+          if (reversed) {
+            module.setIndex(i - 1);
+          } else {
+            module.setIndex(i + 1);
+          }
+          Position p = module.getPositions().get(Math.max(0, Math.min(size - 1, i)));
           fp.snapTo(p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch());
           fp.setMotionDirect(p.getMotionX(), p.getMotionY(), p.getMotionZ());
           applyLook(fp, p);
