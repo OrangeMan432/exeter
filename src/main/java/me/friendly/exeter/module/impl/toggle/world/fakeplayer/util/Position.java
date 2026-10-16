@@ -12,8 +12,20 @@ public class Position {
   private final double motionX;
   private final double motionY;
   private final double motionZ;
+  private final float walkSpeed;
+  private final float walkPosition;
+  private final boolean swinging;
+  private final boolean offhandSwing;
 
   public Position(Player player) {
+    this(player, 1.0f);
+  }
+
+  /**
+   * @param partialTick interpolation factor for the limb animation, so a playback frame lands on
+   *     the same swing phase as the recorded frame
+   */
+  public Position(Player player, float partialTick) {
     this.x = player.getX();
     this.y = player.getY();
     this.z = player.getZ();
@@ -23,6 +35,12 @@ public class Position {
     this.motionX = player.getDeltaMovement().x;
     this.motionY = player.getDeltaMovement().y;
     this.motionZ = player.getDeltaMovement().z;
+    this.walkSpeed = player.walkAnimation.speed(partialTick);
+    this.walkPosition = player.walkAnimation.position(partialTick);
+    this.swinging = player.isSwinging();
+    var swing = player.getCurrentSwing();
+    this.offhandSwing =
+        swing != null && swing.hand() == net.minecraft.world.InteractionHand.OFF_HAND;
   }
 
   public double getX() {
@@ -59,5 +77,21 @@ public class Position {
 
   public double getMotionZ() {
     return motionZ;
+  }
+
+  public float getWalkSpeed() {
+    return walkSpeed;
+  }
+
+  public float getWalkPosition() {
+    return walkPosition;
+  }
+
+  public boolean isSwinging() {
+    return swinging;
+  }
+
+  public boolean isOffhandSwing() {
+    return offhandSwing;
   }
 }
