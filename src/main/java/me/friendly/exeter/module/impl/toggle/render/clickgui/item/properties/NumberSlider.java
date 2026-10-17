@@ -19,6 +19,14 @@ public class NumberSlider extends Item implements PropertyItem {
   private boolean dragging;
   private static final float CHILD_OFFSET = 1.0f;
 
+  // Middle click typed entry: the drawn value itself becomes the edit buffer.
+  private boolean editing;
+  private String editText = "";
+  private int caret;
+  private boolean caretVisible = true;
+  private long lastBlinkMs;
+  private static final int MAX_CHARS = 12;
+
   public NumberSlider(NumberProperty numberProperty, boolean child) {
     super(numberProperty.getAliases()[0]);
     this.numberProperty = numberProperty;
@@ -92,17 +100,141 @@ public class NumberSlider extends Item implements PropertyItem {
     } else {
       RenderMethods.drawRect(x + offsetX, y + h - 1.0f, fillEnd, y + h, fillColor);
     }
-    FontUtil.drawString(
-        String.format("%s\u00a77 %s", this.getLabel(), this.numberProperty.getValue()),
-        this.x + offsetX + 2.0f,
-        this.y + 4.0f,
-        -1);
+    String shown = editing ? editText : String.valueOf(this.numberProperty.getValue());
+    float textX = this.x + offsetX + 2.0f;
+    float textY = this.y + 4.0f;
+    FontUtil.drawString(String.format("%s§7 %s", this.getLabel(), shown), textX, textY, -1);
+    if (editing && System.currentTimeMillis() - lastBlinkMs > 500) {
+      caretVisible = !caretVisible;
+      lastBlinkMs = System.currentTimeMillis();
+    }
+    if (editing && caretVisible) {
+      String before = String.format("%s§7 %s", this.getLabel(), editText.substring(0, caret));
+      int caretX = (int) textX + FontUtil.getStringWidth(before);
+      RenderMethods.drawRect(caretX, (int) textY, caretX + 1, (int) textY + 8, -1);
+    }
+  }
+
+  /** Middle click: turn the drawn value into an edit buffer with the caret at the end. */
+  public void openEditor() {
+    editing = true;
+    editText = formatNumber((Number) this.numberProperty.getValue());
+    caret = editText.length();
+    blink();
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+
+  public void cancelEditor() {
+    editing = false;
+    editText = "";
+  }
+
+  /** Applies the typed text, clamped to this property's range, then leaves edit mode. */
+  public void commitEditor() {
+    double parsed;
+    try {
+      parsed = Double.parseDouble(editText);
+    } catch (NumberFormatException e) {
+      // Nothing usable typed: keep whatever the slider already had.
+      cancelEditor();
+      return;
+    }
+    double min = ((Number) numberProperty.getMinimum()).doubleValue();
+    double max = ((Number) numberProperty.getMaximum()).doubleValue();
+    double clamped = Math.max(min, Math.min(max, parsed));
+    Object current = numberProperty.getValue();
+    if (current instanceof Double) {
+      numberProperty.setValue(clamped);
+    } else if (current instanceof Float) {
+      numberProperty.setValue((float) clamped);
+    } else if (current instanceof Long) {
+      numberProperty.setValue(Math.round(clamped));
+    } else {
+      numberProperty.setValue((int) Math.round(clamped));
+    }
+    me.friendly.exeter.logging.DebugLogger.get()
+        .log(
+            "ClickGui",
+            me.friendly.exeter.logging.DebugLogger.Level.INFO,
+            this.getLabel() + " set to " + numberProperty.getValue() + " (typed " + editText + ")");
+    cancelEditor();
+  }
+
+  /**
+   * @return true when the key belonged to the editor.
+   */
+  public boolean keyPressedInEditor(int keyCode, int scanCode) {
+    if (!editing) return false;
+    if (keyCode == InputConstants.KEY_BACKSPACE) {
+      if (caret > 0) {
+        editText = editText.substring(0, caret - 1) + editText.substring(caret);
+        caret--;
+        blink();
+      }
+      return true;
+    }
+    if (keyCode == InputConstants.KEY_DELETE) {
+      if (caret < editText.length()) {
+        editText = editText.substring(0, caret) + editText.substring(caret + 1);
+        blink();
+      }
+      return true;
+    }
+    if (keyCode == InputConstants.KEY_LEFT) {
+      caret = Math.max(0, caret - 1);
+      blink();
+      return true;
+    }
+    if (keyCode == InputConstants.KEY_RIGHT) {
+      caret = Math.min(editText.length(), caret + 1);
+      blink();
+      return true;
+    }
+    // Typed characters arrive as scan codes, same as the color picker's hex field.
+    if (scanCode >= 32 && scanCode < 127) {
+      char c = (char) scanCode;
+      if (((c >= '0' && c <= '9') || c == '.' || c == '-') && editText.length() < MAX_CHARS) {
+        editText = editText.substring(0, caret) + c + editText.substring(caret);
+        caret++;
+        blink();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private void blink() {
+    lastBlinkMs = System.currentTimeMillis();
+    caretVisible = true;
+  }
+
+  private static String formatNumber(Number value) {
+    if (value instanceof Double d) return trimZeros(String.valueOf(d));
+    if (value instanceof Float f) return trimZeros(String.valueOf(f));
+    return String.valueOf(value);
+  }
+
+  private static String trimZeros(String text) {
+    if (text.indexOf('.') < 0) return text;
+    text = text.replaceAll("0+$", "");
+    if (text.endsWith(".")) text = text.substring(0, text.length() - 1);
+    return text;
   }
 
   @Override
   public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     super.mouseClicked(mouseX, mouseY, mouseButton);
-    if (isHovering(mouseX, mouseY) && mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
+    if (!isHovering(mouseX, mouseY)) return;
+    if (mouseButton == InputConstants.MOUSE_BUTTON_MIDDLE) {
+      // Middle click puts a caret in the drawn value instead of dragging for it.
+      openEditor();
+      ClickGui.getClickGui().openPopup(new NumberEditPopup(this));
+      return;
+    }
+    if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       setSettingFromX(mouseX);
       dragging = true;
     }
