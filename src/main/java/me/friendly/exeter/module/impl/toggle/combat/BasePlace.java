@@ -87,6 +87,7 @@ public class BasePlace extends ToggleableModule {
   private Vec3 prevTargetPos;
   private String prevTargetKey;
   private boolean noObsidianLogged;
+  private boolean eatingLogged;
   private boolean noTargetLogged;
   private boolean lowDamageLogged;
   private boolean selfDamageLogged;
@@ -232,6 +233,17 @@ public class BasePlace extends ToggleableModule {
   private void onTick() {
     if (minecraft.level == null || minecraft.player == null) return;
     tickCounter++;
+    // Swapping to obsidian or placing while a golden apple is being eaten cancels the
+    // eat, so hold off entirely until it is done.
+    if (eatingGapple()) {
+      if (!eatingLogged) {
+        eatingLogged = true;
+        DebugLogger.get()
+            .log(getLabel(), DebugLogger.Level.INFO, "holding off, eating a golden apple");
+      }
+      return;
+    }
+    eatingLogged = false;
     // A full scan walks every cell in range. Doing that every tick is what tanks the
     // frame rate, so scans run on their own interval and the winner is reused between them.
     if (tickCounter - lastScanTick < Math.max(1, scanDelay.getValue())) {
@@ -411,6 +423,13 @@ public class BasePlace extends ToggleableModule {
     place(bestSupport, obsidianSlot, target, bestSupportDamage, bestSupportSelf);
   }
 
+  /** True while the player is mid consume of a golden apple. */
+  private boolean eatingGapple() {
+    if (!minecraft.player.isUsingItem()) return false;
+    var used = minecraft.player.getItemInHand(minecraft.player.getUsedItemHand());
+    return used.is(Items.GOLDEN_APPLE) || used.is(Items.ENCHANTED_GOLDEN_APPLE);
+  }
+
   /** Places the scan winner once the place delay passes, without walking the cells again. */
   private void tryPlacePending(Player target) {
     if (pendingSupport == null || target == null) return;
@@ -481,6 +500,11 @@ public class BasePlace extends ToggleableModule {
 
   private void place(
       BlockPos base, int obsidianSlot, Player target, float damage, float selfDamage) {
+    if (eatingGapple()) {
+      DebugLogger.get()
+          .log(getLabel(), DebugLogger.Level.INFO, "skipped placement, eating a golden apple");
+      return;
+    }
     placementRender.setRenderPos(
         base.immutable(),
         renderDamage.getValue() ? String.format("%.1f", damage) : null,
