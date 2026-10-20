@@ -27,7 +27,7 @@ public class Debug extends ToggleableModule {
   private final Property<Boolean> showError = new Property<Boolean>(true, "Show Errors");
   private final Property<Boolean> refillTotem =
       new Property<Boolean>(false, "Refill Totem", "refilltotem");
-  private final SelectionPopup.Toggles moduleToggles = new SelectionPopup.Toggles("Module Toggles");
+  private final SelectionPopup.Toggles moduleToggles = new SelectionPopup.Toggles("Debug Modules");
   private final PopupProperty modulesPopup;
 
   private List<Module> allModules;
@@ -53,7 +53,11 @@ public class Debug extends ToggleableModule {
     showWarn.setDescription("Includes warning messages in debug output.");
     showError.setDescription("Includes error messages in debug output.");
     refillTotem.setDescription("Gives you a fresh totem each time you pop one.");
-    moduleToggles.getProperty().setDescription("Chooses which modules can send debug output.");
+    moduleToggles
+        .getProperty()
+        .setDescription(
+            "Chooses which modules can send debug output. This is not the on/off state of the "
+                + "modules, it only routes their debug messages here.");
     modulesPopup.setDescription("Opens the list of modules to toggle debug output for.");
     this.listeners.add(
         new Listener<PacketEvent>("debug_totem_refill") {
