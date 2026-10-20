@@ -95,7 +95,9 @@ public class BasePlace extends ToggleableModule {
     super("BasePlace", new String[] {"baseplace", "base", "bp"}, 0xFF9B59B6, ModuleType.COMBAT);
     setDescription("Places obsidian under crystal positions that have no support block.");
     fadeMode.visibleWhen(() -> fade.getValue());
+    fadeTime.visibleWhen(() -> fade.getValue());
     smoothSlide.visibleWhen(() -> slide.getValue());
+    slideTime.visibleWhen(() -> slide.getValue());
     fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     offerProperties(
@@ -106,6 +108,7 @@ public class BasePlace extends ToggleableModule {
         predict,
         placeDelay,
         rotate,
+        airPlace,
         swingHand,
         autoSwitch,
         switchBack,
@@ -494,7 +497,9 @@ public class BasePlace extends ToggleableModule {
     PlayerUtil.sendSpoofTopUp();
     Runnable action =
         () -> {
-          PlayerUtil.useItemOn(base, Direction.UP);
+          // The cell is usually air, so it has to be placed against a real neighbour face:
+          // clicking the empty cell itself places nothing.
+          PlayerUtil.clickPlace(base);
           if (swingHand.getValue()) PlayerUtil.swingHand();
           if (needSwitch && switchBack.getValue()) PlayerUtil.swapBack();
         };
@@ -530,6 +535,25 @@ public class BasePlace extends ToggleableModule {
                 + " slot="
                 + obsidianSlot
                 + " left="
+                + obsidianCount);
+    DebugLogger.get()
+        .logFile(
+            getLabel(),
+            "placed support at "
+                + base.toShortString()
+                + " block="
+                + minecraft.level.getBlockState(base).getBlock().getName()
+                + " target="
+                + target.getName().getString()
+                + " targetDmg="
+                + String.format("%.2f", damage)
+                + " selfDmg="
+                + String.format("%.2f", selfDamage)
+                + " dist="
+                + String.format("%.2f", dist)
+                + " slot="
+                + obsidianSlot
+                + " obsidianLeft="
                 + obsidianCount);
   }
 

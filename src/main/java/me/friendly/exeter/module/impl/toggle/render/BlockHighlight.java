@@ -85,7 +85,9 @@ public class BlockHighlight extends ToggleableModule {
     fillAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     outlineAlpha.visibleWhen(() -> useCustomAlpha.getValue());
     fadeMode.visibleWhen(() -> fade.getValue());
+    fadeTime.visibleWhen(() -> fade.getValue());
     smoothSlide.visibleWhen(() -> slide.getValue());
+    slideTime.visibleWhen(() -> slide.getValue());
     offerProperties(
         lookMode,
         renderMode,
