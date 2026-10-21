@@ -94,10 +94,9 @@ public final class NotificationHud extends HudModule {
 
   /** Opens the RGB picker on the notification background color. */
   private void openColorPicker() {
-    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui()
-        .openPopup(
-            new me.friendly.exeter.module.impl.toggle.render.clickgui.ColorPickerPopup(
-                () -> backgroundColor(0xCC), this::setBackgroundColor, null));
+    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.openPopupOnActiveScreen(
+        new me.friendly.exeter.module.impl.toggle.render.clickgui.ColorPickerPopup(
+            () -> backgroundColor(0xCC), this::setBackgroundColor, null));
   }
 
   /** Writes a picked color into the background channels, keeping the alpha slider. */
