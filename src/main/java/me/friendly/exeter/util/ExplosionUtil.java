@@ -78,6 +78,19 @@ public final class ExplosionUtil {
    * when_caused_by_living_non_player}, and our own rockets are caused by a player, so {@link
    * #fireworkDamage} deliberately skips this.
    */
+  /**
+   * Explosion damage with exposure forced to full: the most this position could ever deal. No
+   * raycasts, so it is cheap enough to use as a filter before the real exposure trace.
+   */
+  public static float maxExplosionDamage(Level level, Vec3 center, float power, Vec3 victimPos) {
+    float radius = power * 2.0F;
+    double dist = victimPos.distanceTo(center) / radius;
+    if (dist > 1.0) return 0.0F;
+    double impact = 1.0 - dist;
+    float raw = (float) ((impact * impact + impact) / 2.0 * 7.0 * radius + 1.0);
+    return applyDifficulty(level, raw);
+  }
+
   private static float applyDifficulty(Level level, float damage) {
     return switch (level.getDifficulty()) {
       case PEACEFUL -> 0.0F;

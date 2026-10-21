@@ -22,6 +22,7 @@ import me.friendly.exeter.module.impl.toggle.combat.AutoMend;
 import me.friendly.exeter.module.impl.toggle.combat.AutoPot;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTotem;
 import me.friendly.exeter.module.impl.toggle.combat.AutoTrap;
+import me.friendly.exeter.module.impl.toggle.combat.BasePlace;
 import me.friendly.exeter.module.impl.toggle.combat.BedAura;
 import me.friendly.exeter.module.impl.toggle.combat.ElytraTarget;
 import me.friendly.exeter.module.impl.toggle.combat.FireworkAura;
@@ -109,6 +110,7 @@ public final class ModuleManager extends ListRegistry<Module> {
     register(new BedAura());
     register(new AutoTrap());
     register(new AutoCrystal());
+    register(new BasePlace());
     register(new Surround());
     register(new FireworkAura());
     register(new Speed());
