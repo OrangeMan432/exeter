@@ -7,7 +7,7 @@ import java.util.Map;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 public class FontUtil {

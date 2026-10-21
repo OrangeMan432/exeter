@@ -136,8 +136,10 @@ public final class ClickGui extends Screen {
   }
 
   @Override
-  public void extractRenderState(
-      GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+  public void extractRenderState(GuiGraphicsExtractor guiGraphics) {
+    int mouseX = guiGraphics.mouseX();
+    int mouseY = guiGraphics.mouseY();
+    float partialTicks = guiGraphics.partialTicks();
     RenderMethods.guiGraphics = guiGraphics;
 
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiModule = getClickGuiModule();
