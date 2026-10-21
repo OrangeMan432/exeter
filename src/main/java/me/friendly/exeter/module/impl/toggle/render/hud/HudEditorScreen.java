@@ -66,8 +66,10 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
-  public void extractRenderState(
-      GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+  public void extractRenderState(GuiGraphicsExtractor guiGraphics) {
+    int mouseX = guiGraphics.mouseX();
+    int mouseY = guiGraphics.mouseY();
+    float partialTicks = guiGraphics.partialTicks();
     RenderMethods.guiGraphics = guiGraphics;
     if (isBackgroundEnabled()) {
       RenderMethods.drawGradientRect(0.0F, 0.0F, this.width, this.height, 536870912, -1879048192);

@@ -19,7 +19,7 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import org.joml.Matrix3x2fStack;
 
 public class ModuleButton extends Button {

@@ -43,8 +43,10 @@ public final class WindowScreen extends Screen {
   }
 
   @Override
-  public void extractRenderState(
-      GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+  public void extractRenderState(GuiGraphicsExtractor guiGraphics) {
+    int mouseX = guiGraphics.mouseX();
+    int mouseY = guiGraphics.mouseY();
+    float partialTicks = guiGraphics.partialTicks();
     RenderMethods.guiGraphics = guiGraphics;
     if (isBackgroundEnabled()) {
       RenderMethods.drawGradientRect(0, 0, this.width, this.height, 0x80000000, 0x40000000);
