@@ -183,28 +183,6 @@ public final class HudEditorScreen extends Screen {
     RenderMethods.drawRect(
         scaledWidth - r, scaledHeight - r, scaledWidth, scaledHeight, cBr ? guide : zone);
     RenderMethods.drawRect(half - r, 0, half + r, r, cTc ? guide : zone);
-
-    // Edge snap strips on their own tighter radius. The strip currently catching
-    // the dragged module draws bright so the snap shows before release.
-    int er = edgeRadius();
-    boolean left = false;
-    boolean right = false;
-    boolean top = false;
-    boolean bottom = false;
-    if (dragging != null && er > 0) {
-      int x = dragging.getX();
-      int y = dragging.getY();
-      int w = dragging.getWidth();
-      int h = dragging.getHeight();
-      left = Math.abs(x - snapMargin) <= er;
-      right = Math.abs((x + w) - (scaledWidth - snapMargin)) <= er;
-      top = Math.abs(y - snapMargin) <= er;
-      bottom = Math.abs((y + h) - (scaledHeight - snapMargin)) <= er;
-    }
-    RenderMethods.drawRect(0, 0, er, scaledHeight, left ? guide : zone);
-    RenderMethods.drawRect(scaledWidth - er, 0, scaledWidth, scaledHeight, right ? guide : zone);
-    RenderMethods.drawRect(0, 0, scaledWidth, er, top ? guide : zone);
-    RenderMethods.drawRect(0, scaledHeight - er, scaledWidth, scaledHeight, bottom ? guide : zone);
   }
 
   @Override
