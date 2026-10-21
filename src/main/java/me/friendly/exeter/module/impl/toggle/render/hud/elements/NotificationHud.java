@@ -28,9 +28,9 @@ public final class NotificationHud extends HudModule {
   private final NumberProperty<Integer> maxNotifications =
       new NumberProperty<Integer>(5, 1, 10, "Max Notifications");
   private final me.friendly.exeter.properties.Property<Boolean> progressBar =
-      new me.friendly.exeter.properties.Property<Boolean>(false, "Progress Bar", "progressBar");
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Progress Bar", "progressBar");
   private final me.friendly.exeter.properties.Property<Boolean> greenBar =
-      new me.friendly.exeter.properties.Property<Boolean>(false, "Green Bar", "greenBar");
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Green Bar", "greenBar");
   private final me.friendly.exeter.properties.Property<Boolean> rounded =
       new me.friendly.exeter.properties.Property<Boolean>(true, "Rounded", "rounded");
   private final NumberProperty<Integer> offset = new NumberProperty<Integer>(0, 0, 64, "Offset");
