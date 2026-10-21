@@ -35,6 +35,9 @@ public abstract class HudModule extends ToggleableModule {
   private boolean positioned = false;
   private boolean free = false;
 
+  /** Placed flush against the screen edge, so the usual margin does not apply. */
+  private boolean flush = false;
+
   /** Previous frame's stack order per corner, so y-ties can't reshuffle stacks. */
   private static final java.util.Map<Corner, java.util.List<String>> stackOrderMemory =
       new java.util.EnumMap<>(Corner.class);
@@ -88,6 +91,14 @@ public abstract class HudModule extends ToggleableModule {
 
   public void setFree(boolean free) {
     this.free = free;
+  }
+
+  public boolean isFlush() {
+    return flush;
+  }
+
+  public void setFlush(boolean flush) {
+    this.flush = flush;
   }
 
   public Edge getEdge() {
@@ -236,8 +247,9 @@ public abstract class HudModule extends ToggleableModule {
    * outgrow its laid-out box; idempotent, so safe to run every frame.
    */
   public static void clampOnScreen(List<HudModule> modules, int scaledWidth, int scaledHeight) {
-    int margin = 5;
     for (HudModule m : modules) {
+      // Flush elements sit against the screen edge, everything else keeps the margin.
+      int margin = m.isFlush() ? 0 : 5;
       int maxX = Math.max(margin, scaledWidth - m.getWidth() - margin);
       int maxY = Math.max(margin, scaledHeight - m.getHeight() - margin);
       m.setX(Math.max(margin, Math.min(m.getX(), maxX)));

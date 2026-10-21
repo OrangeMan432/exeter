@@ -6,6 +6,7 @@ import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.module.impl.active.render.Colors;
+import me.friendly.exeter.module.impl.toggle.render.clickgui.ClickPopup;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
@@ -23,6 +24,12 @@ public final class HudEditorScreen extends Screen {
   private int dragOffY;
 
   private Panel hudPanel;
+  private ClickPopup popup;
+
+  // Expanded module state, kept in memory so reopening the editor restores it,
+  // the same way the ClickGUI keeps its module expansions.
+  private final java.util.Map<String, Boolean> subOpenMemory = new java.util.HashMap<>();
+  private final java.util.Map<String, Boolean> childOpenMemory = new java.util.HashMap<>();
 
   public HudEditorScreen() {
     super(Component.literal("HUD Editor"));
@@ -64,6 +71,59 @@ public final class HudEditorScreen extends Screen {
                     });
           }
         };
+    restoreOpenStates();
+  }
+
+  /** Copies the expanded state of the panel that is about to be replaced. */
+  private void snapshotOpenStates() {
+    subOpenMemory.clear();
+    childOpenMemory.clear();
+    if (hudPanel == null) return;
+    for (Item item : hudPanel.getItems()) {
+      if (!(item instanceof ModuleButton moduleButton)) continue;
+      subOpenMemory.put(moduleButton.getModule().getLabel(), moduleButton.isSubOpen());
+      for (Item child : moduleButton.getTopLevelItems()) {
+        if (child
+            instanceof
+            me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton
+                booleanChild) {
+          childOpenMemory.put(
+              moduleButton.getModule().getLabel() + ">" + booleanChild.getLabel(),
+              booleanChild.isChildrenOpen());
+        }
+      }
+    }
+  }
+
+  /** Reapplies the remembered expansion state to the freshly built panel. */
+  private void restoreOpenStates() {
+    if (hudPanel == null) return;
+    for (Item item : hudPanel.getItems()) {
+      if (!(item instanceof ModuleButton moduleButton)) continue;
+      Boolean open = subOpenMemory.get(moduleButton.getModule().getLabel());
+      if (open != null) moduleButton.setSubOpen(open);
+      for (Item child : moduleButton.getTopLevelItems()) {
+        if (!(child
+            instanceof
+            me.friendly.exeter.module.impl.toggle.render.clickgui.item.properties.BooleanButton
+                booleanChild)) {
+          continue;
+        }
+        Boolean childOpen =
+            childOpenMemory.get(
+                moduleButton.getModule().getLabel() + ">" + booleanChild.getLabel());
+        if (childOpen != null) booleanChild.setChildrenOpen(childOpen);
+      }
+    }
+  }
+
+  /** Opens a popup in this screen, so pickers work here and not only in the ClickGUI. */
+  public void openPopup(ClickPopup popup) {
+    this.popup = popup;
+  }
+
+  public void closePopup() {
+    this.popup = null;
   }
 
   @Override
@@ -86,6 +146,10 @@ public final class HudEditorScreen extends Screen {
 
     hudPanel.drawScreen(mouseX, mouseY, partialTicks);
     drawHoveredDescription(mouseX, mouseY);
+
+    if (popup != null) {
+      popup.render(mouseX, mouseY, partialTicks, this.width, this.height);
+    }
   }
 
   /** Mirrors the ClickGUI hover text so setting descriptions work in this screen too. */
@@ -191,6 +255,10 @@ public final class HudEditorScreen extends Screen {
     int mouseY = (int) event.y();
     int button = event.button();
 
+    if (popup != null && popup.mouseClicked(mouseX, mouseY, button)) {
+      return true;
+    }
+
     ensurePanel();
     hudPanel.mouseClicked(mouseX, mouseY, button);
 
@@ -217,6 +285,10 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public boolean mouseReleased(MouseButtonEvent event) {
+    if (popup != null && popup.mouseReleased((int) event.x(), (int) event.y(), event.button())) {
+      return true;
+    }
+
     ensurePanel();
     hudPanel.mouseReleased((int) event.x(), (int) event.y(), event.button());
 
@@ -236,8 +308,12 @@ public final class HudEditorScreen extends Screen {
                   + " shift="
                   + shift);
       if (shift) {
+        // Shift drops the element exactly where it was released, flush against the
+        // screen edge instead of inside the usual margin.
         dragging.setFree(true);
+        dragging.setFlush(true);
       } else {
+        dragging.setFlush(false);
         snapToNearest(dragging);
       }
       int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
@@ -260,12 +336,24 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollDelta) {
+    if (popup != null && popup.mouseScrolled(scrollDelta)) {
+      return true;
+    }
+
     ensurePanel();
     if (hudPanel.containsMouse((int) mouseX, (int) mouseY)) {
       hudPanel.scroll((int) (scrollDelta * 12));
       return true;
     }
     return super.mouseScrolled(mouseX, mouseY, scrollX, scrollDelta);
+  }
+
+  @Override
+  public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+    if (popup != null && popup.keyPressed(event.key(), event.keycode(), event.modifiers())) {
+      return true;
+    }
+    return super.keyPressed(event);
   }
 
   @Override
@@ -276,7 +364,9 @@ public final class HudEditorScreen extends Screen {
   @Override
   public void init() {
     // Rebuild every open: plugin modules arrive (and leave) at runtime, and a
-    // cached panel would keep showing uninstalled ones.
+    // cached panel would keep showing uninstalled ones. The expanded state is
+    // captured first so it survives the rebuild.
+    snapshotOpenStates();
     hudPanel = null;
   }
 
