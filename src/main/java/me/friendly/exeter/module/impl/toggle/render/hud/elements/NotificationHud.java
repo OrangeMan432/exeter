@@ -21,7 +21,6 @@ public final class NotificationHud extends HudModule {
   private static final int ICON_SIZE = 16;
   private static final int IN_DURATION = 300;
   private static final int OUT_DURATION = 300;
-  private static final int BG_COLOR = 0xCC2A2A2A;
   private static final int RADIUS = 4;
   private static final int BAR_HEIGHT = 2;
   private static final int GREEN_BAR = 0x01FF00;
@@ -32,15 +31,97 @@ public final class NotificationHud extends HudModule {
       new me.friendly.exeter.properties.Property<Boolean>(false, "Progress Bar", "progressBar");
   private final me.friendly.exeter.properties.Property<Boolean> greenBar =
       new me.friendly.exeter.properties.Property<Boolean>(false, "Green Bar", "greenBar");
+  private final me.friendly.exeter.properties.Property<Boolean> rounded =
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Rounded", "rounded");
+  private final NumberProperty<Integer> offset = new NumberProperty<Integer>(0, 0, 64, "Offset");
+  private final NumberProperty<Integer> gap = new NumberProperty<Integer>(2, 0, 32, "Gap");
+  private final me.friendly.exeter.properties.Property<Boolean> fade =
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Fade", "fade");
+  private final me.friendly.exeter.properties.Property<Boolean> slide =
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Slide", "slide");
+  private final me.friendly.exeter.properties.Property<Boolean> icons =
+      new me.friendly.exeter.properties.Property<Boolean>(true, "Icons", "icons");
+  private final me.friendly.exeter.properties.Property<Boolean> border =
+      new me.friendly.exeter.properties.Property<Boolean>(false, "Border", "border");
+  private final NumberProperty<Integer> bgRed = new NumberProperty<Integer>(42, 0, 255, "BG Red");
+  private final NumberProperty<Integer> bgGreen =
+      new NumberProperty<Integer>(42, 0, 255, "BG Green");
+  private final NumberProperty<Integer> bgBlue = new NumberProperty<Integer>(42, 0, 255, "BG Blue");
+  private final NumberProperty<Integer> bgAlpha =
+      new NumberProperty<Integer>(204, 0, 255, "BG Alpha");
+  private final me.friendly.exeter.properties.PopupProperty pickBackground =
+      new me.friendly.exeter.properties.PopupProperty("Background Color", this::openColorPicker);
 
   public NotificationHud() {
     super("Notifications", new String[] {"notifications", "notif", "notify"}, Corner.BOTTOM_RIGHT);
     setDescription("Garry's Mod style notifications.");
-    this.offerProperties(maxNotifications, progressBar, greenBar);
+    this.offerProperties(
+        maxNotifications,
+        progressBar,
+        greenBar,
+        rounded,
+        offset,
+        gap,
+        fade,
+        slide,
+        icons,
+        border,
+        pickBackground,
+        bgRed,
+        bgGreen,
+        bgBlue,
+        bgAlpha);
     maxNotifications.setDescription("Limits how many notifications are shown at once.");
     progressBar.setDescription("Draw a shrinking bar showing time left before removal.");
     greenBar.setDescription("Use green for the progress bar instead of the client color.");
     greenBar.visibleWhen(() -> progressBar.getValue());
+    rounded.setDescription("Round the corners of the notification panel.");
+    offset.setDescription("Distance between the notifications and the screen edge.");
+    gap.setDescription("Distance between notifications.");
+    fade.setDescription("Fade notifications out when they expire.");
+    slide.setDescription("Slide notifications in and out.");
+    icons.setDescription("Show the icon next to the notification text.");
+    border.setDescription("Draw a border around the notification panel.");
+    bgRed.setDescription("Background color red channel.");
+    bgGreen.setDescription("Background color green channel.");
+    bgBlue.setDescription("Background color blue channel.");
+    bgAlpha.setDescription("Background opacity, 0-255.");
+    // The raw sliders stay persisted for the config, the picker replaces them in the UI.
+    bgRed.visibleWhen(() -> false);
+    bgGreen.visibleWhen(() -> false);
+    bgBlue.visibleWhen(() -> false);
+  }
+
+  /** Opens the RGB picker on the notification background color. */
+  private void openColorPicker() {
+    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui()
+        .openPopup(
+            new me.friendly.exeter.module.impl.toggle.render.clickgui.ColorPickerPopup(
+                () -> backgroundColor(0xCC), this::setBackgroundColor, null));
+  }
+
+  /** Writes a picked color into the background channels, keeping the alpha slider. */
+  private void setBackgroundColor(int picked) {
+    bgRed.setValue((picked >> 16) & 0xFF);
+    bgGreen.setValue((picked >> 8) & 0xFF);
+    bgBlue.setValue(picked & 0xFF);
+  }
+
+  /** Background color, with the panel alpha scaled by the fade animation. */
+  private int backgroundColor(int alpha) {
+    int scaled = (int) Math.round(bgAlpha.getValue() * (alpha / (double) 0xCC));
+    int rgb = (bgRed.getValue() << 16) | (bgGreen.getValue() << 8) | bgBlue.getValue();
+    return (scaled << 24) | (rgb & 0x00FFFFFF);
+  }
+
+  /** Pixels the icon column takes, so the text can shift left when icons are off. */
+  private int iconSpace() {
+    return icons.getValue() ? ICON_SIZE : 0;
+  }
+
+  /** Panel width of one notification. */
+  private int panelWidth(String text) {
+    return FontUtil.getStringWidth(text) + NOTIF_PADDING * 2 + iconSpace() + 4;
   }
 
   private static float easeOutCubic(float t) {
@@ -109,6 +190,53 @@ public final class NotificationHud extends HudModule {
     } catch (Exception ignored) {
     }
     return null;
+  }
+
+  /** Draws the panel: background, optional border, rounded or square. */
+  private void drawPanel(int x, int y, int w, int h, int alpha) {
+    int bg = backgroundColor(alpha);
+    drawRoundedRect(x, y, x + w, y + h, rounded.getValue() ? RADIUS : 0, bg);
+    if (border.getValue()) {
+      int borderAlpha = (int) Math.round(bgAlpha.getValue() * (alpha / (double) 0xCC));
+      int borderColor = (borderAlpha << 24) | (EspRenderManager.getClientColor() & 0x00FFFFFF);
+      RenderMethods.guiGraphics.fill(x, y, x + w, y + 1, borderColor);
+      RenderMethods.guiGraphics.fill(x, y + h - 1, x + w, y + h, borderColor);
+      RenderMethods.guiGraphics.fill(x, y, x + 1, y + h, borderColor);
+      RenderMethods.guiGraphics.fill(x + w - 1, y, x + w, y + h, borderColor);
+    }
+  }
+
+  /**
+   * Offset shifts the panel away from the screen edge it is snapped to. The stored position stays
+   * the anchor and the shift is applied on the way out, so the setter takes the drawn position back
+   * and the on screen clamp stays idempotent.
+   */
+  private int shiftX() {
+    return isRight() ? -offset.getValue() : offset.getValue();
+  }
+
+  private int shiftY() {
+    return isTop() ? offset.getValue() : -offset.getValue();
+  }
+
+  @Override
+  public int getX() {
+    return super.getX() + shiftX();
+  }
+
+  @Override
+  public void setX(int x) {
+    super.setX(x - shiftX());
+  }
+
+  @Override
+  public int getY() {
+    return super.getY() + shiftY();
+  }
+
+  @Override
+  public void setY(int y) {
+    super.setY(y - shiftY());
   }
 
   private void drawRoundedRect(int x, int y, int x1, int y1, int radius, int color) {
@@ -246,12 +374,11 @@ public final class NotificationHud extends HudModule {
         Minecraft.getInstance().gui != null
             && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
     if (active.isEmpty() && inEditor) {
-      String dummy = "Undone Prop";
-      return FontUtil.getStringWidth(dummy) + NOTIF_PADDING * 2 + ICON_SIZE + 4;
+      return panelWidth("Undone Prop");
     }
     int max = 0;
     for (var n : active) {
-      int w = FontUtil.getStringWidth(n.displayText()) + NOTIF_PADDING * 2 + ICON_SIZE + 4;
+      int w = panelWidth(n.displayText());
       if (w > max) max = w;
     }
     return max;
@@ -266,7 +393,8 @@ public final class NotificationHud extends HudModule {
             && Minecraft.getInstance().gui.screen() instanceof HudEditorScreen;
     if (active.isEmpty() && inEditor) return NOTIF_HEIGHT;
     if (active.isEmpty()) return 0;
-    return active.size() * (NOTIF_HEIGHT + 2) - 2;
+    int g = gap.getValue();
+    return active.size() * (NOTIF_HEIGHT + g) - g;
   }
 
   @Override
@@ -279,15 +407,15 @@ public final class NotificationHud extends HudModule {
 
     if (active.isEmpty() && inEditor) {
       // dummy preview
-      int w = FontUtil.getStringWidth("Undone Prop") + NOTIF_PADDING * 2 + ICON_SIZE + 4;
+      int w = panelWidth("Undone Prop");
       int x = getX();
       int y = getY();
       if (isRight()) {
         x = getX() + getWidth() - w;
       }
-      drawRoundedRect(x, y, x + w, y + NOTIF_HEIGHT, RADIUS, BG_COLOR);
-      drawIcon("undo", x + 4, y + 3);
-      FontUtil.drawString("Undone Prop", x + ICON_SIZE + 8, y + 7, 0xFFFFFFFF);
+      drawPanel(x, y, w, NOTIF_HEIGHT, 0xCC);
+      if (icons.getValue()) drawIcon("undo", x + 4, y + 3);
+      FontUtil.drawString("Undone Prop", x + iconSpace() + 8, y + 7, 0xFFFFFFFF);
       return;
     }
     if (active.isEmpty()) return;
@@ -306,19 +434,26 @@ public final class NotificationHud extends HudModule {
 
       if (age < IN_DURATION) {
         float t = (float) age / IN_DURATION;
-        offsetX = (1.0f - easeOutCubic(t)) * (getWidth() + 20);
+        if (slide.getValue()) {
+          offsetX = (1.0f - easeOutCubic(t)) * (getWidth() + 20);
+        }
         alpha = 0xCC;
       } else if (age > n.durationMs() - OUT_DURATION) {
         float t = (float) (age - (n.durationMs() - OUT_DURATION)) / OUT_DURATION;
-        offsetX = easeInCubic(t) * (getWidth() + 20);
-        alpha = (int) (0xCC * (1.0f - t));
-        if (alpha < 0) alpha = 0;
+        if (slide.getValue()) {
+          offsetX = easeInCubic(t) * (getWidth() + 20);
+        }
+        if (fade.getValue()) {
+          alpha = (int) (0xCC * (1.0f - t));
+          if (alpha < 0) alpha = 0;
+        }
       }
 
-      int w = FontUtil.getStringWidth(n.displayText()) + NOTIF_PADDING * 2 + ICON_SIZE + 4;
+      int w = panelWidth(n.displayText());
       int h = NOTIF_HEIGHT;
+      int g = gap.getValue();
 
-      int y = top ? baseY + i * (h + 2) : baseY + getHeight() - h - i * (h + 2);
+      int y = top ? baseY + i * (h + g) : baseY + getHeight() - h - i * (h + g);
 
       int x = getX();
       if (right) {
@@ -327,11 +462,10 @@ public final class NotificationHud extends HudModule {
         x = getX() - (int) offsetX;
       }
 
-      int bg = (alpha << 24) | (BG_COLOR & 0x00FFFFFF);
-      drawRoundedRect(x, y, x + w, y + h, RADIUS, bg);
+      drawPanel(x, y, w, h, alpha);
 
       // icon
-      drawIcon(n.iconName(), x + 4, y + 3);
+      if (icons.getValue()) drawIcon(n.iconName(), x + 4, y + 3);
 
       // time remaining bar: shrinks towards the screen edge the HUD is snapped to
       if (progressBar.getValue() && RenderMethods.guiGraphics != null) {
@@ -360,7 +494,7 @@ public final class NotificationHud extends HudModule {
       } else {
         textColor = 0xFFFFFFFF;
       }
-      FontUtil.drawString(n.displayText(), x + ICON_SIZE + 8, y + 7, textColor);
+      FontUtil.drawString(n.displayText(), x + iconSpace() + 8, y + 7, textColor);
     }
   }
 
