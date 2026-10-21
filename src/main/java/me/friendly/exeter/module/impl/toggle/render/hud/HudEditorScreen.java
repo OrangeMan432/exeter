@@ -312,6 +312,9 @@ public final class HudEditorScreen extends Screen {
         // screen edge instead of inside the usual margin.
         dragging.setFree(true);
         dragging.setFlush(true);
+        // A free placement has no edge anchor, otherwise the anchor would pull it
+        // back to the margin on the next frame.
+        dragging.setEdge(HudModule.Edge.NONE);
       } else {
         dragging.setFlush(false);
         snapToNearest(dragging);

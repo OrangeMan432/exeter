@@ -223,18 +223,20 @@ public abstract class HudModule extends ToggleableModule {
   private static void resolveEdge(HudModule m, int scaledWidth, int scaledHeight, int margin) {
     int w = m.getWidth();
     int h = m.getHeight();
+    // A flush element sits against the edge, so it gets no margin.
+    int edge = m.isFlush() ? 0 : margin;
     switch (m.getEdge()) {
       case LEFT:
-        m.x = margin + m.getEdgeOffset();
+        m.x = edge + m.getEdgeOffset();
         break;
       case RIGHT:
-        m.x = scaledWidth - margin - w - m.getEdgeOffset();
+        m.x = scaledWidth - edge - w - m.getEdgeOffset();
         break;
       case TOP:
-        m.y = margin + m.getEdgeOffset();
+        m.y = edge + m.getEdgeOffset();
         break;
       case BOTTOM:
-        m.y = scaledHeight - margin - h - m.getEdgeOffset();
+        m.y = scaledHeight - edge - h - m.getEdgeOffset();
         break;
       case NONE:
         break;
