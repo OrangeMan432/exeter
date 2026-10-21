@@ -49,6 +49,16 @@ public final class ClickGui extends Screen {
    * Opens a popup on whichever screen is showing. The HUD editor is its own screen, so a picker
    * opened from a HUD setting has to go there and not to the ClickGUI behind it.
    */
+  /** Closes the popup of whichever screen is showing. */
+  public static void closePopupOnActiveScreen() {
+    var screen = net.minecraft.client.Minecraft.getInstance().gui.screen();
+    if (screen instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen hud) {
+      hud.closePopup();
+      return;
+    }
+    getClickGui().closePopup();
+  }
+
   public static void openPopupOnActiveScreen(ClickPopup popup) {
     var screen = net.minecraft.client.Minecraft.getInstance().gui.screen();
     if (screen instanceof me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen hud) {
