@@ -349,6 +349,14 @@ public final class HudEditorScreen extends Screen {
   }
 
   @Override
+  public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+    if (popup != null && popup.mouseDragged((int) event.x(), (int) event.y())) {
+      return true;
+    }
+    return super.mouseDragged(event, deltaX, deltaY);
+  }
+
+  @Override
   public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
     if (popup != null && popup.keyPressed(event.key(), event.keycode(), event.modifiers())) {
       return true;
