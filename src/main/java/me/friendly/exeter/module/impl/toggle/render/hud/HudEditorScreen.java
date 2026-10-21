@@ -327,6 +327,9 @@ public final class HudEditorScreen extends Screen {
   @Override
   public void mouseMoved(double mouseX, double mouseY) {
     if (dragging != null) {
+      // Shift while dragging lets the element reach the screen edge: the on screen clamp
+      // keeps its margin, so the flush flag has to be set while it is still moving.
+      dragging.setFlush(Minecraft.getInstance().hasShiftDown());
       int newX = (int) mouseX - dragOffX;
       int newY = (int) mouseY - dragOffY;
       dragging.setX(newX);
