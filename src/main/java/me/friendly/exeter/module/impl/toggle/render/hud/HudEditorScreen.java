@@ -5,6 +5,7 @@ import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
+import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.Panel;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.ModuleButton;
@@ -148,22 +149,40 @@ public final class HudEditorScreen extends Screen {
   private void drawSnapGuides(int scaledWidth, int scaledHeight) {
     int snapMargin = 5;
     int half = scaledWidth / 2;
+    int guide = Colors.getClientColorCustomAlpha(64);
+    int zone = Colors.getClientColorCustomAlpha(24);
 
-    RenderMethods.drawVLine(snapMargin, 0, scaledHeight, 0x40FFFF00);
-    RenderMethods.drawVLine(scaledWidth - snapMargin, 0, scaledHeight, 0x40FFFF00);
-    RenderMethods.drawVLine(half, 0, scaledHeight, 0x40FFFF00);
-    RenderMethods.drawHLine(0, scaledWidth, snapMargin, 0x40FFFF00);
-    RenderMethods.drawHLine(0, scaledWidth, scaledHeight - snapMargin, 0x40FFFF00);
+    RenderMethods.drawVLine(snapMargin, 0, scaledHeight, guide);
+    RenderMethods.drawVLine(scaledWidth - snapMargin, 0, scaledHeight, guide);
+    RenderMethods.drawVLine(half, 0, scaledHeight, guide);
+    RenderMethods.drawHLine(0, scaledWidth, snapMargin, guide);
+    RenderMethods.drawHLine(0, scaledWidth, scaledHeight - snapMargin, guide);
 
     // Snap zones: dropping a box edge inside one of these snaps to its corner.
     // Radius comes from the HUD editor settings; 0 disables snapping entirely.
     int r = me.friendly.exeter.module.impl.toggle.client.HUDEditor.snapRange();
-    RenderMethods.drawRect(0, 0, r, r, 0x18FFFF00);
-    RenderMethods.drawRect(scaledWidth - r, 0, scaledWidth, r, 0x18FFFF00);
-    RenderMethods.drawRect(0, scaledHeight - r, r, scaledHeight, 0x18FFFF00);
+    boolean cTl = false;
+    boolean cTr = false;
+    boolean cBl = false;
+    boolean cBr = false;
+    boolean cTc = false;
+    if (dragging != null && r > 0) {
+      int x = dragging.getX();
+      int y = dragging.getY();
+      int w = dragging.getWidth();
+      int h = dragging.getHeight();
+      cTl = overCorner(x, y, snapMargin, snapMargin, r);
+      cTr = overCorner(x + w, y, scaledWidth - snapMargin, snapMargin, r);
+      cBl = overCorner(x, y + h, snapMargin, scaledHeight - snapMargin, r);
+      cBr = overCorner(x + w, y + h, scaledWidth - snapMargin, scaledHeight - snapMargin, r);
+      cTc = overCorner(x + w / 2, y, scaledWidth / 2, snapMargin, r);
+    }
+    RenderMethods.drawRect(0, 0, r, r, cTl ? guide : zone);
+    RenderMethods.drawRect(scaledWidth - r, 0, scaledWidth, r, cTr ? guide : zone);
+    RenderMethods.drawRect(0, scaledHeight - r, r, scaledHeight, cBl ? guide : zone);
     RenderMethods.drawRect(
-        scaledWidth - r, scaledHeight - r, scaledWidth, scaledHeight, 0x18FFFF00);
-    RenderMethods.drawRect(half - r, 0, half + r, r, 0x18FFFF00);
+        scaledWidth - r, scaledHeight - r, scaledWidth, scaledHeight, cBr ? guide : zone);
+    RenderMethods.drawRect(half - r, 0, half + r, r, cTc ? guide : zone);
   }
 
   @Override
@@ -203,7 +222,20 @@ public final class HudEditorScreen extends Screen {
 
     if (dragging != null) {
       // Shift skips snapping: exact drop position is kept as free placement.
-      if (Minecraft.getInstance().hasShiftDown()) {
+      boolean shift = Minecraft.getInstance().hasShiftDown();
+      me.friendly.exeter.logging.DebugLogger.get()
+          .log(
+              "HudEditor",
+              me.friendly.exeter.logging.DebugLogger.Level.INFO,
+              "release "
+                  + dragging.getLabel()
+                  + " at "
+                  + dragging.getX()
+                  + ","
+                  + dragging.getY()
+                  + " shift="
+                  + shift);
+      if (shift) {
         dragging.setFree(true);
       } else {
         snapToNearest(dragging);
@@ -294,9 +326,75 @@ public final class HudEditorScreen extends Screen {
 
     if (best == null) {
       m.setFree(true);
+      snapEdge(m, scaledWidth, scaledHeight);
       return;
     }
     m.setCorner(best);
+    m.setEdge(HudModule.Edge.NONE);
     m.setFree(false);
+  }
+
+  /** Point-in-radius test shared by the guide highlights and the snap itself. */
+  private static boolean overCorner(int px, int py, int cx, int cy, int radius) {
+    int dx = px - cx;
+    int dy = py - cy;
+    return dx * dx + dy * dy < radius * radius;
+  }
+
+  /** Edge snap radius: tight by default, following its own setting down to off. */
+  private int edgeRadius() {
+    return me.friendly.exeter.module.impl.toggle.client.HUDEditor.edgeSnapRange();
+  }
+
+  /**
+   * Edge snap zones mirroring the corner ones: a module dropped near an edge tracks it across
+   * resizes. Corners win when both match; otherwise the module stays free with no anchor. The
+   * corner flips to the nearest one so alignment follows the edge.
+   */
+  private void snapEdge(HudModule m, int scaledWidth, int scaledHeight) {
+    int radius = edgeRadius();
+    if (radius <= 0) {
+      m.setEdge(HudModule.Edge.NONE);
+      return;
+    }
+    int margin = 5;
+    int w = m.getWidth();
+    int h = m.getHeight();
+    int x = m.getX();
+    int y = m.getY();
+    if (Math.abs(x - margin) <= radius) {
+      m.setEdge(HudModule.Edge.LEFT);
+      m.setEdgeOffset(x - margin);
+      m.setCorner(
+          y + h / 2 < scaledHeight / 2 ? HudModule.Corner.TOP_LEFT : HudModule.Corner.BOTTOM_LEFT);
+    } else if (Math.abs((x + w) - (scaledWidth - margin)) <= radius) {
+      m.setEdge(HudModule.Edge.RIGHT);
+      m.setEdgeOffset(scaledWidth - margin - (x + w));
+      m.setCorner(
+          y + h / 2 < scaledHeight / 2
+              ? HudModule.Corner.TOP_RIGHT
+              : HudModule.Corner.BOTTOM_RIGHT);
+    } else if (Math.abs(y - margin) <= radius) {
+      m.setEdge(HudModule.Edge.TOP);
+      m.setEdgeOffset(y - margin);
+      m.setCorner(
+          x + w / 2 < scaledWidth / 2 ? HudModule.Corner.TOP_LEFT : HudModule.Corner.TOP_RIGHT);
+    } else if (Math.abs((y + h) - (scaledHeight - margin)) <= radius) {
+      m.setEdge(HudModule.Edge.BOTTOM);
+      m.setEdgeOffset(scaledHeight - margin - (y + h));
+      m.setCorner(
+          x + w / 2 < scaledWidth / 2
+              ? HudModule.Corner.BOTTOM_LEFT
+              : HudModule.Corner.BOTTOM_RIGHT);
+    } else {
+      m.setEdge(HudModule.Edge.NONE);
+    }
+    if (m.getEdge() != HudModule.Edge.NONE) {
+      me.friendly.exeter.logging.DebugLogger.get()
+          .log(
+              "HudEditor",
+              me.friendly.exeter.logging.DebugLogger.Level.INFO,
+              "edge snap " + m.getLabel() + " -> " + m.getEdge());
+    }
   }
 }
