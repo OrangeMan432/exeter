@@ -118,6 +118,12 @@ public abstract class HudModule extends ToggleableModule {
     this.edgeOffset = Math.max(0, edgeOffset);
   }
 
+  /**
+   * Called when the editor drops this module as a free placement, so a module that caches which
+   * screen edges it was pinned to can forget the old placement.
+   */
+  public void onEditorDrop() {}
+
   /** TOP_CENTER stacks downward like the top corners. */
   public boolean isTop() {
     return corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT || corner == Corner.TOP_CENTER;
@@ -223,20 +229,21 @@ public abstract class HudModule extends ToggleableModule {
   private static void resolveEdge(HudModule m, int scaledWidth, int scaledHeight, int margin) {
     int w = m.getWidth();
     int h = m.getHeight();
-    // A flush element sits against the edge, so it gets no margin.
+    // A flush element sits against the edge, so it gets no margin and no offset.
     int edge = m.isFlush() ? 0 : margin;
+    int off = m.isFlush() ? 0 : m.getEdgeOffset();
     switch (m.getEdge()) {
       case LEFT:
-        m.x = edge + m.getEdgeOffset();
+        m.x = edge + off;
         break;
       case RIGHT:
-        m.x = scaledWidth - edge - w - m.getEdgeOffset();
+        m.x = scaledWidth - edge - w - off;
         break;
       case TOP:
-        m.y = edge + m.getEdgeOffset();
+        m.y = edge + off;
         break;
       case BOTTOM:
-        m.y = scaledHeight - edge - h - m.getEdgeOffset();
+        m.y = scaledHeight - edge - h - off;
         break;
       case NONE:
         break;

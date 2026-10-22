@@ -31,6 +31,12 @@ public final class NotificationHud extends HudModule {
       new me.friendly.exeter.properties.Property<Boolean>(true, "Progress Bar", "progressBar");
   private final me.friendly.exeter.properties.Property<Boolean> greenBar =
       new me.friendly.exeter.properties.Property<Boolean>(true, "Green Bar", "greenBar");
+
+  /** Screen edges the panel was flush against, so a resize keeps them pinned. */
+  private boolean anchoredRight;
+
+  private boolean anchoredBottom;
+
   private final me.friendly.exeter.properties.Property<Boolean> rounded =
       new me.friendly.exeter.properties.Property<Boolean>(true, "Rounded", "rounded");
   private final NumberProperty<Integer> offset = new NumberProperty<Integer>(0, 0, 64, "Offset");
@@ -397,8 +403,42 @@ public final class NotificationHud extends HudModule {
   }
 
   @Override
+  public void onEditorDrop() {
+    anchoredRight = false;
+    anchoredBottom = false;
+  }
+
+  /**
+   * Keeps a flush panel against the screen edges it touches. A free panel without an edge anchor is
+   * positioned by its top left corner, so its right and bottom edges would drift whenever the
+   * widest notification changes and the panel resizes.
+   */
+  private void keepEdgesAnchored(int scaledWidth, int scaledHeight) {
+    if (!isFlush() || !isFree() || getEdge() != HudModule.Edge.NONE) {
+      anchoredRight = false;
+      anchoredBottom = false;
+      return;
+    }
+    int width = getWidth();
+    int height = getHeight();
+    if (width > 0) {
+      if (anchoredRight || getX() + width >= scaledWidth - 1) {
+        anchoredRight = true;
+        setX(scaledWidth - width);
+      }
+    }
+    if (height > 0) {
+      if (anchoredBottom || getY() + height >= scaledHeight - 1) {
+        anchoredBottom = true;
+        setY(scaledHeight - height);
+      }
+    }
+  }
+
+  @Override
   public void render(int scaledWidth, int scaledHeight) {
     NotificationManager.setMaxVisible(maxNotifications.getValue());
+    keepEdgesAnchored(scaledWidth, scaledHeight);
     List<NotificationManager.Notification> active = NotificationManager.getActive();
     boolean inEditor =
         Minecraft.getInstance().gui != null

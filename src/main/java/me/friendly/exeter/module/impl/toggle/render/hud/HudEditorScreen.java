@@ -295,6 +295,7 @@ public final class HudEditorScreen extends Screen {
     if (dragging != null) {
       // Shift skips snapping: exact drop position is kept as free placement.
       boolean shift = Minecraft.getInstance().hasShiftDown();
+      dragging.onEditorDrop();
       me.friendly.exeter.logging.DebugLogger.get()
           .log(
               "HudEditor",
