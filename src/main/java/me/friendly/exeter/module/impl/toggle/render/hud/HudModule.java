@@ -35,6 +35,9 @@ public abstract class HudModule extends ToggleableModule {
   private boolean positioned = false;
   private boolean free = false;
 
+  /** Placed flush against the screen edge, so the usual margin does not apply. */
+  private boolean flush = false;
+
   /** Previous frame's stack order per corner, so y-ties can't reshuffle stacks. */
   private static final java.util.Map<Corner, java.util.List<String>> stackOrderMemory =
       new java.util.EnumMap<>(Corner.class);
@@ -90,6 +93,14 @@ public abstract class HudModule extends ToggleableModule {
     this.free = free;
   }
 
+  public boolean isFlush() {
+    return flush;
+  }
+
+  public void setFlush(boolean flush) {
+    this.flush = flush;
+  }
+
   public Edge getEdge() {
     return edge;
   }
@@ -106,6 +117,12 @@ public abstract class HudModule extends ToggleableModule {
   public void setEdgeOffset(int edgeOffset) {
     this.edgeOffset = Math.max(0, edgeOffset);
   }
+
+  /**
+   * Called when the editor drops this module as a free placement, so a module that caches which
+   * screen edges it was pinned to can forget the old placement.
+   */
+  public void onEditorDrop() {}
 
   /** TOP_CENTER stacks downward like the top corners. */
   public boolean isTop() {
@@ -212,18 +229,21 @@ public abstract class HudModule extends ToggleableModule {
   private static void resolveEdge(HudModule m, int scaledWidth, int scaledHeight, int margin) {
     int w = m.getWidth();
     int h = m.getHeight();
+    // A flush element sits against the edge, so it gets no margin and no offset.
+    int edge = m.isFlush() ? 0 : margin;
+    int off = m.isFlush() ? 0 : m.getEdgeOffset();
     switch (m.getEdge()) {
       case LEFT:
-        m.x = margin + m.getEdgeOffset();
+        m.x = edge + off;
         break;
       case RIGHT:
-        m.x = scaledWidth - margin - w - m.getEdgeOffset();
+        m.x = scaledWidth - edge - w - off;
         break;
       case TOP:
-        m.y = margin + m.getEdgeOffset();
+        m.y = edge + off;
         break;
       case BOTTOM:
-        m.y = scaledHeight - margin - h - m.getEdgeOffset();
+        m.y = scaledHeight - edge - h - off;
         break;
       case NONE:
         break;
@@ -236,8 +256,9 @@ public abstract class HudModule extends ToggleableModule {
    * outgrow its laid-out box; idempotent, so safe to run every frame.
    */
   public static void clampOnScreen(List<HudModule> modules, int scaledWidth, int scaledHeight) {
-    int margin = 5;
     for (HudModule m : modules) {
+      // Flush elements sit against the screen edge, everything else keeps the margin.
+      int margin = m.isFlush() ? 0 : 5;
       int maxX = Math.max(margin, scaledWidth - m.getWidth() - margin);
       int maxY = Math.max(margin, scaledHeight - m.getHeight() - margin);
       m.setX(Math.max(margin, Math.min(m.getX(), maxX)));

@@ -69,7 +69,7 @@ public class ColorPickerPopup implements ClickPopup {
     if (onClose != null) {
       onClose.run();
     } else {
-      ClickGui.getClickGui().closePopup();
+      ClickGui.closePopupOnActiveScreen();
     }
   }
 
