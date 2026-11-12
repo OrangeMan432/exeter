@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.client.Minecraft;
+import me.friendly.api.minecraft.render.Textures;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 
@@ -126,6 +126,13 @@ public final class AtlasFont {
     }
     g.dispose();
 
+    Textures.register(textureId, () -> createAtlasImage(image));
+    atlas.texture = Textures.get(textureId);
+    return atlas;
+  }
+
+  /** Builds a fresh white atlas image; the texture manager closes each one after uploading. */
+  private static NativeImage createAtlasImage(BufferedImage image) {
     NativeImage nativeImage =
         new NativeImage(NativeImage.Format.RGBA, ATLAS_SIZE, ATLAS_SIZE, false);
     for (int y = 0; y < ATLAS_SIZE; y++) {
@@ -135,18 +142,7 @@ public final class AtlasFont {
         nativeImage.setPixelABGR(x, y, (a << 24) | 0x00FFFFFF);
       }
     }
-    TextureResources resources =
-        TextureResources.from2dImage(
-            new java.util.function.Supplier<String>() {
-              @Override
-              public String get() {
-                return textureId.toString();
-              }
-            },
-            nativeImage);
-    Minecraft.getInstance().getTextureManager().register(textureId, resources);
-    atlas.texture = resources;
-    return atlas;
+    return nativeImage;
   }
 
   public static Font awtFromResource(String path) throws Exception {
