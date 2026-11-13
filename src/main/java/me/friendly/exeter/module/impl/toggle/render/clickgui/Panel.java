@@ -1,19 +1,18 @@
 package me.friendly.exeter.module.impl.toggle.render.clickgui;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.platform.NativeImage;
 import java.awt.*;
 import java.io.InputStream;
 import java.util.ArrayList;
 import me.friendly.api.interfaces.Labeled;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.api.minecraft.render.Textures;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.core.Exeter;
 import me.friendly.exeter.module.impl.active.render.Colors;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Button;
 import me.friendly.exeter.module.impl.toggle.render.clickgui.item.Item;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
 
@@ -35,7 +34,7 @@ public abstract class Panel implements Labeled {
   public static final Identifier GEAR_ID = Identifier.parse("minecraft:textures/exeter/gear.png");
   private static boolean texturesRegistered = false;
 
-  private static void registerTextures(Minecraft mc) {
+  private static void registerTextures() {
     if (texturesRegistered) return;
     texturesRegistered = true;
     // Classloader-direct: mod resource packs are absent without fabric-api.
@@ -47,13 +46,8 @@ public abstract class Panel implements Labeled {
         System.out.println("Missing arrow/gear textures in jar");
         return;
       }
-      NativeImage arrowImg = NativeImage.read(arrowStream);
-      mc.getTextureManager()
-          .register(ARROW_ID, TextureResources.from2dImage(() -> "exeter:arrow", arrowImg));
-
-      NativeImage gearImg = NativeImage.read(gearStream);
-      mc.getTextureManager()
-          .register(GEAR_ID, TextureResources.from2dImage(() -> "exeter:gear", gearImg));
+      Textures.register(ARROW_ID, arrowStream.readAllBytes());
+      Textures.register(GEAR_ID, gearStream.readAllBytes());
 
     } catch (Exception e) {
       System.out.println("Failed to load arrow/gear textures: " + e.getMessage());
@@ -82,7 +76,7 @@ public abstract class Panel implements Labeled {
 
   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
     this.drag(mouseX, mouseY);
-    registerTextures(Minecraft.getInstance());
+    registerTextures();
     me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod = getClickGuiModule();
     boolean showArrow = guiMod == null || guiMod.showArrow.getValue();
     boolean showModuleCount = guiMod != null && guiMod.showModuleCount.getValue();
