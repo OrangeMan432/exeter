@@ -17,7 +17,7 @@ the same way that 3arthqu4ke's does (and Future's does).
 
 ## Current target
 
-- Minecraft `26.4-snapshot-8`
+- Minecraft `26.4-snapshot-10`
 - Fabric Loader `0.20.1`, Fabric API `0.166.2+26.4`
 - Fabric Loom `1.18.4`
 - JDK 25 (Eclipse Temurin)
