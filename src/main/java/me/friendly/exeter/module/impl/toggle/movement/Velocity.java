@@ -4,7 +4,7 @@ import me.friendly.api.event.Listener;
 import me.friendly.exeter.events.PacketEvent;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
-import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.network.protocol.game.ClientboundAddEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 
 public class Velocity extends ToggleableModule {
@@ -21,8 +21,10 @@ public class Velocity extends ToggleableModule {
             }
           }
 
-          if (event.getPacket() instanceof ClientboundExplodePacket) {
-            event.setCanceled(true);
+          if (event.getPacket() instanceof ClientboundAddEntityMotionPacket packet) {
+            if (packet.id() == minecraft.player.getId()) {
+              event.setCanceled(true);
+            }
           }
         }
       };
