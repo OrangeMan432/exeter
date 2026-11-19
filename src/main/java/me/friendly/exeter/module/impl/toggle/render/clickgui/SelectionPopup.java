@@ -66,7 +66,7 @@ public final class SelectionPopup {
                 items,
                 () -> {
                   onDone.run();
-                  ClickGui.getClickGui().closePopup();
+                  ClickGui.closePopupOnActiveScreen();
                 },
                 () -> ClickGui.getClickGui().closePopup()));
   }

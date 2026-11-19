@@ -230,6 +230,9 @@ public class ExeterConfig {
         if (hudData.containsKey("free")) {
           hudModule.setFree(Boolean.parseBoolean(hudData.get("free").toString()));
         }
+        if (hudData.containsKey("flush")) {
+          hudModule.setFlush(Boolean.parseBoolean(hudData.get("flush").toString()));
+        }
         if (hudData.containsKey("edge")) {
           String edgeName = hudData.get("edge").toString();
           try {
@@ -399,6 +402,7 @@ public class ExeterConfig {
         hudData.put("y", (long) hudModule.getY());
         hudData.put("corner", hudModule.getCorner().name());
         hudData.put("free", hudModule.isFree());
+        hudData.put("flush", hudModule.isFlush());
         hudData.put("edge", hudModule.getEdge().name());
         hudData.put("edgeOffset", (long) hudModule.getEdgeOffset());
         data.put("hud", hudData);
