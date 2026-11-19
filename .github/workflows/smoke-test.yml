@@ -36,8 +36,9 @@ jobs:
           printf 'lang:en_us\ntutorialStep:none\nonboardAccessibility:false\nguiScale:2\n' > run/options.txt
           # No GPU on runners: Mesa lavapipe (Vulkan) / llvmpipe (GL) is auto-selected.
           # Loom wraps the game launch in xvfb-run itself, so no display setup is needed.
+          # Snapshot 8 skips CPU Vulkan devices unless this property opts them back in.
           export LIBGL_ALWAYS_SOFTWARE=1
-          export JAVA_TOOL_OPTIONS="-Dexeter.smokeTest=true"
+          export JAVA_TOOL_OPTIONS="-Dexeter.smokeTest=true -Drenderpearl.vulkan.allowcpudevice=true"
           ./gradlew runClient --args="--demo --width 1920 --height 1080" > smoke.log 2>&1 &
           echo $! > client.pid
           # Markers are written directly by the game to run/smoke-markers.log;

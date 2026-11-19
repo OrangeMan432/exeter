@@ -7,7 +7,7 @@ import java.util.Map;
 import me.friendly.api.minecraft.render.RenderMethods;
 import me.friendly.exeter.module.impl.toggle.client.CustomFont;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 
 public class FontUtil {
@@ -138,7 +138,7 @@ public class FontUtil {
       int w = Math.max(1, Math.round(glyph.width * scale));
       int h = Math.max(1, Math.round(atlas.cellHeight * scale));
       RenderMethods.guiGraphics.blit(
-          RenderPipelines.GUI_TEXTURED,
+          GuiPipeline.TEXTURED,
           atlas.textureId,
           Math.round(qx),
           Math.round(y + dy),

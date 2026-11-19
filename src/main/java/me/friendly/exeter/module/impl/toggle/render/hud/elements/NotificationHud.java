@@ -3,6 +3,7 @@ package me.friendly.exeter.module.impl.toggle.render.hud.elements;
 import java.io.InputStream;
 import java.util.List;
 import me.friendly.api.minecraft.render.RenderMethods;
+import me.friendly.api.minecraft.render.Textures;
 import me.friendly.api.minecraft.render.font.FontUtil;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudEditorScreen;
 import me.friendly.exeter.module.impl.toggle.render.hud.HudModule;
@@ -71,7 +72,6 @@ public final class NotificationHud extends HudModule {
   private static void ensureSilkRegistered() {
     if (silkRegistered) return;
     silkRegistered = true;
-    var mc = Minecraft.getInstance();
     for (String silk : SILK_ICONS) {
       // Classloader-direct: mod resource packs are absent without fabric-api.
       try (InputStream in =
@@ -80,13 +80,7 @@ public final class NotificationHud extends HudModule {
           System.out.println("Missing silk icon in jar: " + silk);
           continue;
         }
-        com.mojang.blaze3d.platform.NativeImage img =
-            com.mojang.blaze3d.platform.NativeImage.read(in);
-        mc.getTextureManager()
-            .register(
-                Identifier.parse("exeter:textures/icon16/" + silk),
-                net.minecraft.client.renderer.texture.TextureResources.from2dImage(
-                    () -> "exeter:" + silk, img));
+        Textures.register(Identifier.parse("exeter:textures/icon16/" + silk), in.readAllBytes());
         silkLoaded.add(silk);
       } catch (Exception e) {
         System.out.println("Failed to load silk icon " + silk + ": " + e.getMessage());

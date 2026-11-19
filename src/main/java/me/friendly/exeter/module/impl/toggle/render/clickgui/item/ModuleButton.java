@@ -19,7 +19,7 @@ import me.friendly.exeter.properties.EnumProperty;
 import me.friendly.exeter.properties.NumberProperty;
 import me.friendly.exeter.properties.PopupProperty;
 import me.friendly.exeter.properties.Property;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import org.joml.Matrix3x2fStack;
 
 public class ModuleButton extends Button {
@@ -208,7 +208,7 @@ public class ModuleButton extends Button {
           pose.pushMatrix();
           pose.rotateAbout(this.gearRotation * (float) Math.PI / 180.0f, gx + 5, gy + 5);
           RenderMethods.guiGraphics.blit(
-              RenderPipelines.GUI_TEXTURED,
+              GuiPipeline.TEXTURED,
               Panel.GEAR_ID,
               gx,
               gy,
