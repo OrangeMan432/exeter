@@ -2,6 +2,7 @@ package me.friendly.exeter.module.impl.toggle.render;
 
 import java.util.HashMap;
 import java.util.Map;
+import me.friendly.exeter.logging.DebugLogger;
 import me.friendly.exeter.module.ModuleType;
 import me.friendly.exeter.module.ToggleableModule;
 import me.friendly.exeter.properties.ActionProperty;
@@ -48,6 +49,8 @@ public final class ClickGui extends ToggleableModule {
           .addChild(new EnumProperty<GearMode>(GearMode.IMAGE, "Mode", "mode"));
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
+  private final NumberProperty<Integer> panelGap =
+      new NumberProperty<Integer>(2, 0, 16, "Panel Gap", "panelgap");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
   public final Property<Boolean> buttonBackground =
       new Property<Boolean>(true, "Button Background", "buttonbackground");
@@ -90,6 +93,7 @@ public final class ClickGui extends ToggleableModule {
         showModuleCount,
         showGradient,
         panelAlignment,
+        panelGap,
         searchEnabled,
         showBorder,
         rollingRainbow,
@@ -105,6 +109,7 @@ public final class ClickGui extends ToggleableModule {
     showModuleCount.setDescription("Shows the module count on panel headers.");
     showGradient.setDescription("Draws buttons with a gradient background.");
     panelAlignment.setDescription("Aligns panels centered or top-left.");
+    panelGap.setDescription("Spacing between panels in the default layout.");
     searchEnabled.setDescription("Shows the search bar for finding modules.");
     showBorder.setDescription("Draws a border around panels.");
     rollingRainbow.setDescription("Colors panels and buttons with an animated rainbow.");
@@ -166,6 +171,16 @@ public final class ClickGui extends ToggleableModule {
     if (showModuleCount.getValue()) {
       showArrow.setValue(false);
     }
+  }
+
+  public int getPanelGap() {
+    return panelGap.getValue();
+  }
+
+  public void onPanelGapChanged() {
+    me.friendly.exeter.module.impl.toggle.render.clickgui.ClickGui.getClickGui().resetPanels();
+    DebugLogger.get()
+        .log("ClickGui", DebugLogger.Level.INFO, "Panel gap set to " + panelGap.getValue() + " px");
   }
 
   public void onAlignmentChanged() {

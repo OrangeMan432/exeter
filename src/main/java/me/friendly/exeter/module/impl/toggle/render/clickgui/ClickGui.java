@@ -93,24 +93,26 @@ public final class ClickGui extends Screen {
 
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int totalPanels = ModuleType.values().length - 1; // exclude HUD, CLIENT added manually
-    int panelWidth = 90;
-    int totalGuiWidth = totalPanels * panelWidth;
+    int panelWidth = 88;
+    int gap = guiModule != null ? guiModule.getPanelGap() : 2;
+    int spacing = panelWidth + gap;
+    int totalGuiWidth = totalPanels * spacing;
 
     int x;
     int y;
     if (alignment
         == me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.TOP_LEFT) {
-      x = 4 - 90;
+      x = 4 - spacing;
       y = 4;
     } else {
-      x = (screenWidth / 2) - (totalGuiWidth / 2) - 90;
+      x = (screenWidth / 2) - (totalGuiWidth / 2) - spacing;
       y = 40;
     }
 
     for (final ModuleType moduleType : ModuleType.values()) {
       if (moduleType == ModuleType.CLIENT || moduleType == ModuleType.HUD) continue;
       this.panels.add(
-          new Panel(moduleType.getLabel(), x += 90, y, true) {
+          new Panel(moduleType.getLabel(), x += spacing, y, true) {
             @Override
             public void setupItems() {
               Exeter.getInstance()
@@ -131,7 +133,7 @@ public final class ClickGui extends Screen {
           });
     }
     this.panels.add(
-        new Panel("Client", x += 90, y, true) {
+        new Panel("Client", x += spacing, y, true) {
           @Override
           public void setupItems() {
             Exeter.getInstance()
@@ -370,7 +372,9 @@ public final class ClickGui extends Screen {
       }
     }
 
-    this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
+    // Copy: the Panel Gap slider re-lays out (and rebuilds) panels on release.
+    new ArrayList<>(this.panels)
+        .forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
     return super.mouseReleased(event);
   }
 
@@ -477,7 +481,8 @@ public final class ClickGui extends Screen {
         && guiModule.getDescriptionMode()
             == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
       Panel lastPanel = anchor;
-      int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
+      int gap = guiModule != null ? guiModule.getPanelGap() : 2;
+      int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + gap : 4;
       int descY = lastPanel != null ? lastPanel.getY() : 4;
       int headerW = FontUtil.getStringWidth("Description");
       int textW = FontUtil.getStringWidth(hoveredDesc);
