@@ -49,6 +49,8 @@ public final class ClickGui extends ToggleableModule {
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
+  public final Property<Boolean> buttonBackground =
+      new Property<Boolean>(true, "Button Background", "buttonbackground");
   public final Property<Boolean> showBorder =
       new Property<Boolean>(false, "Border", "border")
           .addChild(new EnumProperty<BorderMode>(BorderMode.FLAT, "Mode", "mode"));
@@ -81,6 +83,7 @@ public final class ClickGui extends ToggleableModule {
                 && rollingDirection.getValue() == RollingDirection.HORIZONTAL);
     offerProperties(
         showBackground,
+        buttonBackground,
         showDescriptions,
         showGear,
         showArrow,
@@ -95,6 +98,7 @@ public final class ClickGui extends ToggleableModule {
         rollingInverse,
         resetPositions);
     showBackground.setDescription("Draws the dark background behind panels.");
+    buttonBackground.setDescription("Draws the background behind disabled module buttons.");
     showDescriptions.setDescription("Shows setting descriptions in the GUI.");
     showGear.setDescription("Shows the gear button that opens module settings.");
     showArrow.setDescription("Shows the open/close arrow on panel headers.");
