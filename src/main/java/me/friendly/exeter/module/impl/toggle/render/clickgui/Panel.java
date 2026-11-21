@@ -121,7 +121,7 @@ public abstract class Panel implements Labeled {
         (float) this.y + 12f,
         this.x + this.width,
         this.y + this.height + (this.open ? totalItemHeight : -1),
-        0x77000000);
+        PanelBorder.BACKGROUND);
     FontUtil.drawString(this.getLabel(), (float) this.x + 3.0f, (float) this.y + 1.5f, -1);
 
     if (!open) {
@@ -169,65 +169,24 @@ public abstract class Panel implements Labeled {
 
     me.friendly.exeter.module.impl.toggle.render.ClickGui borderMod = getClickGuiModule();
     if (borderMod == null || borderMod.showBorder.getValue()) {
-      float top = (float) this.y - 1.5f;
-      float bottom = (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1);
       int screenH = Minecraft.getInstance().getWindow().getGuiScaledHeight();
       int screenW = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-      if (horizontal) {
-        RenderMethods.drawHorizontalSpectrumRect(
-            this.x - 1,
-            top - 1,
-            this.x + this.width + 1,
-            top,
-            sx -> Colors.rollingSample(true, inverse, sx, (int) top, screenW, screenH, 77));
-        RenderMethods.drawHorizontalSpectrumRect(
-            this.x - 1,
-            bottom,
-            this.x + this.width + 1,
-            bottom + 1,
-            sx -> Colors.rollingSample(true, inverse, sx, (int) bottom, screenW, screenH, 77));
-        RenderMethods.drawRect(
-            this.x - 1,
-            top,
-            this.x,
-            bottom,
-            Colors.rollingSample(true, inverse, this.x - 1, (int) top, screenW, screenH, 77));
-        RenderMethods.drawRect(
-            this.x + this.width,
-            top,
-            this.x + this.width + 1,
-            bottom,
-            Colors.rollingSample(
-                true, inverse, this.x + this.width, (int) top, screenW, screenH, 77));
-        return;
-      }
-      int topAccent =
-          rolling
-              ? Colors.rollingSample(false, inverse, this.x, (int) top, screenW, screenH, 77)
-              : Colors.getClientColorCustomAlpha(77);
-      int bottomAccent =
-          rolling
-              ? Colors.rollingSample(false, inverse, this.x, (int) bottom, screenW, screenH, 77)
-              : Colors.getClientColorCustomAlpha(77);
-      RenderMethods.drawRect(this.x - 1, top - 1, this.x + this.width + 1, top, topAccent);
-      RenderMethods.drawRect(this.x - 1, bottom, this.x + this.width + 1, bottom + 1, bottomAccent);
-      // Sampled per strip: a single RGB-lerped gradient drifts off-hue mid-panel,
-      // growing with panel length, while buttons sample exact hues.
-      float stripH = 4.0f;
-      for (float sy = top; sy < bottom; sy += stripH) {
-        float ey = Math.min(sy + stripH, bottom);
-        int stripTop =
-            rolling
-                ? Colors.rollingSample(false, inverse, this.x, (int) sy, screenW, screenH, 77)
-                : topAccent;
-        int stripBottom =
-            rolling
-                ? Colors.rollingSample(false, inverse, this.x, (int) ey, screenW, screenH, 77)
-                : bottomAccent;
-        RenderMethods.drawGradientRect(this.x - 1, sy, this.x, ey, stripTop, stripBottom);
-        RenderMethods.drawGradientRect(
-            this.x + this.width, sy, this.x + this.width + 1, ey, stripTop, stripBottom);
-      }
+      boolean fadedBorder =
+          borderMod != null
+              && borderMod.getBorderMode()
+                  == me.friendly.exeter.module.impl.toggle.render.ClickGui.BorderMode.GRADIENT;
+      PanelBorder.draw(
+          this.x,
+          this.width,
+          (float) this.y - 1.5f,
+          (float) this.y + this.height - 6,
+          (float) this.y + this.height + (this.open ? getTotalItemHeight() - 2 : -1),
+          screenW,
+          screenH,
+          rolling,
+          horizontal,
+          inverse,
+          fadedBorder);
     }
   }
 

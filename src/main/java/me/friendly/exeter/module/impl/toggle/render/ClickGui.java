@@ -30,6 +30,11 @@ public final class ClickGui extends ToggleableModule {
     PANEL
   }
 
+  public enum BorderMode {
+    FLAT,
+    GRADIENT
+  }
+
   public final Property<Boolean> showBackground = new Property<Boolean>(true, "Background", "bg");
   public final Property<Boolean> showDescriptions =
       new Property<Boolean>(true, "Descriptions", "desc")
@@ -44,7 +49,9 @@ public final class ClickGui extends ToggleableModule {
   public final EnumProperty<PanelAlignment> panelAlignment =
       new EnumProperty<PanelAlignment>(PanelAlignment.CENTERED, "Panel Alignment", "alignment");
   public final Property<Boolean> searchEnabled = new Property<Boolean>(true, "Search", "search");
-  public final Property<Boolean> showBorder = new Property<Boolean>(false, "Border", "border");
+  public final Property<Boolean> showBorder =
+      new Property<Boolean>(false, "Border", "border")
+          .addChild(new EnumProperty<BorderMode>(BorderMode.FLAT, "Mode", "mode"));
   public final Property<Boolean> rollingRainbow =
       new Property<Boolean>(false, "Rolling Rainbow", "rollingrainbow");
   public final EnumProperty<RollingDirection> rollingDirection =
@@ -134,6 +141,15 @@ public final class ClickGui extends ToggleableModule {
       return (DescriptionMode) modeProp.getValue();
     }
     return DescriptionMode.HOVER;
+  }
+
+  public BorderMode getBorderMode() {
+    if (!showBorder.getValue() || showBorder.getChildren().isEmpty()) return BorderMode.FLAT;
+    Property<?> modeProp = showBorder.getChildren().get(0);
+    if (modeProp instanceof EnumProperty) {
+      return (BorderMode) modeProp.getValue();
+    }
+    return BorderMode.FLAT;
   }
 
   public void onArrowToggled() {
