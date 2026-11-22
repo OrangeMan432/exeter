@@ -93,24 +93,26 @@ public final class ClickGui extends Screen {
 
     int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
     int totalPanels = ModuleType.values().length - 1; // exclude HUD, CLIENT added manually
-    int panelWidth = 90;
-    int totalGuiWidth = totalPanels * panelWidth;
+    int panelWidth = 88;
+    int gap = guiModule != null ? guiModule.getPanelGap() : 2;
+    int spacing = panelWidth + gap;
+    int totalGuiWidth = totalPanels * spacing;
 
     int x;
     int y;
     if (alignment
         == me.friendly.exeter.module.impl.toggle.render.ClickGui.PanelAlignment.TOP_LEFT) {
-      x = 4 - 90;
+      x = 4 - spacing;
       y = 4;
     } else {
-      x = (screenWidth / 2) - (totalGuiWidth / 2) - 90;
+      x = (screenWidth / 2) - (totalGuiWidth / 2) - spacing;
       y = 40;
     }
 
     for (final ModuleType moduleType : ModuleType.values()) {
       if (moduleType == ModuleType.CLIENT || moduleType == ModuleType.HUD) continue;
       this.panels.add(
-          new Panel(moduleType.getLabel(), x += 90, y, true) {
+          new Panel(moduleType.getLabel(), x += spacing, y, true) {
             @Override
             public void setupItems() {
               Exeter.getInstance()
@@ -131,7 +133,7 @@ public final class ClickGui extends Screen {
           });
     }
     this.panels.add(
-        new Panel("Client", x += 90, y, true) {
+        new Panel("Client", x += spacing, y, true) {
           @Override
           public void setupItems() {
             Exeter.getInstance()
@@ -370,7 +372,9 @@ public final class ClickGui extends Screen {
       }
     }
 
-    this.panels.forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
+    // Copy: the Panel Gap slider re-lays out (and rebuilds) panels on release.
+    new ArrayList<>(this.panels)
+        .forEach(panel -> panel.mouseReleased(mouseX, mouseY, releaseButton));
     return super.mouseReleased(event);
   }
 
@@ -477,7 +481,8 @@ public final class ClickGui extends Screen {
         && guiModule.getDescriptionMode()
             == me.friendly.exeter.module.impl.toggle.render.ClickGui.DescriptionMode.PANEL) {
       Panel lastPanel = anchor;
-      int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + 2 : 4;
+      int gap = guiModule != null ? guiModule.getPanelGap() : 2;
+      int descX = lastPanel != null ? lastPanel.getX() + lastPanel.getWidth() + gap : 4;
       int descY = lastPanel != null ? lastPanel.getY() : 4;
       int headerW = FontUtil.getStringWidth("Description");
       int textW = FontUtil.getStringWidth(hoveredDesc);
@@ -514,67 +519,24 @@ public final class ClickGui extends Screen {
         RenderMethods.drawGradientRect(
             descX, descY - 1.5f, descX + descW, descY + headerH - 6, descTop, descBottom);
       }
-      RenderMethods.drawRect(descX, descY + headerH - 6, descX + descW, descY + descH, 0x77000000);
+      RenderMethods.drawRect(
+          descX, descY + headerH - 6, descX + descW, descY + descH, PanelBorder.BACKGROUND);
       if (guiModule.showBorder.getValue()) {
-        float top = descY - 1.5f;
-        float bottom = (float) (descY + descH);
-        if (descHorizontal) {
-          RenderMethods.drawHorizontalSpectrumRect(
-              descX - 1,
-              top - 1,
-              descX + descW + 1,
-              top,
-              sx -> Colors.rollingSample(true, descInverse, sx, (int) top, screenW, screenH, 77));
-          RenderMethods.drawHorizontalSpectrumRect(
-              descX - 1,
-              bottom,
-              descX + descW + 1,
-              bottom + 1,
-              sx ->
-                  Colors.rollingSample(true, descInverse, sx, (int) bottom, screenW, screenH, 77));
-          RenderMethods.drawRect(
-              descX - 1,
-              top,
-              descX,
-              bottom,
-              Colors.rollingSample(true, descInverse, descX - 1, (int) top, screenW, screenH, 77));
-          RenderMethods.drawRect(
-              descX + descW,
-              top,
-              descX + descW + 1,
-              bottom,
-              Colors.rollingSample(
-                  true, descInverse, descX + descW, (int) top, screenW, screenH, 77));
-        } else {
-          int accentTop =
-              descRolling
-                  ? Colors.rollingSample(false, descInverse, descX, (int) top, screenW, screenH, 77)
-                  : Colors.getClientColorCustomAlpha(77);
-          int accentBottom =
-              descRolling
-                  ? Colors.rollingSample(
-                      false, descInverse, descX, (int) bottom, screenW, screenH, 77)
-                  : Colors.getClientColorCustomAlpha(77);
-          RenderMethods.drawRect(descX - 1, top - 1, descX + descW + 1, top, accentTop);
-          RenderMethods.drawRect(descX - 1, bottom, descX + descW + 1, bottom + 1, accentBottom);
-          float stripH = 4.0f;
-          for (float sy = top; sy < bottom; sy += stripH) {
-            float ey = Math.min(sy + stripH, bottom);
-            int stripTop =
-                descRolling
-                    ? Colors.rollingSample(
-                        false, descInverse, descX, (int) sy, screenW, screenH, 77)
-                    : accentTop;
-            int stripBottom =
-                descRolling
-                    ? Colors.rollingSample(
-                        false, descInverse, descX, (int) ey, screenW, screenH, 77)
-                    : accentBottom;
-            RenderMethods.drawGradientRect(descX - 1, sy, descX, ey, stripTop, stripBottom);
-            RenderMethods.drawGradientRect(
-                descX + descW, sy, descX + descW + 1, ey, stripTop, stripBottom);
-          }
-        }
+        boolean fadedBorder =
+            guiModule.getBorderMode()
+                == me.friendly.exeter.module.impl.toggle.render.ClickGui.BorderMode.GRADIENT;
+        PanelBorder.draw(
+            descX,
+            descW,
+            (float) descY - 1.5f,
+            (float) descY + headerH - 6,
+            (float) (descY + descH),
+            screenW,
+            screenH,
+            descRolling,
+            descHorizontal,
+            descInverse,
+            fadedBorder);
       }
       FontUtil.drawString("Description", descX + 3.0f, descY + 1.5f, -1);
       FontUtil.drawString(hoveredDesc, descX + padding, descY + headerH - 6 + padding, 0xFFCCCCCC);

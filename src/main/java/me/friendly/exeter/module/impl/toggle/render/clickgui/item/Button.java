@@ -42,61 +42,72 @@ public class Button extends Item implements Labeled {
     int bx = (int) this.x;
     int by = (int) this.y;
     int bh = (int) (this.y + this.height);
+    boolean drawBackground =
+        this.getState()
+            || !(this instanceof ModuleButton)
+            || cg == null
+            || cg.buttonBackground.getValue();
 
-    int topColor;
-    int bottomColor;
-    if (rolling) {
-      boolean hovered = this.isHovering(mouseX, mouseY);
-      if (this.getState()) {
-        topColor =
-            Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 44 : 88);
-        bottomColor =
-            Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 77 : 55);
+    if (drawBackground) {
+      int topColor;
+      int bottomColor;
+      if (rolling) {
+        boolean hovered = this.isHovering(mouseX, mouseY);
+        if (this.getState()) {
+          topColor =
+              Colors.rollingSample(
+                  horizontal, inverse, bx, by, screenW, screenH, hovered ? 44 : 88);
+          bottomColor =
+              Colors.rollingSample(
+                  horizontal, inverse, bx, bh, screenW, screenH, hovered ? 77 : 55);
+        } else {
+          topColor =
+              Colors.rollingSample(
+                  horizontal, inverse, bx, by, screenW, screenH, hovered ? 55 : 33);
+          bottomColor =
+              Colors.rollingSample(
+                  horizontal, inverse, bx, bh, screenW, screenH, hovered ? 66 : 33);
+        }
       } else {
         topColor =
-            Colors.rollingSample(horizontal, inverse, bx, by, screenW, screenH, hovered ? 55 : 33);
+            this.getState()
+                ? (!this.isHovering(mouseX, mouseY)
+                    ? Colors.getClientColorCustomAlpha(88)
+                    : Colors.getClientColorCustomAlpha(44))
+                : (!this.isHovering(mouseX, mouseY)
+                    ? Colors.getDarkerClientColorCustomAlpha(77)
+                    : Colors.getDarkerClientColorCustomAlpha(33));
         bottomColor =
-            Colors.rollingSample(horizontal, inverse, bx, bh, screenW, screenH, hovered ? 66 : 33);
+            this.getState()
+                ? (!this.isHovering(mouseX, mouseY)
+                    ? Colors.getClientColorCustomAlpha(55)
+                    : Colors.getClientColorCustomAlpha(77))
+                : (!this.isHovering(mouseX, mouseY)
+                    ? Colors.getDarkerClientColorCustomAlpha(55)
+                    : Colors.getDarkerClientColorCustomAlpha(66));
       }
-    } else {
-      topColor =
-          this.getState()
-              ? (!this.isHovering(mouseX, mouseY)
-                  ? Colors.getClientColorCustomAlpha(88)
-                  : Colors.getClientColorCustomAlpha(44))
-              : (!this.isHovering(mouseX, mouseY)
-                  ? Colors.getDarkerClientColorCustomAlpha(77)
-                  : Colors.getDarkerClientColorCustomAlpha(33));
-      bottomColor =
-          this.getState()
-              ? (!this.isHovering(mouseX, mouseY)
-                  ? Colors.getClientColorCustomAlpha(55)
-                  : Colors.getClientColorCustomAlpha(77))
-              : (!this.isHovering(mouseX, mouseY)
-                  ? Colors.getDarkerClientColorCustomAlpha(55)
-                  : Colors.getDarkerClientColorCustomAlpha(66));
-    }
 
-    if (horizontal && rolling) {
-      boolean hovered = this.isHovering(mouseX, mouseY);
-      int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
-      RenderMethods.drawHorizontalSpectrumRect(
-          this.x,
-          this.y,
-          this.x + (float) this.width,
-          this.y + (float) this.height,
-          sx -> Colors.rollingSample(true, inverse, sx, by, screenW, screenH, alpha));
-    } else if (useGradient || rolling) {
-      RenderMethods.drawGradientRect(
-          this.x,
-          this.y,
-          this.x + (float) this.width,
-          this.y + (float) this.height,
-          topColor,
-          bottomColor);
-    } else {
-      RenderMethods.drawRect(
-          this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, topColor);
+      if (horizontal && rolling) {
+        boolean hovered = this.isHovering(mouseX, mouseY);
+        int alpha = this.getState() ? (hovered ? 66 : 77) : (hovered ? 55 : 44);
+        RenderMethods.drawHorizontalSpectrumRect(
+            this.x,
+            this.y,
+            this.x + (float) this.width,
+            this.y + (float) this.height,
+            sx -> Colors.rollingSample(true, inverse, sx, by, screenW, screenH, alpha));
+      } else if (useGradient || rolling) {
+        RenderMethods.drawGradientRect(
+            this.x,
+            this.y,
+            this.x + (float) this.width,
+            this.y + (float) this.height,
+            topColor,
+            bottomColor);
+      } else {
+        RenderMethods.drawRect(
+            this.x, this.y, this.x + (float) this.width, this.y + (float) this.height, topColor);
+      }
     }
 
     FontUtil.drawString(

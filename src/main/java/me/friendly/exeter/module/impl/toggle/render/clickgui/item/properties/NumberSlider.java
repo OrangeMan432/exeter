@@ -161,6 +161,19 @@ public class NumberSlider extends Item implements PropertyItem {
             me.friendly.exeter.logging.DebugLogger.Level.INFO,
             this.getLabel() + " set to " + numberProperty.getValue() + " (typed " + editText + ")");
     cancelEditor();
+    notifyPanelGapChanged();
+  }
+
+  /** Panel Gap only re-lays out once the drag or typed entry settles, not on every pixel moved. */
+  private void notifyPanelGapChanged() {
+    if (!"Panel Gap".equals(this.getLabel())) return;
+    var module =
+        me.friendly.exeter.core.Exeter.getInstance()
+            .getModuleManager()
+            .getModuleByAlias("clickgui");
+    if (module instanceof me.friendly.exeter.module.impl.toggle.render.ClickGui guiMod) {
+      guiMod.onPanelGapChanged();
+    }
   }
 
   /**
@@ -245,6 +258,7 @@ public class NumberSlider extends Item implements PropertyItem {
     super.mouseReleased(mouseX, mouseY, releaseButton);
     if (releaseButton == InputConstants.MOUSE_BUTTON_LEFT) {
       dragging = false;
+      notifyPanelGapChanged();
     }
   }
 
